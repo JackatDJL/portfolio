@@ -5,10 +5,17 @@ export const site = {
     'Jack Ruder builds projects around technology, music, education, and civic life.',
   profile: {
     name: 'Jack Ruder',
-    role: 'Student, developer, and project builder',
+    role: 'Student, developer, musician',
     location: 'TODO: add location',
     bio: 'TODO: add a concise first-person biography.',
     email: 'TODO: add public contact email',
+  },
+  home: {
+    greeting: 'Moin, ich bin Jack.',
+    introduction:
+      'Ich bin Student und baue Software. Dazu kommen Musik, Technik, Bildung sowie kommunale und politische Arbeit.',
+    archiveNote:
+      'Hier sammele ich Projekte, Notizen und Dinge, an denen ich gearbeitet habe. Die öffentliche Chronik wächst noch.',
   },
   links: [
     { label: 'GitHub', href: 'TODO: add GitHub URL' },
@@ -161,7 +168,7 @@ export const writing = [
   },
 ]
 
-export const publicProjects = projects.map((project) =>
+export const publicProjects: Project[] = projects.map((project) =>
   project.status === 'Confidential'
     ? {
         id: project.id,
