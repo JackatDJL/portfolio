@@ -14,14 +14,13 @@ export const Route = createFileRoute('/contact')({
 function Contact() {
   return (
     <SiteShell>
-      <PageIntro eyebrow="Contact" title="Start with a note.">
+      <PageIntro eyebrow="Kontakt" title="Schreib mir.">
         <p>
-          TODO: add a public contact address and a short note about the kinds of
-          messages welcome here.
+          Eine öffentliche E-Mail-Adresse ist noch nicht hinterlegt. Bis dahin
+          ist GitHub der verlässliche öffentliche Kontaktweg.
         </p>
       </PageIntro>
       <section className="contact-list">
-        <a href="mailto:TODO@example.com">TODO: public email address</a>
         {site.links.map((link) => (
           <ExternalLink key={link.label} href={link.href}>
             {link.label}

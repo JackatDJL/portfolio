@@ -26,7 +26,9 @@ function Post() {
         <p>{post.summary}</p>
       </PageIntro>
       <article className="prose-layout">
-        <p>{post.body}</p>
+        {post.body.map((paragraph) => (
+          <p key={paragraph}>{paragraph}</p>
+        ))}
         <Link className="text-link" to="/writing">
           All writing <span>←</span>
         </Link>

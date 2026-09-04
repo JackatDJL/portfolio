@@ -26,8 +26,8 @@ function Now() {
         ))}
       </section>
       <p className="prose-layout">
-        A now page is a dated snapshot, not a biography. TODO: update this
-        whenever the work changes.
+        Diese Seite ist eine Momentaufnahme, keine Biografie. Sie wird
+        aktualisiert, wenn sich die Arbeit verändert.
       </p>
     </SiteShell>
   )

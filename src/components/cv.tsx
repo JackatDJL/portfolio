@@ -2,22 +2,24 @@ import { Link } from '@tanstack/react-router'
 import {
   awards,
   education,
-  engagement,
   music,
+  publicCvSwitches,
+  selectEngagement,
   selectExperience,
   selectProjects,
   skills,
   site,
 } from '../data/site'
-import type { CvProfile, CvProfileId } from '../data/site'
+import type { CvProfile } from '../data/site'
 
 export function CvDocument({
   profile,
 }: {
   profile: CvProfile & { alias?: string }
 }) {
-  const projects = selectProjects(profile.featuredProjectTags)
-  const experience = selectExperience(profile.featuredExperienceTags)
+  const projects = selectProjects(profile.featuredProjects)
+  const experience = selectExperience(profile.featuredExperience)
+  const featuredEngagement = selectEngagement(profile.featuredEngagement)
   return (
     <article className="cv-document">
       <header className="cv-header">
@@ -36,16 +38,19 @@ export function CvDocument({
             PDF is the canonical application document.
             <br />
             Canonical URL: {site.url}/cv/
-            {profile.id === 'general' ? '' : profile.id}
+            {profile.alias ?? (profile.slug === 'general' ? '' : profile.slug)}
           </p>
         </div>
       </header>
-      {profile.sections.map((section) => (
+      {profile.sectionOrder.map((section) => (
         <CvSection
           key={section}
           section={section}
           projects={projects}
           experience={experience}
+          featuredEngagement={featuredEngagement}
+          skillsFocus={profile.skillsFocus}
+          musicFocus={profile.musicFocus}
         />
       ))}
     </article>
@@ -56,10 +61,16 @@ function CvSection({
   section,
   projects,
   experience,
+  featuredEngagement,
+  skillsFocus,
+  musicFocus,
 }: {
   section: string
   projects: ReturnType<typeof selectProjects>
   experience: ReturnType<typeof selectExperience>
+  featuredEngagement: ReturnType<typeof selectEngagement>
+  skillsFocus: string[]
+  musicFocus: string[]
 }) {
   if (section === 'experience')
     return (
@@ -139,12 +150,18 @@ function CvSection({
       <section className="cv-section">
         <h2>Ways of working</h2>
         <div className="skill-groups">
-          {skills.map((group) => (
-            <div key={group.category}>
-              <h3>{group.category}</h3>
-              <p>{group.items.join(' · ')}</p>
-            </div>
-          ))}
+          {skills
+            .filter(
+              (group) =>
+                skillsFocus.length === 0 ||
+                skillsFocus.includes(group.category),
+            )
+            .map((group) => (
+              <div key={group.category}>
+                <h3>{group.category}</h3>
+                <p>{group.items.join(' · ')}</p>
+              </div>
+            ))}
         </div>
       </section>
     )
@@ -152,6 +169,9 @@ function CvSection({
     return (
       <section className="cv-section">
         <h2>Music</h2>
+        {musicFocus.length > 0 && (
+          <p className="tag-line">Focus: {musicFocus.join(' · ')}</p>
+        )}
         {music.map((entry) => (
           <p key={entry.id}>
             <strong>{entry.title}</strong>
@@ -165,7 +185,7 @@ function CvSection({
     return (
       <section className="cv-section">
         <h2>Engagement</h2>
-        {engagement.map((entry) => (
+        {featuredEngagement.map((entry) => (
           <p key={entry.id}>
             <strong>{entry.title}</strong>
             <br />
@@ -189,18 +209,15 @@ function CvSection({
 }
 
 export function CvProfileLinks() {
-  const profiles: CvProfileId[] = [
-    'technology',
-    'music',
-    'management',
-    'media',
-    'entrepreneurship',
-  ]
   return (
     <nav className="cv-profile-links" aria-label="CV profiles">
-      {profiles.map((profile) => (
-        <Link key={profile} to="/cv/$profile" params={{ profile }}>
-          {profile}
+      {publicCvSwitches.map((option) => (
+        <Link
+          key={option.profile}
+          to="/cv/$profile"
+          params={{ profile: option.profile }}
+        >
+          {option.label}
         </Link>
       ))}
     </nav>
