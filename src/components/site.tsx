@@ -31,7 +31,11 @@ export function SiteShell({ children }: { children: ReactNode }) {
         <p>
           {site.name} · {site.profile.role}
         </p>
-        <a href="mailto:TODO@example.com">Contact</a>
+        {site.profile.email ? (
+          <a href={`mailto:${site.profile.email}`}>Kontakt</a>
+        ) : (
+          <Link to="/contact">Kontakt</Link>
+        )}
       </footer>
     </>
   )

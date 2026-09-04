@@ -1,6 +1,6 @@
 import { Link, createFileRoute } from '@tanstack/react-router'
 import { SiteShell, Status } from '../components/site'
-import { publicProjects, site, writing } from '../data/site'
+import { homeProjects, site, writing } from '../data/site'
 
 export const Route = createFileRoute('/')({
   head: () => ({
@@ -31,7 +31,7 @@ function Home() {
             <p>{site.home.archiveNote}</p>
           </header>
           <div className="project-notes">
-            {publicProjects.map((project) => (
+            {homeProjects.map((project) => (
               <article className="project-note" key={project.id}>
                 <div className="project-note-heading">
                   <p>{project.year}</p>

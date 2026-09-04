@@ -25,8 +25,9 @@ function About() {
           develop.
         </p>
         <p>
-          TODO: add a biographical narrative, the places and communities that
-          matter, and the thread that connects Jack's work.
+          Ich arbeite gern an Dingen, die einen konkreten Ort, eine Gruppe oder
+          ein Problem haben. Nicht jedes Projekt wird fertig. Die Archive hier
+          zeigen deshalb auch Versuche, aus denen etwas gelernt wurde.
         </p>
       </section>
     </SiteShell>

@@ -1,13 +1,13 @@
 import { createFileRoute, notFound } from '@tanstack/react-router'
 import { CvDocument } from '../../components/cv'
 import { SiteShell } from '../../components/site'
-import { cvAliases, cvProfiles, resolveCvProfile, site } from '../../data/site'
+import { getCvProfileForRoute, site } from '../../data/site'
 
 export const Route = createFileRoute('/cv/$profile')({
   loader: ({ params }) => {
-    if (!(params.profile in cvProfiles) && !(params.profile in cvAliases))
-      throw notFound()
-    return resolveCvProfile(params.profile)
+    const profile = getCvProfileForRoute(params.profile)
+    if (!profile) throw notFound()
+    return profile
   },
   head: ({ loaderData }) => ({
     meta: [
