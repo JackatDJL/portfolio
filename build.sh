@@ -4,17 +4,7 @@ set -e
 
 # PHP for the build environment
 dnf clean metadata
-dnf install -y \
-    php8.3 \
-    php8.3-common \
-    php8.3-mbstring \
-    php8.3-gd \
-    php8.3-bcmath \
-    php8.3-xml \
-    php8.3-fpm \
-    php8.3-intl \
-    php8.3-zip \
-    wget
+dnf install -y php8.4 php8.4-{common,mbstring,gd,bcmath,xml,fpm,intl,zip} wget
 
 curl -fsSL https://bun.sh/install | bash
 
