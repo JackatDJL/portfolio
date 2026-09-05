@@ -1,0 +1,17 @@
+tree:
+  -
+    id: ebe5cb6e-79c3-4751-845e-8c6d55403265
+    title: Aktuell
+    url: /aktuell
+  -
+    id: d12b9ecf-cbd3-4cfe-8994-95c31d645c76
+    title: Projekte
+    url: /projekte
+  -
+    id: eb89b37f-1938-4c1b-a7a7-702ff451ba6a
+    title: Blog
+    url: /blog
+  -
+    id: aca160a0-f116-4308-8f46-4bdb426a7c7b
+    title: Veröffentlichungen
+    url: /publikationen

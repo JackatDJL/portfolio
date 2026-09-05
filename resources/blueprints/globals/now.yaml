@@ -1,0 +1,41 @@
+title: Aktuell
+tabs:
+  main:
+    display: Inhalt
+    sections:
+      -
+        display: Hero
+        fields:
+          -
+            handle: intro
+            field:
+              smart_typography: true
+              reading_time: true
+              word_count: true
+              container: assets
+              remove_empty_nodes: false
+              type: bard
+              display: Einleitung
+              validate:
+                - required
+          -
+            handle: updated_at
+            field:
+              timezone: Europe/Berlin
+              default: now
+              type: date
+              display: 'Auf dem Stand vom'
+              validate:
+                - required
+      -
+        display: Aktuelles
+        fields:
+          -
+            handle: items
+            field:
+              collections:
+                - projects
+                - publications
+              max_items: 5
+              type: entries
+              display: Inhalte

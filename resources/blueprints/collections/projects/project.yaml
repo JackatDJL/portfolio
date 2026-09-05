@@ -1,0 +1,202 @@
+title: Projekte
+tabs:
+  main:
+    display: Basis
+    sections:
+      -
+        display: 'Über das Projekt'
+        fields:
+          -
+            handle: title
+            field:
+              type: text
+              required: true
+              validate:
+                - required
+              display: Titel
+          -
+            handle: summary
+            field:
+              placeholder: 'Dieses Projekt ist ein x, weil x war ein Problem. X wollte ich so lösen...'
+              type: textarea
+              display: Zusammenfassung
+  sidebar:
+    display: Sidebar
+    sections:
+      -
+        display: Management
+        fields:
+          -
+            handle: slug
+            field:
+              type: slug
+              localizable: true
+              validate: 'max:200'
+          -
+            handle: project_status
+            field:
+              options:
+                -
+                  key: active
+                  value: Aktiv
+                -
+                  key: maintained
+                  value: 'Maintained?'
+                -
+                  key: paused
+                  value: Pausiert
+                -
+                  key: archived
+                  value: Archiviert
+                -
+                  key: experiement
+                  value: Experiment
+                -
+                  key: confidential
+                  value: Vertraulich
+              type: select
+              display: Status
+              validate:
+                - required
+          -
+            handle: featured
+            field:
+              type: toggle
+              display: Hervorgehoben
+      -
+        display: Zeitrahmen
+        fields:
+          -
+            handle: startet_at
+            field:
+              type: date
+              display: 'Gestartet am'
+              validate:
+                - required
+          -
+            handle: ended_at
+            field:
+              timezone: Europe/Berlin
+              type: date
+              display: 'Beendet am'
+              if:
+                startet_at: 'contains_any .'
+                project_status: 'equals archived'
+  content:
+    display: Inhalt
+    sections:
+      -
+        display: Inhalt
+        fields:
+          -
+            import: page_content
+  technology-links:
+    display: 'Technik & Links'
+    sections:
+      -
+        display: Webseite
+        fields:
+          -
+            handle: website_url
+            field:
+              default_option: url
+              type: link
+              display: Webseite
+      -
+        display: Technologien
+        fields:
+          -
+            handle: featured_technology
+            field:
+              options:
+                -
+                  key: rust
+                  value: Rust
+                -
+                  key: tanstack
+                  value: 'Tanstack Start'
+                -
+                  key: next
+                  value: NextJs
+                -
+                  key: laravel
+                  value: Laravel
+                -
+                  key: opencv
+                  value: 'Computer Vision'
+              taggable: true
+              multiple: true
+              max_items: 3
+              type: select
+              display: 'Wichtigste Technologie'
+          -
+            handle: used_technologies
+            field:
+              type: list
+              display: 'Benutze Technologien'
+      -
+        display: Repository
+        fields:
+          -
+            handle: repository_url
+            field:
+              default_option: url
+              type: link
+              display: Repository
+  relations_media:
+    display: 'Beziehungen & Medien'
+    sections:
+      -
+        display: Medien
+        fields:
+          -
+            handle: cover
+            field:
+              container: assets
+              folder: projects
+              dynamic: slug
+              restrict: true
+              max_files: 1
+              type: assets
+              display: Titelbild
+              validate:
+                - required
+          -
+            handle: gallery
+            field:
+              container: assets
+              folder: projects
+              dynamic: slug
+              restrict: true
+              type: assets
+              display: Galerie
+      -
+        display: Beziehungen
+        fields:
+          -
+            handle: topics
+            field:
+              taxonomies:
+                - topics
+              type: terms
+              display: Themen
+          -
+            handle: related_projects
+            field:
+              collections:
+                - projects
+              select_across_sites: true
+              type: entries
+              display: 'Ähnliche Projekte'
+          -
+            handle: related_experience
+            field:
+              collections:
+                - experience
+              type: entries
+              display: 'gesammelte Erfahrung'
+      -
+        display: 'Search engine optimisation'
+        fields:
+          -
+            import: seo

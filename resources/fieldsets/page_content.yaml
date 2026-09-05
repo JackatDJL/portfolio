@@ -1,0 +1,89 @@
+title: 'Seiten Inhalt'
+sections:
+  -
+    display: Inhalt
+    fields:
+      -
+        handle: content
+        field:
+          buttons:
+            - h2
+            - h3
+            - bold
+            - italic
+            - unorderedlist
+            - orderedlist
+            - removeformat
+            - quote
+            - anchor
+            - image
+            - table
+            - underline
+            - strikethrough
+            - code
+            - codeblock
+            - horizontalrule
+          smart_typography: true
+          reading_time: true
+          word_count: true
+          link_collections:
+            - posts
+            - projects
+            - publications
+            - pages
+          select_across_sites: true
+          container: assets
+          remove_empty_nodes: false
+          type: bard
+          display: Inhalt
+          sets:
+            default:
+              display: Standart
+              icon: add-entry
+              sets:
+                test:
+                  display: Test
+                  fields:
+                    -
+                      handle: callout
+                      field:
+                        default_option: entry
+                        collections:
+                          - posts
+                          - pages
+                          - projects
+                          - publications
+                        select_across_sites: true
+                        container: assets
+                        type: link
+                        display: Aufruf
+                    -
+                      handle: figure
+                      field:
+                        default_option: url
+                        type: link
+                        display: Referenz
+                gallery:
+                  display: Galerie
+                  icon: media-image-picture-gallery
+                  fields:
+                    -
+                      handle: gallery
+                      field:
+                        container: assets
+                        folder: photos
+                        type: assets
+                        display: Bilder
+                project_embed:
+                  display: Projektansicht
+                  icon: fieldtype-html
+                  fields:
+                    -
+                      handle: project
+                      field:
+                        collections:
+                          - projects
+                        select_across_sites: true
+                        max_items: 1
+                        type: entries
+                        display: 'Ausgewähltes Projekt'

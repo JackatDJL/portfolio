@@ -1,0 +1,16 @@
+title: Projekte
+icon: social-dropbox-logo
+template: default
+layout: layout
+revisions: false
+route: /projekte/
+sort_dir: asc
+default_status: draft
+date_behavior:
+  past: null
+  future: null
+preview_targets:
+  -
+    label: Entry
+    url: '{permalink}'
+    refresh: true

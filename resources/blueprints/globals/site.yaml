@@ -1,0 +1,74 @@
+title: Webseite
+tabs:
+  main:
+    display: 'Informationen über dich'
+    sections:
+      -
+        display: 'Wer bist du'
+        fields:
+          -
+            handle: name
+            field:
+              type: text
+              display: Name
+              width: 50
+              validate:
+                - required
+          -
+            handle: profile_image
+            field:
+              container: assets
+              folder: jack/profile_pictures
+              restrict: true
+              max_files: 1
+              min_files: 1
+              type: assets
+              display: Profilbild
+              width: 50
+          -
+            handle: email
+            field:
+              input_type: email
+              type: text
+              display: E-Mail
+              validate:
+                - required
+          -
+            handle: location
+            field:
+              type: text
+              display: Standort
+              instructions: 'Ungefähr, nicht die ganze Adresse.'
+              validate:
+                - required
+      -
+        display: 'Über dich'
+        fields:
+          -
+            handle: short_bio
+            field:
+              type: textarea
+              display: 'Kurze Beschreibung'
+              validate:
+                - required
+      -
+        display: 'Soziale Medien'
+        fields:
+          -
+            handle: github_url
+            field:
+              input_type: url
+              type: text
+              display: 'GitHub Profil'
+              validate:
+                - required
+                - 'starts_with:https://github.com/'
+          -
+            handle: codeberg_url
+            field:
+              input_type: url
+              type: text
+              display: 'Codeberg Profil'
+              validate:
+                - required
+                - 'starts_with:https://codeberg.org/'

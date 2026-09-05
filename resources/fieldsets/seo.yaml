@@ -1,0 +1,33 @@
+title: 'Search engine optimisation'
+sections:
+  -
+    display: SEO
+    fields:
+      -
+        handle: seo_title
+        field:
+          placeholder: 'Neue Seite'
+          type: text
+          display: Titel
+          width: 50
+      -
+        handle: seo_image
+        field:
+          container: assets
+          folder: opengraph_images
+          dynamic: slug
+          restrict: true
+          max_files: 1
+          type: assets
+          display: Bild
+          width: 50
+      -
+        handle: seo_description
+        field:
+          type: textarea
+          display: Beschreibung
+      -
+        handle: noindex
+        field:
+          type: toggle
+          display: 'Indexing deaktivieren?'

@@ -1,0 +1,50 @@
+title: Homepage
+tabs:
+  main:
+    display: Inhalt
+    sections:
+      -
+        display: Hero
+        fields:
+          -
+            handle: intro
+            field:
+              reading_time: true
+              word_count: true
+              link_noopener: true
+              link_noreferrer: true
+              target_blank: true
+              link_collections:
+                - projects
+                - publications
+                - posts
+                - pages
+              select_across_sites: true
+              container: assets
+              remove_empty_nodes: false
+              type: bard
+              display: Einleitung
+              validate:
+                - required
+      -
+        display: Vorgestellt
+        fields:
+          -
+            handle: featured_projects
+            field:
+              collections:
+                - projects
+              select_across_sites: true
+              max_items: 3
+              type: entries
+              display: 'Vorgestellte Projekte'
+              width: 50
+          -
+            handle: featured_posts
+            field:
+              collections:
+                - posts
+                - publications
+              type: entries
+              display: 'Vorgestellte Blogposts'
+              width: 50
