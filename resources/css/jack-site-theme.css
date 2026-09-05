@@ -383,6 +383,27 @@
         background: var(--site-surface);
     }
 
+    .theme-option {
+        display: inline-flex;
+        cursor: pointer;
+        align-items: center;
+        gap: 0.5rem;
+        border: 1px solid var(--site-border);
+        border-radius: var(--radius-sm);
+        padding: 0.5rem 0.75rem;
+        font-size: 0.875rem;
+        line-height: 1.35rem;
+    }
+
+    .theme-option:has(:checked) {
+        border-color: var(--site-border-strong);
+        background: var(--site-accent-soft);
+    }
+
+    .theme-option input {
+        accent-color: var(--site-text);
+    }
+
     .card {
         border: 1px solid var(--site-border);
         border-radius: var(--radius-lg);

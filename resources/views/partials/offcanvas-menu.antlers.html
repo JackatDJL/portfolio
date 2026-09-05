@@ -1,0 +1,31 @@
+<dialog id="site-menu" class="menu-dialog" aria-labelledby="site-menu-title">
+    <div class="menu-panel">
+        <div class="menu-panel__top">
+            <p id="site-menu-title" class="eyebrow menu-stage">Navigation</p>
+            <button class="btn btn-ghost menu-close menu-stage" type="button" data-menu-close aria-label="Menü schließen">
+                Schließen <span aria-hidden="true">×</span>
+            </button>
+        </div>
+
+        <nav class="menu-panel__nav" aria-label="Gesamte Navigation">
+            {{ nav:main max_depth="1" }}
+                <a class="menu-stage" href="{{ url }}"{{ if is_current }} aria-current="page"{{ /if }}>{{ title }}</a>
+            {{ /nav:main }}
+        </nav>
+
+        <div class="menu-panel__secondary menu-stage">
+            <p class="eyebrow">Darstellung</p>
+            {{ partial:theme-switcher name="menu-theme" }}
+
+            <nav class="menu-panel__footer" aria-label="Weitere Links">
+                {{ nav:footer max_depth="1" include_home="false" }}
+                    {{ unless url == '/' }}
+                        <a href="{{ url }}"{{ if external_url }} target="_blank" rel="noreferrer"{{ /if }}>{{ title }}</a>
+                    {{ /unless }}
+                {{ /nav:footer }}
+                {{ if site:github_url }}<a href="{{ site:github_url }}" target="_blank" rel="noreferrer">GitHub ↗</a>{{ /if }}
+                {{ if site:codeberg_url }}<a href="{{ site:codeberg_url }}" target="_blank" rel="noreferrer">Codeberg ↗</a>{{ /if }}
+            </nav>
+        </div>
+    </div>
+</dialog>

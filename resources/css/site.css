@@ -1,3 +1,98 @@
-@import "tailwindcss";
+@import "./jack-site-theme.css";
+@import "@fontsource/fira-sans/latin-400.css";
+@import "@fontsource/fira-sans/latin-500.css";
+@import "@fontsource/fira-sans/latin-700.css";
+@import "@fontsource/fira-sans/latin-800.css";
+@import "@fontsource-variable/geist/index.css";
+@import "@fontsource-variable/geist/wght-italic.css";
+@import "@fontsource-variable/geist-mono/index.css";
 @source "../views";
 @source "../../content";
+
+@layer components {
+    .skip-link { @apply sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50; }
+    .site-shell { @apply flex min-h-dvh flex-col bg-background text-foreground; }
+    .site-main { @apply grow; }
+    .site-header { @apply relative z-10 border-b border-border bg-background; }
+    .site-header__inner { @apply flex min-h-20 items-center gap-4 py-4; }
+    .site-header__wordmark { @apply shrink-0 text-2xl no-underline; }
+    .site-header__nav { @apply ml-auto hidden items-center gap-6 text-sm font-semibold md:flex; }
+    .site-header__nav a { @apply decoration-accent decoration-2 underline-offset-4 hover:underline; }
+    .site-header__menu { @apply ml-auto md:ml-0; }
+    .theme-switcher { @apply mt-3 flex w-fit flex-wrap gap-2; }
+    .menu-dialog { @apply fixed inset-0 m-0 h-dvh w-dvw max-h-none max-w-none overflow-hidden border-0 bg-transparent p-0 text-foreground; }
+    .menu-dialog::backdrop {
+        background: color-mix(in srgb, var(--site-shadow-color) 48%, transparent);
+    }
+    .menu-dialog[data-state="open"]::backdrop { animation: menu-backdrop-in 240ms var(--ease-standard) both; }
+    .menu-dialog[data-state="closing"]::backdrop { animation: menu-backdrop-out 200ms var(--ease-standard) both; }
+    .menu-dialog[open] { @apply block; }
+    body:has(.menu-dialog[open]) { @apply overflow-hidden; }
+    .menu-panel {
+        @apply absolute inset-y-0 right-0 flex h-full w-full flex-col overflow-y-auto border-l-2 border-border-strong bg-background p-6 shadow-neo-lg sm:p-10;
+        will-change: transform;
+    }
+    .menu-dialog[data-state="open"] .menu-panel { animation: menu-panel-in 420ms var(--ease-emphasized) both; }
+    .menu-dialog[data-state="closing"] .menu-panel { animation: menu-panel-out 360ms var(--ease-emphasized) both; }
+    .menu-panel__top { @apply flex items-center justify-between gap-4 border-b border-border pb-6; }
+    .menu-close { @apply min-h-11 px-3 text-sm; }
+    .menu-close span { @apply text-xl leading-none; }
+    .menu-panel__nav { @apply mt-10 sm:mt-12; }
+    .menu-panel__nav a {
+        @apply block border-b border-border py-4 font-display text-3xl font-bold tracking-tight no-underline transition-colors duration-150 hover:border-border-strong hover:text-muted sm:py-5 sm:text-4xl;
+    }
+    .menu-panel__secondary { @apply mt-auto pt-12; }
+    .menu-panel__footer { @apply mt-6 flex flex-wrap gap-x-5 gap-y-3 border-t border-border pt-6; }
+    .menu-panel__footer a { @apply text-sm font-semibold underline decoration-accent decoration-2 underline-offset-4; }
+    .menu-stage {
+        will-change: opacity, transform;
+    }
+    .menu-dialog[data-state="open"] .menu-stage { animation: menu-stage-in 240ms var(--ease-emphasized) both; }
+    .menu-dialog[data-state="closing"] .menu-stage { animation: menu-stage-out 140ms var(--ease-standard) both; }
+    .menu-dialog[data-state="open"] .menu-panel__top .menu-stage { animation-delay: 90ms; }
+    .menu-dialog[data-state="open"] .menu-panel__nav a:nth-child(1) { animation-delay: 125ms; }
+    .menu-dialog[data-state="open"] .menu-panel__nav a:nth-child(2) { animation-delay: 155ms; }
+    .menu-dialog[data-state="open"] .menu-panel__nav a:nth-child(3) { animation-delay: 185ms; }
+    .menu-dialog[data-state="open"] .menu-panel__nav a:nth-child(4) { animation-delay: 215ms; }
+    .menu-dialog[data-state="open"] .menu-panel__nav a:nth-child(n+5) { animation-delay: 245ms; }
+    .menu-dialog[data-state="open"] .menu-panel__secondary { animation-delay: 250ms; }
+    .site-footer { @apply border-t border-border bg-background; }
+    .site-footer__inner { @apply flex flex-col gap-6 py-10 md:flex-row md:items-end md:justify-between; }
+    .site-footer__identity { @apply flex items-baseline gap-4; }
+    .site-footer__nav { @apply flex flex-wrap gap-x-5 gap-y-3 text-sm font-semibold; }
+    .site-footer__nav a { @apply underline decoration-accent decoration-2 underline-offset-4; }
+}
+
+@media (min-width: 48rem) {
+    .menu-panel { width: clamp(42rem, 46vw, 52rem); }
+}
+
+@keyframes menu-backdrop-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes menu-backdrop-out {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+
+@keyframes menu-panel-in {
+    from { transform: translate3d(100%, 0, 0); }
+    to { transform: translate3d(0, 0, 0); }
+}
+
+@keyframes menu-panel-out {
+    from { transform: translate3d(0, 0, 0); }
+    to { transform: translate3d(100%, 0, 0); }
+}
+
+@keyframes menu-stage-in {
+    from { opacity: 0; transform: translate3d(0.5rem, 0, 0); }
+    to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+@keyframes menu-stage-out {
+    from { opacity: 1; transform: translate3d(0, 0, 0); }
+    to { opacity: 0; transform: translate3d(0.25rem, 0, 0); }
+}

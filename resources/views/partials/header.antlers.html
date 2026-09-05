@@ -1,0 +1,19 @@
+<header class="site-header">
+    <div class="site-container site-header__inner">
+        <a class="wordmark site-header__wordmark" href="/">Jack Ruder</a>
+
+        <nav class="site-header__nav" aria-label="Direktnavigation">
+            {{ nav:main max_depth="1" }}
+                {{ if url == '/projekte' || url == '/cv' || url == '/lebenslauf' }}
+                    <a href="{{ url }}"{{ if is_current }} aria-current="page"{{ /if }}>{{ title }}</a>
+                {{ /if }}
+            {{ /nav:main }}
+        </nav>
+
+        <button class="btn btn-secondary site-header__menu" type="button" data-menu-trigger aria-expanded="false" aria-controls="site-menu">
+            Menü
+        </button>
+    </div>
+</header>
+
+{{ partial:offcanvas-menu }}
