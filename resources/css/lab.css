@@ -1,0 +1,31 @@
+@import "./jack-site-theme.css";
+@import "@fontsource/fira-sans/latin-400.css";
+@import "@fontsource/fira-sans/latin-500.css";
+@import "@fontsource/fira-sans/latin-700.css";
+@import "@fontsource/fira-sans/latin-800.css";
+@import "@fontsource-variable/geist/index.css";
+@import "@fontsource-variable/geist/wght-italic.css";
+@import "@fontsource-variable/geist-mono/index.css";
+@source "../views/lab";
+
+@layer base {
+    body { overflow-wrap: anywhere; }
+}
+
+@layer components {
+    .lab-section { @apply border-t border-border py-section-sm md:py-section; }
+    .lab-heading { @apply mb-8 flex flex-wrap items-baseline justify-between gap-4; }
+    .lab-heading h2 { @apply text-3xl; }
+    .lab-note { @apply text-sm text-muted; }
+    .lab-grid { @apply grid gap-6 md:grid-cols-2 xl:grid-cols-3; }
+    .lab-stack { @apply flex flex-wrap items-center gap-4; }
+    .lab-swatch { @apply h-20 border-b border-border; }
+    .lab-theme { @apply inline-flex cursor-pointer items-center gap-2 rounded-sm border border-border px-3 py-2 text-sm; }
+    .lab-theme:has(:checked) { @apply border-border-strong bg-accent-soft; }
+    .lab-theme input { accent-color: var(--site-text); }
+    .lab-focus { outline: 3px solid var(--site-focus); outline-offset: 3px; }
+    .lab-figure { @apply flex aspect-video items-center justify-center border border-border bg-surface-strong p-6 text-center font-mono text-sm text-muted; }
+    .lab-table { @apply w-full text-left text-sm; }
+    .lab-table th, .lab-table td { @apply border-b border-border p-3; }
+    .lab-table th { @apply bg-surface font-semibold; }
+}

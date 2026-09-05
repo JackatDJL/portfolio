@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="de">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow, noarchive">
+    <title>Design-System · Jack Ruder</title>
+    <script>
+        // Apply before paint. Storage may be unavailable in private contexts.
+        try {
+            const theme = localStorage.getItem('jack-design-system-theme');
+            if (theme === 'light' || theme === 'dark') document.documentElement.dataset.theme = theme;
+        } catch {}
+    </script>
+    {{ vite src="resources/css/lab.css|resources/js/lab.js" }}
+</head>
+<body>
+    <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 btn btn-primary">Zum Inhalt</a>
+    {{ template_content }}
+</body>
+</html>
