@@ -60,6 +60,31 @@
     .site-footer__identity { @apply flex items-baseline gap-4; }
     .site-footer__nav { @apply flex flex-wrap gap-x-5 gap-y-3 text-sm font-semibold; }
     .site-footer__nav a { @apply underline decoration-accent decoration-2 underline-offset-4; }
+
+    /* Detail pages (Projekt, später Blog/Veröffentlichung):
+       schmale Lesespalte mit ruhigem Kontext-Rail, auf breiten Screens sticky. */
+    .detail-container { @apply mx-auto w-full max-w-content px-gutter md:px-gutter-lg; }
+    .detail-hero { @apply pb-gutter-lg pt-section-sm; }
+    .detail-layout { @apply grid grid-cols-1 gap-y-gutter-lg pt-section-sm; }
+    .detail-layout__main { @apply min-w-0; }
+    .detail-layout__rail { @apply min-w-0; }
+
+    .media-figure { @apply m-0; }
+    .media-figure img { @apply block h-auto w-full rounded-md border border-border bg-surface; }
+
+    @media (min-width: 48rem) {
+        .detail-layout {
+            grid-template-columns: minmax(0, var(--container-reading)) minmax(13rem, 16rem);
+            column-gap: var(--spacing-gutter-lg);
+        }
+        .detail-layout__rail { @apply sticky top-24 self-start; }
+    }
+
+    @media (min-width: 64rem) {
+        .detail-layout {
+            grid-template-columns: minmax(0, var(--container-reading)) minmax(14rem, 20rem);
+        }
+    }
 }
 
 @media (min-width: 48rem) {

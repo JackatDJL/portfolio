@@ -497,6 +497,12 @@
         margin-top: 1.35em;
     }
 
+    /* The first element must not carry a section gap, otherwise the whole
+       prose block is pushed down when Bard content opens with a heading. */
+    .prose-site > :first-child {
+        margin-top: 0;
+    }
+
     .prose-site h2 {
         margin-top: 2.4em;
         font-size: clamp(1.8rem, 4vw, 2.5rem);

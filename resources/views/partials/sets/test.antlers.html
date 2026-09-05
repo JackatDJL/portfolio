@@ -1,0 +1,11 @@
+{{# Bard-Set: Test — schlanke Verweisbox für die Set-Felder Aufruf/Referenz. #}}
+{{ if callout || figure }}
+    <div class="card space-y-3 p-5 text-sm">
+        {{ if callout }}
+            <a class="semantic-link" href="{{ callout }}">{{ callout }}</a>
+        {{ /if }}
+        {{ if figure }}
+            <a class="semantic-link" href="{{ figure }}">{{ figure }}</a>
+        {{ /if }}
+    </div>
+{{ /if }}

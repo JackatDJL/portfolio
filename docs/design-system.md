@@ -20,6 +20,7 @@ Native radio inputs provide System / Hell / Dunkel. Explicit choices set `data-t
 - Disabled buttons no longer move or acquire hover colors. They retain readable muted text without opacity reduction.
 - Prose links explicitly underline, rather than relying on a browser default removed by Tailwind's reset.
 - Reduced motion also suppresses button/card transforms.
+- The first element in a prose block no longer carries a section gap (`margin-top: 0` via `:first-child`). Bard content that opens with a heading used to push the whole prose block down through margin collapse.
 - Font-family tokens match Fontsource's registered `Geist Variable` and `Geist Mono Variable` family names.
 - The supplied `dark:` variant only matches explicit dark mode, while system mode changes semantic variables through a media query. The lab therefore uses semantic tokens throughout and needs no `dark:` utilities.
 - Existing primitives contain some literal sizes alongside theme tokens, and `shadow-soft` has a fixed light-oriented color. These have been preserved; this lab adds no new spacing or radius scale.

@@ -1,6 +1,6 @@
 title: Projekte
 icon: social-dropbox-logo
-template: default
+template: projects/show
 layout: layout
 revisions: false
 route: '/projekte/{slug}'

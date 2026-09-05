@@ -1,0 +1,7 @@
+{{# Einzelne Abbildung; benötigt den Asset-Kontext (url, alt, width, height). #}}
+<figure class="media-figure {{ classes ?? '' }}">
+    <img src="{{ glide:url width="960" }}" alt="{{ alt }}" width="{{ width }}" height="{{ height }}" loading="lazy" decoding="async">
+    {{ if alt }}
+        <figcaption class="mt-3">{{ alt }}</figcaption>
+    {{ /if }}
+</figure>

@@ -1,0 +1,16 @@
+{{# Wiederverwendbare Detailseiten-Struktur: Intro, Hauptspalte, Kontext-Rail. #}}
+{{ if intro }}
+    <div class="detail-container detail-hero">
+        {{ partial src="{intro}" }}
+    </div>
+{{ /if }}
+<div class="detail-layout detail-container">
+    <div class="detail-layout__main">
+        {{ slot }}
+    </div>
+    {{ if aside }}
+        <aside class="detail-layout__rail">
+            {{ partial src="{aside}" }}
+        </aside>
+    {{ /if }}
+</div>
