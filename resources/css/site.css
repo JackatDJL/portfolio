@@ -46,7 +46,7 @@
     .menu-stage {
         will-change: opacity, transform;
     }
-    .menu-dialog[data-state="open"] .menu-stage { animation: menu-stage-in 240ms var(--ease-emphasized) both; }
+    .menu-dialog[data-state="open"] .menu-stage { animation: menu-stage-in 240ms var(--ease-emphasized) backwards; }
     .menu-dialog[data-state="closing"] .menu-stage { animation: menu-stage-out 140ms var(--ease-standard) both; }
     .menu-dialog[data-state="open"] .menu-panel__top .menu-stage { animation-delay: 90ms; }
     .menu-dialog[data-state="open"] .menu-panel__nav a:nth-child(1) { animation-delay: 125ms; }

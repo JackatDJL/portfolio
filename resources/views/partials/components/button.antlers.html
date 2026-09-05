@@ -1,5 +1,5 @@
 {{ if href }}
-    <a class="btn btn-{{ variant ?? 'primary' }} {{ classes ?? '' }}" href="{{ href }}">{{ label }}</a>
+    <a class="btn btn-{{ variant ?? 'primary' }} {{ classes ?? '' }}" href="{{ href }}"{{ if attributes }} {{ attributes }}{{ /if }}>{{ label }}</a>
 {{ else }}
-    <button class="btn btn-{{ variant ?? 'primary' }} {{ classes ?? '' }}" type="{{ type ?? 'button' }}"{{ if disabled }} disabled{{ /if }}>{{ label }}</button>
+    <button class="btn btn-{{ variant ?? 'primary' }} {{ classes ?? '' }}" type="{{ type ?? 'button' }}"{{ if disabled }} disabled{{ /if }}{{ if attributes }} {{ attributes }}{{ /if }}>{{ label }}</button>
 {{ /if }}

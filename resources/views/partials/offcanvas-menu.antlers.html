@@ -2,9 +2,12 @@
     <div class="menu-panel">
         <div class="menu-panel__top">
             <p id="site-menu-title" class="eyebrow menu-stage">Navigation</p>
-            <button class="btn btn-ghost menu-close menu-stage" type="button" data-menu-close aria-label="Menü schließen">
-                Schließen <span aria-hidden="true">×</span>
-            </button>
+            {{ partial:components/button
+                variant="ghost"
+                classes="menu-close menu-stage"
+                label='Schließen <span aria-hidden="true">×</span>'
+                attributes='data-menu-close aria-label="Menü schließen"'
+            }}
         </div>
 
         <nav class="menu-panel__nav" aria-label="Gesamte Navigation">
