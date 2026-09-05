@@ -1,10 +1,12 @@
 {{# Kanonische Rich-Text-Ausgabe für Bard-Inhalte. #}}
 <div class="prose-site {{ classes ?? 'reading-width' }}">
-    {{ content }}
-        {{ if type == "text" }}
-            {{ text }}
-        {{ else }}
-            {{ partial src="sets/{type}" }}
-        {{ /if }}
-    {{ /content }}
+    {{ if content }}
+        {{ content }}
+            {{ if type == "text" }}
+                {{ text }}
+            {{ else }}
+                {{ partial src="sets/{type}" }}
+            {{ /if }}
+        {{ /content }}
+    {{ /if }}
 </div>

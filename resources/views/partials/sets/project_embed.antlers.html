@@ -1,4 +1,6 @@
 {{# Bard-Set: Projektansicht. #}}
-{{ project }}
-    {{ partial:projects/reference }}
-{{ /project }}
+{{ if project:id }}
+    {{ project }}
+        {{ partial:projects/reference }}
+    {{ /project }}
+{{ /if }}

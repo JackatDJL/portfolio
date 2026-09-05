@@ -65,7 +65,9 @@
        schmale Lesespalte mit ruhigem Kontext-Rail, auf breiten Screens sticky. */
     .detail-container { @apply mx-auto w-full max-w-content px-gutter md:px-gutter-lg; }
     .detail-hero { @apply pb-gutter-lg pt-section-sm; }
-    .detail-layout { @apply grid grid-cols-1 gap-y-gutter-lg pt-section-sm; }
+    .detail-hero__grid { @apply grid grid-cols-1; }
+    .detail-hero__cover { @apply mt-gutter-lg; }
+    .detail-layout { @apply grid grid-cols-1 gap-y-gutter-lg pb-section-lg pt-section-sm; }
     .detail-layout__main { @apply min-w-0; }
     .detail-layout__rail { @apply min-w-0; }
 
@@ -83,6 +85,21 @@
     @media (min-width: 64rem) {
         .detail-layout {
             grid-template-columns: minmax(0, var(--container-reading)) minmax(14rem, 20rem);
+        }
+
+        /* Titelbild löst sich am Rand in den Seitenhintergrund auf;
+           der Fade läuft über Transparenz und funktioniert in beiden Themes. */
+        .detail-hero__grid {
+            grid-template-columns: minmax(0, var(--container-reading)) minmax(12rem, 1fr);
+            column-gap: var(--spacing-gutter-lg);
+        }
+        .detail-hero__cover { @apply mt-0; }
+        .detail-hero__cover img {
+            @apply rounded-tr-md border-0 bg-transparent;
+            mask-image:
+                linear-gradient(to right, transparent, black 22%),
+                linear-gradient(to bottom, transparent, black 12%, black 58%, transparent 100%);
+            mask-composite: intersect;
         }
     }
 }

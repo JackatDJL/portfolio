@@ -1,30 +1,34 @@
 {{# Projekt-Intro: Kontextzeile, Titel, Zusammenfassung, Zugänge, Titelbild. #}}
-<div class="flex flex-wrap items-center gap-x-4 gap-y-2">
-    {{ partial:components/eyebrow label="Projekt" }}
-    {{ if project_status }}
-        <span class="chip">{{ project_status:label }}</span>
-    {{ /if }}
-</div>
+<div class="detail-hero__grid">
+    <div>
+        <div class="flex flex-wrap items-center gap-x-4 gap-y-2">
+            {{ partial:components/eyebrow label="Projekt" }}
+            {{ if project_status }}
+                <span class="chip">{{ project_status:label }}</span>
+            {{ /if }}
+        </div>
 
-<h1 class="mt-4 text-4xl md:text-6xl">{{ title }}</h1>
+        <h1 class="mt-4 text-4xl md:text-6xl">{{ title }}</h1>
 
-{{ if summary }}
-    <p class="reading-width mt-6 text-lg text-muted">{{ summary }}</p>
-{{ /if }}
-
-{{ if repository_url || website_url }}
-    <div class="mt-8 flex flex-wrap gap-3">
-        {{ if repository_url }}
-            {{ partial:components/button variant="secondary" :href="repository_url" label="Repository ↗" attributes="target=_blank rel=noreferrer" }}
+        {{ if summary }}
+            <p class="reading-width mt-6 text-lg text-muted">{{ summary }}</p>
         {{ /if }}
-        {{ if website_url }}
-            {{ partial:components/button variant="secondary" :href="website_url" label="Webseite ↗" attributes="target=_blank rel=noreferrer" }}
+
+        {{ if repository_url || website_url }}
+            <div class="mt-8 flex flex-wrap gap-3">
+                {{ if repository_url }}
+                    {{ partial:components/button variant="secondary" :href="repository_url" label="Repository ↗" attributes="target=_blank rel=noreferrer" }}
+                {{ /if }}
+                {{ if website_url }}
+                    {{ partial:components/button variant="secondary" :href="website_url" label="Webseite ↗" attributes="target=_blank rel=noreferrer" }}
+                {{ /if }}
+            </div>
         {{ /if }}
     </div>
-{{ /if }}
 
-{{ if cover }}
-    <figure class="media-figure reading-width mt-gutter-lg">
-        <img src="{{ glide:cover width="960" }}" alt="{{ cover:alt }}" width="{{ cover:width }}" height="{{ cover:height }}" decoding="async">
-    </figure>
-{{ /if }}
+    {{ if cover }}
+        <figure class="media-figure detail-hero__cover">
+            <img src="{{ glide:cover width="960" }}" alt="{{ cover:alt }}" width="{{ cover:width }}" height="{{ cover:height }}" decoding="async">
+        </figure>
+    {{ /if }}
+</div>

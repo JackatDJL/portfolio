@@ -22,8 +22,10 @@
 
             <nav class="menu-panel__footer" aria-label="Weitere Links">
                 {{ nav:footer max_depth="1" include_home="false" }}
-                    {{ unless url == '/' }}
-                        <a href="{{ url }}"{{ if external_url }} target="_blank" rel="noreferrer"{{ /if }}>{{ title }}</a>
+                    {{ unless no_results }}
+                        {{ unless url == '/' }}
+                            <a href="{{ url }}"{{ if external_url }} target="_blank" rel="noreferrer"{{ /if }}>{{ title }}</a>
+                        {{ /unless }}
                     {{ /unless }}
                 {{ /nav:footer }}
                 {{ if site:github_url }}<a href="{{ site:github_url }}" target="_blank" rel="noreferrer">GitHub ↗</a>{{ /if }}

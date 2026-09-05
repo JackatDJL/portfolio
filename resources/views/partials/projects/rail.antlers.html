@@ -14,15 +14,19 @@
             {{ partial:detail/meta-group label="Technologien" }}
                 {{ _featured = featured_technology | pluck("label") | implode("|") | lower }}
                 <div class="flex flex-wrap gap-2">
-                    {{ featured_technology }}
-                        {{ partial:components/chip :label="label" }}
-                    {{ /featured_technology }}
-                    {{ used_technologies }}
-                        {{ _tech = value | lower }}
-                        {{ unless _featured | contains(_tech) }}
-                            {{ partial:components/chip :label="value" classes="chip-technology" }}
-                        {{ /unless }}
-                    {{ /used_technologies }}
+                    {{ if featured_technology }}
+                        {{ featured_technology }}
+                            {{ partial:components/chip :label="label" }}
+                        {{ /featured_technology }}
+                    {{ /if }}
+                    {{ if used_technologies }}
+                        {{ used_technologies }}
+                            {{ _tech = value | lower }}
+                            {{ unless _featured | contains(_tech) }}
+                                {{ partial:components/chip :label="value" classes="chip-technology" }}
+                            {{ /unless }}
+                        {{ /used_technologies }}
+                    {{ /if }}
                 </div>
             {{ /partial:detail/meta-group }}
         {{ /if }}
@@ -40,14 +44,18 @@
         {{ if related_projects || related_experience }}
             {{ partial:detail/meta-group label="Verwandtes" }}
                 <div class="space-y-3">
-                    {{ related_projects }}
-                        {{ partial:projects/reference }}
-                    {{ /related_projects }}
-                    {{ related_experience }}
-                        {{ if url }}
-                            <p><a class="semantic-link text-sm" href="{{ url }}">{{ title }}</a></p>
-                        {{ /if }}
-                    {{ /related_experience }}
+                    {{ if related_projects }}
+                        {{ related_projects }}
+                            {{ partial:projects/reference }}
+                        {{ /related_projects }}
+                    {{ /if }}
+                    {{ if related_experience }}
+                        {{ related_experience }}
+                            {{ if url }}
+                                <p><a class="semantic-link text-sm" href="{{ url }}">{{ title }}</a></p>
+                            {{ /if }}
+                        {{ /related_experience }}
+                    {{ /if }}
                 </div>
             {{ /partial:detail/meta-group }}
         {{ /if }}

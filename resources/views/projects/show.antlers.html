@@ -3,10 +3,12 @@
     {{ partial:detail/layout intro="projects/hero" aside="projects/rail" }}
         {{ partial:bard/prose :content="content" }}
 
-        {{ gallery }}
-            {{ if id != cover:id }}
-                {{ partial:gallery/figure classes="mt-gutter-lg" }}
-            {{ /if }}
-        {{ /gallery }}
+        {{ if gallery }}
+            {{ gallery }}
+                {{ if id != cover:id }}
+                    {{ partial:gallery/figure classes="mt-gutter-lg" }}
+                {{ /if }}
+            {{ /gallery }}
+        {{ /if }}
     {{ /partial:detail/layout }}
 </article>
