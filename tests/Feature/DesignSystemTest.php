@@ -14,6 +14,9 @@ class DesignSystemTest extends TestCase
             ->assertSee('Semantische Farben')
             ->assertSee('name="theme"', false)
             ->assertSee('prose-site', false)
+            ->assertSee('chip-technology', false)
+            ->assertSee('content-width', false)
+            ->assertDontSee('lab-table', false)
             ->assertDontSee('resources/js/site.js');
 
         $this->assertStringContainsString('no-store', $response->headers->get('Cache-Control'));

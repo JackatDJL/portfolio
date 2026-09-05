@@ -1,15 +1,10 @@
 <header class="site-container py-8">
     <div class="flex flex-wrap items-center justify-between gap-6">
-        <a class="wordmark text-2xl" href="#main">Jack Ruder</a>
-        <fieldset class="flex flex-wrap gap-2">
-            <legend class="lab-note mb-2">Farbschema</legend>
-            <label class="theme-option"><input type="radio" name="theme" value="system" checked> System</label>
-            <label class="theme-option"><input type="radio" name="theme" value="light"> Hell</label>
-            <label class="theme-option"><input type="radio" name="theme" value="dark"> Dunkel</label>
-        </fieldset>
+        {{ partial:components/wordmark href="#main" classes="text-2xl" }}
+        {{ partial:theme-switcher name="theme" classes="lab-theme-switcher" legend_classes="lab-note mb-2" }}
     </div>
-    <div class="py-section-sm max-w-reading">
-        <p class="eyebrow mb-4">Interne Referenz · Entwurf</p>
+    <div class="py-section-sm reading-width">
+        {{ partial:components/eyebrow label="Interne Referenz · Entwurf" classes="mb-4" }}
         <h1 class="text-4xl md:text-6xl">Design-System</h1>
         <p class="mt-6 text-lg text-muted">Schrift, Farbe und Verhalten im direkten Vergleich. Alle Inhalte auf dieser Seite sind Testdaten.</p>
     </div>
@@ -22,15 +17,15 @@
         <div class="lab-heading"><h2 id="type-title">Typografie</h2><p class="lab-note">Fira Sans / Geist / Geist Mono</p></div>
         <div class="grid gap-12 lg:grid-cols-2">
             <div class="space-y-6 min-w-0">
-                <p class="eyebrow">Wortmarke · Fira Sans</p>
-                <p class="wordmark text-4xl md:text-7xl">Jack Ruder</p>
+                {{ partial:components/eyebrow label="Wortmarke · Fira Sans" }}
+                {{ partial:components/wordmark classes="text-4xl md:text-7xl" }}
                 <p class="font-display text-4xl font-bold">Jack Ruder <span class="lab-note font-sans">700</span></p>
                 <p class="font-display text-2xl font-medium">Jack Ruder <span class="lab-note font-sans">500</span></p>
                 <p class="font-display text-xl font-normal">Jack Ruder <span class="lab-note font-sans">400</span></p>
                 <p class="lab-note">Wortmarke oben: 800 · 4xl / 7xl</p>
             </div>
             <div class="space-y-6">
-                <p class="eyebrow">Überschriften · Fira Sans 700</p>
+                {{ partial:components/eyebrow label="Überschriften · Fira Sans 700" }}
                 <p class="font-display font-bold text-5xl tracking-tight">H1 · Ein klarer Titel</p>
                 <h2 class="text-3xl">H2 · Ein neuer Abschnitt</h2>
                 <h3 class="text-2xl">H3 · Ein genauerer Blick</h3>
@@ -38,8 +33,8 @@
                 <p class="lab-note">Die H1-Schriftprobe ist hier ein Absatz; die Seite behält eine einzige H1.</p>
             </div>
         </div>
-        <div class="mt-12 max-w-reading space-y-6">
-            <p class="eyebrow">Lesetext · Geist · 46rem</p>
+        <div class="mt-12 reading-width space-y-6">
+            {{ partial:components/eyebrow label="Lesetext · Geist · 46rem" }}
             <p class="text-base">Eine gute Lesespalte fällt erst auf, wenn sie fehlt. Lange Zeilen verlangen den Augen mehr Arbeit ab, während zu kurze Zeilen den Gedanken ständig unterbrechen. Dieser Absatz prüft, wie sich deutsche Wörter wie Benutzeroberflächengestaltung, Veröffentlichungsdatum und Zugänglichkeitsanforderungen in einer ruhigen Textfläche verhalten.</p>
             <p class="text-lg">Beim Lesen wechseln wir zwischen Überblick und Genauigkeit. Überschriften geben Orientierung; der Fließtext braucht genügend Abstand, ohne auseinanderzufallen. Auch Umlaute, Zahlen und Satzzeichen gehören zur Probe: ÄÖÜ äöü ß, 0123456789, „Zitat“, § und €.</p>
             <div class="lab-stack"><span class="text-sm font-semibold">UI-Label · Aktualisiert</span><span class="text-xs text-muted">Kleiner Hinweis · 12px</span></div>
@@ -69,22 +64,22 @@
     <section id="buttons" class="lab-section" aria-labelledby="button-title">
         <div class="lab-heading"><h2 id="button-title">Buttons</h2><p class="lab-note">Hover, gedrückt halten, mit Tab fokussieren</p></div>
         <div class="lab-stack">
-            <button class="btn btn-primary" type="button">Primär</button>
-            <button class="btn btn-secondary" type="button">Sekundär</button>
-            <button class="btn btn-ghost" type="button">Ghost</button>
-            <button class="btn btn-primary" type="button" disabled>Deaktiviert</button>
-            <button class="btn btn-secondary lab-focus" type="button">Fokusring als Muster</button>
+            {{ partial:components/button variant="primary" label="Primär" }}
+            {{ partial:components/button variant="secondary" label="Sekundär" }}
+            {{ partial:components/button variant="ghost" label="Ghost" }}
+            {{ partial:components/button variant="primary" label="Deaktiviert" disabled="true" }}
+            {{ partial:components/button variant="secondary" classes="lab-focus" label="Fokusring als Muster" }}
         </div>
         <p class="lab-note mt-6">Zustandsproben ohne Aktion. Der letzte Button zeigt den Fokusring dauerhaft; alle bedienbaren Elemente erhalten ihn bei Tastaturfokus.</p>
     </section>
     <section id="cards" class="lab-section" aria-labelledby="card-title">
         <div class="lab-heading"><h2 id="card-title">Karten &amp; Chips</h2><p class="lab-note">Ruhige Flächen, Bewegung nur bei Interaktion</p></div>
         <div class="lab-grid">
-            <article class="card p-6 space-y-4"><p class="eyebrow">Statisch</p><h3 class="text-2xl">Eine Notiz</h3><p>Diese Karte bündelt Text. Sie ist weder ein Link noch ein Button.</p></article>
-            <a href="#prose" class="card card-interactive block p-6 space-y-4"><p class="eyebrow">Interaktiv</p><h3 class="text-2xl">Zur Textprobe ↗</h3><p>Die ganze Karte ist ein Link. Mit Tab erreichbar und mit Enter bedienbar.</p></a>
-            <article class="card p-6 space-y-4"><div class="lab-stack"><span class="chip">Prototyp</span><span class="lab-note">Testprojekt</span></div><h3 class="text-2xl"><a href="#project" class="underline">Lesearchiv</a></h3><p>Projektkarte mit Kurzbeschreibung und Technologieliste.</p><div class="lab-stack"><span class="chip bg-surface-strong">Laravel</span><span class="chip bg-surface-strong">Statamic</span></div></article>
+            <article class="card p-6 space-y-4">{{ partial:components/eyebrow label="Statisch" }}<h3 class="text-2xl">Eine Notiz</h3><p>Diese Karte bündelt Text. Sie ist weder ein Link noch ein Button.</p></article>
+            <a href="#prose" class="card card-interactive block p-6 space-y-4">{{ partial:components/eyebrow label="Interaktiv" }}<h3 class="text-2xl">Zur Textprobe ↗</h3><p>Die ganze Karte ist ein Link. Mit Tab erreichbar und mit Enter bedienbar.</p></a>
+            <article class="card p-6 space-y-4"><div class="lab-stack">{{ partial:components/chip label="Prototyp" }}<span class="lab-note">Testprojekt</span></div><h3 class="text-2xl"><a href="#project" class="underline">Lesearchiv</a></h3><p>Projektkarte mit Kurzbeschreibung und Technologieliste.</p><div class="lab-stack">{{ partial:components/chip label="Laravel" classes="chip-technology" }}{{ partial:components/chip label="Statamic" classes="chip-technology" }}</div></article>
         </div>
-        <div class="mt-8 space-y-4"><p class="eyebrow">Status</p><div class="lab-stack"><span class="chip">In Arbeit</span><span class="chip">Abgeschlossen</span><span class="chip bg-surface">Archiviert</span></div><p class="eyebrow">Technologien &amp; Themen</p><div class="lab-stack"><span class="chip bg-surface-strong font-mono">PHP</span><span class="chip bg-surface-strong font-mono">Tailwind CSS</span><span class="chip bg-surface">Barrierefreiheit</span><span class="chip bg-surface">Typografie</span></div></div>
+        <div class="mt-8 space-y-4">{{ partial:components/eyebrow label="Status" }}<div class="lab-stack">{{ partial:components/chip label="In Arbeit" }}{{ partial:components/chip label="Abgeschlossen" }}{{ partial:components/chip label="Archiviert" classes="chip-topic" }}</div>{{ partial:components/eyebrow label="Technologien &amp; Themen" }}<div class="lab-stack">{{ partial:components/chip label="PHP" classes="chip-technology" }}{{ partial:components/chip label="Tailwind CSS" classes="chip-technology" }}{{ partial:components/chip label="Barrierefreiheit" classes="chip-topic" }}{{ partial:components/chip label="Typografie" classes="chip-topic" }}</div></div>
     </section>
     <section id="prose" class="lab-section" aria-labelledby="prose-title">
         <div class="lab-heading"><h2 id="prose-title">Rich Text / Bard</h2><p class="lab-note">Repräsentatives HTML der aktivierten Bard-Formate</p></div>
@@ -102,19 +97,19 @@ const preference = 'system';
 document.documentElement.removeAttribute('data-theme');</code></pre>
             <hr class="divider">
             <figure><div class="lab-figure" role="img" aria-label="Neutraler Bildplatzhalter im Format 16 zu 9">Bildplatzhalter · 16:9</div><figcaption class="lab-note mt-3">Abbildung 1: Platz für eine Bildunterschrift, auch über mehrere Zeilen.</figcaption></figure>
-            <div class="overflow-x-auto" tabindex="0" role="region" aria-label="Vergleichstabelle"><table class="lab-table"><caption class="text-left mb-3 text-sm text-muted">Tabellenformat im vorhandenen Bard-Feld</caption><thead><tr><th scope="col">Probe</th><th scope="col">Schrift</th><th scope="col">Verwendung</th></tr></thead><tbody><tr><th scope="row">Überschrift</th><td>Fira Sans</td><td>Orientierung</td></tr><tr><th scope="row">Absatz</th><td>Geist</td><td>Längere Texte</td></tr><tr><th scope="row">Code</th><td>Geist Mono</td><td>Technische Beispiele</td></tr></tbody></table></div>
+            <div class="overflow-x-auto" tabindex="0" role="region" aria-label="Vergleichstabelle"><table><caption class="text-left mb-3 text-sm text-muted">Tabellenformat im vorhandenen Bard-Feld</caption><thead><tr><th scope="col">Probe</th><th scope="col">Schrift</th><th scope="col">Verwendung</th></tr></thead><tbody><tr><th scope="row">Überschrift</th><td>Fira Sans</td><td>Orientierung</td></tr><tr><th scope="row">Absatz</th><td>Geist</td><td>Längere Texte</td></tr><tr><th scope="row">Code</th><td>Geist Mono</td><td>Technische Beispiele</td></tr></tbody></table></div>
         </article>
     </section>
     <section id="project" class="lab-section" aria-labelledby="project-title">
         <div class="lab-heading"><h2 id="project-title">Projektdaten</h2><p class="lab-note">Fiktive Daten · kein Statamic-Eintrag</p></div>
-        <article class="max-w-content grid gap-8 md:grid-cols-3">
-            <div class="md:col-span-2 space-y-6"><span class="chip">Prototyp</span><h3 class="text-4xl">Lesearchiv</h3><p class="text-lg max-w-reading">Ein fiktives Archiv für technische Notizen. Diese Zusammenfassung prüft den Abstand zwischen Titel, Beschreibung und Metadaten.</p><a class="btn btn-secondary" href="https://example.com/repository">Repository-Beispiellink ↗</a><p class="lab-note">Der Link führt zu example.com.</p></div>
-            <dl class="space-y-6 border-t md:border-t-0 md:border-l border-border pt-6 md:pt-0 md:pl-8"><div><dt class="eyebrow mb-2">Zeitraum</dt><dd><time datetime="2026-01">Januar 2026</time> bis <time datetime="2026-03">März 2026</time></dd></div><div><dt class="eyebrow mb-2">Technologien</dt><dd class="lab-stack"><span class="chip bg-surface-strong">Statamic</span><span class="chip bg-surface-strong">Laravel</span><span class="chip bg-surface-strong">Tailwind CSS</span></dd></div><div><dt class="eyebrow mb-2">Themen</dt><dd class="lab-stack"><span class="chip bg-surface">Wissen</span><span class="chip bg-surface">Suche</span></dd></div></dl>
+        <article class="content-width grid gap-8 md:grid-cols-3">
+            <div class="md:col-span-2 space-y-6">{{ partial:components/chip label="Prototyp" }}<h3 class="text-4xl">Lesearchiv</h3><p class="text-lg reading-width">Ein fiktives Archiv für technische Notizen. Diese Zusammenfassung prüft den Abstand zwischen Titel, Beschreibung und Metadaten.</p><a class="btn btn-secondary" href="https://example.com/repository">Repository-Beispiellink ↗</a><p class="lab-note">Der Link führt zu example.com.</p></div>
+            <dl class="project-meta"><div><dt class="eyebrow mb-2">Zeitraum</dt><dd><time datetime="2026-01">Januar 2026</time> bis <time datetime="2026-03">März 2026</time></dd></div><div><dt class="eyebrow mb-2">Technologien</dt><dd class="lab-stack">{{ partial:components/chip label="Statamic" classes="chip-technology" }}{{ partial:components/chip label="Laravel" classes="chip-technology" }}{{ partial:components/chip label="Tailwind CSS" classes="chip-technology" }}</dd></div><div><dt class="eyebrow mb-2">Themen</dt><dd class="lab-stack">{{ partial:components/chip label="Wissen" classes="chip-topic" }}{{ partial:components/chip label="Suche" classes="chip-topic" }}</dd></div></dl>
         </article>
     </section>
     <section id="layout" class="lab-section" aria-labelledby="layout-title">
         <div class="lab-heading"><h2 id="layout-title">Breiten &amp; Abstände</h2><p class="lab-note">Alle Maße aus dem Theme und der Tailwind-Skala</p></div>
-        <div class="space-y-4"><div class="max-w-wide border border-border-strong bg-surface p-4"><p class="font-mono text-sm">wide · 88rem</p><div class="max-w-content mt-4 border border-border-strong bg-surface-strong p-4"><p class="font-mono text-sm">content · 72rem</p><div class="max-w-reading mt-4 border border-border-strong bg-accent-soft p-4 font-mono text-sm">reading · 46rem</div></div></div></div>
+        <div class="space-y-4"><div class="wide-width border border-border-strong bg-surface p-4"><p class="font-mono text-sm">wide · 88rem</p><div class="content-width mt-4 border border-border-strong bg-surface-strong p-4"><p class="font-mono text-sm">content · 72rem</p><div class="reading-width mt-4 border border-border-strong bg-accent-soft p-4 font-mono text-sm">reading · 46rem</div></div></div></div>
         <h3 class="text-2xl mt-12 mb-6">Abstandsskala</h3>
         <div class="space-y-3">
 <div class="flex items-center gap-4"><code class="w-12 text-sm">1</code><div class="h-4 w-1 bg-accent border border-border-strong"></div><span class="lab-note">0.25rem</span></div>
@@ -133,7 +128,7 @@ document.documentElement.removeAttribute('data-theme');</code></pre>
     <section id="motion" class="lab-section" aria-labelledby="motion-title">
         <div class="lab-heading"><h2 id="motion-title">Bewegung &amp; Bedienung</h2><p class="lab-note">ui-in · 180ms · ease-standard</p></div>
         <div class="lab-stack"><div id="motion-sample" class="card p-6 animate-ui-in">Eine Fläche erscheint.</div><button id="replay-motion" class="btn btn-secondary" type="button">Animation wiederholen</button></div>
-        <p class="lab-note mt-6 max-w-reading">Mit reduzierter Bewegung wird die Animation praktisch sofort abgeschlossen. Buttons und Karten bewegen sich dann nicht. Die Theme-Auswahl lässt sich mit Tab und Pfeiltasten bedienen.</p>
+        <p class="lab-note mt-6 reading-width">Mit reduzierter Bewegung wird die Animation praktisch sofort abgeschlossen. Buttons und Karten bewegen sich dann nicht. Die Theme-Auswahl lässt sich mit Tab und Pfeiltasten bedienen.</p>
     </section>
 </main>
 <footer class="site-container border-t border-border py-8 text-sm text-muted">Interne Stilreferenz · Jack Ruder · Keine veröffentlichten Inhalte</footer>

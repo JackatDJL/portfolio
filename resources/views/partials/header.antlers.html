@@ -1,6 +1,6 @@
 <header class="site-header">
     <div class="site-container site-header__inner">
-        <a class="wordmark site-header__wordmark" href="/">Jack Ruder</a>
+        {{ partial:components/wordmark href="/" classes="site-header__wordmark text-2xl" }}
 
         <nav class="site-header__nav" aria-label="Direktnavigation">
             {{ nav:main max_depth="1" }}

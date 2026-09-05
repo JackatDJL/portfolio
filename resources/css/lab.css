@@ -17,12 +17,10 @@
     .lab-heading { @apply mb-8 flex flex-wrap items-baseline justify-between gap-4; }
     .lab-heading h2 { @apply text-3xl; }
     .lab-note { @apply text-sm text-muted; }
+    .lab-theme-switcher { margin-top: 0; }
     .lab-grid { @apply grid gap-6 md:grid-cols-2 xl:grid-cols-3; }
     .lab-stack { @apply flex flex-wrap items-center gap-4; }
     .lab-swatch { @apply h-20 border-b border-border; }
     .lab-focus { outline: 3px solid var(--site-focus); outline-offset: 3px; }
     .lab-figure { @apply flex aspect-video items-center justify-center border border-border bg-surface-strong p-6 text-center font-mono text-sm text-muted; }
-    .lab-table { @apply w-full text-left text-sm; }
-    .lab-table th, .lab-table td { @apply border-b border-border p-3; }
-    .lab-table th { @apply bg-surface font-semibold; }
 }
