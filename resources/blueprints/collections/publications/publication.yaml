@@ -1,6 +1,7 @@
 title: Veröffentlichungen
 tabs:
   main:
+    display: Main
     sections:
       -
         fields:
@@ -9,28 +10,17 @@ tabs:
             field:
               type: text
               required: true
+              validate:
+                - required
+              display: Titel
           -
-            handle: content
+            handle: abstract
             field:
-              type: markdown
-              display: Content
-              localizable: true
-              escape_markup: true
-          -
-            handle: author
-            field:
-              type: users
-              display: Author
-              default: current
-              localizable: true
-              max_items: 1
-          -
-            handle: template
-            field:
-              type: template
-              display: Template
-              localizable: true
+              type: textarea
+              display: Abstract
+              instructions: Zusammenfassung
   sidebar:
+    display: Sidebar
     sections:
       -
         fields:
@@ -40,3 +30,175 @@ tabs:
               type: slug
               localizable: true
               validate: 'max:200'
+          -
+            handle: date
+            field:
+              type: date
+              required: true
+              default: now
+              validate:
+                - required
+              display: Veröffentlichungsdatum
+          -
+            handle: publication_type
+            field:
+              options:
+                -
+                  key: article
+                  value: Artikel
+                -
+                  key: paper
+                  value: Paper
+                -
+                  key: essay
+                  value: Essay
+                -
+                  key: poster
+                  value: Poster
+                -
+                  key: presentation
+                  value: Präsentation
+                -
+                  key: report
+                  value: Bericht
+                -
+                  key: preprint
+                  value: Preprint
+                -
+                  key: other
+                  value: Sonstiges
+              type: select
+              display: Veröffentlichungsart
+          -
+            handle: peer_reviewed
+            field:
+              type: toggle
+              display: 'Wurde begutachtet?'
+              instructions: '(peer review)'
+  content:
+    display: Inhalt
+    sections:
+      -
+        display: Inhalt
+        fields:
+          -
+            import: page_content
+  bibliography:
+    display: Bibliografie
+    sections:
+      -
+        display: Autoren
+        fields:
+          -
+            handle: authors
+            field:
+              type: grid
+              display: Autoren
+              fields:
+                -
+                  handle: name
+                  field:
+                    type: text
+                    display: Name
+                    width: 50
+                    validate:
+                      - required
+                -
+                  handle: orcid
+                  field:
+                    type: text
+                    display: ORCID
+                    width: 50
+                    validate:
+                      - 'regex:/\d{4}-\d{4}-\d{4}-\d{4}/'
+      -
+        display: Publikation
+        fields:
+          -
+            handle: publisher
+            field:
+              placeholder: Zenodo
+              type: text
+              display: Herausgeber
+          -
+            handle: version
+            field:
+              type: text
+              display: Version
+              width: 50
+          -
+            handle: license
+            field:
+              placeholder: 'CC BY 4.0'
+              type: text
+              display: Lizenz
+              width: 50
+          -
+            handle: doi
+            field:
+              type: text
+              display: 'Digital object identifier'
+              validate:
+                - 'regex:/^10\.\d{4,9}\/[-._;():a-zA-Z0-9]+$/'
+      -
+        display: Links
+        fields:
+          -
+            handle: publication_url
+            field:
+              default_option: url
+              type: link
+              display: Veröffentlichungsseite
+              width: 50
+          -
+            handle: document_url
+            field:
+              default_option: url
+              type: link
+              display: Download-Link
+              width: 50
+  relations_media:
+    display: 'Beziehungen & Medien'
+    sections:
+      -
+        display: Medien
+        fields:
+          -
+            handle: cover
+            field:
+              container: assets
+              folder: publications
+              dynamic: slug
+              restrict: true
+              max_files: 1
+              type: assets
+              display: Titelbild
+      -
+        display: Beziehungen
+        fields:
+          -
+            handle: topics
+            field:
+              taxonomies:
+                - topics
+              type: terms
+              display: Themen
+          -
+            handle: related_projects
+            field:
+              collections:
+                - projects
+              type: entries
+              display: 'relevante Projecte'
+          -
+            handle: related_posts
+            field:
+              collections:
+                - posts
+              type: entries
+              display: 'relevante Blogposts'
+      -
+        display: SEO
+        fields:
+          -
+            import: seo

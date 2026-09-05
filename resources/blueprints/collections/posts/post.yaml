@@ -1,36 +1,26 @@
 title: Blog
 tabs:
   main:
+    display: Basis
     sections:
       -
+        display: 'Über den Post'
         fields:
           -
             handle: title
             field:
               type: text
               required: true
+              validate:
+                - required
+              display: Titel
           -
-            handle: content
+            handle: summary
             field:
-              type: markdown
-              display: Content
-              localizable: true
-              escape_markup: true
-          -
-            handle: author
-            field:
-              type: users
-              display: Author
-              default: current
-              localizable: true
-              max_items: 1
-          -
-            handle: template
-            field:
-              type: template
-              display: Template
-              localizable: true
+              type: textarea
+              display: Zusammenfassung
   sidebar:
+    display: Sidebar
     sections:
       -
         fields:
@@ -40,3 +30,70 @@ tabs:
               type: slug
               localizable: true
               validate: 'max:200'
+          -
+            handle: featured
+            field:
+              type: toggle
+              display: Hervorgehoben
+          -
+            handle: date
+            field:
+              type: date
+              required: true
+              default: now
+              validate:
+                - required
+              display: Veröffentlichungsdatum
+  content:
+    display: Inhalt
+    sections:
+      -
+        display: 'New Section'
+        fields:
+          -
+            import: page_content
+  relations_media:
+    display: 'Beziehungen & Medien'
+    sections:
+      -
+        display: Medien
+        fields:
+          -
+            handle: cover
+            field:
+              container: assets
+              folder: posts
+              dynamic: slug
+              restrict: true
+              type: assets
+              display: Titelbild
+              max_files: 1
+      -
+        display: Beziehungen
+        fields:
+          -
+            handle: topics
+            field:
+              taxonomies:
+                - topics
+              type: terms
+              display: Themen
+          -
+            handle: related_projects
+            field:
+              collections:
+                - projects
+              type: entries
+              display: 'relevante Projekte'
+          -
+            handle: related_publications
+            field:
+              collections:
+                - publications
+              type: entries
+              display: 'relevante Veröffentlichungen'
+      -
+        display: SEO
+        fields:
+          -
+            import: seo
