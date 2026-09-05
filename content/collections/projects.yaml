@@ -3,7 +3,7 @@ icon: social-dropbox-logo
 template: default
 layout: layout
 revisions: false
-route: /projekte/
+route: '/projekte/{slug}'
 sort_dir: asc
 default_status: draft
 date_behavior:

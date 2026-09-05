@@ -49,7 +49,7 @@ tabs:
                   key: archived
                   value: Archiviert
                 -
-                  key: experiement
+                  key: experiment
                   value: Experiment
                 -
                   key: confidential
@@ -67,7 +67,7 @@ tabs:
         display: Zeitrahmen
         fields:
           -
-            handle: startet_at
+            handle: started_at
             field:
               type: date
               display: 'Gestartet am'

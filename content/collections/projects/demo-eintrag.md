@@ -3,10 +3,10 @@ id: 45556cd7-cdfb-41e7-a55c-50a083db2d1d
 published: false
 blueprint: project
 title: 'Demo Eintrag'
-summary: 'Zusammenfassung abc test'
+summary: 'Zusammenfassung abc test test'
 project_status: paused
 featured: false
-startet_at: '2026-09-04 22:00'
+started_at: '2026-09-04 22:00'
 website_url: 'https://example.com'
 featured_technology:
   - laravel
@@ -19,7 +19,7 @@ cover: projects/demo-eintrag/hintergrund.jpg
 seo_title: Cool
 noindex: true
 updated_by: 7098a585-4701-4963-95aa-52c0d85d3e7d
-updated_at: 1788607706
+updated_at: 1788609301
 content:
   -
     type: heading

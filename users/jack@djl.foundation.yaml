@@ -10,6 +10,8 @@ preferences:
     projects:
       view: list
       after_save: listing
+    posts:
+      view: list
   locale: en
   formatting_locale: de
   theme: null

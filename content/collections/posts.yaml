@@ -3,7 +3,7 @@ icon: media-news-paper
 template: default
 layout: layout
 revisions: false
-route: /blog/
+route: '/blog/{slug}'
 date: true
 sort_dir: asc
 default_status: draft

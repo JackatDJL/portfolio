@@ -5,7 +5,7 @@ title: ai-ctx
 summary: 'ai-ctx ist ein kleines TypeScript-CLI, das eine lokale Codebase in brauchbaren Kontext für KI-Modelle im Browser übersetzt. Es entstand zu einer Zeit, als ich lokal entwickeln wollte, aber noch keinen guten agentischen Coding-Workflow zur Verfügung hatte.'
 project_status: archived
 featured: false
-startet_at: '2025-04-18 14:16'
+started_at: '2025-04-18 14:16'
 ended_at: '2025-06-12 16:34'
 featured_technology:
   - TypeScript
@@ -25,6 +25,15 @@ repository_url: 'https://github.com/JackatDJL/ai-ctx'
 seo_title: 'ai-ctx: Codebase-Kontext für Browser-KI'
 seo_description: 'ai-ctx ist ein TypeScript-CLI, das lokale Projekte zu einem kompakten Kontext für KI-Modelle im Browser zusammenstellt.'
 noindex: false
+gallery:
+  - projects/ai-ctx/effect-ai-ctx.png
+updated_by: 7098a585-4701-4963-95aa-52c0d85d3e7d
+updated_at: 1788611140
+topics:
+  - oss
+  - devtools
+  - ai
+  - cli
 content:
   -
     type: heading
