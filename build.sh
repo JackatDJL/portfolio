@@ -14,8 +14,9 @@ dnf install -y \
     php8.3-fpm \
     php8.3-intl \
     php8.3-zip \
-    wget \
-    bun
+    wget
+
+curl -fsSL https://bun.sh/install | bash
 
 # Composer
 EXPECTED_CHECKSUM="$(wget -q -O - https://composer.github.io/installer.sig)"
