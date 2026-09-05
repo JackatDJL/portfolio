@@ -1,0 +1,19 @@
+<header class="site-header">
+    <div class="site-container site-header__inner">
+        <a class="wordmark site-header__wordmark" href="/">Jack Ruder</a>
+
+        <nav class="site-header__nav" aria-label="Hauptnavigation">
+            {{ nav:main max_depth="1" limit="2" }}
+                <a href="{{ url }}"{{ if is_current }} aria-current="page"{{ /if }}>{{ title }}</a>
+            {{ /nav:main }}
+        </nav>
+
+        {{ partial:theme-switcher }}
+
+        <button class="btn btn-secondary" type="button" data-menu-trigger aria-expanded="false" aria-controls="site-menu">
+            Menü
+        </button>
+    </div>
+</header>
+
+{{ partial:offcanvas-menu }}

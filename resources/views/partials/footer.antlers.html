@@ -1,0 +1,14 @@
+<footer class="site-footer">
+    <div class="site-container site-footer__inner">
+        <div>
+            <p class="wordmark text-xl">Jack Ruder</p>
+            <p class="mt-2 text-sm text-muted">&copy; {{ current_date | format('Y') }}</p>
+        </div>
+
+        <nav class="site-footer__nav" aria-label="Footer-Navigation">
+            {{ nav:footer max_depth="1" }}
+                <a href="{{ url }}"{{ if external_url }} target="_blank" rel="noreferrer"{{ /if }}>{{ title }}</a>
+            {{ /nav:footer }}
+        </nav>
+    </div>
+</footer>

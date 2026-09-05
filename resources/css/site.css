@@ -1,3 +1,40 @@
-@import "tailwindcss";
+@import "./jack-site-theme.css";
+@import "@fontsource/fira-sans/latin-400.css";
+@import "@fontsource/fira-sans/latin-500.css";
+@import "@fontsource/fira-sans/latin-700.css";
+@import "@fontsource/fira-sans/latin-800.css";
+@import "@fontsource-variable/geist/index.css";
+@import "@fontsource-variable/geist/wght-italic.css";
+@import "@fontsource-variable/geist-mono/index.css";
 @source "../views";
 @source "../../content";
+
+@layer components {
+    .skip-link { @apply sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50; }
+    .site-shell { @apply flex min-h-dvh flex-col bg-background text-foreground; }
+    .site-main { @apply grow; }
+    .site-header { @apply border-b border-border bg-background; }
+    .site-header__inner { @apply flex min-h-20 items-center justify-between gap-4 py-4; }
+    .site-header__wordmark { @apply shrink-0 text-2xl no-underline; }
+    .site-header__nav { @apply ml-auto hidden items-center gap-6 text-sm font-semibold md:flex; }
+    .site-header__nav a { @apply decoration-accent decoration-2 underline-offset-4 hover:underline; }
+    .theme-switcher { @apply hidden items-center border border-border bg-surface text-sm sm:flex; }
+    .theme-switcher label { @apply cursor-pointer px-2.5 py-2 font-semibold text-muted transition-colors hover:bg-surface-strong hover:text-foreground; }
+    .theme-switcher label:has(:checked) { @apply bg-accent text-accent-contrast; }
+    .theme-switcher input { @apply sr-only; }
+    .menu-panel .theme-switcher { @apply flex w-fit; }
+    .menu-dialog { @apply fixed inset-0 m-0 h-dvh w-dvw max-h-none max-w-none border-0 bg-transparent p-0 text-foreground; }
+    .menu-dialog::backdrop { background: color-mix(in srgb, var(--site-text) 42%, transparent); }
+    .menu-dialog[open] { @apply flex justify-end; }
+    body:has(.menu-dialog[open]) { @apply overflow-hidden; }
+    .menu-panel { @apply flex h-full w-full max-w-none flex-col overflow-y-auto border-l-2 border-border-strong bg-background p-6 shadow-neo-lg sm:w-4/5 sm:p-8 lg:w-1/2; }
+    .menu-panel__top { @apply flex items-center justify-between gap-4 border-b border-border pb-6; }
+    .menu-panel__nav { @apply mt-10; }
+    .menu-panel__nav a { @apply block border-b border-border py-4 font-display text-3xl font-bold tracking-tight no-underline transition-colors hover:bg-accent-soft; }
+    .menu-panel__footer { @apply mt-auto border-t border-border pt-6; }
+    .menu-panel__footer a { @apply text-sm font-semibold underline decoration-accent decoration-2 underline-offset-4; }
+    .site-footer { @apply border-t border-border bg-surface; }
+    .site-footer__inner { @apply grid gap-8 py-8 md:grid-cols-[1fr_auto] md:items-end; }
+    .site-footer__nav { @apply flex flex-wrap gap-x-5 gap-y-3 text-sm font-semibold; }
+    .site-footer__nav a { @apply underline decoration-accent decoration-2 underline-offset-4; }
+}

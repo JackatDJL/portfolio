@@ -1,0 +1,24 @@
+<dialog id="site-menu" class="menu-dialog" aria-labelledby="site-menu-title">
+    <div class="menu-panel">
+        <div class="menu-panel__top">
+            <p id="site-menu-title" class="eyebrow">Navigation</p>
+            <button class="btn btn-ghost" type="button" data-menu-close aria-label="Menü schließen">Schließen</button>
+        </div>
+
+        <nav class="menu-panel__nav" aria-label="Gesamte Navigation">
+            {{ nav:main max_depth="1" }}
+                <a href="{{ url }}"{{ if is_current }} aria-current="page"{{ /if }}>{{ title }}</a>
+            {{ /nav:main }}
+        </nav>
+
+        <div class="mt-8 sm:hidden">
+            {{ partial:theme-switcher name="menu-theme" }}
+        </div>
+
+        <div class="menu-panel__footer">
+            {{ nav:footer max_depth="1" }}
+                <a href="{{ url }}"{{ if external_url }} target="_blank" rel="noreferrer"{{ /if }}>{{ title }}</a>
+            {{ /nav:footer }}
+        </div>
+    </div>
+</dialog>
