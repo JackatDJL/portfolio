@@ -7,6 +7,7 @@ dnf clean metadata
 dnf install -y php8.4 php8.4-{common,mbstring,gd,bcmath,xml,fpm,intl,zip} wget
 
 curl -fsSL https://bun.sh/install | bash
+bun upgrade
 
 # Composer
 EXPECTED_CHECKSUM="$(wget -q -O - https://composer.github.io/installer.sig)"
