@@ -283,6 +283,10 @@
    ------------------------------------------------------------------------- */
 
 @layer components {
+    .skip-link {
+        @apply sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50;
+    }
+
     .site-container {
         width: min(100% - 2rem, 88rem);
         margin-inline: auto;
@@ -298,6 +302,14 @@
         width: min(100%, 46rem);
     }
 
+    .content-width {
+        width: min(100%, 72rem);
+    }
+
+    .wide-width {
+        width: min(100%, 88rem);
+    }
+
     .wordmark {
         font-family: var(--font-display);
         font-weight: 800;
@@ -311,6 +323,16 @@
         letter-spacing: 0.08em;
         text-transform: uppercase;
         color: var(--site-text-muted);
+    }
+
+    .semantic-link {
+        text-decoration-color: var(--site-accent);
+        text-decoration-thickness: 0.14em;
+        text-underline-offset: 0.18em;
+    }
+
+    .semantic-link:hover {
+        background: var(--site-accent-soft);
     }
 
     /*
@@ -422,6 +444,16 @@
         border-color: var(--site-border-strong);
     }
 
+    .project-meta {
+        @apply space-y-6 border-t border-border pt-6;
+    }
+
+    @media (min-width: 48rem) {
+        .project-meta {
+            @apply border-t-0 border-l border-border pt-0 pl-8;
+        }
+    }
+
     .chip {
         display: inline-flex;
         align-items: center;
@@ -433,6 +465,15 @@
         font-size: 0.75rem;
         font-weight: 600;
         line-height: 1.25rem;
+    }
+
+    .chip-technology {
+        background: var(--site-surface-strong);
+        font-family: var(--font-mono);
+    }
+
+    .chip-topic {
+        background: var(--site-surface);
     }
 
     .divider {
@@ -468,6 +509,7 @@
         line-height: 1.2;
     }
 
+    .semantic-link,
     .prose-site a {
         color: inherit;
         text-decoration-line: underline;
@@ -475,6 +517,7 @@
         text-decoration-thickness: 0.14em;
     }
 
+    .semantic-link:hover,
     .prose-site a:hover {
         background: var(--site-accent-soft);
     }
@@ -553,6 +596,38 @@
         background: var(--site-code-background);
         color: var(--site-code-text);
         padding: 1.1rem 1.25rem;
+    }
+
+    .prose-site hr {
+        border: 0;
+        border-top: 1px solid var(--site-border);
+    }
+
+    .prose-site figure {
+        margin-inline: 0;
+    }
+
+    .prose-site figcaption {
+        color: var(--site-text-muted);
+        font-size: 0.875rem;
+        line-height: 1.35rem;
+    }
+
+    .prose-site table {
+        width: 100%;
+        text-align: left;
+        font-size: 0.875rem;
+    }
+
+    .prose-site th,
+    .prose-site td {
+        border-bottom: 1px solid var(--site-border);
+        padding: 0.75rem;
+    }
+
+    .prose-site th {
+        background: var(--site-surface);
+        font-weight: 600;
     }
 }
 

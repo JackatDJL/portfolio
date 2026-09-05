@@ -10,7 +10,6 @@
 @source "../../content";
 
 @layer components {
-    .skip-link { @apply sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50; }
     .site-shell { @apply flex min-h-dvh flex-col bg-background text-foreground; }
     .site-main { @apply grow; }
     .site-header { @apply relative z-10 border-b border-border bg-background; }

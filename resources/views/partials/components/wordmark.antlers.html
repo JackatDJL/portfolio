@@ -1,0 +1,5 @@
+{{ if href }}
+    <a class="wordmark {{ classes ?? '' }}" href="{{ href }}">{{ label ?? 'Jack Ruder' }}</a>
+{{ else }}
+    <p class="wordmark {{ classes ?? '' }}">{{ label ?? 'Jack Ruder' }}</p>
+{{ /if }}

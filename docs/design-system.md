@@ -6,13 +6,13 @@ The route returns 404 outside `local` and `testing`, even if enabled. Set `DESIG
 
 ## Isolation and source of truth
 
-`resources/css/jack-site-theme.css` is the supplied theme, with small accessibility corrections. `resources/css/lab.css` imports it and the locally bundled Fontsource fonts. The lab has separate Antlers layout/template and Vite entries. Public templates, site CSS/JS, content entries, blueprints and navigation are unchanged. The lab renders static HTML representative of the existing Bard formats, including tables; it does not render or mutate a real Bard field.
+`resources/css/jack-site-theme.css` is the supplied theme, with small accessibility corrections. It is also the shared home for the approved visual primitives: controls, surfaces, chips, semantic links, layout widths, project metadata, focus treatment and Bard/prose output. Small semantic markup primitives live in `resources/views/partials/components/`; the lab and public shell consume those same partials. `resources/css/lab.css` imports the theme and the locally bundled Fontsource fonts. The lab has a separate Antlers layout/template and Vite entry. It renders static HTML representative of the existing Bard formats, including tables; it does not render or mutate a real Bard field.
 
 Fira Sans bundles normal weights 400, 500, 700 and 800. Geist bundles variable normal and italic; Geist Mono bundles variable normal. Vite emits the fonts under `public/build/assets`; no third-party font requests are needed. Font licenses are included in the installed Fontsource packages.
 
 ## Theme behavior
 
-Native radio inputs provide System / Hell / Dunkel. Explicit choices set `data-theme` on the root and persist under `jack-design-system-theme`. System removes both the attribute and storage key, letting the theme's media query follow OS changes live. A small head script restores the preference before styles paint. Invalid values are ignored; blocked storage does not prevent switching. This preference is deliberately lab-specific.
+Native radio inputs provide System / Hell / Dunkel. Explicit choices set `data-theme` on the root and persist under `jack-theme`. System removes both the attribute and storage key, letting the theme's media query follow OS changes live. A small head script restores the preference before styles paint. Invalid values are ignored; blocked storage does not prevent switching. The preference is shared by the lab and public shell.
 
 ## Theme corrections and remaining observations
 
