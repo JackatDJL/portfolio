@@ -1,0 +1,10 @@
+{{# Kompakter Veröffentlichungsverweis im Blog-Kontext. #}}
+<a class="block border-t border-border py-3" href="{{ url }}">
+    <span class="font-display text-base font-bold tracking-tight semantic-link">{{ title }}</span>
+    {{ if date || publication_type }}
+        <span class="mt-1 block text-sm text-muted">
+            {{ if date }}{{ date | format('Y') }}{{ /if }}{{ if date && publication_type }} · {{ /if }}{{ if publication_type }}{{ publication_type:label ?? publication_type }}{{ /if }}
+        </span>
+    {{ /if }}
+    <span class="mt-2 block text-sm font-semibold" aria-hidden="true">→</span>
+</a>

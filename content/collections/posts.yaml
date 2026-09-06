@@ -1,6 +1,6 @@
 title: Blog
 icon: media-news-paper
-template: default
+template: posts/show
 layout: layout
 revisions: false
 route: '/blog/{slug}'

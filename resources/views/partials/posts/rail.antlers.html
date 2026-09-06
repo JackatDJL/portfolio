@@ -1,0 +1,38 @@
+{{# Blog-Kontext: nur Daten, Themen und echte Beziehungen. #}}
+<dl class="project-meta">
+    {{ if date }}
+        {{ partial:detail/meta-group label="Veröffentlicht" }}
+            <time datetime="{{ date | format('Y-m-d') }}">{{ date | format_translated('j. F Y') }}</time>
+        {{ /partial:detail/meta-group }}
+    {{ /if }}
+
+    {{ if topics }}
+        {{ partial:detail/meta-group label="Themen" }}
+            <div class="flex flex-wrap gap-2">
+                {{ topics }}
+                    {{ partial:components/chip :label="title" classes="chip-topic" }}
+                {{ /topics }}
+            </div>
+        {{ /partial:detail/meta-group }}
+    {{ /if }}
+
+    {{ if related_projects }}
+        {{ partial:detail/meta-group label="Verwandte Projekte" }}
+            <div>
+                {{ related_projects }}
+                    {{ partial:posts/project-reference }}
+                {{ /related_projects }}
+            </div>
+        {{ /partial:detail/meta-group }}
+    {{ /if }}
+
+    {{ if related_publications }}
+        {{ partial:detail/meta-group label="Veröffentlichungen" }}
+            <div>
+                {{ related_publications }}
+                    {{ partial:posts/publication-reference }}
+                {{ /related_publications }}
+            </div>
+        {{ /partial:detail/meta-group }}
+    {{ /if }}
+</dl>
