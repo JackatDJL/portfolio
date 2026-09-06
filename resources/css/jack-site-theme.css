@@ -832,9 +832,10 @@
         .article-toc--mobile { display: none; }
 
         /* Main-column children may deliberately occupy the quiet context area.
-           The opaque background prevents rail text showing through below a
-           wide diagram or screenshot. */
+           Their backdrop fades in before the breakout reaches the rail and
+           fades out after it passes, so the rail is never cut off abruptly. */
         .detail-layout__main > .prose-site > .article-breakout--wide {
+            --article-rail-fade: 6rem;
             position: relative;
             z-index: 1;
             width: min(70rem, calc(100vw - 4rem));
@@ -842,6 +843,7 @@
         }
 
         .detail-layout__main > .prose-site > .article-breakout--full {
+            --article-rail-fade: 6rem;
             position: relative;
             z-index: 1;
             width: min(var(--container-wide), calc(100vw - 4rem));
@@ -849,21 +851,35 @@
             background: transparent;
         }
 
-        .detail-layout__main > .prose-site > .article-breakout--wide::after,
-        .detail-layout__main > .prose-site > .article-breakout--full::after {
+        .detail-layout__main > .prose-site > .article-breakout--wide::before,
+        .detail-layout__main > .prose-site > .article-breakout--full::before {
             position: absolute;
-            z-index: -1;
-            inset: -1rem -2rem;
+            z-index: 0;
+            inset: calc(-1 * var(--article-rail-fade)) -2rem;
+            left: calc(var(--container-reading) - 2rem);
+            background: var(--site-background);
+            -webkit-mask-image: linear-gradient(
+                to bottom,
+                transparent 0,
+                #000 var(--article-rail-fade),
+                #000 calc(100% - var(--article-rail-fade)),
+                transparent 100%
+            );
+            mask-image: linear-gradient(
+                to bottom,
+                transparent 0,
+                #000 var(--article-rail-fade),
+                #000 calc(100% - var(--article-rail-fade)),
+                transparent 100%
+            );
             pointer-events: none;
             content: "";
         }
 
-        .detail-layout__main > .prose-site > .article-breakout--wide::after {
-            background: linear-gradient(to right, var(--site-background) 0%, var(--site-background) 76%, transparent 100%);
-        }
-
-        .detail-layout__main > .prose-site > .article-breakout--full::after {
-            background: var(--site-background);
+        .detail-layout__main > .prose-site > .article-breakout--wide > *,
+        .detail-layout__main > .prose-site > .article-breakout--full > * {
+            position: relative;
+            z-index: 1;
         }
 
         .media-gallery__item { flex-basis: min(76%, 46rem); }
