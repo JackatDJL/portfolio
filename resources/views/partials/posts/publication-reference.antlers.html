@@ -1,10 +1,14 @@
 {{# Kompakter Veröffentlichungsverweis im Blog-Kontext. #}}
-<a class="block border-t border-border py-3" href="{{ url }}">
+<a class="related-reference" href="{{ url }}" data-related-reference>
     <span class="font-display text-base font-bold tracking-tight semantic-link">{{ title }}</span>
     {{ if date || publication_type }}
-        <span class="mt-1 block text-sm text-muted">
+        <span class="related-reference__footer mt-1 text-sm text-muted">
             {{ if date }}{{ date | format('Y') }}{{ /if }}{{ if date && publication_type }} · {{ /if }}{{ if publication_type }}{{ publication_type:label ?? publication_type }}{{ /if }}
+            <span class="related-reference__arrow-mask" aria-hidden="true"><span class="related-reference__arrow">↗</span></span>
+        </span>
+    {{ else }}
+        <span class="related-reference__footer">
+            <span class="related-reference__arrow-mask" aria-hidden="true"><span class="related-reference__arrow">↗</span></span>
         </span>
     {{ /if }}
-    <span class="mt-2 block text-sm font-semibold" aria-hidden="true">→</span>
 </a>

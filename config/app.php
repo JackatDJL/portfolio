@@ -1,5 +1,15 @@
 <?php
 
+$appUrl = env('APP_URL', 'http://localhost');
+$vercelUrl = env('VERCEL_URL');
+$environment = env('VERCEL_ENV', env('APP_ENV', 'production'));
+
+$applicationUrl = $environment === 'production'
+    ? $appUrl
+    : ($vercelUrl
+        ? (str_starts_with($vercelUrl, 'http') ? $vercelUrl : "https://{$vercelUrl}")
+        : $appUrl);
+
 return [
 
     /*
@@ -52,7 +62,7 @@ return [
     |
     */
 
-    'url' => env('APP_URL', 'http://localhost'),
+    'url' => $applicationUrl,
 
     /*
     |--------------------------------------------------------------------------

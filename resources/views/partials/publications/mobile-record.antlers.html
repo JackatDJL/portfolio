@@ -1,0 +1,30 @@
+{{# Auf kleinen Screens stehen die wichtigsten Identifikatoren vor dem Langtext.
+    Die vollständige Bibliografie bleibt der Desktop-Rail vorbehalten. #}}
+{{ if authors || doi }}
+    <section class="publication-mobile-record" aria-label="Wichtige bibliografische Angaben">
+        {{ if authors }}
+            <div>
+                <h2 class="eyebrow">Autoren</h2>
+                <ul class="publication-authors" role="list">
+                    {{ authors }}
+                        <li>
+                            <span class="publication-author__name">{{ name }}</span>
+                            {{ if orcid }}
+                                <a class="publication-identifier semantic-link" href="https://orcid.org/{{ orcid }}" target="_blank" rel="noreferrer">ORCID {{ orcid }} ↗</a>
+                            {{ /if }}
+                        </li>
+                    {{ /authors }}
+                </ul>
+            </div>
+        {{ /if }}
+        {{ if doi }}
+            <div>
+                <h2 class="eyebrow">DOI</h2>
+                <div class="publication-identifier-row">
+                    <a id="publication-doi-mobile-{{ id }}" class="publication-identifier semantic-link" href="https://doi.org/{{ doi }}" target="_blank" rel="noreferrer">{{ doi }}</a>
+                    <button class="publication-copy" type="button" data-copy-target="publication-doi-mobile-{{ id }}" aria-label="DOI kopieren">Kopieren</button>
+                </div>
+            </div>
+        {{ /if }}
+    </section>
+{{ /if }}

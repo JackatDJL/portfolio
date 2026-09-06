@@ -1,6 +1,6 @@
 title: Veröffentlichungen
 icon: media-news-paper
-template: default
+template: publications/show
 layout: layout
 revisions: false
 route: '/publikationen/{slug}'

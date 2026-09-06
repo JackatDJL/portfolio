@@ -1,0 +1,37 @@
+{{# Reusable citation chooser. It keeps all source values in the static HTML;
+    JavaScript only selects and formats the user's preferred style. #}}
+{{ if authors && date && title }}
+    <dialog id="citation-dialog-{{ id }}" class="citation-dialog" data-citation-dialog data-citation-title="{{ title }}" data-citation-year="{{ date | format('Y') }}" data-citation-publisher="{{ publisher }}" data-citation-doi="{{ doi }}" aria-labelledby="citation-dialog-title-{{ id }}">
+        <div class="citation-dialog__panel">
+            <header class="citation-dialog__header">
+                <div>
+                    <p class="eyebrow">Zitieren</p>
+                    <h2 id="citation-dialog-title-{{ id }}">{{ publication_type:label ?? publication_type }} zitieren</h2>
+                </div>
+                <button class="btn btn-ghost citation-dialog__close" type="button" data-citation-close aria-label="Zitationsdialog schließen">×</button>
+            </header>
+
+            <div class="citation-dialog__authors" hidden>{{ authors }}<span data-citation-author>{{ name }}</span>{{ /authors }}</div>
+            <div class="citation-dialog__style">
+                <span id="citation-style-label-{{ id }}">Stil</span>
+                <div class="citation-select" data-citation-select>
+                    <button id="citation-style-{{ id }}" class="citation-select__trigger" type="button" data-citation-style aria-labelledby="citation-style-label-{{ id }} citation-style-value-{{ id }}" aria-haspopup="listbox" aria-expanded="false" aria-controls="citation-style-options-{{ id }}">
+                        <span id="citation-style-value-{{ id }}" data-citation-style-value>APA</span>
+                        <span class="citation-select__chevron" aria-hidden="true">⌄</span>
+                    </button>
+                    <div id="citation-style-options-{{ id }}" class="citation-select__content" data-citation-options role="listbox" aria-labelledby="citation-style-label-{{ id }}" hidden>
+                        <button type="button" role="option" data-citation-option="apa" aria-selected="true">APA</button>
+                        <button type="button" role="option" data-citation-option="harvard" aria-selected="false">Harvard</button>
+                        <button type="button" role="option" data-citation-option="mla" aria-selected="false">MLA</button>
+                        <button type="button" role="option" data-citation-option="vancouver" aria-selected="false">Vancouver</button>
+                        <button type="button" role="option" data-citation-option="chicago" aria-selected="false">Chicago</button>
+                        <button type="button" role="option" data-citation-option="ieee" aria-selected="false">IEEE</button>
+                    </div>
+                </div>
+            </div>
+
+            <p class="citation-dialog__output" data-citation-output tabindex="0"></p>
+            <button class="btn btn-primary" type="button" data-citation-copy>Zitation kopieren</button>
+        </div>
+    </dialog>
+{{ /if }}
