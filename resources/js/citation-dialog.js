@@ -2,36 +2,66 @@ import { gsap } from 'gsap';
 
 const preferenceKey = 'jack-publication-citation-style';
 
-const partsForName = (name) => {
+export const partsForName = (name) => {
     const words = name.trim().split(/\s+/).filter(Boolean);
     return { family: words.pop() || '', given: words.join(' ') };
 };
 
-const initials = (given) => given.split(/\s+/).filter(Boolean).map((part) => `${part[0]}.`).join(' ');
+export const initials = (given) => given.split(/\s+/).filter(Boolean).map((part) => `${part[0]}.`).join(' ');
 
 const formatAuthors = (authors, style) => {
     const names = authors.map(partsForName);
-    if (style === 'mla') return names.map(({ family, given }, index) => index === 0 ? `${family}, ${given}` : `${given} ${family}`).join(', ');
-    if (style === 'vancouver') return names.map(({ family, given }) => `${family} ${initials(given).replaceAll(' ', '')}`).join(', ');
-    if (style === 'ieee') return names.map(({ family, given }) => `${initials(given)} ${family}`).join(', ');
-    if (style === 'chicago') return names.map(({ family, given }, index) => index === 0 ? `${family}, ${given}` : `${given} ${family}`).join(', ');
+    if (style === 'mla') {
+        const first = names[0];
+        return `${first.family}, ${initials(first.given)}${names.length > 1 ? ', et al.' : ''}`;
+    }
+    if (style === 'vancouver') return names.map(({ family, given }) => `${family} ${initials(given).replaceAll(' ', '').replaceAll('.', '')}`).join(', ');
+    if (style === 'ieee') {
+        const formatted = names.map(({ family, given }) => `${initials(given)} ${family}`);
+        return formatted.length > 1 ? `${formatted.slice(0, -1).join(', ')}, and ${formatted.at(-1)}` : formatted[0];
+    }
+    if (style === 'harvard') {
+        const formatted = names.map(({ family, given }) => `${family}, ${initials(given)}`);
+        return formatted.length > 1 ? `${formatted.slice(0, -1).join(', ')} and ${formatted.at(-1)}` : formatted[0];
+    }
+    if (style === 'chicago') {
+        const formatted = names.map(({ family, given }, index) => index === 0 ? `${family}, ${initials(given)}` : `${initials(given)} ${family}`);
+        return formatted.length > 1 ? `${formatted.slice(0, -1).join(', ')}, and ${formatted.at(-1)}` : formatted[0];
+    }
     const formatted = names.map(({ family, given }) => `${family}, ${initials(given)}`);
     return formatted.length > 1 ? `${formatted.slice(0, -1).join(', ')}, & ${formatted.at(-1)}` : formatted[0];
 };
 
-const buildCitation = ({ authors, title, year, publisher, doi }, style) => {
+const formatDate = (date, style) => {
+    if (!date) return '';
+    const parsed = new Date(`${date}T00:00:00`);
+    if (Number.isNaN(parsed.getTime())) return '';
+    const monthName = parsed.toLocaleDateString('en-GB', { month: 'long' });
+    const month = style === 'mla' && !['May', 'June', 'July'].includes(monthName)
+        ? `${monthName.slice(0, 3)}.` : monthName;
+    const day = parsed.getDate();
+    if (style === 'mla') return `${day} ${month} ${parsed.getFullYear()}`;
+    if (style === 'ieee') return `${monthName.slice(0, 3)}. ${day}, ${parsed.getFullYear()}`;
+    return `${day} ${month} ${parsed.getFullYear()}`;
+};
+
+export const buildCitation = ({ authors, title, year, date, publisher, doi, type, version }, style) => {
     const authorText = formatAuthors(authors, style);
     const doiUrl = doi ? `https://doi.org/${doi}` : '';
-    const source = publisher || 'Ohne Verlag';
+    const source = publisher || '';
+    const versionText = version ? `Version ${version}` : '';
+    const graphicText = type === 'poster' ? ' [Graphic]' : '';
     switch (style) {
-    case 'harvard': return `${authorText} (${year}) ${title}. ${source}.${doiUrl ? ` ${doiUrl}` : ''}`;
-    case 'mla': return `${authorText}. "${title}." ${source}, ${year}.${doiUrl ? ` ${doiUrl}` : ''}`;
-    case 'vancouver': return `${authorText}. ${title}. ${source}; ${year}.${doiUrl ? ` Available from: ${doiUrl}` : ''}`;
-    case 'chicago': return `${authorText}. ${year}. "${title}." ${source}.${doiUrl ? ` ${doiUrl}` : ''}`;
-    case 'ieee': return `${authorText}, "${title}," ${source}, ${year}.${doiUrl ? ` [Online]. Available: ${doiUrl}` : ''}`;
-    default: return `${authorText} (${year}). ${title}. ${source}.${doiUrl ? ` ${doiUrl}` : ''}`;
+    case 'harvard': return `${authorText} (${year}) ${type === 'poster' ? `${title}.` : `'${title}'.`}${source ? ` ${source}.` : ''}${doiUrl ? ` Available at: ${doiUrl}.` : ''}`;
+    case 'mla': return `${authorText.endsWith('.') ? authorText : `${authorText}.`} '${title}.'${versionText ? ` ${versionText},` : ''} ${source}${date ? `, ${formatDate(date, style)}` : ''}${doiUrl ? `, ${doiUrl}` : ''}.`;
+    case 'vancouver': return `1.${authorText}. ${title}. ${source}; ${year}.${doiUrl ? ` doi:${doi}` : ''}`;
+    case 'chicago': return `${authorText.endsWith('.') ? authorText : `${authorText}.`} ${type === 'poster' ? `${title}.` : `'${title}.'`}${versionText ? ` ${versionText}.` : ''}${type === 'preprint' ? ' Preprint.' : ''} ${source}${date ? `, ${formatDate(date, 'chicago')}` : ''}.${doiUrl ? ` ${doiUrl}` : ''}`;
+    case 'ieee': return `[1]${authorText}, ${type === 'poster' ? title : `'${title}'`},${date && type !== 'poster' ? ` ${formatDate(date, 'ieee')},` : ''}${source ? ` ${source},` : ''} ${year}.${doiUrl ? ` doi: ${doi}.` : ''}`;
+    default: return `${authorText} (${year}). ${title}${versionText ? ` (${versionText})` : ''}${graphicText}. ${source ? `${source}.` : ''}${doiUrl ? ` ${doiUrl}` : ''}`;
     }
 };
+
+if (typeof document !== 'undefined') {
 
 const copyText = async (value, target) => {
     try {
@@ -69,6 +99,8 @@ for (const dialog of document.querySelectorAll('[data-citation-dialog]')) {
     const citation = {
         authors: [...dialog.querySelectorAll('[data-citation-author]')].map((author) => author.textContent || '').filter(Boolean),
         title: dialog.dataset.citationTitle || '', year: dialog.dataset.citationYear || '',
+        date: dialog.dataset.citationDate || '', type: dialog.dataset.citationType || '',
+        version: dialog.dataset.citationVersion || '',
         publisher: dialog.dataset.citationPublisher || '', doi: dialog.dataset.citationDoi || '',
     };
     let style = window.localStorage.getItem(preferenceKey) || 'apa';
@@ -166,4 +198,5 @@ for (const trigger of document.querySelectorAll('[data-citation-open]')) {
             { autoAlpha: 1, y: 0, scale: 1, duration: 0.32, ease: 'power2.out', clearProps: 'opacity,visibility,transform' },
         );
     });
+}
 }

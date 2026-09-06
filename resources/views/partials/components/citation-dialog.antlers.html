@@ -1,7 +1,7 @@
 {{# Reusable citation chooser. It keeps all source values in the static HTML;
     JavaScript only selects and formats the user's preferred style. #}}
 {{ if authors && date && title }}
-    <dialog id="citation-dialog-{{ id }}" class="citation-dialog" data-citation-dialog data-citation-title="{{ title }}" data-citation-year="{{ date | format('Y') }}" data-citation-publisher="{{ publisher }}" data-citation-doi="{{ doi }}" aria-labelledby="citation-dialog-title-{{ id }}">
+    <dialog id="citation-dialog-{{ id }}" class="citation-dialog" data-citation-dialog data-citation-title="{{ title }}" data-citation-year="{{ date | format('Y') }}" data-citation-date="{{ date | format('Y-m-d') }}" data-citation-type="{{ publication_type }}" data-citation-version="{{ version }}" data-citation-publisher="{{ publisher }}" data-citation-doi="{{ doi }}" aria-labelledby="citation-dialog-title-{{ id }}">
         <div class="citation-dialog__panel">
             <header class="citation-dialog__header">
                 <div>
