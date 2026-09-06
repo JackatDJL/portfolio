@@ -1,6 +1,8 @@
 {{# Bildliste als Abbildungen; braucht eine Asset-Liste im Parameter `assets`. #}}
 {{ if assets }}
-    {{ assets }}
-        {{ partial:gallery/figure }}
-    {{ /assets }}
+    <div class="media-gallery {{ classes ?? '' }}">
+        {{ assets }}
+            {{ partial:gallery/figure }}
+        {{ /assets }}
+    </div>
 {{ /if }}

@@ -41,28 +41,106 @@ sections:
               display: Standart
               icon: add-entry
               sets:
-                test:
-                  display: Test
+                callout:
+                  display: Hinweis
+                  icon: alert-diamond
                   fields:
                     -
-                      handle: callout
+                      handle: variant
                       field:
-                        default_option: entry
-                        collections:
-                          - posts
-                          - pages
-                          - projects
-                          - publications
-                        select_across_sites: true
-                        container: assets
-                        type: link
-                        display: Aufruf
+                        type: select
+                        display: Art
+                        default: note
+                        options:
+                          note: Notiz
+                          info: Information
+                          warning: Achtung
+                          success: Erfolg
+                          danger: Wichtig
                     -
-                      handle: figure
+                      handle: title
                       field:
-                        default_option: url
-                        type: link
-                        display: Referenz
+                        type: text
+                        display: Titel
+                    -
+                      handle: content
+                      field:
+                        type: textarea
+                        display: Inhalt
+                        validate:
+                          - required
+                figure:
+                  display: Abbildung
+                  icon: media-image-picture-orientation
+                  fields:
+                    -
+                      handle: image
+                      field:
+                        type: assets
+                        container: assets
+                        max_files: 1
+                        display: Bild
+                        validate:
+                          - required
+                    -
+                      handle: alt
+                      field:
+                        type: text
+                        display: Alternativtext
+                        instructions: Beschreibt das Bild für Menschen, die es nicht sehen können.
+                        validate:
+                          - required
+                    -
+                      handle: caption
+                      field:
+                        type: textarea
+                        display: Bildunterschrift
+                    -
+                      handle: credit
+                      field:
+                        type: text
+                        display: Quelle oder Urheber
+                    -
+                      handle: width_mode
+                      field:
+                        type: select
+                        display: Breite
+                        default: reading
+                        options:
+                          reading: Lesespalte
+                          wide: Breit
+                          full: Ganze Inhaltsbreite
+                quote:
+                  display: Zitat
+                  icon: text-quote
+                  fields:
+                    -
+                      handle: quote
+                      field:
+                        type: textarea
+                        display: Zitat
+                        validate:
+                          - required
+                    -
+                      handle: attribution
+                      field:
+                        type: text
+                        display: Urheber oder Quelle
+                wide_content:
+                  display: Breiter Inhalt
+                  icon: layout-three-columns
+                  fields:
+                    -
+                      handle: title
+                      field:
+                        type: text
+                        display: Titel
+                    -
+                      handle: content
+                      field:
+                        type: textarea
+                        display: Inhalt
+                        instructions: Für kurze Erläuterungen zu Diagrammen, Demos oder eingebetteten Beispielen.
                 gallery:
                   display: Galerie
                   icon: media-image-picture-gallery
@@ -74,6 +152,16 @@ sections:
                         folder: photos
                         type: assets
                         display: Bilder
+                    -
+                      handle: width_mode
+                      field:
+                        type: select
+                        display: Breite
+                        default: reading
+                        options:
+                          reading: Lesespalte
+                          wide: Breit
+                          full: Ganze Inhaltsbreite
                 project_embed:
                   display: Projektansicht
                   icon: fieldtype-html

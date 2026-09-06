@@ -507,12 +507,14 @@
         margin-top: 2.4em;
         font-size: clamp(1.8rem, 4vw, 2.5rem);
         line-height: 1.1;
+        scroll-margin-top: 6.5rem;
     }
 
     .prose-site h3 {
         margin-top: 2em;
         font-size: clamp(1.35rem, 3vw, 1.75rem);
         line-height: 1.2;
+        scroll-margin-top: 6.5rem;
     }
 
     .semantic-link,
@@ -635,6 +637,183 @@
         background: var(--site-surface);
         font-weight: 600;
     }
+
+    /* Editorial additions for any Bard field. They do not belong to a page
+       template, so projects, publications and pages can opt into them too. */
+    .article-toc {
+        border-top: 2px solid var(--site-border-strong);
+        padding-top: 0.9rem;
+        font-size: 0.875rem;
+        line-height: 1.35rem;
+    }
+
+    .article-toc__title {
+        margin: 0;
+        font-family: var(--font-display);
+        font-weight: 700;
+    }
+
+    .article-toc__list {
+        margin: 0.75rem 0 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .article-toc__list li + li { margin-top: 0.45rem; }
+    .article-toc__list a {
+        color: var(--site-text-muted);
+        text-decoration: none;
+    }
+    .article-toc__list a:hover,
+    .article-toc__list a[aria-current="true"] {
+        color: var(--site-text);
+        text-decoration: underline;
+        text-decoration-color: var(--site-accent);
+        text-decoration-thickness: 0.16em;
+        text-underline-offset: 0.18em;
+    }
+    .article-toc__list .article-toc__subitem { padding-left: 0.8rem; }
+    .article-toc--mobile { margin-bottom: 2.5rem; }
+    .article-toc--rail { margin-bottom: 2rem; }
+
+    .article-callout {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        gap: 0.8rem;
+        border: 1px solid var(--site-border-strong);
+        border-left-width: 5px;
+        border-radius: var(--radius-sm);
+        background: var(--site-surface);
+        padding: 1rem 1.1rem;
+    }
+
+    .article-callout__symbol {
+        display: grid;
+        width: 1.55rem;
+        height: 1.55rem;
+        place-items: center;
+        border: 1px solid currentColor;
+        border-radius: var(--radius-xs);
+        font-family: var(--font-mono);
+        font-weight: 700;
+        line-height: 1;
+    }
+
+    .article-callout__kind {
+        margin: 0;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+    }
+
+    .article-callout__title {
+        margin: 0.15rem 0 0;
+        font-size: 1.25rem;
+        line-height: 1.25;
+    }
+
+    .article-callout__content { margin-top: 0.35rem; }
+    .article-callout--info { border-left-color: var(--site-focus); }
+    .article-callout--warning { border-left-color: #ad7315; }
+    .article-callout--success { border-left-color: #268456; }
+    .article-callout--danger { border-left-color: #b43a3a; }
+    .article-callout--warning .article-callout__symbol { background: #f8e6bc; color: #6f4600; }
+    .article-callout--success .article-callout__symbol { background: #ccebd9; color: #145234; }
+    .article-callout--danger .article-callout__symbol { background: #f3d0d0; color: #751f1f; }
+    [data-theme="dark"] .article-callout--warning .article-callout__symbol { background: #4e3510; color: #f7d98c; }
+    [data-theme="dark"] .article-callout--success .article-callout__symbol { background: #173d28; color: #a6e7c0; }
+    [data-theme="dark"] .article-callout--danger .article-callout__symbol { background: #4b2020; color: #ffc1c1; }
+
+    @media (prefers-color-scheme: dark) {
+        :root:not([data-theme]) .article-callout--warning .article-callout__symbol { background: #4e3510; color: #f7d98c; }
+        :root:not([data-theme]) .article-callout--success .article-callout__symbol { background: #173d28; color: #a6e7c0; }
+        :root:not([data-theme]) .article-callout--danger .article-callout__symbol { background: #4b2020; color: #ffc1c1; }
+    }
+
+    .article-quote {
+        margin: 2.5rem 0;
+        border-top: 1px solid var(--site-border);
+        border-bottom: 1px solid var(--site-border);
+        padding: 1.5rem 0;
+    }
+
+    .article-quote blockquote {
+        margin: 0;
+        border: 0;
+        padding: 0;
+        color: var(--site-text);
+        font-family: var(--font-display);
+        font-size: clamp(1.45rem, 3vw, 2.05rem);
+        font-weight: 500;
+        line-height: 1.3;
+    }
+
+    .article-quote blockquote::before {
+        color: var(--site-accent);
+        content: "\201C";
+        font-size: 2.2em;
+        font-weight: 800;
+        line-height: 0.35;
+        vertical-align: -0.25em;
+    }
+
+    .article-quote figcaption {
+        margin-top: 0.9rem;
+        color: var(--site-text-muted);
+        font-size: 0.875rem;
+    }
+
+    .media-gallery { display: grid; gap: 1rem; }
+    .media-figure__credit { color: var(--site-text-muted); }
+
+    .article-wide-content {
+        border-block: 1px solid var(--site-border);
+        background: var(--site-background);
+        padding-block: 1.25rem;
+    }
+
+    .article-wide-content h2 {
+        margin-top: 0;
+        font-size: 1.35rem;
+    }
+
+    .article-breakout--reading { width: 100%; }
+    .article-breakout--wide,
+    .article-breakout--full { width: 100%; }
+
+    @media (min-width: 48rem) {
+        .article-toc--mobile { display: none; }
+
+        /* Main-column children may deliberately occupy the quiet context area.
+           The opaque background prevents rail text showing through below a
+           wide diagram or screenshot. */
+        .detail-layout__main > .article-breakout--wide,
+        .detail-layout__main > .article-breakout--full,
+        .detail-layout__main > .media-gallery.article-breakout--wide,
+        .detail-layout__main > .media-gallery.article-breakout--full {
+            position: relative;
+            z-index: 1;
+            width: min(calc(100% + 22rem), calc(100vw - 4rem));
+            background: var(--site-background);
+        }
+    }
+
+    @media (max-width: 47.999rem) {
+        .article-toc--rail { display: none; }
+    }
+
+    @supports (animation-timeline: view()) {
+        @media (prefers-reduced-motion: no-preference) {
+            .article-motion,
+            .prose-site h2,
+            .prose-site h3 {
+                animation: article-enter linear both;
+                animation-timeline: view();
+                animation-range: entry 8% cover 24%;
+            }
+        }
+    }
 }
 
 @keyframes ui-in {
@@ -647,6 +826,11 @@
         opacity: 1;
         transform: translateY(0);
     }
+}
+
+@keyframes article-enter {
+    from { opacity: 0.94; transform: translateY(0.35rem); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 @media (prefers-reduced-motion: reduce) {

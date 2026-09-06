@@ -1,6 +1,7 @@
-data: {}
+data:
+  alt: 'Lille Bodskov'
 size: 473018
-last_modified: 1788604296
+last_modified: 1788686093
 width: 2048
 height: 1536
 mime_type: image/jpeg
