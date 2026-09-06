@@ -1,5 +1,8 @@
 import { initThemeSwitcher } from './theme.js';
 import { gsap } from 'gsap';
+import { ScrollToPlugin } from 'gsap/ScrollToPlugin';
+
+gsap.registerPlugin(ScrollToPlugin);
 
 initThemeSwitcher();
 
@@ -55,13 +58,33 @@ const initArticleToc = () => {
     }
 
     const links = [...document.querySelectorAll('.article-toc a')];
+    let currentId;
     const setCurrent = (id) => {
+        if (currentId === id) return;
+        currentId = id;
         for (const link of links) {
             if (link.hash === `#${id}`) link.setAttribute('aria-current', 'true');
             else link.removeAttribute('aria-current');
         }
+        document.dispatchEvent(new CustomEvent('article:toc-change', { detail: { id } }));
     };
     setCurrent(headings[0].id);
+    links.forEach((link) => link.addEventListener('click', (event) => {
+        const id = link.hash.slice(1);
+        const heading = document.getElementById(id);
+        if (!(heading instanceof HTMLElement)) return;
+
+        event.preventDefault();
+        setCurrent(id);
+        history.pushState(null, '', `#${id}`);
+
+        const target = Math.max(0, window.scrollY + heading.getBoundingClientRect().top - 104);
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            window.scrollTo({ top: target });
+            return;
+        }
+        gsap.to(window, { duration: 0.7, ease: 'power2.inOut', scrollTo: { y: target, autoKill: true } });
+    }));
 
     const observer = new IntersectionObserver((entries) => {
         const visible = entries
@@ -87,55 +110,88 @@ const initContextRailLine = () => {
         const line = rail.querySelector('[data-context-line]');
         if (!(svg instanceof SVGElement) || !(line instanceof SVGPathElement)) continue;
 
-        const state = { y: 0, depth: 0, height: 1 };
+        const state = { activeY: 0, activeDepth: 0, hoverY: 0, hoverDepth: 0, height: 1 };
         const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
         const render = () => {
-            const start = Math.max(0, state.y - 15);
-            const end = Math.min(state.height, state.y + 15);
-            const shoulder = Math.min(8, Math.max(3, state.depth * 0.68));
-            const tip = 2 + state.depth;
-            line.setAttribute('d', [
-                `M 2 0 V ${start}`,
-                `C 2 ${state.y - shoulder}, ${tip} ${state.y - shoulder}, ${tip} ${state.y}`,
-                `C ${tip} ${state.y + shoulder}, 2 ${state.y + shoulder}, 2 ${end}`,
-                `V ${state.height}`,
-            ].join(' '));
+            const bumps = [
+                { y: state.activeY, depth: state.activeDepth },
+                { y: state.hoverY, depth: state.hoverDepth },
+            ].filter(({ depth }) => depth > 0.05).sort((a, b) => a.y - b.y);
+            let cursor = 0;
+            const commands = ['M 2 0'];
+            for (const { y, depth } of bumps) {
+                const shoulder = Math.min(9, Math.max(3, depth * 0.72));
+                const start = Math.max(cursor, y - 15);
+                const end = Math.min(state.height, y + 15);
+                const tip = 2 + depth;
+                commands.push(`V ${start}`);
+                commands.push(`C 2 ${y - shoulder}, ${tip} ${y - shoulder}, ${tip} ${y}`);
+                commands.push(`C ${tip} ${y + shoulder}, 2 ${y + shoulder}, 2 ${end}`);
+                cursor = end;
+            }
+            commands.push(`V ${state.height}`);
+            line.setAttribute('d', commands.join(' '));
+        };
+
+        const linkY = (link) => {
+            const railTop = rail.getBoundingClientRect().top;
+            const y = link.getBoundingClientRect().top - railTop + link.offsetHeight / 2;
+            return Math.max(15, Math.min(state.height - 15, y));
         };
 
         const settleAt = (targetY) => {
             gsap.killTweensOf(state);
+            state.hoverDepth = 0;
+            render();
             if (reduceMotion) {
-                state.y = targetY;
-                state.depth = 9;
+                state.activeY = targetY;
+                state.activeDepth = 9;
                 render();
                 return;
             }
 
             const grow = () => gsap.to(state, {
-                depth: 9,
+                activeDepth: 9,
                 duration: 0.32,
                 ease: 'power2.out',
                 onUpdate: render,
             });
 
-            if (state.depth > 0.05 && Math.abs(state.y - targetY) > 1) {
+            if (state.activeDepth > 0.05 && Math.abs(state.activeY - targetY) > 1) {
                 gsap.to(state, {
-                    depth: 0,
+                    activeDepth: 0,
                     duration: 0.18,
                     ease: 'power2.in',
                     onUpdate: render,
                     onComplete: () => {
-                        state.y = targetY;
+                        state.activeY = targetY;
                         render();
                         grow();
                     },
                 });
             } else {
-                state.y = targetY;
+                state.activeY = targetY;
                 grow();
             }
         };
+
+        const showHoverIntent = (link) => {
+            const targetY = linkY(link);
+            if (Math.abs(state.activeY - targetY) < 1) {
+                return;
+            }
+            state.hoverY = targetY;
+            gsap.to(state, { activeDepth: 6.5, hoverDepth: 3.5, duration: 0.18, ease: 'power2.out', onUpdate: render });
+        };
+
+        const clearHoverIntent = () => gsap.to(state, {
+            activeDepth: 9,
+            hoverDepth: 0,
+            duration: 0.2,
+            ease: 'power2.out',
+            onUpdate: render,
+        });
 
         const draw = () => {
             state.height = Math.max(1, rail.clientHeight);
@@ -145,20 +201,31 @@ const initContextRailLine = () => {
             const activeLink = rail.querySelector('.article-toc a[aria-current="true"]');
             if (!(activeLink instanceof HTMLElement)) {
                 gsap.killTweensOf(state);
-                state.depth = 0;
+                state.activeDepth = 0;
+                state.hoverDepth = 0;
                 render();
                 return;
             }
-
-            const railTop = rail.getBoundingClientRect().top;
-            const y = activeLink.getBoundingClientRect().top - railTop + activeLink.offsetHeight / 2;
-            settleAt(Math.max(15, Math.min(state.height - 15, y)));
+            settleAt(linkY(activeLink));
         };
 
         draw();
         if ('ResizeObserver' in window) new ResizeObserver(draw).observe(rail);
         else window.addEventListener('resize', draw);
-        new MutationObserver(draw).observe(rail, { subtree: true, attributes: true, attributeFilter: ['aria-current', 'hidden'] });
+        document.addEventListener('article:toc-change', () => {
+            const activeLink = rail.querySelector('.article-toc a[aria-current="true"]');
+            if (activeLink instanceof HTMLElement) settleAt(linkY(activeLink));
+        });
+        rail.addEventListener('pointerover', (event) => {
+            if (!(event.target instanceof Element)) return;
+            const link = event.target.closest('.article-toc a');
+            if (link instanceof HTMLElement && rail.contains(link)) showHoverIntent(link);
+        });
+        rail.addEventListener('pointerout', (event) => {
+            if (!(event.target instanceof Element)) return;
+            const link = event.target.closest('.article-toc a');
+            if (link instanceof HTMLElement && rail.contains(link) && !link.contains(event.relatedTarget)) clearHoverIntent();
+        });
         window.addEventListener('load', draw, { once: true });
     }
 };

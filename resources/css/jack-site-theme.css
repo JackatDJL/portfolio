@@ -658,15 +658,18 @@
     .article-toc__list li + li { margin-top: 0.5rem; }
     .article-toc__list a {
         color: var(--site-text-muted);
+        background-image: linear-gradient(var(--site-accent), var(--site-accent));
+        background-position: 0 100%;
+        background-repeat: no-repeat;
+        background-size: 0 0.14em;
+        font-weight: 400;
         text-decoration: none;
+        transition: background-size 260ms var(--ease-emphasized), color 180ms var(--ease-standard), font-weight 220ms var(--ease-standard);
     }
     .article-toc__list a:hover,
     .article-toc__list a[aria-current="true"] {
         color: var(--site-text);
-        text-decoration: underline;
-        text-decoration-color: var(--site-accent);
-        text-decoration-thickness: 0.16em;
-        text-underline-offset: 0.18em;
+        background-size: 100% 0.14em;
     }
     .article-toc__list a[aria-current="true"] { font-weight: 650; }
     .article-toc__list .article-toc__subitem { padding-left: 0.8rem; }
