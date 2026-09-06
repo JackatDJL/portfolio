@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Article TOC test</title>
+    </head>
+    <body>
+        <nav class="article-toc" data-article-toc hidden>
+            <ol class="article-toc__list"></ol>
+        </nav>
+        <article class="prose-site">
+            <h2 id="upper">Upper heading</h2>
+            <h2 id="lower">Lower heading</h2>
+            <h2 id="last">Last heading</h2>
+        </article>
+        <script>
+            class IntersectionObserverMock {
+                constructor(callback) {
+                    this.callback = callback;
+                    window.articleTocObserver = this;
+                }
+
+                observe() {}
+
+                trigger(entries) {
+                    this.callback(entries, this);
+                }
+            }
+
+            window.IntersectionObserver = IntersectionObserverMock;
+        </script>
+        <script type="module" src="/resources/js/site.js"></script>
+    </body>
+</html>

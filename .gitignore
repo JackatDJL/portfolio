@@ -14,6 +14,7 @@
 /.zed
 /auth.json
 /node_modules
+/playwright-report
 /public/build
 /public/fonts-manifest.dev.json
 /public/hot
@@ -22,6 +23,7 @@
 /public/vendor/statamic
 /storage/*.key
 /storage/pail
+/test-results
 /vendor
 _ide_helper.php
 Homestead.json

@@ -1,4 +1,4 @@
-{{# Blog-Intro: Dokumentkontext, Titel, Zusammenfassung und optionales Titelbild. #}}
+{{# Blog-Intro: Der optionale Cover-Asset ist für Sharing, SEO und Indexkarten vorgesehen. #}}
 <header class="reading-width">
     {{ partial:components/eyebrow label="Blog" }}
 
@@ -8,9 +8,3 @@
         <p class="mt-6 text-lg text-foreground">{{ summary }}</p>
     {{ /if }}
 </header>
-
-{{ if cover }}
-    <figure class="media-figure content-width mt-gutter-lg">
-        <img src="{{ glide:cover width=1152 }}" alt="{{ cover:alt }}" width="{{ cover:width }}" height="{{ cover:height }}" decoding="async">
-    </figure>
-{{ /if }}

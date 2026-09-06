@@ -1,0 +1,10 @@
+{{# Bard-Set: Semantischer Hinweis. Der Text bleibt auch ohne Farbe eindeutig. #}}
+<aside class="article-callout article-callout--{{ variant ?? 'note' }} article-motion" data-toc-exclude aria-label="{{ title ?? (variant ?? 'note') }}">
+    <span class="article-callout__symbol" aria-hidden="true">
+        {{ if variant == 'warning' }}!{{ elseif variant == 'danger' }}×{{ elseif variant == 'success' }}✓{{ elseif variant == 'info' }}i{{ else }}•{{ /if }}
+    </span>
+    <div>
+        {{ if title }}<p class="article-callout__title">{{ title }}</p>{{ /if }}
+        {{ partial:bard/prose :content="body" classes="article-callout__content" }}
+    </div>
+</aside>

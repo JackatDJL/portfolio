@@ -1,0 +1,110 @@
+title: 'Bard-Inhalt'
+fields:
+  -
+    handle: body
+    field:
+      type: bard
+      display: Inhalt
+      buttons:
+        - h2
+        - h3
+        - bold
+        - italic
+        - unorderedlist
+        - orderedlist
+        - removeformat
+        - quote
+        - anchor
+        - image
+        - table
+        - underline
+        - strikethrough
+        - code
+        - codeblock
+        - horizontalrule
+      smart_typography: true
+      link_collections:
+        - posts
+        - projects
+        - publications
+        - pages
+      select_across_sites: true
+      container: assets
+      remove_empty_nodes: false
+      sets:
+        media:
+          display: Medien
+          icon: media-image-picture-gallery
+          sets:
+            figure:
+              display: Abbildung
+              icon: media-image-picture-orientation
+              fields:
+                -
+                  handle: image
+                  field:
+                    type: assets
+                    container: assets
+                    max_files: 1
+                    display: Bild
+                    validate: [required]
+                -
+                  handle: alt
+                  field:
+                    type: text
+                    display: Alternativtext
+                    validate: [required]
+                -
+                  handle: caption
+                  field:
+                    type: textarea
+                    display: Bildunterschrift
+                -
+                  handle: credit
+                  field:
+                    type: text
+                    display: Quelle oder Urheber
+                -
+                  handle: width_mode
+                  field:
+                    type: select
+                    display: Breite
+                    default: reading
+                    options:
+                      reading: Lesespalte
+                      wide: Breit
+                      full: Ganze Inhaltsbreite
+            gallery:
+              display: Galerie
+              icon: media-image-picture-gallery
+              fields:
+                -
+                  handle: gallery
+                  field:
+                    container: assets
+                    folder: photos
+                    type: assets
+                    display: Bilder
+                -
+                  handle: width_mode
+                  field:
+                    type: select
+                    display: Breite
+                    default: reading
+                    options:
+                      reading: Lesespalte
+                      wide: Breit
+                      full: Ganze Inhaltsbreite
+            project_embed:
+              display: Projektansicht
+              icon: fieldtype-html
+              fields:
+                -
+                  handle: project
+                  field:
+                    collections:
+                      - projects
+                    select_across_sites: true
+                    max_items: 1
+                    type: entries
+                    display: 'Ausgewähltes Projekt'

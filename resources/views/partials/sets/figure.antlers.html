@@ -1,0 +1,11 @@
+{{# Bard-Set: Abbildung mit redaktioneller Breite, Bildbeschreibung und Herkunft. #}}
+{{ if image }}
+    <figure class="media-figure article-breakout article-breakout--{{ width_mode ?? 'reading' }} article-motion">
+        <img src="{{ glide:image width="1600" }}" alt="{{ alt }}" width="{{ image:width }}" height="{{ image:height }}" loading="lazy" decoding="async">
+        {{ if caption || credit }}
+            <figcaption>
+                {{ if caption }}{{ caption }}{{ /if }}{{ if caption && credit }} <span aria-hidden="true">·</span> {{ /if }}{{ if credit }}<span class="media-figure__credit">{{ credit }}</span>{{ /if }}
+            </figcaption>
+        {{ /if }}
+    </figure>
+{{ /if }}
