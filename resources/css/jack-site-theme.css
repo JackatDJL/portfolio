@@ -716,7 +716,7 @@
         width: 1.55rem;
         height: 1.55rem;
         place-items: center;
-        border: 1px solid currentColor;
+        border: 1px solid currentcolor;
         border-radius: var(--radius-xs);
         font-family: var(--font-mono);
         font-weight: 700;

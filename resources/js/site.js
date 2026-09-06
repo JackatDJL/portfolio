@@ -86,8 +86,10 @@ const initArticleToc = () => {
         gsap.to(window, { duration: 0.7, ease: 'power2.inOut', scrollTo: { y: target, autoKill: true } });
     }));
 
+    const intersectionStates = new Map();
     const observer = new IntersectionObserver((entries) => {
-        const visible = entries
+        for (const entry of entries) intersectionStates.set(entry.target, entry);
+        const visible = [...intersectionStates.values()]
             .filter((entry) => entry.isIntersecting)
             .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
         if (visible) setCurrent(visible.target.id);
