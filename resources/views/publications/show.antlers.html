@@ -1,0 +1,21 @@
+{{# Veröffentlichungs-Detailseite: Dokumentkontext, Lesespalte und Bibliografie. #}}
+<article>
+    {{ partial:detail/layout intro="publications/header" aside="publications/rail" aside_label="Bibliografische Angaben" }}
+        {{ partial:publications/mobile-record }}
+
+        {{ if cover && (document_url || publication_url) }}
+            <figure class="publication-preview article-breakout--wide">
+                <a href="{{ if document_url }}{{ document_url }}{{ else }}{{ publication_url }}{{ /if }}" target="_blank" rel="noreferrer" aria-label="{{ title }} öffnen">
+                    <img src="{{ glide:cover width=1440 }}" alt="{{ cover:alt ?? title }}" width="{{ cover:width }}" height="{{ cover:height }}" decoding="async">
+                </a>
+            </figure>
+        {{ /if }}
+
+        {{ if content }}
+            <section class="publication-content" aria-labelledby="publication-content-title">
+                <h2 id="publication-content-title" class="eyebrow">Zum Dokument</h2>
+                {{ partial:bard/prose :content="content" }}
+            </section>
+        {{ /if }}
+    {{ /partial:detail/layout }}
+</article>

@@ -1,0 +1,93 @@
+{{# Veröffentlichungs-Kontext: nur Gruppen mit echten bibliografischen Angaben. #}}
+<div class="publication-context-rail">
+    <dl class="project-meta">
+        {{ if authors }}
+            {{ partial:detail/meta-group label="Autoren" classes="publication-rail__desktop-only" }}
+                <ul class="publication-authors" role="list">
+                    {{ authors }}
+                        <li>
+                            <span class="publication-author__name">{{ name }}</span>
+                            {{ if orcid }}
+                                <a class="publication-identifier semantic-link" href="https://orcid.org/{{ orcid }}" target="_blank" rel="noreferrer">ORCID {{ orcid }} ↗</a>
+                            {{ /if }}
+                        </li>
+                    {{ /authors }}
+                </ul>
+            {{ /partial:detail/meta-group }}
+        {{ /if }}
+
+        {{ if publication_type || date || publisher || version }}
+            {{ partial:detail/meta-group label="Bibliografie" }}
+                <dl class="publication-metadata">
+                    {{ if publication_type }}<div><dt>Art</dt><dd>{{ publication_type:label ?? publication_type }}</dd></div>{{ /if }}
+                    {{ if date }}<div><dt>Datum</dt><dd><time datetime="{{ date | format('Y-m-d') }}">{{ date | format_translated('j. F Y') }}</time></dd></div>{{ /if }}
+                    {{ if publisher }}<div><dt>Herausgeber</dt><dd>{{ publisher }}</dd></div>{{ /if }}
+                    {{ if version }}<div><dt>Version</dt><dd class="publication-identifier">{{ version }}</dd></div>{{ /if }}
+                </dl>
+            {{ /partial:detail/meta-group }}
+        {{ /if }}
+
+        {{ if doi || publication_url }}
+            {{ partial:detail/meta-group label="Identifikation" classes="publication-rail__desktop-only" }}
+                <dl class="publication-metadata">
+                    {{ if doi }}
+                        <div>
+                            <dt>DOI</dt>
+                            <dd class="publication-identifier-row">
+                                <a id="publication-doi-{{ id }}" class="publication-identifier semantic-link" href="https://doi.org/{{ doi }}" target="_blank" rel="noreferrer">{{ doi }}</a>
+                                <button class="publication-copy" type="button" data-copy-target="publication-doi-{{ id }}" aria-label="DOI kopieren">Kopieren</button>
+                            </dd>
+                        </div>
+                    {{ /if }}
+                    {{ unless doi }}{{ if publication_url }}<div><dt>Veröffentlichungsseite</dt><dd><a class="semantic-link" href="{{ publication_url }}" target="_blank" rel="noreferrer">Öffnen ↗</a></dd></div>{{ /if }}{{ /unless }}
+                </dl>
+            {{ /partial:detail/meta-group }}
+        {{ /if }}
+
+        {{ if peer_reviewed }}
+            {{ partial:detail/meta-group label="Status" }}
+                {{ partial:components/chip label="Peer-reviewed" classes="chip-topic" }}
+            {{ /partial:detail/meta-group }}
+        {{ /if }}
+
+        {{ if license }}
+            {{ partial:detail/meta-group label="Lizenz" }}
+                <span class="publication-identifier">{{ license }}</span>
+            {{ /partial:detail/meta-group }}
+        {{ /if }}
+
+        {{ if topics }}
+            {{ partial:detail/meta-group label="Themen" }}
+                <div class="flex flex-wrap gap-2">
+                    {{ topics }}{{ partial:components/chip :label="title" classes="chip-topic" }}{{ /topics }}
+                </div>
+            {{ /partial:detail/meta-group }}
+        {{ /if }}
+
+        {{ if authors && date && title }}
+            {{ partial:detail/meta-group label="Zitieren" }}
+                <p id="publication-citation-{{ id }}" class="publication-citation">{{ authors }}{{ name }}{{ unless last }}, {{ /unless }}{{ /authors }} ({{ date | format('Y') }}): {{ title }}.{{ if publisher }} {{ publisher }}.{{ /if }}{{ if version }} Version {{ version }}.{{ /if }}{{ if doi }} https://doi.org/{{ doi }}{{ /if }}</p>
+                <button class="publication-copy mt-3" type="button" data-copy-target="publication-citation-{{ id }}">Zitation kopieren</button>
+            {{ /partial:detail/meta-group }}
+        {{ /if }}
+
+        {{ if related_projects || related_posts }}
+            {{ partial:detail/meta-group label="Verwandtes" }}
+                <div>
+                    {{ if related_projects }}
+                        {{ related_projects }}{{ partial:posts/project-reference }}{{ /related_projects }}
+                    {{ /if }}
+                    {{ if related_posts }}
+                        {{ related_posts }}
+                            <a class="block border-t border-border py-3" href="{{ url }}">
+                                <span class="font-display text-base font-bold tracking-tight semantic-link">{{ title }}</span>
+                                {{ if date }}<span class="mt-1 block text-sm text-muted">{{ date | format_translated('j. F Y') }}</span>{{ /if }}
+                                <span class="mt-2 block text-sm font-semibold" aria-hidden="true">→</span>
+                            </a>
+                        {{ /related_posts }}
+                    {{ /if }}
+                </div>
+            {{ /partial:detail/meta-group }}
+        {{ /if }}
+    </dl>
+</div>

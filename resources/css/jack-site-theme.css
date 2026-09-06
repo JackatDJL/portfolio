@@ -700,6 +700,88 @@
         padding: 0;
     }
 
+    .publication-abstract {
+        margin-top: 2.5rem;
+        border-top: 1px solid var(--site-border);
+        padding-top: 1.25rem;
+    }
+
+    .publication-abstract > p {
+        margin: 0.7rem 0 0;
+        font-size: clamp(1.15rem, 2vw, 1.4rem);
+        line-height: 1.55;
+    }
+
+    .publication-mobile-record {
+        display: grid;
+        gap: 1.5rem;
+        border-top: 1px solid var(--site-border);
+        padding-top: 1.5rem;
+    }
+
+    .publication-authors {
+        display: grid;
+        gap: 0.75rem;
+        margin: 0.65rem 0 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .publication-authors li { display: grid; gap: 0.2rem; }
+    .publication-author__name { font-weight: 600; }
+    .publication-identifier {
+        overflow-wrap: anywhere;
+        font-family: var(--font-mono);
+        font-size: 0.8125rem;
+        line-height: 1.45;
+    }
+
+    .publication-identifier-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.65rem;
+    }
+
+    .publication-copy {
+        flex: none;
+        border: 0;
+        background: transparent;
+        color: var(--site-text-muted);
+        font-family: var(--font-sans);
+        font-size: 0.75rem;
+        font-weight: 650;
+        line-height: 1.45;
+        text-decoration: underline;
+        text-decoration-color: var(--site-accent);
+        text-underline-offset: 0.18em;
+    }
+
+    .publication-copy:hover { color: var(--site-text); }
+
+    .publication-metadata {
+        display: grid;
+        gap: 0.8rem;
+        margin: 0;
+    }
+
+    .publication-metadata > div { display: grid; gap: 0.12rem; }
+    .publication-metadata dt { color: var(--site-text-muted); font-size: 0.8125rem; }
+    .publication-metadata dd { margin: 0; font-size: 0.9375rem; }
+    .publication-citation { overflow-wrap: anywhere; font-size: 0.875rem; line-height: 1.55; }
+    .publication-preview { margin: 0 0 2.5rem; }
+    .publication-preview img { display: block; width: 100%; height: auto; border: 1px solid var(--site-border); border-radius: var(--radius-md); background: var(--site-surface); }
+    .publication-content { margin-top: 2.5rem; }
+    .publication-content > .eyebrow { margin-bottom: 1rem; }
+
+    @media (min-width: 48rem) {
+        .publication-mobile-record { display: none; }
+        .publication-context-rail .project-meta { border: 0; padding: 0; }
+    }
+
+    @media (max-width: 47.999rem) {
+        .publication-rail__desktop-only { display: none; }
+    }
+
     .article-callout {
         display: grid;
         grid-template-columns: auto minmax(0, 1fr);

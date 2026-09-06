@@ -1,0 +1,37 @@
+{{# Veröffentlichungs-Intro: Typ, Datum, Abstract und direkte Dokumentzugänge. #}}
+<header class="publication-header reading-width">
+    <div class="flex flex-wrap items-center gap-x-3 gap-y-2">
+        {{ if publication_type }}
+            {{ partial:components/chip :label="publication_type:label ?? publication_type" classes="chip-topic" }}
+        {{ /if }}
+        {{ if date }}
+            <time class="eyebrow" datetime="{{ date | format('Y-m-d') }}">{{ date | format('Y') }}</time>
+        {{ /if }}
+    </div>
+
+    <h1 class="mt-4 text-4xl md:text-6xl">{{ title }}</h1>
+
+    {{ if abstract }}
+        <section class="publication-abstract" aria-labelledby="abstract-title">
+            <h2 id="abstract-title" class="eyebrow">Abstract</h2>
+            <p>{{ abstract }}</p>
+        </section>
+    {{ /if }}
+
+    {{ if document_url || doi || publication_url }}
+        <div class="mt-8 flex flex-wrap gap-3">
+            {{ if document_url }}
+                {{ if document_url | contains('.pdf') }}
+                    {{ partial:components/button variant="primary" :href="document_url" label="PDF öffnen ↗" attributes="target=_blank rel=noreferrer" }}
+                {{ else }}
+                    {{ partial:components/button variant="primary" :href="document_url" label="Dokument öffnen ↗" attributes="target=_blank rel=noreferrer" }}
+                {{ /if }}
+            {{ /if }}
+            {{ if doi }}
+                {{ partial:components/button variant="secondary" href="https://doi.org/{{ doi }}" label="DOI ↗" attributes="target=_blank rel=noreferrer" }}
+            {{ elseif publication_url }}
+                {{ partial:components/button variant="secondary" :href="publication_url" label="Veröffentlichungsseite ↗" attributes="target=_blank rel=noreferrer" }}
+            {{ /if }}
+        </div>
+    {{ /if }}
+</header>

@@ -234,6 +234,24 @@ const initContextRailLine = () => {
 
 initContextRailLine();
 
+for (const button of document.querySelectorAll('[data-copy-target]')) {
+    if (!(button instanceof HTMLButtonElement)) continue;
+    button.addEventListener('click', async () => {
+        const target = document.getElementById(button.dataset.copyTarget || '');
+        const value = target?.textContent?.trim();
+        if (!value) return;
+
+        try {
+            await navigator.clipboard.writeText(value);
+            const original = button.textContent;
+            button.textContent = 'Kopiert';
+            window.setTimeout(() => { button.textContent = original; }, 1600);
+        } catch {
+            // The identifier remains selectable and linked when clipboard access is unavailable.
+        }
+    });
+}
+
 for (const gallery of document.querySelectorAll('[data-media-gallery]')) {
     const track = gallery.querySelector('.media-gallery__track');
     if (!(track instanceof HTMLElement)) continue;
