@@ -65,8 +65,48 @@
        schmale Lesespalte mit ruhigem Kontext-Rail, auf breiten Screens sticky. */
     .detail-container { @apply mx-auto w-full max-w-content px-gutter md:px-gutter-lg; }
     .detail-hero { @apply pb-gutter-lg pt-section-sm; }
-    .detail-hero__grid { @apply grid grid-cols-1; }
-    .detail-hero__cover { @apply mt-gutter-lg; }
+    .detail-hero__grid {
+        @apply grid grid-cols-1;
+        position: relative;
+    }
+    .detail-hero__content {
+        position: relative;
+        z-index: 1;
+    }
+    .detail-hero__cover {
+        position: absolute;
+        z-index: 0;
+        top: 5.5rem;
+        left: 50%;
+        bottom: -4rem;
+        width: 100vw;
+        margin: 0;
+        overflow: hidden;
+        pointer-events: none;
+        border-radius: 0;
+        transform: translateX(-50%);
+    }
+    .detail-hero__cover::after {
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+        background: linear-gradient(
+            to bottom,
+            transparent 0%,
+            transparent 58%,
+            var(--site-background) 100%
+        );
+        content: "";
+    }
+    .detail-hero__cover img {
+        @apply border-0 rounded-none bg-transparent;
+        display: block;
+        width: 100%;
+        height: 100%;
+        min-height: 100%;
+        object-fit: cover;
+        object-position: center 45%;
+    }
     .detail-hero__summary {
         color: var(--site-text);
     }
@@ -104,23 +144,16 @@
             display: block;
         }
         .detail-hero__content {
-            position: relative;
-            z-index: 1;
             width: min(100%, 42rem);
         }
         .detail-hero__cover {
-            position: absolute;
-            z-index: 0;
             inset: 0 -3rem 0 24%;
+            width: auto;
             margin: 0;
-            overflow: hidden;
-            pointer-events: none;
             border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+            transform: none;
         }
         .detail-hero__cover::after {
-            position: absolute;
-            inset: 0;
-            z-index: 1;
             background: linear-gradient(
                 to right,
                 var(--site-background) 0%,
@@ -128,13 +161,6 @@
                 transparent 72%
             );
             content: "";
-        }
-        .detail-hero__cover img {
-            @apply border-0 rounded-none bg-transparent;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            object-position: center 45%;
         }
     }
 }
