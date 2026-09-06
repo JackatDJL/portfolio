@@ -1,8 +1,14 @@
 {{# Bildliste als Abbildungen; braucht eine Asset-Liste im Parameter `assets`. #}}
 {{ if assets }}
-    <div class="media-gallery {{ classes ?? '' }}">
-        {{ assets }}
-            {{ partial:gallery/figure }}
-        {{ /assets }}
-    </div>
+    <section class="media-gallery {{ classes ?? '' }}" aria-label="Bildergalerie" data-media-gallery>
+        <div class="media-gallery__track" tabindex="0">
+            {{ assets }}
+                {{ partial:gallery/figure }}
+            {{ /assets }}
+        </div>
+        <div class="media-gallery__controls">
+            <button class="media-gallery__button" type="button" data-gallery-previous aria-label="Vorheriges Bild">←</button>
+            <button class="media-gallery__button" type="button" data-gallery-next aria-label="Nächstes Bild">→</button>
+        </div>
+    </section>
 {{ /if }}

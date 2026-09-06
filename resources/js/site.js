@@ -1,4 +1,5 @@
 import { initThemeSwitcher } from './theme.js';
+import { gsap } from 'gsap';
 
 initThemeSwitcher();
 
@@ -20,10 +21,11 @@ const initArticleToc = () => {
     const allHeadings = [...article.querySelectorAll('h2, h3')]
         .filter((heading) => !heading.closest('[data-toc-exclude]'));
     const h2Count = allHeadings.filter((heading) => heading.tagName === 'H2').length;
-    if (h2Count < 3) return;
+    const isLongEnough = article.textContent.trim().length >= 1200;
+    if (h2Count < 2 || (allHeadings.length < 3 && !isLongEnough)) return;
 
     const usedIds = new Set([...document.querySelectorAll('[id]')].map(({ id }) => id));
-    const headings = allHeadings.filter((heading) => heading.tagName === 'H2' || h2Count >= 4);
+    const headings = allHeadings.filter((heading) => heading.tagName === 'H2' || h2Count >= 2);
     for (const heading of headings) {
         if (!heading.id) {
             const base = slugifyHeading(heading.textContent.trim());
@@ -70,12 +72,106 @@ const initArticleToc = () => {
     headings.forEach((heading) => observer.observe(heading));
 
     if (window.location.hash) {
-        const target = document.getElementById(decodeURIComponent(window.location.hash.slice(1)));
+        let hashId;
+        try { hashId = decodeURIComponent(window.location.hash.slice(1)); } catch { hashId = window.location.hash.slice(1); }
+        const target = document.getElementById(hashId);
         if (target) window.requestAnimationFrame(() => target.scrollIntoView());
     }
 };
 
 initArticleToc();
+
+const initContextRailLine = () => {
+    for (const rail of document.querySelectorAll('[data-context-rail]')) {
+        const svg = rail.querySelector('.article-context-rail__line');
+        const line = rail.querySelector('[data-context-line]');
+        if (!(svg instanceof SVGElement) || !(line instanceof SVGPathElement)) continue;
+
+        const state = { y: 0, depth: 0, height: 1 };
+        const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        const render = () => {
+            const start = Math.max(0, state.y - 15);
+            const end = Math.min(state.height, state.y + 15);
+            const shoulder = Math.min(8, Math.max(3, state.depth * 0.68));
+            const tip = 2 + state.depth;
+            line.setAttribute('d', [
+                `M 2 0 V ${start}`,
+                `C 2 ${state.y - shoulder}, ${tip} ${state.y - shoulder}, ${tip} ${state.y}`,
+                `C ${tip} ${state.y + shoulder}, 2 ${state.y + shoulder}, 2 ${end}`,
+                `V ${state.height}`,
+            ].join(' '));
+        };
+
+        const settleAt = (targetY) => {
+            gsap.killTweensOf(state);
+            if (reduceMotion) {
+                state.y = targetY;
+                state.depth = 9;
+                render();
+                return;
+            }
+
+            const grow = () => gsap.to(state, {
+                depth: 9,
+                duration: 0.32,
+                ease: 'power2.out',
+                onUpdate: render,
+            });
+
+            if (state.depth > 0.05 && Math.abs(state.y - targetY) > 1) {
+                gsap.to(state, {
+                    depth: 0,
+                    duration: 0.18,
+                    ease: 'power2.in',
+                    onUpdate: render,
+                    onComplete: () => {
+                        state.y = targetY;
+                        render();
+                        grow();
+                    },
+                });
+            } else {
+                state.y = targetY;
+                grow();
+            }
+        };
+
+        const draw = () => {
+            state.height = Math.max(1, rail.clientHeight);
+            svg.setAttribute('viewBox', `0 0 20 ${state.height}`);
+            svg.setAttribute('preserveAspectRatio', 'none');
+
+            const activeLink = rail.querySelector('.article-toc a[aria-current="true"]');
+            if (!(activeLink instanceof HTMLElement)) {
+                gsap.killTweensOf(state);
+                state.depth = 0;
+                render();
+                return;
+            }
+
+            const railTop = rail.getBoundingClientRect().top;
+            const y = activeLink.getBoundingClientRect().top - railTop + activeLink.offsetHeight / 2;
+            settleAt(Math.max(15, Math.min(state.height - 15, y)));
+        };
+
+        draw();
+        if ('ResizeObserver' in window) new ResizeObserver(draw).observe(rail);
+        else window.addEventListener('resize', draw);
+        new MutationObserver(draw).observe(rail, { subtree: true, attributes: true, attributeFilter: ['aria-current', 'hidden'] });
+        window.addEventListener('load', draw, { once: true });
+    }
+};
+
+initContextRailLine();
+
+for (const gallery of document.querySelectorAll('[data-media-gallery]')) {
+    const track = gallery.querySelector('.media-gallery__track');
+    if (!(track instanceof HTMLElement)) continue;
+    const move = (direction) => track.scrollBy({ left: direction * track.clientWidth * 0.82, behavior: 'smooth' });
+    gallery.querySelector('[data-gallery-previous]')?.addEventListener('click', () => move(-1));
+    gallery.querySelector('[data-gallery-next]')?.addEventListener('click', () => move(1));
+}
 
 const menu = document.querySelector('#site-menu');
 const menuButton = document.querySelector('[data-menu-trigger]');

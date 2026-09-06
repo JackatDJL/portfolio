@@ -63,12 +63,7 @@ sections:
                         type: text
                         display: Titel
                     -
-                      handle: content
-                      field:
-                        type: textarea
-                        display: Inhalt
-                        validate:
-                          - required
+                      import: bard_body
                 figure:
                   display: Abbildung
                   icon: media-image-picture-orientation
@@ -136,11 +131,7 @@ sections:
                         type: text
                         display: Titel
                     -
-                      handle: content
-                      field:
-                        type: textarea
-                        display: Inhalt
-                        instructions: Für kurze Erläuterungen zu Diagrammen, Demos oder eingebetteten Beispielen.
+                      import: bard_body
                 gallery:
                   display: Galerie
                   icon: media-image-picture-gallery

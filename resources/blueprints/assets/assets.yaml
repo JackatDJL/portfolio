@@ -6,3 +6,9 @@ fields:
       display: 'Alt Text'
       type: text
       instructions: 'Description of the image'
+  -
+    handle: caption
+    field:
+      display: Bildunterschrift
+      type: textarea
+      instructions: Optionaler sichtbarer Text unter dem Bild.

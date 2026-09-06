@@ -641,25 +641,21 @@
     /* Editorial additions for any Bard field. They do not belong to a page
        template, so projects, publications and pages can opt into them too. */
     .article-toc {
-        border-top: 2px solid var(--site-border-strong);
-        padding-top: 0.9rem;
         font-size: 0.875rem;
         line-height: 1.35rem;
     }
 
     .article-toc__title {
         margin: 0;
-        font-family: var(--font-display);
-        font-weight: 700;
     }
 
     .article-toc__list {
-        margin: 0.75rem 0 0;
+        margin: 0.65rem 0 0;
         padding: 0;
         list-style: none;
     }
 
-    .article-toc__list li + li { margin-top: 0.45rem; }
+    .article-toc__list li + li { margin-top: 0.5rem; }
     .article-toc__list a {
         color: var(--site-text-muted);
         text-decoration: none;
@@ -672,9 +668,34 @@
         text-decoration-thickness: 0.16em;
         text-underline-offset: 0.18em;
     }
+    .article-toc__list a[aria-current="true"] { font-weight: 650; }
     .article-toc__list .article-toc__subitem { padding-left: 0.8rem; }
     .article-toc--mobile { margin-bottom: 2.5rem; }
     .article-toc--rail { margin-bottom: 2rem; }
+
+    .article-context-rail {
+        position: relative;
+        padding-left: 2rem;
+    }
+
+    .article-context-rail__line {
+        position: absolute;
+        inset: 0 auto 0 0;
+        width: 1.25rem;
+        height: 100%;
+        overflow: visible;
+        fill: none;
+        stroke: var(--site-border);
+        stroke-width: 1;
+        vector-effect: non-scaling-stroke;
+    }
+
+    .article-context-rail__line [data-context-line] { stroke: var(--site-border); }
+
+    .article-context-rail .project-meta {
+        border: 0;
+        padding: 0;
+    }
 
     .article-callout {
         display: grid;
@@ -699,21 +720,18 @@
         line-height: 1;
     }
 
-    .article-callout__kind {
-        margin: 0;
-        font-size: 0.75rem;
-        font-weight: 700;
-        letter-spacing: 0.07em;
-        text-transform: uppercase;
-    }
-
     .article-callout__title {
         margin: 0.15rem 0 0;
+        font-family: var(--font-display);
+        font-weight: 700;
         font-size: 1.25rem;
         line-height: 1.25;
     }
 
-    .article-callout__content { margin-top: 0.35rem; }
+    .article-callout__content { width: 100%; margin-top: 0.35rem; font-size: 1rem; }
+    .article-callout__content > * + * { margin-top: 0.75em; }
+    .article-callout__content h2,
+    .article-callout__content h3 { font-size: 1.15rem; }
     .article-callout--info { border-left-color: var(--site-focus); }
     .article-callout--warning { border-left-color: #ad7315; }
     .article-callout--success { border-left-color: #268456; }
@@ -733,9 +751,7 @@
 
     .article-quote {
         margin: 2.5rem 0;
-        border-top: 1px solid var(--site-border);
-        border-bottom: 1px solid var(--site-border);
-        padding: 1.5rem 0;
+        padding: 0.25rem 0 0.25rem 1.35rem;
     }
 
     .article-quote blockquote {
@@ -764,13 +780,40 @@
         font-size: 0.875rem;
     }
 
-    .media-gallery { display: grid; gap: 1rem; }
+    .media-gallery { margin-inline: 0; }
+    .media-gallery__track {
+        display: flex;
+        gap: 1rem;
+        overflow-x: auto;
+        overscroll-behavior-inline: contain;
+        padding-bottom: 0.6rem;
+        scroll-snap-type: inline mandatory;
+        scrollbar-color: var(--site-border-strong) transparent;
+    }
+    .media-gallery__item {
+        flex: 0 0 min(88%, 42rem);
+        scroll-snap-align: start;
+    }
+    .media-gallery__item img { aspect-ratio: 16 / 10; object-fit: cover; }
+    .media-gallery__controls { display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 0.4rem; }
+    .media-gallery__button {
+        display: grid;
+        width: 2.5rem;
+        height: 2.5rem;
+        place-items: center;
+        border: 1px solid var(--site-border-strong);
+        border-radius: var(--radius-sm);
+        background: var(--site-background);
+        color: var(--site-text);
+        font-size: 1.2rem;
+    }
+    .media-gallery__button:hover { background: var(--site-accent-soft); }
+    .media-gallery__item figcaption { margin-top: 0.65rem; }
     .media-figure__credit { color: var(--site-text-muted); }
 
     .article-wide-content {
-        border-block: 1px solid var(--site-border);
         background: var(--site-background);
-        padding-block: 1.25rem;
+        padding-block: 0.25rem;
     }
 
     .article-wide-content h2 {
@@ -788,19 +831,44 @@
         /* Main-column children may deliberately occupy the quiet context area.
            The opaque background prevents rail text showing through below a
            wide diagram or screenshot. */
-        .detail-layout__main > .article-breakout--wide,
-        .detail-layout__main > .article-breakout--full,
-        .detail-layout__main > .media-gallery.article-breakout--wide,
-        .detail-layout__main > .media-gallery.article-breakout--full {
+        .detail-layout__main > .prose-site > .article-breakout--wide {
             position: relative;
             z-index: 1;
-            width: min(calc(100% + 22rem), calc(100vw - 4rem));
+            width: min(70rem, calc(100vw - 4rem));
+            background: transparent;
+        }
+
+        .detail-layout__main > .prose-site > .article-breakout--full {
+            position: relative;
+            z-index: 1;
+            width: min(var(--container-wide), calc(100vw - 4rem));
+            margin-left: calc(max(2rem, (100vw - var(--container-wide)) / 2) - ((100vw - var(--container-content)) / 2));
+            background: transparent;
+        }
+
+        .detail-layout__main > .prose-site > .article-breakout--wide::after,
+        .detail-layout__main > .prose-site > .article-breakout--full::after {
+            position: absolute;
+            z-index: -1;
+            inset: -1rem -2rem;
+            pointer-events: none;
+            content: "";
+        }
+
+        .detail-layout__main > .prose-site > .article-breakout--wide::after {
+            background: linear-gradient(to right, var(--site-background) 0%, var(--site-background) 76%, transparent 100%);
+        }
+
+        .detail-layout__main > .prose-site > .article-breakout--full::after {
             background: var(--site-background);
         }
+
+        .media-gallery__item { flex-basis: min(76%, 46rem); }
     }
 
     @media (max-width: 47.999rem) {
         .article-toc--rail { display: none; }
+        .article-toc--mobile { border-left: 1px solid var(--site-border); padding-left: 0.8rem; }
     }
 
     @supports (animation-timeline: view()) {

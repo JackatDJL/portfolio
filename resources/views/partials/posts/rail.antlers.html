@@ -1,4 +1,9 @@
-{{# Blog-Kontext: nur Daten, Themen und echte Beziehungen. #}}
+{{# Blog-Kontext und Inhaltsverzeichnis teilen sich eine redaktionelle Führungslinie. #}}
+<div class="article-context-rail" data-context-rail>
+    <svg class="article-context-rail__line" aria-hidden="true" focusable="false">
+        <path data-context-line />
+    </svg>
+    <div class="article-context-rail__content">
 {{ partial:components/table-of-contents variant="rail" }}
 <dl class="project-meta">
     {{ if date }}
@@ -37,3 +42,5 @@
         {{ /partial:detail/meta-group }}
     {{ /if }}
 </dl>
+    </div>
+</div>
