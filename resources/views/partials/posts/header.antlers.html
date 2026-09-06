@@ -1,0 +1,16 @@
+{{# Blog-Intro: Dokumentkontext, Titel, Zusammenfassung und optionales Titelbild. #}}
+<header class="reading-width">
+    {{ partial:components/eyebrow label="Blog" }}
+
+    <h1 class="mt-4 text-4xl md:text-6xl">{{ title }}</h1>
+
+    {{ if summary }}
+        <p class="mt-6 text-lg text-foreground">{{ summary }}</p>
+    {{ /if }}
+</header>
+
+{{ if cover }}
+    <figure class="media-figure content-width mt-gutter-lg">
+        <img src="{{ glide:cover width=1152 }}" alt="{{ cover:alt }}" width="{{ cover:width }}" height="{{ cover:height }}" decoding="async">
+    </figure>
+{{ /if }}

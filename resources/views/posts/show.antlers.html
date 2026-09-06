@@ -1,0 +1,6 @@
+{{# Blog-Detailseite: redaktionelles Intro, Lesespalte und Artikelkontext. #}}
+<article>
+    {{ partial:detail/layout intro="posts/header" aside="posts/rail" aside_label="Artikelkontext" }}
+        {{ partial:bard/prose :content="content" }}
+    {{ /partial:detail/layout }}
+</article>

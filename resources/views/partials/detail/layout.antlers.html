@@ -9,7 +9,7 @@
         {{ slot }}
     </div>
     {{ if aside }}
-        <aside class="detail-layout__rail">
+        <aside class="detail-layout__rail"{{ if aside_label }} aria-label="{{ aside_label }}"{{ /if }}>
             {{ partial src="{aside}" }}
         </aside>
     {{ /if }}
