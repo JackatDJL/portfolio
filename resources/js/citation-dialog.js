@@ -59,8 +59,11 @@ for (const dialog of document.querySelectorAll('[data-citation-dialog]')) {
     const options = dialog.querySelector('[data-citation-options]');
     const output = dialog.querySelector('[data-citation-output]');
     const copy = dialog.querySelector('[data-citation-copy]');
+    const panel = dialog.querySelector('.citation-dialog__panel');
+    const close = dialog.querySelector('[data-citation-close]');
     if (!(select instanceof HTMLElement) || !(trigger instanceof HTMLButtonElement) || !(value instanceof HTMLElement)
-        || !(options instanceof HTMLElement) || !(output instanceof HTMLElement) || !(copy instanceof HTMLButtonElement)) continue;
+        || !(options instanceof HTMLElement) || !(output instanceof HTMLElement) || !(copy instanceof HTMLButtonElement)
+        || !(panel instanceof HTMLElement) || !(close instanceof HTMLButtonElement)) continue;
 
     const optionButtons = [...options.querySelectorAll('[data-citation-option]')].filter((option) => option instanceof HTMLButtonElement);
     const citation = {
@@ -101,6 +104,18 @@ for (const dialog of document.querySelectorAll('[data-citation-dialog]')) {
         render();
         closeOptions(true);
     };
+    const closeDialog = () => {
+        if (!dialog.open || dialog.dataset.state === 'closing') return;
+        dialog.dataset.state = 'closing';
+        closeOptions();
+        const finish = () => {
+            dialog.close();
+            delete dialog.dataset.state;
+            gsap.set(dialog, { clearProps: 'opacity,visibility,transform' });
+        };
+        if (prefersReducedMotion()) finish();
+        else gsap.to(dialog, { autoAlpha: 0, scale: 0.7, duration: 0.2, ease: 'power1.in', onComplete: finish });
+    };
 
     render();
     trigger.addEventListener('click', () => { if (isOpen) closeOptions(); else openOptions(); });
@@ -122,11 +137,15 @@ for (const dialog of document.querySelectorAll('[data-citation-dialog]')) {
         });
     });
     document.addEventListener('pointerdown', (event) => { if (isOpen && event.target instanceof Node && !select.contains(event.target)) closeOptions(); });
-    dialog.addEventListener('cancel', (event) => { if (isOpen) { event.preventDefault(); closeOptions(true); } });
+    close.addEventListener('click', closeDialog);
+    dialog.addEventListener('cancel', (event) => {
+        event.preventDefault();
+        if (isOpen) closeOptions(true);
+        else closeDialog();
+    });
     copy.addEventListener('click', async () => {
         if (await copyText(output.textContent || '', output)) {
-            copy.textContent = 'Kopiert';
-            window.setTimeout(() => { copy.textContent = 'Zitation kopieren'; }, 1600);
+            closeDialog();
         } else output.focus();
     });
 }
@@ -135,6 +154,16 @@ for (const trigger of document.querySelectorAll('[data-citation-open]')) {
     if (!(trigger instanceof HTMLButtonElement)) continue;
     trigger.addEventListener('click', () => {
         const dialog = document.getElementById(trigger.dataset.citationOpen || '');
-        if (dialog instanceof HTMLDialogElement && !dialog.open) dialog.showModal();
+        if (!(dialog instanceof HTMLDialogElement) || dialog.open) return;
+
+        dialog.showModal();
+        if (prefersReducedMotion()) {
+            gsap.set(dialog, { autoAlpha: 1, x: 0, y: 0, scale: 1 });
+            return;
+        }
+        gsap.fromTo(dialog,
+            { autoAlpha: 0, y: 36, scale: 0.7 },
+            { autoAlpha: 1, y: 0, scale: 1, duration: 0.32, ease: 'power2.out', clearProps: 'opacity,visibility,transform' },
+        );
     });
 }

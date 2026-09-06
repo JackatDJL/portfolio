@@ -740,6 +740,9 @@
 
     .publication-authors li { display: grid; gap: 0.2rem; }
     .publication-author__name { font-weight: 600; }
+    /* A grid child stretches by default; a link highlight must hug its ORCID
+       text instead of painting the entire context rail. */
+    .publication-authors .publication-identifier { justify-self: start; }
     .publication-identifier {
         overflow-wrap: anywhere;
         font-family: var(--font-mono);
@@ -804,8 +807,10 @@
     .pdf-viewer__preview-stage:hover .pdf-viewer__open, .pdf-viewer__preview-stage:focus-within .pdf-viewer__open { opacity: 1; }
     .pdf-viewer__fallback { margin: 0.75rem 0 0; color: var(--site-text-muted); font-size: 0.875rem; }
 
-    .citation-dialog { position: fixed; inset: 0; width: min(calc(100% - 2rem), 38rem); max-width: none; max-height: calc(100dvh - 2rem); margin: auto; border: 1px solid var(--site-border-strong); border-radius: var(--radius-md); padding: 0; color: var(--site-text); background: var(--site-background); box-shadow: var(--shadow-neo); }
+    .citation-dialog { position: fixed; inset: 0; width: min(calc(100% - 2rem), 38rem); max-width: none; max-height: calc(100dvh - 2rem); margin: auto; overflow: visible; border: 1px solid var(--site-border-strong); border-radius: var(--radius-md); padding: 0; color: var(--site-text); background: var(--site-background); box-shadow: var(--shadow-neo); }
     .citation-dialog::backdrop { background: color-mix(in srgb, var(--site-background) 42%, transparent); backdrop-filter: blur(3px); }
+    .citation-dialog[open]::backdrop { animation: citation-backdrop-in 280ms var(--ease-standard) both; }
+    .citation-dialog[data-state="closing"]::backdrop { animation: citation-backdrop-out 180ms var(--ease-standard) both; }
     .citation-dialog__panel { padding: clamp(1.25rem, 3vw, 2rem); }
     .citation-dialog__header { display: flex; align-items: start; justify-content: space-between; gap: 1rem; border-bottom: 1px solid var(--site-border); padding-bottom: 1rem; }
     .citation-dialog__header h2 { margin: 0.25rem 0 0; font-family: var(--font-display); font-size: clamp(1.7rem, 4vw, 2.25rem); line-height: 1; }
@@ -817,11 +822,29 @@
     .citation-select__trigger:active { transform: translate(1px, 1px); box-shadow: none; font-weight: 700; }
     .citation-select__chevron { transition: transform 160ms var(--ease-standard); }
     .citation-select.is-open .citation-select__chevron { transform: rotate(180deg); }
-    .citation-select__content { position: absolute; z-index: 2; top: calc(100% + 0.4rem); right: 0; left: 0; overflow: hidden; border: 1px solid var(--site-border-strong); border-radius: var(--radius-sm); background: var(--site-background); box-shadow: var(--shadow-neo-sm); }
-    .citation-select__content button { display: block; width: 100%; border: 0; border-bottom: 1px solid var(--site-border); background: transparent; color: var(--site-text); padding: 0.62rem 0.75rem; font: inherit; text-align: left; transition: background-size 220ms var(--ease-emphasized), font-weight 160ms var(--ease-standard); background-image: linear-gradient(var(--site-accent-soft), var(--site-accent-soft)); background-position: 0 100%; background-repeat: no-repeat; background-size: 0 100%; }
-    .citation-select__content button:last-child { border-bottom: 0; }
+    .citation-select__content { position: absolute; z-index: 3; top: calc(100% + 0.4rem); right: 0; left: 0; overflow: visible; padding: 0 1px 1px 0; background: transparent; }
+    .citation-select__content button { position: relative; z-index: 1; display: block; width: 100%; border: 1px solid var(--site-border-strong); background-color: var(--site-background); box-shadow: 1px 1px 0 0 var(--site-shadow-color); color: var(--site-text); padding: 0.62rem 0.75rem; font: inherit; text-align: left; transition: transform 120ms var(--ease-standard), box-shadow 120ms var(--ease-standard), background-size 220ms var(--ease-emphasized), font-weight 160ms var(--ease-standard); background-image: linear-gradient(var(--site-accent-soft), var(--site-accent-soft)); background-position: 0 100%; background-repeat: no-repeat; background-size: 0 100%; }
+    .citation-select__content button + button { border-top: 0; }
+    .citation-select__content button:first-child { border-radius: calc(var(--radius-sm) - 1px) calc(var(--radius-sm) - 1px) 0 0; }
+    .citation-select__content button:last-child { border-radius: 0 0 calc(var(--radius-sm) - 1px) calc(var(--radius-sm) - 1px); }
+    .citation-select__content button:nth-child(1) { z-index: 6; }
+    .citation-select__content button:nth-child(2) { z-index: 5; }
+    .citation-select__content button:nth-child(3) { z-index: 4; }
+    .citation-select__content button:nth-child(4) { z-index: 3; }
+    .citation-select__content button:nth-child(5) { z-index: 2; }
     .citation-select__content button:hover, .citation-select__content button:focus-visible, .citation-select__content button[aria-selected="true"] { background-size: 100% 100%; font-weight: 650; }
-    .citation-select__content button:active { font-weight: 700; }
+    /* Each option owns its lower-right shadow. Pressing it moves the surface
+       into that shadow, while the layers above keep their trapezoidal edge. */
+    .citation-select__content button:active { z-index: 0; transform: translate(1px, 1px); box-shadow: none; font-weight: 700; }
+    .citation-select__content button:not(:first-child):active::before { position: absolute; top: -1px; left: -1px; width: 1px; height: 1px; background: var(--site-border-strong); clip-path: polygon(0 0, 100% 100%, 0 100%); content: ""; }
+
+    .related-reference { display: block; border-top: 1px solid var(--site-border); padding: 0.75rem 0; color: inherit; text-decoration: none; }
+    .related-reference__footer { display: flex; min-height: 1.35rem; align-items: start; justify-content: space-between; gap: 0.75rem; }
+    .related-reference__arrow-mask { display: grid; width: 1.35rem; height: 1.35rem; flex: none; place-items: center; overflow: clip; border-radius: 50%; }
+    .related-reference__arrow { display: inline-block; color: var(--site-text); font-size: 1.1rem; font-weight: 700; line-height: 1.1; transition: transform 180ms var(--ease-emphasized); will-change: transform; }
+    .related-reference:hover .semantic-link, .related-reference:focus-visible .semantic-link { background-size: 100% 100%; }
+    .related-reference:hover .related-reference__arrow, .related-reference:focus-visible .related-reference__arrow { transform: translate(3px, -3px); }
+    .related-reference:active .related-reference__arrow { transform: translate(0, 0); }
     .citation-dialog__output { min-height: 6rem; margin: 1rem 0; border: 1px solid var(--site-border); border-radius: var(--radius-md); background: var(--site-surface); padding: 1rem; overflow-wrap: anywhere; font-size: 0.9375rem; line-height: 1.55; }
     .publication-content { margin-top: 2.5rem; }
     .publication-content > .eyebrow { margin-bottom: 1rem; }
@@ -1062,6 +1085,16 @@
     to { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes citation-backdrop-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes citation-backdrop-out {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+
 @media (prefers-reduced-motion: reduce) {
-    .btn, .card-interactive { transform: none !important; }
+    .btn, .card-interactive, .citation-select__trigger, .citation-select__content button, .related-reference__arrow { transform: none !important; transition: none !important; }
 }

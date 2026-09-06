@@ -79,10 +79,12 @@
                     {{ /if }}
                     {{ if related_posts }}
                         {{ related_posts }}
-                            <a class="block border-t border-border py-3" href="{{ url }}">
+                            <a class="related-reference" href="{{ url }}" data-related-reference>
                                 <span class="font-display text-base font-bold tracking-tight semantic-link">{{ title }}</span>
-                                {{ if date }}<span class="mt-1 block text-sm text-muted">{{ date | format_translated('j. F Y') }}</span>{{ /if }}
-                                <span class="mt-2 block text-sm font-semibold" aria-hidden="true">→</span>
+                                <span class="related-reference__footer mt-1 text-sm text-muted">
+                                    {{ if date }}{{ date | format_translated('j. F Y') }}{{ /if }}
+                                    <span class="related-reference__arrow-mask" aria-hidden="true"><span class="related-reference__arrow">↗</span></span>
+                                </span>
                             </a>
                         {{ /related_posts }}
                     {{ /if }}

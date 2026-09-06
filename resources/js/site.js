@@ -237,6 +237,40 @@ const initContextRailLine = () => {
 
 initContextRailLine();
 
+const initRelatedReferenceMotion = () => {
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduceMotion) return;
+
+    for (const reference of document.querySelectorAll('[data-related-reference]')) {
+        if (!(reference instanceof HTMLAnchorElement)) continue;
+        const arrow = reference.querySelector('.related-reference__arrow');
+        if (!(arrow instanceof HTMLElement)) continue;
+        let isReleasing = false;
+
+        reference.addEventListener('pointerdown', () => {
+            gsap.killTweensOf(arrow);
+            gsap.to(arrow, { autoAlpha: 1, x: 0, y: 0, duration: 0.1, ease: 'power1.out' });
+        });
+        reference.addEventListener('pointerup', (event) => {
+            if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+            event.preventDefault();
+            isReleasing = true;
+            gsap.killTweensOf(arrow);
+            gsap.timeline({ onComplete: () => { window.location.assign(reference.href); } })
+                .to(arrow, { autoAlpha: 0, x: 30, y: -30, duration: 0.14, ease: 'power2.in' })
+                .set(arrow, { autoAlpha: 0, x: -18, y: 18 })
+                .fromTo(arrow, { autoAlpha: 0, x: -18, y: 18 }, { autoAlpha: 1, x: 0, y: 0, duration: 0.18, ease: 'power2.out' });
+        });
+        reference.addEventListener('click', (event) => {
+            if (!isReleasing) return;
+            event.preventDefault();
+            isReleasing = false;
+        });
+    }
+};
+
+initRelatedReferenceMotion();
+
 for (const button of document.querySelectorAll('[data-copy-target]')) {
     if (!(button instanceof HTMLButtonElement)) continue;
     button.addEventListener('click', async () => {
