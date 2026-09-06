@@ -67,7 +67,7 @@
         {{ if authors && date && title }}
             {{ partial:detail/meta-group label="Zitieren" }}
                 <p id="publication-citation-{{ id }}" class="publication-citation">{{ authors }}{{ name }}{{ unless last }}, {{ /unless }}{{ /authors }} ({{ date | format('Y') }}): {{ title }}.{{ if publisher }} {{ publisher }}.{{ /if }}{{ if version }} Version {{ version }}.{{ /if }}{{ if doi }} https://doi.org/{{ doi }}{{ /if }}</p>
-                <button class="publication-copy mt-3" type="button" data-copy-target="publication-citation-{{ id }}">Zitation kopieren</button>
+                <button class="publication-copy mt-3" type="button" data-citation-open="citation-dialog-{{ id }}">Stil wählen</button>
             {{ /partial:detail/meta-group }}
         {{ /if }}
 

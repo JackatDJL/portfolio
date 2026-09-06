@@ -2,6 +2,9 @@ import { initThemeSwitcher } from './theme.js';
 import { gsap } from 'gsap';
 import { ScrollToPlugin } from 'gsap/ScrollToPlugin';
 
+if (document.querySelector('[data-pdf-viewer]')) import('./pdf-viewer.js');
+if (document.querySelector('[data-citation-dialog]')) import('./citation-dialog.js');
+
 gsap.registerPlugin(ScrollToPlugin);
 
 initThemeSwitcher();

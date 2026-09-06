@@ -16,6 +16,7 @@
 /node_modules
 /playwright-report
 /public/build
+/public/documents
 /public/fonts-manifest.dev.json
 /public/hot
 /public/static

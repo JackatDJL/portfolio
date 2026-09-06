@@ -1,0 +1,26 @@
+{{# Primäres Publikationsobjekt. Der externe Original-Link bleibt unabhängig
+    von nativer PDF-Unterstützung immer erreichbar. #}}
+<section class="publication-document{{ if publication_type == 'poster' }} publication-document--visual article-breakout--wide{{ /if }}" aria-labelledby="publication-document-title">
+    <div class="publication-document__header">
+        <div>
+            <h2 id="publication-document-title" class="eyebrow">Originaldokument</h2>
+            {{ if document_url | contains('.pdf') }}
+                <p>PDF</p>
+            {{ else }}
+                <p>Dokument</p>
+            {{ /if }}
+        </div>
+        <div class="flex flex-wrap gap-3">
+            {{ if content }}
+                <a class="btn btn-ghost" href="#publication-content-title">Zur Einordnung ↓</a>
+            {{ /if }}
+            {{ if authors && date && title }}
+                <button class="btn btn-secondary" type="button" data-citation-open="citation-dialog-{{ id }}">{{ publication_type:label ?? publication_type }} zitieren</button>
+            {{ /if }}
+        </div>
+    </div>
+
+    {{ if document_url | contains('.pdf') }}
+        {{ partial:components/pdf-viewer id="publication-pdf" url="/documents/{slug}.pdf" fallback_url="{document_url}" }}
+    {{ /if }}
+</section>

@@ -22,7 +22,7 @@
         <div class="mt-8 flex flex-wrap gap-3">
             {{ if document_url }}
                 {{ if document_url | contains('.pdf') }}
-                    {{ partial:components/button variant="primary" :href="document_url" label="PDF öffnen ↗" attributes="target=_blank rel=noreferrer" }}
+                    <a class="btn btn-primary" href="#publication-document-title">Zum Dokument ↓</a>
                 {{ else }}
                     {{ partial:components/button variant="primary" :href="document_url" label="Dokument öffnen ↗" attributes="target=_blank rel=noreferrer" }}
                 {{ /if }}

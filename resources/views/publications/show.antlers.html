@@ -1,11 +1,11 @@
 {{# Veröffentlichungs-Detailseite: Dokumentkontext, Lesespalte und Bibliografie. #}}
 <article>
     {{ partial:detail/layout intro="publications/header" aside="publications/rail" aside_label="Bibliografische Angaben" }}
-        {{ partial:publications/mobile-record }}
-
-        {{ if cover && (document_url || publication_url) }}
+        {{ if document_url }}
+            {{ partial:publications/document }}
+        {{ elseif cover && publication_url }}
             <figure class="publication-preview article-breakout--wide">
-                <a href="{{ if document_url }}{{ document_url }}{{ else }}{{ publication_url }}{{ /if }}" target="_blank" rel="noreferrer" aria-label="{{ title }} öffnen">
+                <a href="{{ publication_url }}" target="_blank" rel="noreferrer" aria-label="{{ title }} öffnen">
                     <img src="{{ glide:cover width=1440 }}" alt="{{ cover:alt ?? title }}" width="{{ cover:width }}" height="{{ cover:height }}" decoding="async">
                 </a>
             </figure>
@@ -17,5 +17,8 @@
                 {{ partial:bard/prose :content="content" }}
             </section>
         {{ /if }}
+
+        {{ partial:publications/mobile-record }}
     {{ /partial:detail/layout }}
+    {{ partial:components/citation-dialog }}
 </article>
