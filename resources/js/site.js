@@ -1,3 +1,4 @@
+if (document.querySelector('[data-project-stream]')) import('./collection-preview.js');
 import { initThemeSwitcher } from './theme.js';
 import { gsap } from 'gsap';
 import { ScrollToPlugin } from 'gsap/ScrollToPlugin';

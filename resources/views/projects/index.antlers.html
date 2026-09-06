@@ -1,0 +1,28 @@
+<div class="site-container collection-root projects-index" data-project-stream>
+    {{ partial:collections/intro singular="Projekt" source="projects" noun="Projekte" }}
+    {{ collection:projects sort="featured:desc|started_at:desc" limit="1" }}
+        {{ if featured }}<a class="project-pick" href="{{ url }}"><span class="eyebrow">Im Fokus</span><span>{{ title }}</span><span class="chip">{{ project_status:label }}</span><span aria-hidden="true">↗</span></a>{{ /if }}
+    {{ /collection:projects }}
+    <div class="project-landscape">
+        <section aria-label="Projekte nach Beginn" class="project-stream">
+            {{ collection:projects sort="started_at:desc" }}
+                <article class="project-record" data-project-record>
+                    <div class="project-record__time"><time datetime="{{ started_at format="Y-m-d" }}">{{ started_at format="Y" }}</time>{{ if ended_at }}<span>bis {{ ended_at format="Y" }}</span>{{ /if }}</div>
+                    <a href="{{ url }}" class="project-record__link" data-project-link>
+                        <div class="collection-meta">{{ if project_status }}<span class="chip">{{ project_status:label }}</span>{{ /if }}{{ if featured }}<span class="eyebrow">Im Fokus</span>{{ /if }}</div>
+                        <h2>{{ title }} <span class="collection-arrow" aria-hidden="true">↗</span></h2>
+                        {{ if summary }}<p>{{ summary }}</p>{{ /if }}
+                        {{ if featured_technology }}<ul class="project-technologies" aria-label="Technologien">{{ featured_technology }}<li>{{ label ?? value }}</li>{{ /featured_technology }}</ul>{{ /if }}
+                    </a>
+                    {{ partial:collections/topics }}
+                    <div class="project-artifact" data-project-artifact>
+                        {{ if cover }}<img src="{{ glide:cover width="960" }}" srcset="{{ glide:cover width="480" }} 480w, {{ glide:cover width="960" }} 960w" sizes="(min-width: 1024px) 42vw, 90vw" alt="{{ cover:alt }}" width="{{ cover:width }}" height="{{ cover:height }}" loading="lazy" decoding="async">{{ else }}<div class="project-artifact__type"><span class="eyebrow">{{ project_status:label }}</span><p>{{ title }}</p>{{ if featured_technology }}<span>{{ featured_technology }}{{ label ?? value }}{{ unless last }} / {{ /unless }}{{ /featured_technology }}</span>{{ /if }}</div>{{ /if }}
+                        <div class="project-artifact__caption"><span>{{ title }}</span><span>{{ started_at format="Y" }}</span></div>
+                    </div>
+                </article>
+            {{ /collection:projects }}
+        </section>
+        <aside class="project-stage" aria-hidden="true"><div class="project-stage__sticky"><p class="eyebrow">Projektansicht</p><div data-project-preview></div></div></aside>
+    </div>
+    <div class="collection-ending"><span class="eyebrow">Projektarchiv</span><a class="semantic-link" href="#main">Nach oben ↑</a></div>
+</div>

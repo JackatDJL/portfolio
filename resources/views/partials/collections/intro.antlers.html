@@ -1,0 +1,4 @@
+<header class="collection-intro">
+    <h1>{{ title }}</h1>
+    <p class="eyebrow">{{ collection:count :from="source" }} {{ if {collection:count :from="source"} == 1 }}{{ singular }}{{ else }}{{ noun }}{{ /if }}</p>
+</header>
