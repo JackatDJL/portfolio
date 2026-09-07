@@ -10,12 +10,11 @@
                     {{ if authors }}<p class="publication-record__authors">{{ authors }}{{ name }}{{ unless last }}, {{ /unless }}{{ /authors }}</p>{{ /if }}
                     {{ if publisher }}<p class="publication-record__publisher">{{ publisher }}</p>{{ /if }}
                     {{ if doi }}<a class="semantic-link publication-identifier" href="https://doi.org/{{ doi }}">DOI {{ doi }} ↗</a>{{ /if }}
-                    {{ if abstract }}<details class="publication-record__abstract"><summary>Abstract <span aria-hidden="true">+</span></summary><p>{{ abstract }}</p></details>{{ /if }}
+                    {{ if abstract }}<details class="publication-record__abstract"><summary>Abstract <span aria-hidden="true">+</span></summary><div class="publication-record__abstract-content"><p>{{ abstract }}</p></div></details>{{ /if }}
                     {{ partial:collections/topics }}
+                    <div class="publication-record__actions">{{ if document_url }}<a class="semantic-link" href="{{ document_url }}" aria-label="Dokument: {{ title }}">Dokument ↗</a>{{ /if }}<a class="semantic-link" href="{{ url }}">Zum Eintrag →</a></div>
                 </div>
-                <div class="publication-record__access">{{ if cover }}<a href="{{ url }}" tabindex="-1" aria-hidden="true"><img src="{{ glide:cover width="480" }}" alt="" width="{{ cover:width }}" height="{{ cover:height }}" loading="lazy" decoding="async"></a>{{ /if }}{{ if document_url }}<a class="btn btn-secondary" href="{{ document_url }}" aria-label="Dokument: {{ title }}">Dokument ↗</a>{{ /if }}<a class="semantic-link" href="{{ url }}">Zum Eintrag →</a></div>
             </article>
         {{ /collection:publications }}
     </div>
-    <div class="collection-ending"><span class="eyebrow">Publikationsarchiv · nach Erscheinungsdatum</span><a class="semantic-link" href="#main">Nach oben ↑</a></div>
 </div>
