@@ -33,9 +33,6 @@ php composer.phar install \
 bun ci
 bun run build
 
-# Mirror remote publication PDFs for same-origin PDF.js previews before SSG.
-php scripts/sync-publication-previews.php
-
 # Statamic
 php please stache:warm -n -q
 php please ssg:generate

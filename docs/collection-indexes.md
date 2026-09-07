@@ -18,7 +18,7 @@ At 64rem Projects gains the sticky stage. Below that breakpoint its images stay 
 
 ## Verification, 2026-09-06
 
-- Production application stages passed: frozen Bun install, Vite build, publication PDF mirror, Stache warm, SSG generation. All three index URLs explicitly participate in SSG and were generated among 11 HTML files. The host-provisioning part of `build.sh` is Vercel-specific and was not executed locally. No deployment was performed.
+- Production application stages passed: frozen Bun install, Vite build, versioned same-origin publication PDF previews, Stache warm, SSG generation. All three index URLs explicitly participate in SSG and were generated among 11 HTML files. The host-provisioning part of `build.sh` is Vercel-specific and was not executed locally. No deployment was performed.
 - `php artisan test --compact`: 5 passed, 16 assertions.
 - Existing `bun run test:browser`: 1 passed.
 - Pint on changed PHP files and `git diff --check`: passed.
