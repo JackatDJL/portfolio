@@ -24,6 +24,7 @@ const initPdfPreview = async (viewer) => {
         const documentProxy = await loadingTask.promise;
         const page = await documentProxy.getPage(1);
         const baseViewport = page.getViewport({ scale: 1 });
+        pagesElement.style.aspectRatio = `${baseViewport.width} / ${baseViewport.height}`;
         const pageElement = document.createElement('figure');
         const canvas = document.createElement('canvas');
         pageElement.className = 'pdf-viewer__page';

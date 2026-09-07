@@ -65,6 +65,18 @@ for (const root of document.querySelectorAll('[data-project-stream]')) {
         gsap.fromTo(next, { autoAlpha: 0, scale: 0.97, clipPath: 'inset(6% 0 0 0)' }, { autoAlpha: 1, scale: 1, clipPath: 'inset(0 0 0 0)', duration: 0.24, ease: 'power2.out' });
         if (previous) gsap.to(previous, { autoAlpha: 0, scale: 1.025, duration: 0.16, ease: 'power1.in', onComplete: () => previous.remove() });
     };
+    const prime = (record) => {
+        const artifact = record.querySelector('[data-project-artifact]');
+        if (!artifact || activeMedia) return;
+        const first = document.createElement('div');
+        first.className = 'project-float__media';
+        first.dataset.source = record.querySelector('h2')?.textContent || '';
+        first.append(artifact.cloneNode(true));
+        const image = first.querySelector('img');
+        if (image) image.loading = 'eager';
+        stage.append(first);
+        activeMedia = first;
+    };
     const enable = () => {
         if (!desktop.matches) return;
         root.classList.add('is-enhanced');
@@ -83,6 +95,14 @@ for (const root of document.querySelectorAll('[data-project-stream]')) {
         ScrollTrigger.getAll().filter((trigger) => records.includes(trigger.trigger)).forEach((trigger) => trigger.kill());
     };
     enable();
+    prime(records[0]);
+    const initiallyHovered = root.querySelector('[data-project-record]:hover');
+    if (initiallyHovered instanceof HTMLElement) {
+        const rect = initiallyHovered.getBoundingClientRect();
+        pointerX = rect.left + Math.min(rect.width * 0.5, 180);
+        pointerY = rect.top + Math.min(rect.height * 0.35, 160);
+        activate(initiallyHovered);
+    }
     records.forEach((record) => {
         record.addEventListener('pointerenter', (event) => { pointerX = event.clientX; pointerY = event.clientY; activate(record); });
         record.addEventListener('focusin', () => activate(record, true));

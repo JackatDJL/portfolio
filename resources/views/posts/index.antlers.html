@@ -4,11 +4,11 @@
         {{ lead_id = id }}
         <article class="journal-lead">
             <div class="journal-date"><span class="eyebrow">{{ if featured }}Im Fokus{{ else }}Zuletzt erschienen{{ /if }}</span><time datetime="{{ date format="Y-m-d" }}">{{ date format="d.m.Y" }}</time></div>
-            <div><a class="journal-link" href="{{ url }}"><h2>{{ title }} <span class="collection-arrow" aria-hidden="true">↗</span></h2>{{ if summary }}<p>{{ summary }}</p>{{ /if }}</a>{{ partial:collections/topics }}</div>
+            <div><a class="journal-link collection-link" href="{{ url }}" data-related-reference><h2>{{ title }} <span class="related-reference__arrow-mask collection-arrow-mask" aria-hidden="true"><span class="related-reference__arrow">↗</span></span></h2>{{ if summary }}<p>{{ summary }}</p>{{ /if }}</a>{{ partial:collections/topics }}</div>
         </article>
         {{ collection:posts sort="date:desc" :id:not="lead_id" as="archive" }}
             {{ if archive }}<section class="journal-archive" aria-label="Weitere Beiträge">{{ archive }}
-                <article class="journal-entry"><time class="journal-date" datetime="{{ date format="Y-m-d" }}">{{ date format="d.m.Y" }}</time><div><a class="journal-link" href="{{ url }}"><h2>{{ title }} <span class="collection-arrow" aria-hidden="true">↗</span></h2>{{ if summary }}<p>{{ summary }}</p>{{ /if }}</a>{{ partial:collections/topics }}</div></article>
+                <article class="journal-entry"><time class="journal-date" datetime="{{ date format="Y-m-d" }}">{{ date format="d.m.Y" }}</time><div><a class="journal-link collection-link" href="{{ url }}" data-related-reference><h2>{{ title }} <span class="related-reference__arrow-mask collection-arrow-mask" aria-hidden="true"><span class="related-reference__arrow">↗</span></span></h2>{{ if summary }}<p>{{ summary }}</p>{{ /if }}</a>{{ partial:collections/topics }}</div></article>
             {{ /archive }}</section>{{ /if }}
         {{ /collection:posts }}
     {{ /collection:posts }}
