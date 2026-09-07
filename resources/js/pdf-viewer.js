@@ -24,7 +24,12 @@ const initPdfPreview = async (viewer) => {
         const documentProxy = await loadingTask.promise;
         const page = await documentProxy.getPage(1);
         const baseViewport = page.getViewport({ scale: 1 });
-        pagesElement.style.aspectRatio = `${baseViewport.width} / ${baseViewport.height}`;
+        const isPortrait = baseViewport.height > baseViewport.width;
+        const frameHeight = isPortrait ? baseViewport.height * 0.75 : baseViewport.height;
+
+        pagesElement.dataset.pdfOrientation = isPortrait ? 'portrait' : 'landscape';
+        pagesElement.dataset.pdfCrop = isPortrait ? 'bottom' : 'none';
+        pagesElement.style.aspectRatio = `${baseViewport.width} / ${frameHeight}`;
         const pageElement = document.createElement('figure');
         const canvas = document.createElement('canvas');
         pageElement.className = 'pdf-viewer__page';
@@ -37,9 +42,21 @@ const initPdfPreview = async (viewer) => {
         let resizeFrame;
         const render = async () => {
             renderTask?.cancel();
-            const widthScale = pagesElement.clientWidth / baseViewport.width;
-            const heightScale = pagesElement.clientHeight / baseViewport.height;
-            const viewport = page.getViewport({ scale: Math.max(0.1, Math.min(widthScale, heightScale)) });
+            const styles = window.getComputedStyle(pagesElement);
+            const availableWidth = pagesElement.clientWidth - parseFloat(styles.paddingLeft) - parseFloat(styles.paddingRight);
+            const widthScale = availableWidth / baseViewport.width;
+            if (isPortrait) {
+                const frameChrome = parseFloat(styles.paddingTop)
+                    + parseFloat(styles.borderTopWidth)
+                    + parseFloat(styles.borderBottomWidth);
+                pagesElement.style.height = `${(baseViewport.height * widthScale * 0.75) + frameChrome}px`;
+            } else {
+                pagesElement.style.removeProperty('height');
+            }
+
+            const availableHeight = pagesElement.clientHeight - parseFloat(styles.paddingTop) - parseFloat(styles.paddingBottom);
+            const heightScale = availableHeight / baseViewport.height;
+            const viewport = page.getViewport({ scale: Math.max(0.1, isPortrait ? widthScale : Math.min(widthScale, heightScale)) });
             const outputScale = Math.min(window.devicePixelRatio || 1, 2);
             canvas.width = Math.floor(viewport.width * outputScale);
             canvas.height = Math.floor(viewport.height * outputScale);

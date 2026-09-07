@@ -28,12 +28,14 @@ noindex: false
 gallery:
   - projects/ai-ctx/effect-ai-ctx.png
 updated_by: 7098a585-4701-4963-95aa-52c0d85d3e7d
-updated_at: 1788611140
+updated_at: 1788815940
 topics:
   - oss
   - devtools
   - ai
   - cli
+related_projects:
+  - 4739fabf-5726-4d17-ad72-5a5f574e33cd
 content:
   -
     type: heading

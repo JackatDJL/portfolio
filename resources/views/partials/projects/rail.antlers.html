@@ -46,14 +46,12 @@
                 <div class="space-y-3">
                     {{ if related_projects }}
                         {{ related_projects }}
-                            {{ partial:projects/reference }}
+                            {{ partial:components/related-reference }}
                         {{ /related_projects }}
                     {{ /if }}
                     {{ if related_experience }}
                         {{ related_experience }}
-                            {{ if url }}
-                                <p><a class="semantic-link text-sm" href="{{ url }}">{{ title }}</a></p>
-                            {{ /if }}
+                            {{ partial:components/related-reference }}
                         {{ /related_experience }}
                     {{ /if }}
                 </div>

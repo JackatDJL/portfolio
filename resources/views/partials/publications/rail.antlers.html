@@ -75,17 +75,11 @@
             {{ partial:detail/meta-group label="Verwandtes" }}
                 <div>
                     {{ if related_projects }}
-                        {{ related_projects }}{{ partial:posts/project-reference }}{{ /related_projects }}
+                        {{ related_projects }}{{ partial:components/related-reference }}{{ /related_projects }}
                     {{ /if }}
                     {{ if related_posts }}
                         {{ related_posts }}
-                            <a class="related-reference" href="{{ url }}" data-related-reference>
-                                <span class="font-display text-base font-bold tracking-tight semantic-link">{{ title }}</span>
-                                <span class="related-reference__footer mt-1 text-sm text-muted">
-                                    {{ if date }}{{ date | format_translated('j. F Y') }}{{ /if }}
-                                    <span class="related-reference__arrow-mask" aria-hidden="true"><span class="related-reference__arrow">↗</span></span>
-                                </span>
-                            </a>
+                            {{ partial:components/related-reference }}
                         {{ /related_posts }}
                     {{ /if }}
                 </div>

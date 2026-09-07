@@ -27,7 +27,15 @@ cover: projects/prtop/prtop-tokio-main-run.png
 gallery:
   - projects/prtop/prtop-tokio-main-run.png
 updated_by: 7098a585-4701-4963-95aa-52c0d85d3e7d
-updated_at: 1788611287
+updated_at: 1788816002
+topics:
+  - cli
+  - devtools
+  - git
+  - oss
+  - rust
+related_projects:
+  - 592ac462-1e09-4f35-be25-8308b982fb2b
 content:
   -
     type: heading
