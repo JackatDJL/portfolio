@@ -4,7 +4,7 @@ tabs:
     display: Inhalt
     sections:
       -
-        display: Hero
+        display: Aktueller Stand
         fields:
           -
             handle: intro
@@ -15,7 +15,7 @@ tabs:
               container: assets
               remove_empty_nodes: false
               type: bard
-              display: Einleitung
+              display: Einordnung
               validate:
                 - required
           -
@@ -38,4 +38,4 @@ tabs:
                 - publications
               max_items: 5
               type: entries
-              display: Inhalte
+              display: Verknüpfte Einträge

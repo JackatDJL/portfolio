@@ -1,0 +1,11 @@
+<article class="home-publication" data-home-publication>
+    <a href="{{ url }}" class="home-publication__sheet" aria-label="{{ title }} öffnen">
+        <span class="home-publication__folio" aria-hidden="true">{{ date format="Y" }}</span>
+        {{ if cover }}<img class="home-publication__preview" src="{{ glide:cover width="960" }}" srcset="{{ glide:cover width="480" }} 480w, {{ glide:cover width="960" }} 960w" sizes="(min-width: 48rem) 36vw, 82vw" alt="" width="{{ cover:width }}" height="{{ cover:height }}" loading="lazy" decoding="async">{{ /if }}
+        <span class="home-publication__type">{{ publication_type:label ?? publication_type }}</span>
+        <strong>{{ title }}</strong>
+        {{ if abstract }}<span class="home-publication__abstract">{{ abstract }}</span>{{ /if }}
+        <span class="home-publication__rule" aria-hidden="true"></span>
+        <span class="home-publication__imprint">{{ publisher ?? 'Veröffentlichung' }}{{ if doi }} · DOI {{ doi }}{{ /if }}</span>
+    </a>
+</article>
