@@ -1,0 +1,9 @@
+<article class="home-project" data-home-project>
+    <div class="home-project__copy">
+        <div class="home-project__meta">{{ if started_at }}<time datetime="{{ started_at format="Y-m-d" }}">{{ started_at format="Y" }}</time>{{ /if }}{{ if project_status }}<span class="chip">{{ project_status:label ?? project_status }}</span>{{ /if }}</div>
+        <h3><a href="{{ url }}">{{ title }} <span aria-hidden="true">↗</span></a></h3>
+        {{ if summary }}<p>{{ summary }}</p>{{ /if }}
+        {{ if featured_technology }}<ul class="home-project__technology" aria-label="Technologien">{{ featured_technology }}<li>{{ label ?? value }}</li>{{ /featured_technology }}</ul>{{ /if }}
+    </div>
+    <a href="{{ url }}" class="home-project__artifact" tabindex="-1" aria-hidden="true">{{ if cover }}<img src="{{ glide:cover width="1200" }}" srcset="{{ glide:cover width="640" }} 640w, {{ glide:cover width="1200" }} 1200w" sizes="(min-width: 64rem) 52vw, 90vw" alt="" width="{{ cover:width }}" height="{{ cover:height }}" loading="lazy" decoding="async">{{ else }}<span class="home-project__fallback">{{ title }}</span>{{ /if }}</a>
+</article>

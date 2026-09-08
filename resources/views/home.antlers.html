@@ -1,2 +1,64 @@
-{{# Temporary content only. The homepage composition belongs to a later step. #}}
-{{ content }}
+{{# Homepage: a server-rendered working surface. JavaScript only choreographs these real records. #}}
+<article class="home-archive" data-homepage>
+    <header class="home-opening" data-home-opening>
+        <div class="home-opening__grid site-container">
+            <p class="home-kicker eyebrow">Persönliches Arbeitsarchiv</p>
+            <h1 class="home-name" data-home-name aria-label="Jack Ruder"><span aria-hidden="true">Jack</span><span aria-hidden="true">Ruder</span></h1>
+            <div class="home-opening__intro home-intro-copy" data-home-intro>{{ home:intro | bard_html }}</div>
+            {{ collection:projects sort="started_at:desc" limit="1" }}{{ if cover }}
+                <figure class="home-opening__artifact" data-opening-artifact aria-label="Aktuelles Projekt: {{ title }}">
+                    <img src="{{ glide:cover width="960" }}" srcset="{{ glide:cover width="480" }} 480w, {{ glide:cover width="960" }} 960w" sizes="(min-width: 64rem) 34vw, 72vw" alt="{{ cover:alt ?? title }}" width="{{ cover:width }}" height="{{ cover:height }}" fetchpriority="high" decoding="async">
+                    <figcaption><span>{{ title }}</span><span>{{ project_status:label ?? project_status }}</span></figcaption>
+                </figure>
+            {{ /if }}{{ /collection:projects }}
+            <a class="home-opening__index-link" href="#projekte">Projekte <span aria-hidden="true">↓</span></a>
+        </div>
+    </header>
+
+    <section id="projekte" class="home-projects" data-home-projects aria-labelledby="projects-title">
+        <div class="site-container home-section-heading">
+            <p class="eyebrow">Projekte</p>
+            <h2 id="projects-title">Dinge, die sich nicht auf einen Bildschirm reduzieren lassen.</h2>
+            <a href="/projekte" class="semantic-link">Alle Projekte →</a>
+        </div>
+        <div class="home-projects__records site-container">
+            {{ if home:featured_projects }}{{ home:featured_projects }}{{ partial:home/project-record }}{{ /home:featured_projects }}
+            {{ else }}{{ collection:projects featured:is="true" sort="started_at:desc" limit="3" }}{{ partial:home/project-record }}{{ /collection:projects }}{{ /if }}
+        </div>
+    </section>
+
+    <section class="home-writing site-container" aria-labelledby="writing-title">
+        <div class="home-writing__lead"><p class="eyebrow">Writing</p><h2 id="writing-title">Texte als Teil der Arbeit, nicht als Nachtrag.</h2></div>
+        <div class="home-writing__list">
+            {{ if home:featured_posts }}{{ home:featured_posts }}{{ if collection == 'posts' }}{{ partial:home/post-record }}{{ /if }}{{ /home:featured_posts }}
+            {{ else }}{{ collection:posts sort="featured:desc|date:desc" limit="2" }}{{ partial:home/post-record }}{{ /collection:posts }}{{ /if }}
+            <a href="/blog" class="home-writing__archive semantic-link">Zum Blog →</a>
+        </div>
+    </section>
+
+    <section class="home-publications" aria-labelledby="publications-title">
+        <div class="site-container home-publications__grid">
+            <div class="home-publications__heading"><p class="eyebrow">Veröffentlichungen</p><h2 id="publications-title">Dokumente mit eigenem Gewicht.</h2><a href="/publikationen" class="semantic-link">Alle Veröffentlichungen →</a></div>
+            <div class="home-publications__records">
+                {{ collection:publications sort="date:desc" limit="2" }}
+                    <article class="home-publication" data-home-publication><a href="{{ url }}" class="home-publication__sheet" aria-label="{{ title }} öffnen">
+                        <span class="home-publication__folio" aria-hidden="true">{{ date format="Y" }}</span><span class="home-publication__type">{{ publication_type:label ?? publication_type }}</span><strong>{{ title }}</strong>
+                        {{ if abstract }}<span class="home-publication__abstract">{{ abstract }}</span>{{ /if }}<span class="home-publication__rule" aria-hidden="true"></span><span class="home-publication__imprint">{{ publisher ?? 'Veröffentlichung' }}{{ if doi }} · DOI {{ doi }}{{ /if }}</span>
+                    </a></article>
+                {{ /collection:publications }}
+            </div>
+        </div>
+    </section>
+
+    <section class="home-now" aria-labelledby="now-title">
+        <div class="site-container home-now__inner">
+            <div><p class="eyebrow">Now</p><h2 id="now-title">Nicht abgeschlossen, nur in Bewegung.</h2></div>
+            <div class="home-now__content">
+                <div class="home-now-copy">{{ now:intro | bard_html }}</div>
+                {{ if now:updated_at }}<p class="home-now__updated">Stand {{ now:updated_at format="d.m.Y" }}</p>{{ /if }}
+                {{ if now:items }}<ul class="home-now__items" aria-label="Aktuelle Einträge">{{ now:items }}<li><a href="{{ url }}">{{ title }} <span aria-hidden="true">↗</span></a></li>{{ /now:items }}</ul>{{ /if }}
+                <a href="/aktuell" class="semantic-link">Aktuellen Stand öffnen →</a>
+            </div>
+        </div>
+    </section>
+</article>

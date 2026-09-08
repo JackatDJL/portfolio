@@ -1,0 +1,4 @@
+<article class="home-post">
+    <time datetime="{{ date format="Y-m-d" }}">{{ date format="d.m.Y" }}</time><h3><a href="{{ url }}">{{ title }} <span aria-hidden="true">↗</span></a></h3>{{ if summary }}<p>{{ summary }}</p>{{ /if }}
+    {{ if topics }}<ul class="home-post__topics" aria-label="Themen">{{ topics }}<li>{{ title }}</li>{{ /topics }}</ul>{{ /if }}
+</article>
