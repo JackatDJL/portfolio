@@ -23,7 +23,12 @@ class HomepageProjects extends Tags
                     return $byStatus;
                 }
 
-                return strtotime((string) $right->value('started_at')) <=> strtotime((string) $left->value('started_at'));
+                $date = static fn ($entry) => max(
+                    strtotime((string) $entry->value('started_at')) ?: 0,
+                    strtotime((string) $entry->value('ended_at')) ?: 0,
+                );
+
+                return ($date($right) <=> $date($left)) ?: strcmp($left->id(), $right->id());
             })
             ->take($limit);
     }

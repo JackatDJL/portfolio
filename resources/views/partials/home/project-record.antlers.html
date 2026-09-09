@@ -1,9 +1,11 @@
-<article class="home-project{{ if first }} is-active{{ /if }}" data-home-project>
-    <div class="home-project__copy">
-        <div class="home-project__meta">{{ if started_at }}<time datetime="{{ started_at format="Y-m-d" }}">{{ started_at format="Y" }}</time>{{ /if }}{{ if project_status }}<span class="chip">{{ project_status:label ?? project_status }}</span>{{ /if }}</div>
-        <h3><a href="{{ url }}">{{ title }} <span aria-hidden="true">↗</span></a></h3>
-        {{ if summary }}<p>{{ summary }}</p>{{ /if }}
-        {{ if featured_technology }}<ul class="home-project__technology" aria-label="Technologien">{{ featured_technology }}<li>{{ label ?? value }}</li>{{ /featured_technology }}</ul>{{ /if }}
-    </div>
-    <a href="{{ url }}" class="home-project__artifact" tabindex="-1" aria-hidden="true">{{ if cover }}<img src="{{ glide:cover width="1200" }}" srcset="{{ glide:cover width="640" }} 640w, {{ glide:cover width="1200" }} 1200w" sizes="(min-width: 64rem) 54vw, 90vw" alt="" width="{{ cover:width }}" height="{{ cover:height }}" loading="lazy" decoding="async">{{ else }}<span class="home-project__fallback">{{ title }}</span>{{ /if }}</a>
+<article class="home-project" data-home-project>
+    <a class="home-project__link related-reference" href="{{ url }}" data-related-reference>
+        <div class="home-project__copy">
+            <div class="home-project__meta">{{ if started_at }}<time datetime="{{ started_at format='Y-m-d' }}">{{ started_at format="Y" }}</time>{{ /if }}{{ if project_status }}{{ partial:components/chip :label="project_status:label" }}{{ /if }}</div>
+            <h3><span class="semantic-link">{{ title }}</span>{{ partial:components/open-file }}</h3>
+            {{ if summary }}<p>{{ summary }}</p>{{ /if }}
+            {{ if featured_technology }}<ul class="home-project__technology" aria-label="Technologien">{{ featured_technology }}<li>{{ partial:components/chip :label="label" }}</li>{{ /featured_technology }}</ul>{{ /if }}
+        </div>
+        {{ if cover }}<figure class="home-project__artifact"><img src="{{ glide:cover width=1200 }}" srcset="{{ glide:cover width=640 }} 640w, {{ glide:cover width=1200 }} 1200w" sizes="(min-width: 64rem) 48vw, 90vw" alt="{{ cover:alt }}" width="{{ cover:width }}" height="{{ cover:height }}" loading="lazy" decoding="async"></figure>{{ /if }}
+    </a>
 </article>

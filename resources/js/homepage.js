@@ -3,125 +3,212 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 gsap.registerPlugin(ScrollTrigger);
 
-const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-const wideMotion = window.matchMedia('(min-width: 64rem) and (hover: hover) and (pointer: fine)');
-
-const threadShapes = {
-    person: [48, 31, 72, 37, 52],
-    current: [50, 61, 40, 63, 50],
-    projects: [50, 23, 77, 23, 50],
-    writing: [50, 50, 50, 50, 50],
-    publications: [50, 76, 27, 76, 50],
-    ending: [52, 38, 64, 34, 48],
-};
-
-const makeThreadPath = (shape) => {
-    const y = [0, 25, 50, 75, 100];
-    const commands = [`M ${shape[0]} ${y[0]}`];
-    for (let index = 0; index < y.length - 1; index += 1) {
-        const fromY = y[index];
-        const toY = y[index + 1];
-        commands.push(`C ${shape[index]} ${fromY + 8}, ${shape[index + 1]} ${toY - 8}, ${shape[index + 1]} ${toY}`);
-    }
-    return commands.join(' ');
+// The two underline subpaths retain the same point count as the two halves of
+// the thread. Interpolating these coordinates avoids a topology change at handoff.
+const lerp = (a, b, t) => a + (b - a) * t;
+const clamp = gsap.utils.clamp(0, 1);
+const bump = (y, center, radius, depth) => {
+    const distance = Math.abs(y - center) / radius;
+    return distance < 1 ? (1 + Math.cos(distance * Math.PI)) * depth / 2 : 0;
 };
 
 for (const root of document.querySelectorAll('[data-homepage]')) {
     const opening = root.querySelector('[data-home-opening]');
+    const slot = root.querySelector('[data-home-name-slot]');
     const name = root.querySelector('[data-home-name]');
-    const personalMedia = root.querySelector('[data-home-person-media]');
+    const words = [...name.children];
+    const dock = document.querySelector('[data-home-dock]');
+    const svg = root.querySelector('[data-home-thread]');
+    const path = root.querySelector('[data-home-thread-path]');
+    const gallery = [...root.querySelectorAll('[data-home-gallery] .home-photo')];
+    const stage = root.querySelector('[data-home-project-stage]');
     const projects = [...root.querySelectorAll('[data-home-project]')];
-    const projectRoot = root.querySelector('[data-home-projects]');
-    const writing = root.querySelector('.home-writing');
-    const publications = root.querySelector('.home-publications');
-    const ending = root.querySelector('.home-now');
-    const threadPath = root.querySelector('[data-home-thread-path]');
-    let context;
+    const headings = [...root.querySelectorAll('[data-home-heading]')];
+    const media = root.querySelector('[data-home-person-media]');
+    const intro = root.querySelector('[data-home-intro]');
+    const mm = gsap.matchMedia();
 
-    const drawThread = (shape) => threadPath?.setAttribute('d', makeThreadPath(shape));
-    drawThread(threadShapes.person);
+    mm.add({ all: 'all', desktop: '(min-width: 64rem) and (min-height: 42rem) and (hover: hover) and (pointer: fine)', reduce: '(prefers-reduced-motion: reduce)' }, (context) => {
+        const { desktop, reduce } = context.conditions;
+        const full = desktop && !reduce;
+        const motion = { hero: 0, project: 0, majorY: innerHeight, smallY: innerHeight, smallDepth: 0 };
+        let size = {}, openingTrigger, projectTrigger, frame = 0, lastSection = -1, active = 0;
+        let dirty = true;
+        root.classList.toggle('is-home-enhanced', full);
 
-    const clear = () => {
-        context?.revert();
-        context = undefined;
-        root.classList.remove('is-home-enhanced');
-        drawThread(threadShapes.person);
-    };
-
-    const enhance = () => {
-        clear();
-        if (reduceMotion.matches || !wideMotion.matches || !opening || !name) return;
-
-        root.classList.add('is-home-enhanced');
-        context = gsap.context(() => {
-            const threadState = { values: [...threadShapes.person], origin: [...threadShapes.person], target: [...threadShapes.person], progress: 1 };
-            const moveThread = (target) => {
-                gsap.killTweensOf(threadState);
-                threadState.origin = [...threadState.values];
-                threadState.target = [...threadShapes[target]];
-                threadState.progress = 0;
-                gsap.to(threadState, {
-                    progress: 1,
-                    duration: 0.5,
-                    ease: 'power2.inOut',
-                    onUpdate: () => {
-                        threadState.values = threadState.origin.map((value, index) => value + ((threadState.target[index] - value) * threadState.progress));
-                        drawThread(threadState.values);
-                    },
-                });
+        // Keep exactly one H1. Its slot preserves document geometry while the
+        // original element lives outside both pin containers.
+        const measure = () => {
+            name.classList.remove('is-travelling');
+            name.style.cssText = '';
+            words.forEach(word => { word.style.cssText = ''; });
+            slot.append(name);
+            const rect = name.getBoundingClientRect();
+            const wordRects = words.map(word => word.getBoundingClientRect());
+            const destination = dock.getBoundingClientRect();
+            size = {
+                width: rect.width, height: rect.height,
+                font: parseFloat(getComputedStyle(name).fontSize),
+                firstWidth: wordRects[0].width,
+                line: wordRects[1].top - wordRects[0].top,
+                wordWidths: wordRects.map(word => word.width),
+                dockX: destination.left, dockY: destination.top,
+                rail: parseFloat(getComputedStyle(root).getPropertyValue('--home-rail')) || 24,
             };
-
-            gsap.timeline({ defaults: { ease: 'power3.out' } })
-                .from(name.children, { yPercent: 24, autoAlpha: 0, stagger: 0.08, duration: 0.8 })
-                .from(personalMedia, { y: 36, autoAlpha: 0, duration: 0.72 }, 0.12)
-                .from('.home-person__intro, .home-person__index-link', { y: 18, autoAlpha: 0, stagger: 0.06, duration: 0.45 }, 0.38);
-
-            gsap.to(name, {
-                xPercent: 7,
-                yPercent: -15,
-                scale: 0.82,
-                ease: 'none',
-                scrollTrigger: { trigger: opening, start: 'top top', end: 'bottom top', scrub: true },
+            // Resolve clamp() through a real box rather than parsing its CSS text.
+            size.rail = headings[0].getBoundingClientRect().left - (innerWidth < 768 ? 23 : 38);
+            slot.style.height = `${rect.height}px`;
+            root.prepend(name);
+            name.classList.add('is-travelling');
+            name.style.width = `${rect.width}px`;
+            svg.setAttribute('viewBox', `0 0 ${innerWidth} ${innerHeight}`);
+            dirty = true;
+        };
+        const setActive = (index) => {
+            active = index;
+            projects.forEach((project, i) => {
+                project.inert = full && i !== index;
+                if (full && i !== index) project.setAttribute('aria-hidden', 'true');
+                else project.removeAttribute('aria-hidden');
+                project.classList.toggle('is-active', i === index);
             });
-            gsap.to(personalMedia, {
-                yPercent: 15,
-                ease: 'none',
-                scrollTrigger: { trigger: opening, start: 'top top', end: 'bottom top', scrub: true },
-            });
+        };
+        measure();
 
-            const setActiveProject = (activeProject) => projects.forEach((project) => project.classList.toggle('is-active', project === activeProject));
-            projects.forEach((project, index) => {
-                const artifact = project.querySelector('.home-project__artifact');
-                const copy = project.querySelector('.home-project__copy');
-                ScrollTrigger.create({
-                    trigger: project,
-                    start: 'top 60%',
-                    end: 'bottom 40%',
-                    onEnter: () => setActiveProject(project),
-                    onEnterBack: () => setActiveProject(project),
-                    onLeaveBack: () => setActiveProject(null),
+        if (full) {
+            const openingTimeline = gsap.timeline({ onUpdate: () => { dirty = true; }, defaults: { ease: 'none' }, scrollTrigger: {
+                trigger: opening, start: 'top top', end: () => `+=${innerHeight * 1.65 + Math.max(0, gallery.length - 2) * innerWidth * .22}`,
+                pin: true, scrub: .35, invalidateOnRefresh: true,
+                onUpdate: () => { dirty = true; },
+            } });
+            openingTrigger = openingTimeline.scrollTrigger;
+            openingTimeline.to(motion, { hero: 1, duration: .55 }, 0)
+                .to(intro, { y: -35, opacity: 0, duration: .3 }, 0)
+                .to(media, { x: () => -innerWidth * .48, y: () => -innerHeight * .16, scale: .42, duration: .55 }, 0)
+                .to(media, { x: () => -innerWidth * .95, duration: .45 }, .55);
+            const photoStride = () => Math.min(560, Math.max(288, innerWidth * .34)) + 32;
+            const streamDistance = () => innerWidth * 1.15 + Math.floor(Math.max(0, gallery.length - 1) / 2) * photoStride();
+            gallery.forEach((photo, i) => {
+                const lane = i % 2;
+                const order = Math.floor(i / 2);
+                const startX = () => lane ? -innerWidth * .7 - order * photoStride() : innerWidth * 1.05 + order * photoStride();
+                // Every image in a lane shares the same travel distance, so a
+                // larger editorial gallery never converges into overlapping images.
+                openingTimeline.fromTo(photo, { x: startX }, {
+                    x: () => startX() + (lane ? 1 : -1) * streamDistance(),
+                    duration: 1, ease: 'none',
+                }, 0);
+            });
+            if (projects.length > 1) {
+                projectTrigger = ScrollTrigger.create({
+                    trigger: stage, start: 'top top', end: () => `+=${(projects.length - 1) * innerHeight * .8}`,
+                    pin: true, scrub: true, invalidateOnRefresh: true,
+                    snap: { snapTo: 1 / (projects.length - 1), duration: { min: .12, max: .35 }, delay: .16, inertia: false, directional: false },
+                    onUpdate: self => { motion.project = self.progress * (projects.length - 1); dirty = true; },
                 });
-                if (artifact) gsap.fromTo(artifact, { clipPath: 'inset(7% 5% 9% 5%)', scale: 0.95 }, { clipPath: 'inset(0% 0% 0% 0%)', scale: 1, ease: 'none', scrollTrigger: { trigger: project, start: 'top 78%', end: 'top 34%', scrub: true } });
-                if (copy) gsap.from(copy, { x: index % 2 ? 32 : -32, autoAlpha: 0, duration: 0.5, scrollTrigger: { trigger: project, start: 'top 72%', toggleActions: 'play none none reverse' } });
-            });
-
-            if (projectRoot && projects.length > 1) ScrollTrigger.create({ trigger: projectRoot, start: 'top top+=92', end: 'bottom bottom-=80', pin: projectRoot.querySelector('.home-section-heading'), pinSpacing: false });
-
-            const threadSections = [
-                [opening, 'person'],
-                [projectRoot, 'projects'],
-                [writing, 'writing'],
-                [publications, 'publications'],
-                [ending, 'ending'],
-            ];
-            for (const [section, target] of threadSections) {
-                if (!section) continue;
-                ScrollTrigger.create({ trigger: section, start: 'top center', end: 'bottom center', onEnter: () => moveThread(target), onEnterBack: () => moveThread(target) });
             }
-        }, root);
-    };
+        }
+        setActive(0);
+        const update = () => { dirty = true; };
+        const draw = () => {
+            frame = requestAnimationFrame(draw);
+            if (!dirty) return;
+            dirty = false;
+            const slotRect = slot.getBoundingClientRect();
+            const progress = full ? motion.hero : clamp(-slotRect.top / Math.max(180, size.height));
+            // Reduced motion retains the original full name until it leaves the
+            // viewport, then presents the same element in its stable dock state.
+            const travel = reduce ? (slotRect.bottom < 40 ? 1 : 0) : progress;
+            const scale = lerp(1, 24 / size.font, travel);
+            gsap.set(name, { x: lerp(slotRect.left, size.dockX, travel), y: lerp(slotRect.top, size.dockY, travel), scale });
+            gsap.set(words[1], { x: (size.firstWidth + size.font * .22) * clamp(travel / .5), y: -size.line * clamp((travel - .45) / .55) });
+            for (const word of words) word.style.backgroundSize = document.documentElement.dataset.theme !== 'dark' ? `${travel * 100}% 100%` : '0% 100%';
 
-    enhance();
-    wideMotion.addEventListener('change', enhance);
-    reduceMotion.addEventListener('change', enhance);
+            const selected = Math.round(motion.project);
+            if (!full) {
+                let nearest = Infinity;
+                projects.forEach((project, index) => {
+                    const y = project.querySelector('h3').getBoundingClientRect().top;
+                    const distance = Math.abs(y - innerHeight * .45);
+                    if (distance < nearest) { nearest = distance; active = index; }
+                });
+            }
+            if (full) {
+                if (selected !== active) setActive(selected);
+                projects.forEach((project, i) => {
+                    const distance = i - motion.project;
+                    gsap.set(project, { yPercent: distance * 115, visibility: Math.abs(distance) > 1.05 ? 'hidden' : 'visible' });
+                    const artifact = project.querySelector('.home-project__artifact');
+                    if (artifact) gsap.set(artifact, { scale: 1 - Math.min(1, Math.abs(distance)) * .08 });
+                });
+            }
+            const positions = headings.map(heading => heading.getBoundingClientRect());
+            let section = positions.findIndex((rect, i) => rect.top < innerHeight * .65 && (i === positions.length - 1 || positions[i + 1].top >= innerHeight * .65));
+            if (section < 0) section = 0;
+            const targetY = positions[section].top + positions[section].height / 2;
+            if (section !== lastSection && !reduce) {
+                gsap.to(motion, { majorY: targetY, duration: .3, overwrite: 'auto', onUpdate: update });
+                lastSection = section;
+            } else if (!gsap.isTweening(motion)) motion.majorY = targetY;
+            const projectTitle = projects[active]?.querySelector('h3').getBoundingClientRect();
+            const showSmall = section === 0 && projectTitle && projectTitle.top > 60 && projectTitle.top < innerHeight;
+            const smallTarget = showSmall ? projectTitle.top + projectTitle.height / 2 : motion.smallY;
+            // A damped measured target lets the little bump travel with the
+            // incoming title, including when reversing between project states.
+            motion.smallY = reduce ? smallTarget : lerp(motion.smallY, smallTarget, .22);
+            motion.smallDepth = reduce ? (showSmall ? 12 : 0) : lerp(motion.smallDepth, showSmall ? 12 : 0, .22);
+            if (Math.abs(motion.smallY - smallTarget) > .2 || Math.abs(motion.smallDepth - (showSmall ? 12 : 0)) > .1) dirty = true;
+            const threadProgress = reduce ? travel : clamp(travel * 1.25);
+            const footerTop = document.querySelector('.site-footer')?.getBoundingClientRect().top ?? innerHeight;
+            const bottom = Math.min(innerHeight + 5, footerTop);
+            const commands = [];
+            for (let half = 0; half < 2; half++) {
+                for (let i = 0; i <= 64; i++) {
+                    const t = i / 64;
+                    const y = 65 + ((bottom - 65) / 2) * (half + t);
+                    const majorDepth = innerWidth < 768 ? 9 : 23;
+                    const threadX = size.rail + Math.sin(y / 66) * (innerWidth < 768 ? 2 : 4)
+                        + bump(y, motion.majorY, 44, majorDepth) + bump(y, motion.smallY, 30, motion.smallDepth);
+                    const underX = slotRect.left + size.wordWidths[half] * t;
+                    const underY = slotRect.top + size.line * half + size.font * .94 + Math.sin(t * Math.PI * 5) * 3;
+                    const x = lerp(underX, threadX, threadProgress);
+                    const finalY = lerp(underY, y, threadProgress);
+                    commands.push(`${i === 0 ? 'M' : 'L'}${x.toFixed(2)},${finalY.toFixed(2)}`);
+                }
+            }
+            path.setAttribute('d', commands.join(' '));
+            svg.style.visibility = bottom < 65 ? 'hidden' : 'visible';
+        };
+        draw();
+        window.addEventListener('scroll', update, { passive: true });
+        ScrollTrigger.addEventListener('refreshInit', measure);
+        const resize = () => { measure(); ScrollTrigger.refresh(); };
+        window.addEventListener('resize', resize);
+        const themeObserver = new MutationObserver(update);
+        themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+        const loaded = () => { measure(); ScrollTrigger.refresh(); };
+        window.addEventListener('load', loaded, { once: true });
+        document.fonts.ready.then(() => { if (frame) loaded(); });
+        return () => {
+            cancelAnimationFrame(frame); frame = 0;
+            window.removeEventListener('scroll', update);
+            window.removeEventListener('resize', resize);
+            window.removeEventListener('load', loaded);
+            ScrollTrigger.removeEventListener('refreshInit', measure);
+            themeObserver.disconnect();
+            gsap.killTweensOf(motion);
+            openingTrigger?.kill(); projectTrigger?.kill();
+            name.classList.remove('is-travelling');
+            name.style.cssText = ''; words.forEach(word => { word.style.cssText = ''; });
+            slot.style.height = ''; slot.append(name);
+            root.classList.remove('is-home-enhanced');
+            projects.forEach(project => { project.inert = false; project.removeAttribute('aria-hidden'); project.style.cssText = ''; });
+        };
+    });
+    window.addEventListener('pagehide', event => {
+        if (!event.persisted) mm.revert();
+    });
+    window.addEventListener('pageshow', event => {
+        if (event.persisted) ScrollTrigger.refresh();
+    });
 }

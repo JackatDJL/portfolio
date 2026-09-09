@@ -1,6 +1,6 @@
 <header class="site-header">
     <div class="site-container site-header__inner">
-        {{ partial:components/wordmark href="/" classes="site-header__wordmark text-2xl" }}
+        {{ if is_homepage }}<span class="site-header__identity-anchor" data-home-dock aria-hidden="true">Jack Ruder</span>{{ else }}<span class="site-header__identity-slot">{{ partial:components/wordmark href="/" classes="site-header__wordmark semantic-link text-2xl" }}</span>{{ /if }}
 
         <nav class="site-header__nav" aria-label="Direktnavigation">
             {{ nav:main max_depth="1" }}

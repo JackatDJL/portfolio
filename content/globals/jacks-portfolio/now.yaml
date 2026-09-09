@@ -8,3 +8,25 @@ intro:
 updated_at: '2026-09-08 12:00'
 items:
   - 4739fabf-5726-4d17-ad72-5a5f574e33cd
+homepage_summary:
+  -
+    type: paragraph
+    content:
+      -
+        type: text
+        text: 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.'
+homepage_links:
+  -
+    id: yu5fSEJUHWeHbozK_uYol
+    label: 'Communications bei Volt Stade'
+    link: 'https://voltdeutschland.org/niedersachsen/menschen/jack-ruder'
+  -
+    id: vjHH6cbn1GJ9fZObH0dLQ
+    label: 'Nochn link'
+    link: 'https://example.com'
+  -
+    id: JcCJFg1McrOjo0iFdKMbr
+    label: 'DJL Foundation'
+    link: 'https://djl.foundation'
+homepage_button_label: 'Engagiere dich beim Digital Independance Day!'
+homepage_button_link: 'https://di.day'

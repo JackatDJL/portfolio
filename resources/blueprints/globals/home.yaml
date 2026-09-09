@@ -33,7 +33,7 @@ tabs:
               folder: photos
               restrict: true
               type: assets
-              display: Persönliche Bilder
+              display: Persönliche Fotogalerie
               instructions: 'Die erste Aufnahme ist das Hauptbild im Einstieg. Weitere Bilder erscheinen in dieser Reihenfolge in der persönlichen Bildfolge.'
       -
         display: Vorgestellt
@@ -63,6 +63,5 @@ tabs:
               collections:
                 - publications
               select_across_sites: true
-              max_items: 2
               type: entries
               display: 'Vorgestellte Veröffentlichungen'

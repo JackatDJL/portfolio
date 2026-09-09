@@ -1,74 +1,44 @@
-{{# The homepage is an editorial sequence. Content remains available before JS enhances it. #}}
 <article class="home-archive" data-homepage>
-    <svg class="home-thread" data-home-thread viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path data-home-thread-path /></svg>
-
+    <svg class="home-thread" data-home-thread aria-hidden="true" focusable="false"><path data-home-thread-path /></svg>
     <header class="home-person" data-home-opening>
         <div class="home-person__grid site-container">
-            <p class="home-person__label eyebrow">Persönliche Webseite</p>
-            <h1 class="home-name" data-home-name aria-label="Jack Ruder"><span aria-hidden="true">Jack</span><span aria-hidden="true">Ruder</span></h1>
-
+            <div class="home-name-slot" data-home-name-slot><h1 class="home-name wordmark" data-home-name aria-label="Jack Ruder"><span class="semantic-link" aria-hidden="true">Jack</span><span class="semantic-link" aria-hidden="true">Ruder</span></h1></div>
             <div class="home-person__media" data-home-person-media>
-                {{ if home:personal_media }}
-                    {{ home:personal_media limit="4" }}
-                        <figure class="home-person__photo"><img src="{{ glide:url width=1400 }}" srcset="{{ glide:url width=640 }} 640w, {{ glide:url width=1000 }} 1000w, {{ glide:url width=1400 }} 1400w" sizes="(min-width: 64rem) 42vw, 82vw" alt="{{ alt ?? 'Jack Ruder' }}" width="{{ width }}" height="{{ height }}"{{ if first }} fetchpriority="high"{{ else }} loading="lazy"{{ /if }} decoding="async"></figure>
-                    {{ /home:personal_media }}
-                {{ else }}
-                    <div class="home-person__media-empty" aria-hidden="true"></div>
-                {{ /if }}
+                {{ if home:personal_media }}{{ home:personal_media limit="1" }}{{ partial:home/personal-photo hero="true" }}{{ /home:personal_media }}{{ /if }}
             </div>
-
-            <div class="home-person__intro home-intro-copy" data-home-intro>{{ home:intro | bard_html }}</div>
-            <a class="home-person__index-link semantic-link" href="#projekte">Zu den Projekten ↓</a>
+            <div class="home-person__intro" data-home-intro>{{ home:intro | bard_html }}</div>
+        </div>
+        <div class="home-gallery" data-home-gallery aria-label="Persönliche Fotografien">
+            {{ if home:personal_media }}{{ home:personal_media }}{{ unless first }}{{ partial:home/personal-photo }}{{ /unless }}{{ /home:personal_media }}{{ /if }}
         </div>
     </header>
-
     <section id="projekte" class="home-projects" data-home-projects aria-labelledby="projects-title">
-        <div class="site-container home-section-heading">
-            <p class="eyebrow" id="projects-title">Projekte</p>
-            <a href="/projekte" class="semantic-link">Alle Projekte →</a>
-        </div>
-        <div class="home-projects__records site-container">
-            {{ if home:featured_projects }}
-                {{ home:featured_projects }}{{ partial:home/project-record }}{{ /home:featured_projects }}
-            {{ else }}
-                {{ homepage_projects limit="3" }}{{ partial:home/project-record }}{{ /homepage_projects }}
-            {{ /if }}
+        <div class="home-projects__stage site-container" data-home-project-stage>
+            <div class="home-section-heading"><h2 id="projects-title" data-home-heading>Projekte</h2>{{ partial:components/outlink href="/projekte" label="Alle Projekte" }}</div>
+            <div class="home-projects__records">
+                {{ if home:featured_projects }}{{ home:featured_projects limit="3" }}{{ if published && project_status != 'confidential' }}{{ partial:home/project-record }}{{ /if }}{{ /home:featured_projects }}
+                {{ else }}{{ homepage_projects limit="3" }}{{ partial:home/project-record }}{{ /homepage_projects }}{{ /if }}
+            </div>
         </div>
     </section>
-
     <section class="home-writing site-container" aria-labelledby="writing-title">
-        <div class="home-writing__lead"><p class="eyebrow" id="writing-title">Blog</p></div>
+        <h2 id="writing-title" data-home-heading>Blog</h2>
         <div class="home-writing__list">
-            {{ if home:featured_posts }}
-                {{ home:featured_posts }}{{ partial:home/post-record }}{{ /home:featured_posts }}
-            {{ else }}
-                {{ collection:posts sort="featured:desc|date:desc" limit="2" }}{{ partial:home/post-record }}{{ /collection:posts }}
-            {{ /if }}
-            <a href="/blog" class="home-writing__archive semantic-link">Zum Blog →</a>
+            {{ if home:featured_posts }}{{ home:featured_posts limit="3" }}{{ if published }}{{ partial:home/post-record }}{{ /if }}{{ /home:featured_posts }}{{ /if }}
+            {{ partial:components/outlink href="/blog" label="Zum Blog" }}
         </div>
     </section>
-
-    <section class="home-publications" aria-labelledby="publications-title">
-        <div class="site-container home-publications__grid">
-            <div class="home-publications__heading"><p class="eyebrow" id="publications-title">Veröffentlichungen</p><a href="/publikationen" class="semantic-link">Alle Veröffentlichungen →</a></div>
-            <div class="home-publications__records">
-                {{ if home:featured_publications }}
-                    {{ home:featured_publications }}{{ partial:home/publication-record }}{{ /home:featured_publications }}
-                {{ else }}
-                    {{ collection:publications sort="date:desc" limit="2" }}{{ partial:home/publication-record }}{{ /collection:publications }}
-                {{ /if }}
-            </div>
+    <section class="home-publications site-container" aria-labelledby="publications-title">
+        <h2 id="publications-title" data-home-heading>Veröffentlichungen</h2>
+        <div class="home-publications__records">
+            {{ if home:featured_publications }}{{ home:featured_publications }}{{ if published }}{{ partial:home/publication-record }}{{ /if }}{{ /home:featured_publications }}{{ /if }}
         </div>
+        {{ partial:components/button href="/publikationen" label="Alle Veröffentlichungen" }}
     </section>
-
-    <section class="home-now" aria-labelledby="now-title">
-        <div class="site-container home-now__inner">
-            <div><p class="eyebrow" id="now-title">Aktuell</p><h2>Jack Ruder</h2></div>
-            <div class="home-now__content">
-                <div class="home-now-copy">{{ now:intro | bard_html }}</div>
-                {{ if now:updated_at }}<p class="home-now__updated">Stand {{ now:updated_at format="d.m.Y" }}</p>{{ /if }}
-                {{ if now:items }}<ul class="home-now__items" aria-label="Verknüpfte aktuelle Einträge">{{ now:items }}<li><a href="{{ url }}">{{ title }} <span aria-hidden="true">↗</span></a></li>{{ /now:items }}</ul>{{ /if }}
-            </div>
-        </div>
+    <section class="home-now site-container" aria-labelledby="now-title">
+        <h2 id="now-title" data-home-heading>Aktuell</h2>
+        {{ if now:homepage_summary }}<div class="home-now__summary">{{ now:homepage_summary | bard_html }}</div>{{ /if }}
+        {{ if now:homepage_links }}<ul class="home-now__links">{{ now:homepage_links limit="3" }}{{ if label && link }}<li>{{ partial:components/outlink :href="link" :label="label" }}</li>{{ /if }}{{ /now:homepage_links }}</ul>{{ /if }}
+        {{ if now:homepage_button_label && now:homepage_button_link }}<div class="home-now__cta">{{ partial:components/button :href="now:homepage_button_link" :label="now:homepage_button_label" }}</div>{{ /if }}
     </section>
 </article>

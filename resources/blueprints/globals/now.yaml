@@ -39,3 +39,41 @@ tabs:
               max_items: 5
               type: entries
               display: Verknüpfte Einträge
+  homepage:
+    display: Homepage
+    sections:
+      -
+        fields:
+          - handle: homepage_summary
+            field:
+              type: bard
+              display: Zusammenfassung
+              instructions: 'Ein bis drei kurze Absätze für die Homepage.'
+              buttons: [bold, italic, anchor]
+              remove_empty_nodes: true
+          - handle: homepage_links
+            field:
+              type: grid
+              display: Links
+              max_rows: 3
+              fields:
+                - handle: label
+                  field:
+                    type: text
+                    display: Beschriftung
+                    validate: [required]
+                - handle: link
+                  field:
+                    type: link
+                    display: Link
+                    collections: [pages, projects, posts, publications]
+                    validate: [required]
+          - handle: homepage_button_label
+            field:
+              type: text
+              display: Button-Beschriftung
+          - handle: homepage_button_link
+            field:
+              type: link
+              display: Button-Link
+              collections: [pages, projects, posts, publications]

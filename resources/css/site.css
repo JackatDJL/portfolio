@@ -200,3 +200,10 @@
     from { opacity: 1; transform: translate3d(0, 0, 0); }
     to { opacity: 0; transform: translate3d(0.25rem, 0, 0); }
 }
+
+@layer components {
+    .site-header__identity-slot { width: 8rem; flex: none; }
+    .site-header__identity-slot .site-header__wordmark { position: fixed; top: 1.5rem; z-index: 20; line-height: 1.2; }
+    .site-header__identity-anchor { position: fixed; top: 1.5rem; font: 800 24px/1.2 var(--font-display); letter-spacing: -.04em; visibility: hidden; pointer-events: none; }
+    .related-reference:focus-within .semantic-link { background-size: 100% 100%; }
+}
