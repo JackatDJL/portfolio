@@ -32,10 +32,9 @@ tabs:
               container: assets
               folder: photos
               restrict: true
-              max_files: 4
               type: assets
               display: Persönliche Bilder
-              instructions: 'Ein bis vier Bilder für den Einstieg auf der Startseite.'
+              instructions: 'Die erste Aufnahme ist das Hauptbild im Einstieg. Weitere Bilder erscheinen in dieser Reihenfolge in der persönlichen Bildfolge.'
       -
         display: Vorgestellt
         fields:
