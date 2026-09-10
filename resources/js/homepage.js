@@ -1,16 +1,12 @@
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { homepageThread } from './homepage-thread';
+import { homepageStream } from './homepage-stream';
 
 gsap.registerPlugin(ScrollTrigger);
 
-// The two underline subpaths retain the same point count as the two halves of
-// the thread. Interpolating these coordinates avoids a topology change at handoff.
 const lerp = (a, b, t) => a + (b - a) * t;
 const clamp = gsap.utils.clamp(0, 1);
-const bump = (y, center, radius, depth) => {
-    const distance = Math.abs(y - center) / radius;
-    return distance < 1 ? (1 + Math.cos(distance * Math.PI)) * depth / 2 : 0;
-};
 
 for (const root of document.querySelectorAll('[data-homepage]')) {
     const opening = root.querySelector('[data-home-opening]');
@@ -31,10 +27,12 @@ for (const root of document.querySelectorAll('[data-homepage]')) {
     mm.add({ all: 'all', desktop: '(min-width: 64rem) and (min-height: 42rem) and (hover: hover) and (pointer: fine)', reduce: '(prefers-reduced-motion: reduce)' }, (context) => {
         const { desktop, reduce } = context.conditions;
         const full = desktop && !reduce;
-        const motion = { hero: 0, project: 0, majorY: innerHeight, smallY: innerHeight, smallDepth: 0 };
-        let size = {}, openingTrigger, projectTrigger, frame = 0, lastSection = -1, active = 0;
+        const motion = { hero: 0, project: 0, smallY: innerHeight, smallDepth: 0 };
+        let size = {}, openingTrigger, projectTrigger, frame = 0, active = 0;
         let dirty = true;
         root.classList.toggle('is-home-enhanced', full);
+        const thread = homepageThread({ root, svg, path, slot, headings, full });
+        const stream = full ? homepageStream(root.querySelector('[data-home-gallery]'), [...media.querySelectorAll('.home-photo'), ...gallery], gsap) : null;
 
         // Keep exactly one H1. Its slot preserves document geometry while the
         // original element lives outside both pin containers.
@@ -61,7 +59,6 @@ for (const root of document.querySelectorAll('[data-homepage]')) {
             root.prepend(name);
             name.classList.add('is-travelling');
             name.style.width = `${rect.width}px`;
-            svg.setAttribute('viewBox', `0 0 ${innerWidth} ${innerHeight}`);
             dirty = true;
         };
         const setActive = (index) => {
@@ -77,28 +74,16 @@ for (const root of document.querySelectorAll('[data-homepage]')) {
 
         if (full) {
             const openingTimeline = gsap.timeline({ onUpdate: () => { dirty = true; }, defaults: { ease: 'none' }, scrollTrigger: {
-                trigger: opening, start: 'top top', end: () => `+=${innerHeight * 1.65 + Math.max(0, gallery.length - 2) * innerWidth * .22}`,
+                trigger: opening, start: 'top top', end: () => `+=${innerHeight * 1.65}`,
                 pin: true, scrub: .35, invalidateOnRefresh: true,
                 onUpdate: () => { dirty = true; },
             } });
             openingTrigger = openingTimeline.scrollTrigger;
             openingTimeline.to(motion, { hero: 1, duration: .55 }, 0)
                 .to(intro, { y: -35, opacity: 0, duration: .3 }, 0)
-                .to(media, { x: () => -innerWidth * .48, y: () => -innerHeight * .16, scale: .42, duration: .55 }, 0)
-                .to(media, { x: () => -innerWidth * .95, duration: .45 }, .55);
-            const photoStride = () => Math.min(560, Math.max(288, innerWidth * .34)) + 32;
-            const streamDistance = () => innerWidth * 1.15 + Math.floor(Math.max(0, gallery.length - 1) / 2) * photoStride();
-            gallery.forEach((photo, i) => {
-                const lane = i % 2;
-                const order = Math.floor(i / 2);
-                const startX = () => lane ? -innerWidth * .7 - order * photoStride() : innerWidth * 1.05 + order * photoStride();
-                // Every image in a lane shares the same travel distance, so a
-                // larger editorial gallery never converges into overlapping images.
-                openingTimeline.fromTo(photo, { x: startX }, {
-                    x: () => startX() + (lane ? 1 : -1) * streamDistance(),
-                    duration: 1, ease: 'none',
-                }, 0);
-            });
+                .to(media, { x: () => -innerWidth * .48, y: () => -innerHeight * .16, scale: .42, duration: .32 }, 0)
+                .to(media, { x: () => -innerWidth * 1.2, duration: .3 }, .32);
+            openingTimeline.to({}, { duration: 1 }, 0);
             if (projects.length > 1) {
                 projectTrigger = ScrollTrigger.create({
                     trigger: stage, start: 'top top', end: () => `+=${(projects.length - 1) * innerHeight * .8}`,
@@ -137,48 +122,29 @@ for (const root of document.querySelectorAll('[data-homepage]')) {
                 if (selected !== active) setActive(selected);
                 projects.forEach((project, i) => {
                     const distance = i - motion.project;
-                    gsap.set(project, { yPercent: distance * 115, visibility: Math.abs(distance) > 1.05 ? 'hidden' : 'visible' });
+                    // Finish the outgoing emphasis before its text reaches the
+                    // persistent heading; no overflow mask cuts through the media.
+                    const emphasis = distance < 0 ? 1 - clamp((-distance - .15) / .32) : 1 - Math.min(1, distance) * .35;
+                    gsap.set(project, { y: distance * innerHeight * .82, x: -Math.min(1, Math.abs(distance)) * innerWidth * .075, opacity: emphasis, visibility: Math.abs(distance) > 1.15 ? 'hidden' : 'visible' });
                     const artifact = project.querySelector('.home-project__artifact');
                     if (artifact) gsap.set(artifact, { scale: 1 - Math.min(1, Math.abs(distance)) * .08 });
                 });
             }
-            const positions = headings.map(heading => heading.getBoundingClientRect());
-            let section = positions.findIndex((rect, i) => rect.top < innerHeight * .65 && (i === positions.length - 1 || positions[i + 1].top >= innerHeight * .65));
-            if (section < 0) section = 0;
-            const targetY = positions[section].top + positions[section].height / 2;
-            if (section !== lastSection && !reduce) {
-                gsap.to(motion, { majorY: targetY, duration: .3, overwrite: 'auto', onUpdate: update });
-                lastSection = section;
-            } else if (!gsap.isTweening(motion)) motion.majorY = targetY;
+            const projectHeading = headings[0].getBoundingClientRect();
             const projectTitle = projects[active]?.querySelector('h3').getBoundingClientRect();
-            const showSmall = section === 0 && projectTitle && projectTitle.top > 60 && projectTitle.top < innerHeight;
+            const showSmall = projectTitle && projectTitle.top > 60 && projectTitle.top < innerHeight;
             const smallTarget = showSmall ? projectTitle.top + projectTitle.height / 2 : motion.smallY;
             // A damped measured target lets the little bump travel with the
             // incoming title, including when reversing between project states.
             motion.smallY = reduce ? smallTarget : lerp(motion.smallY, smallTarget, .22);
             motion.smallDepth = reduce ? (showSmall ? 12 : 0) : lerp(motion.smallDepth, showSmall ? 12 : 0, .22);
             if (Math.abs(motion.smallY - smallTarget) > .2 || Math.abs(motion.smallDepth - (showSmall ? 12 : 0)) > .1) dirty = true;
-            const threadProgress = reduce ? travel : clamp(travel * 1.25);
-            const footerTop = document.querySelector('.site-footer')?.getBoundingClientRect().top ?? innerHeight;
-            const bottom = Math.min(innerHeight + 5, footerTop);
-            const commands = [];
-            for (let half = 0; half < 2; half++) {
-                for (let i = 0; i <= 64; i++) {
-                    const t = i / 64;
-                    const y = 65 + ((bottom - 65) / 2) * (half + t);
-                    const majorDepth = innerWidth < 768 ? 9 : 23;
-                    const threadX = size.rail + Math.sin(y / 66) * (innerWidth < 768 ? 2 : 4)
-                        + bump(y, motion.majorY, 44, majorDepth) + bump(y, motion.smallY, 30, motion.smallDepth);
-                    const underX = slotRect.left + size.wordWidths[half] * t;
-                    const underY = slotRect.top + size.line * half + size.font * .94 + Math.sin(t * Math.PI * 5) * 3;
-                    const x = lerp(underX, threadX, threadProgress);
-                    const finalY = lerp(underY, y, threadProgress);
-                    commands.push(`${i === 0 ? 'M' : 'L'}${x.toFixed(2)},${finalY.toFixed(2)}`);
-                }
-            }
-            path.setAttribute('d', commands.join(' '));
-            svg.style.visibility = bottom < 65 ? 'hidden' : 'visible';
+            thread.draw(reduce ? 2 : progress * 4, projectHeading.top + projectHeading.height / 2, motion.smallY, motion.smallDepth);
+            stream?.draw(openingTrigger?.progress ?? 0);
         };
+        const measureThread = () => { thread.measure(size, openingTrigger); dirty = true; };
+        measureThread();
+        ScrollTrigger.addEventListener('refresh', measureThread);
         draw();
         window.addEventListener('scroll', update, { passive: true });
         ScrollTrigger.addEventListener('refreshInit', measure);
@@ -188,14 +154,22 @@ for (const root of document.querySelectorAll('[data-homepage]')) {
         themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
         const loaded = () => { measure(); ScrollTrigger.refresh(); };
         window.addEventListener('load', loaded, { once: true });
+        let imageRefresh;
+        const imageLoaded = () => { clearTimeout(imageRefresh); imageRefresh = setTimeout(loaded, 100); };
+        const layoutImages = [...root.querySelectorAll('img')].filter(image => !image.closest('[data-stream-clone]'));
+        layoutImages.forEach(image => image.addEventListener('load', imageLoaded));
         document.fonts.ready.then(() => { if (frame) loaded(); });
         return () => {
             cancelAnimationFrame(frame); frame = 0;
             window.removeEventListener('scroll', update);
             window.removeEventListener('resize', resize);
             window.removeEventListener('load', loaded);
+            clearTimeout(imageRefresh);
+            layoutImages.forEach(image => image.removeEventListener('load', imageLoaded));
             ScrollTrigger.removeEventListener('refreshInit', measure);
             themeObserver.disconnect();
+            ScrollTrigger.removeEventListener('refresh', measureThread);
+            thread.destroy(); stream?.destroy();
             gsap.killTweensOf(motion);
             openingTrigger?.kill(); projectTrigger?.kill();
             name.classList.remove('is-travelling');

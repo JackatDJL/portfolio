@@ -14,7 +14,7 @@
     </header>
     <section id="projekte" class="home-projects" data-home-projects aria-labelledby="projects-title">
         <div class="home-projects__stage site-container" data-home-project-stage>
-            <div class="home-section-heading"><h2 id="projects-title" data-home-heading>Projekte</h2>{{ partial:components/outlink href="/projekte" label="Alle Projekte" }}</div>
+            <div class="home-section-heading"><h2 id="projects-title" data-home-heading><a class="related-reference related-reference--heading related-reference--reveal" href="/projekte" data-related-reference><span class="semantic-link">Projekte</span>{{ partial:components/open-file size="heading" }}</a></h2>{{ partial:components/outlink href="/projekte" label="Alle Projekte" }}</div>
             <div class="home-projects__records">
                 {{ if home:featured_projects }}{{ home:featured_projects limit="3" }}{{ if published && project_status != 'confidential' }}{{ partial:home/project-record }}{{ /if }}{{ /home:featured_projects }}
                 {{ else }}{{ homepage_projects limit="3" }}{{ partial:home/project-record }}{{ /homepage_projects }}{{ /if }}
@@ -22,23 +22,22 @@
         </div>
     </section>
     <section class="home-writing site-container" aria-labelledby="writing-title">
-        <h2 id="writing-title" data-home-heading>Blog</h2>
+        <h2 id="writing-title" data-home-heading><a class="related-reference related-reference--heading related-reference--reveal" href="/blog" data-related-reference><span class="semantic-link">Blog</span>{{ partial:components/open-file size="heading" }}</a></h2>
         <div class="home-writing__list">
             {{ if home:featured_posts }}{{ home:featured_posts limit="3" }}{{ if published }}{{ partial:home/post-record }}{{ /if }}{{ /home:featured_posts }}{{ /if }}
             {{ partial:components/outlink href="/blog" label="Zum Blog" }}
         </div>
     </section>
     <section class="home-publications site-container" aria-labelledby="publications-title">
-        <h2 id="publications-title" data-home-heading>Veröffentlichungen</h2>
+        <h2 id="publications-title" data-home-heading><a class="related-reference related-reference--heading related-reference--reveal" href="/publikationen" data-related-reference><span class="semantic-link">Veröffentlichungen</span>{{ partial:components/open-file size="heading" }}</a></h2>
         <div class="home-publications__records">
             {{ if home:featured_publications }}{{ home:featured_publications }}{{ if published }}{{ partial:home/publication-record }}{{ /if }}{{ /home:featured_publications }}{{ /if }}
         </div>
-        {{ partial:components/button href="/publikationen" label="Alle Veröffentlichungen" }}
+        {{ partial:components/outlink href="/publikationen" label="Alle Veröffentlichungen" }}
     </section>
     <section class="home-now site-container" aria-labelledby="now-title">
         <h2 id="now-title" data-home-heading>Aktuell</h2>
-        {{ if now:homepage_summary }}<div class="home-now__summary">{{ now:homepage_summary | bard_html }}</div>{{ /if }}
+        <div class="home-now__content">{{ if now:homepage_summary }}<div class="home-now__summary">{{ now:homepage_summary | bard_html }}</div>{{ /if }}{{ if now:homepage_button_label && now:homepage_button_link }}<div class="home-now__cta">{{ partial:components/button :href="now:homepage_button_link" :label="now:homepage_button_label" }}</div>{{ /if }}</div>
         {{ if now:homepage_links }}<ul class="home-now__links">{{ now:homepage_links limit="3" }}{{ if label && link }}<li>{{ partial:components/outlink :href="link" :label="label" }}</li>{{ /if }}{{ /now:homepage_links }}</ul>{{ /if }}
-        {{ if now:homepage_button_label && now:homepage_button_link }}<div class="home-now__cta">{{ partial:components/button :href="now:homepage_button_link" :label="now:homepage_button_label" }}</div>{{ /if }}
     </section>
 </article>
