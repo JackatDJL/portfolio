@@ -1,62 +1,107 @@
-// One end-to-end stroke, split only at shared endpoints so the long, permanent
-// section geometry need not be rebuilt when the pinned project indicator moves.
-export function homepageThread({ root, svg, path, slot, headings, full }) {
-    const ns = 'http://www.w3.org/2000/svg';
-    const projectPath = document.createElementNS(ns, 'path');
-    const sectionsPath = document.createElementNS(ns, 'path');
-    svg.append(projectPath, sectionsPath);
-    let layout, previous = '';
-    const bump = (y, center, radius, depth) => Math.abs(y - center) < radius ? (1 + Math.cos((y - center) / radius * Math.PI)) * depth / 2 : 0;
-    const wave = (start, end, bumps) => {
-        const ys = new Set([start, end]);
-        for (let y = start; y < end; y += 8) ys.add(y);
-        for (const b of bumps) if (b.y > start && b.y < end) ys.add(b.y);
-        return [...ys].sort((a, b) => a - b).map((y, i) => `${i ? 'L' : 'M'}${(layout.rail + Math.sin((y - layout.join) / 66) * layout.amplitude + bumps.reduce((x, b) => x + bump(y, b.y, b.radius, b.depth), 0)).toFixed(2)},${y.toFixed(2)}`).join(' ');
+const ns = 'http://www.w3.org/2000/svg';
+const clamp = value => Math.max(0, Math.min(1, value));
+
+// One SVG, with contiguous measured stroke segments. The travelling portion
+// shares the wordmark's transform; the established thread has document anchors.
+export function homepageThread({ root, svg, path, headings, projects, full }) {
+    const travel = document.createElementNS(ns, 'g');
+    const body = document.createElementNS(ns, 'g');
+    const railPath = document.createElementNS(ns, 'path');
+    const sections = document.createElementNS(ns, 'path');
+    const bumps = projects.map((_, index) => {
+        const p = document.createElementNS(ns, 'path');
+        p.dataset.projectBump = index;
+        body.append(p);
+        return p;
+    });
+    path.replaceWith(travel);
+    travel.append(path);
+    body.prepend(railPath);
+    svg.append(body, sections);
+    let geometry;
+    const wave = (rail, start, end, marks) => {
+        const points = new Set([start, end]);
+        for (let y = start; y < end; y += 6) points.add(y);
+        marks.forEach(m => points.add(m.y));
+        return [...points].filter(y => y >= start && y <= end).sort((a, b) => a - b).map((y, i) => {
+            const offset = marks.reduce((sum, m) => sum + (Math.abs(y - m.y) < m.radius ? (1 + Math.cos((y - m.y) / m.radius * Math.PI)) * m.depth / 2 : 0), 0);
+            return `${i ? 'L' : 'M'}${rail + offset},${y}`;
+        }).join(' ');
     };
-    function measure(size, trigger) {
-        const rootTop = root.getBoundingClientRect().top + scrollY;
-        const rect = slot.getBoundingClientRect();
-        // The opening pin offset is removed to retain the original document anchor.
-        const pinOffset = full ? Math.max(0, Math.min(scrollY - (trigger?.start ?? 0), (trigger?.end ?? 0) - (trigger?.start ?? 0))) : 0;
-        const x = rect.left, y = rect.top + scrollY - rootTop - pinOffset + size.font * .94;
-        const rail = size.rail, join = y + size.line + 110;
-        const positions = headings.map(h => { const r = h.getBoundingClientRect(); return r.top + r.height / 2 + scrollY - rootTop; });
-        layout = { rootTop, rail, join, positions, amplitude: innerWidth < 768 ? 2 : 4, depth: innerWidth < 768 ? 9 : 23, split: positions[1] - 100, end: root.scrollHeight - 30 };
-        svg.setAttribute('viewBox', `0 0 ${innerWidth} ${root.scrollHeight}`);
-        svg.style.height = `${root.scrollHeight}px`;
-        const first = `M${x + size.wordWidths[0]},${y} Q${x + size.wordWidths[0] / 2},${y + 7} ${x},${y}`;
-        const connector = ` C${x - 35},${y} ${x - 35},${y + size.line} ${x},${y + size.line}`;
-        const second = ` Q${x + size.wordWidths[1] / 2},${y + size.line + 7} ${x + size.wordWidths[1]},${y + size.line}`;
-        const tail = ` C${x + size.wordWidths[1] + 65},${y + size.line + 90} ${rail},${join - 75} ${rail},${join}`;
-        path.setAttribute('d', first); layout.a = path.getTotalLength();
-        path.setAttribute('d', first + connector); layout.ab = path.getTotalLength();
-        path.setAttribute('d', first + connector + second); layout.abc = path.getTotalLength();
-        path.setAttribute('d', first + connector + second + tail); layout.total = path.getTotalLength();
-        sectionsPath.setAttribute('d', wave(layout.split, layout.end, positions.slice(1).map(y => ({ y, radius: 44, depth: layout.depth }))));
-        layout.sectionsLength = sectionsPath.getTotalLength();
-        previous = '';
-    }
-    function draw(progress, projectY, smallY, smallDepth) {
-        if (!layout) return;
-        const { a, ab, abc, total } = layout;
-        const reveal = Math.min(1, progress);
-        path.style.strokeDasharray = `${a + (ab - a) * reveal} ${(ab - a) * (1 - reveal)} ${abc - ab + (total - abc) * reveal} ${(total - abc) * (1 - reveal)}`;
-        const y = projectY + scrollY - layout.rootTop;
-        const small = smallY + scrollY - layout.rootTop;
-        const key = [y, smallDepth < .1 ? 0 : small, smallDepth].map(n => n.toFixed(1)).join(',');
-        if (key !== previous) {
-            projectPath.setAttribute('d', wave(layout.join, layout.split, [{ y, radius: 44, depth: layout.depth }, { y: small, radius: 30, depth: smallDepth }]));
-            layout.projectLength = projectPath.getTotalLength();
-            previous = key;
-        }
-        // Body is revealed as the connecting tail arrives, never substituted for it.
-        const bodyReveal = Math.max(0, Math.min(1, progress - 1));
-        let remaining = (layout.projectLength + layout.sectionsLength) * bodyReveal;
-        for (const [segment, length] of [[projectPath, layout.projectLength], [sectionsPath, layout.sectionsLength]]) {
-            segment.style.strokeDasharray = `${length}`;
-            segment.style.strokeDashoffset = `${Math.max(0, length - remaining)}`;
-            remaining = Math.max(0, remaining - length);
-        }
-    }
-    return { measure, draw, destroy() { projectPath.remove(); sectionsPath.remove(); path.removeAttribute('style'); svg.removeAttribute('style'); } };
+    const range = (element, tail, head, total) => {
+        element.style.strokeDasharray = `${Math.max(0, head - tail)} ${total + 1}`;
+        element.style.strokeDashoffset = `${-tail}`;
+        element.style.visibility = head > tail ? 'visible' : 'hidden';
+    };
+    return {
+        measure(size, trigger) {
+            const rect = root.getBoundingClientRect();
+            const cinemaTop = rect.top + scrollY;
+            const end = trigger?.end ?? cinemaTop;
+            const rail = size.rail;
+            const projectY = headings[0].offsetHeight / 2 + parseFloat(getComputedStyle(root.querySelector('[data-home-project-stage]')).paddingTop);
+            const join = innerHeight;
+            const documentY = element => element.getBoundingClientRect().top + scrollY;
+            const later = headings.slice(1).map(h => ({ y: documentY(h) + h.offsetHeight / 2 - end, radius: 44, depth: innerWidth < 768 ? 9 : 23 }));
+            const bottom = documentY(root) + root.offsetHeight - end - 30;
+            svg.setAttribute('viewBox', `0 0 ${innerWidth} ${innerHeight}`);
+            const first = `M${size.wordWidths[0]},${size.font * .94} Q${size.wordWidths[0] / 2},${size.font * .94 + 7} 0,${size.font * .94}`;
+            const connector = ` C-35,${size.font * .94} -35,${size.line + size.font * .94} 0,${size.line + size.font * .94}`;
+            const second = ` Q${size.wordWidths[1] / 2},${size.line + size.font * .94 + 7} ${size.wordWidths[1]},${size.line + size.font * .94}`;
+            const localX = (rail - size.dockX) / size.scale;
+            const localY = -size.dockY / size.scale;
+            const tail = ` C${size.wordWidths[1] + 65},${size.height + 100} ${localX},${size.height + 160} ${localX},${localY}`;
+            path.setAttribute('d', first); const a = path.getTotalLength();
+            path.setAttribute('d', first + connector); const ab = path.getTotalLength();
+            path.setAttribute('d', first + connector + second); const abc = path.getTotalLength();
+            path.setAttribute('d', first + connector + second + tail); const total = path.getTotalLength();
+            if (full) {
+                const title = projects[0]?.querySelector('h3');
+                const records = root.querySelector('.home-projects__records');
+                const smallStart = records.offsetTop + (title ? title.offsetTop + title.offsetHeight / 2 : innerHeight * .4);
+                const marks = [{ y: projectY, radius: 44, depth: 23 }];
+                const small = projects.map((_, i) => ({ y: Math.min(innerHeight * .7, smallStart) + i * 48, radius: 20, depth: 11 }));
+                railPath.setAttribute('d', wave(rail, 0, join, [...marks, ...small]));
+                small.forEach((m, i) => bumps[i].setAttribute('d', wave(rail, m.y - m.radius, m.y + m.radius, [m])));
+                sections.setAttribute('d', wave(rail, join, Math.max(join, bottom), later));
+            } else {
+                const marks = headings.map(h => ({ y: documentY(h) + h.offsetHeight / 2, radius: innerWidth < 768 ? 30 : 44, depth: innerWidth < 768 ? 9 : 23 }));
+                projects.forEach(p => { const h = p.querySelector('h3'); marks.push({ y: documentY(h) + h.offsetHeight / 2, radius: 20, depth: 11 }); });
+                sections.setAttribute('d', wave(rail, documentY(headings[0]) - 70, documentY(root) + root.offsetHeight - 30, marks));
+            }
+            geometry = { a, ab, abc, total, end, bodyLength: railPath.getTotalLength() };
+        },
+        draw({ peel = 0, establish = 0, x = 0, y = 0, scale = 1, active = -1, release = 0 }) {
+            if (!geometry) return;
+            const { a, ab, abc, total, end, bodyLength } = geometry;
+            travel.setAttribute('transform', `translate(${x} ${y}) scale(${scale})`);
+            if (!full) {
+                travel.style.visibility = 'visible';
+                path.style.visibility = 'visible';
+                path.style.strokeDashoffset = '0';
+                path.style.strokeDasharray = `${a} ${ab - a} ${abc - ab} ${total + 1}`;
+                body.style.visibility = 'hidden';
+                sections.setAttribute('transform', `translate(0 ${-scrollY})`);
+                return;
+            }
+            travel.style.visibility = '';
+            if (peel === 0) {
+                path.style.visibility = 'visible';
+                path.style.strokeDashoffset = '0';
+                path.style.strokeDasharray = `${a * scale} ${(ab - a) * scale} ${(abc - ab) * scale} ${(total + 1) * scale}`;
+            } else {
+                // Both endpoints advance. The tail clears every underline and
+                // connector point, finally leaving only the vertical thread.
+                range(path, total * clamp(peel) * scale, (abc + (total - abc) * clamp(peel * 1.7)) * scale, total * scale);
+            }
+            body.style.visibility = establish > 0 ? 'visible' : 'hidden';
+            range(railPath, 0, bodyLength * establish, bodyLength);
+            body.setAttribute('transform', `translate(0 ${release})`);
+            railPath.style.opacity = '.65';
+            bumps.forEach((p, i) => { p.style.opacity = establish === 1 ? (i === active ? '1' : '.2') : '0'; });
+            sections.style.visibility = establish === 1 ? 'visible' : 'hidden';
+            sections.setAttribute('transform', `translate(0 ${end - scrollY})`);
+        },
+        destroy() { travel.replaceWith(path); body.remove(); sections.remove(); path.removeAttribute('style'); path.removeAttribute('d'); svg.removeAttribute('viewBox'); },
+    };
 }

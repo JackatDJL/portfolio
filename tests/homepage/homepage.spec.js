@@ -1,53 +1,110 @@
 import { test, expect } from '@playwright/test';
 
-test('production homepage preserves identity, finite project states, and group focus', async ({ page }) => {
+async function master(page) {
+    await expect(page.locator('.pin-spacer')).toHaveCount(1);
+    await page.evaluate(() => document.fonts.ready);
+    await page.evaluate(async () => {
+        const url = performance.getEntriesByType('resource').find(entry => /\/ScrollTrigger-/.test(entry.name)).name;
+        const module = await import(url);
+        window.homeTestTriggers = Object.values(module).find(value => value.getAll);
+    });
+    await page.waitForTimeout(250);
+}
+
+async function seek(page, label, offset = 0) {
+    await page.evaluate(({ label, offset }) => {
+        const trigger = homeTestTriggers.getById('home-master');
+        trigger.getTween(true)?.kill?.();
+        const time = typeof label === 'number' ? label : trigger.animation.labels[label];
+        scrollTo(0, trigger.start + (time + offset) / trigger.animation.duration() * (trigger.end - trigger.start));
+    }, { label, offset });
+    await page.waitForTimeout(600);
+}
+
+const visibleStates = () => {
+    const visible = element => {
+        const box = element.getBoundingClientRect();
+        let opacity = 1;
+        for (let parent = element; parent; parent = parent.parentElement) {
+            const css = getComputedStyle(parent);
+            if (css.visibility === 'hidden') return false;
+            opacity *= Number(css.opacity);
+        }
+        return opacity > .05 && box.left < innerWidth && box.right > 0 && box.top < innerHeight && box.bottom > 0;
+    };
+    return {
+        photos: [...document.querySelectorAll('[data-stream-clone] img')].filter(visible).length,
+        projects: [...document.querySelectorAll('[data-home-project]')].filter(visible).length,
+        heading: visible(document.querySelector('#projects-title')),
+    };
+};
+
+test('one master owns the opening, with a moving tail and controlled handoff', async ({ page }) => {
     const errors = [];
-    const requests = [];
     page.on('pageerror', error => errors.push(error.message));
-    page.on('request', request => requests.push(request.url()));
+    page.on('console', message => { if (['warning', 'error'].includes(message.type())) errors.push(message.text()); });
     await page.emulateMedia({ colorScheme: 'dark' });
     await page.goto('/');
+    await master(page);
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
     await expect(page.locator('h1')).toHaveCount(1);
-    await expect(page.locator('.pin-spacer')).toHaveCount(2);
-    const stage = page.locator('[data-home-project-stage]');
-    const start = await stage.evaluate(element => element.getBoundingClientRect().top + scrollY);
-    const projects = page.locator('[data-home-project]');
-    const count = await projects.count();
-    expect(count).toBeLessThanOrEqual(3);
-    const titles = await projects.locator('h3').allTextContents();
-    for (const index of [...Array(count).keys(), 0, count - 1, 0]) {
-        await page.evaluate(y => scrollTo(0, y), start + index * 800);
-        await expect(page.locator('[data-home-project]:not([inert]) h3')).toHaveText(titles[index]);
+    expect(await page.evaluate(() => homeTestTriggers.getAll().map(t => t.vars.id))).toEqual(['home-master']);
+    await seek(page, .8);
+    const attached = await page.locator('[data-home-thread-path]').evaluate(path => {
+        const point = path.getPointAtLength(0).matrixTransform(path.getScreenCTM());
+        const word = document.querySelector('[data-home-name] > span').getBoundingClientRect();
+        return Math.abs(point.x - word.right);
+    });
+    expect(attached).toBeLessThan(2);
+    await seek(page, 1.3);
+    const tail = await page.locator('[data-home-thread-path]').evaluate(path => parseFloat(path.style.strokeDashoffset));
+    expect(tail).toBeLessThan(0);
+    await seek(page, 2.6);
+    await expect(page.locator('[data-home-thread-path]')).toHaveCSS('visibility', 'hidden');
+    const name = await page.locator('h1').boundingBox();
+    expect(name.y).toBeLessThan(45);
+    expect(name.height).toBeLessThan(55);
+    for (const time of [5.7, 6, 6.3, 6.6, 6.85, 7, 7.2, 7.5, 8.7, 8.85, 8.95, 9.1, 10.3, 10.45, 10.55, 10.7]) {
+        await seek(page, time);
+        const state = await page.evaluate(visibleStates);
+        expect(state.projects).toBeLessThanOrEqual(2);
+        if (state.photos > 0) expect(state.projects).toBeLessThanOrEqual(1);
+        if (time >= 6.3) expect(state.heading || state.photos > 0 || state.projects > 0).toBe(true);
+        if (time >= 7.5) expect(state.photos).toBe(0);
     }
+    for (const index of [1, 2, 3, 2, 1]) {
+        await seek(page, `project-${index}`);
+        expect((await page.evaluate(visibleStates)).projects).toBe(1);
+        await expect(page.locator('[data-home-project]:not([inert]) h3')).toHaveText(['prtop↗', 'AtheBlues↗', 'ai-ctx↗'][index - 1]);
+    }
+    expect(errors).toEqual([]);
+});
+
+test('entry arrows stay visible and only section headings reveal on focus', async ({ page }) => {
+    await page.goto('/'); await master(page); await seek(page, 'project-1');
     const link = page.locator('[data-home-project]:not([inert]) .home-project__copy');
-    await link.focus();
-    await expect(link.locator('.semantic-link')).toHaveCSS('background-size', '100% 100%');
+    await expect(link.locator('.related-reference__arrow-mask')).toHaveCSS('opacity', '1');
     const bounds = await link.boundingBox();
-    await link.evaluate(element => element.blur());
     await page.mouse.move(bounds.x + bounds.width - 8, bounds.y + bounds.height - 8);
     await expect(link.locator('.semantic-link')).toHaveCSS('background-size', '100% 100%');
     await page.locator('[data-home-project]:not([inert]) .home-project__artifact').hover();
     await expect(link.locator('.semantic-link')).toHaveCSS('background-size', /^0(?:px|%) 100%$/);
-    await link.focus();
-    await expect(link.locator('.related-reference__arrow-mask')).toHaveCSS('opacity', '1');
-    expect(await link.locator('.related-reference__arrow').evaluate(el => parseFloat(getComputedStyle(el).fontSize))).toBeGreaterThan(30);
-    const blog = page.locator('.home-post > a').first();
-    await blog.focus();
-    await expect(blog.locator('.semantic-link')).toHaveCSS('background-size', '100% 100%');
-    for (const [id, href] of [['projects', '/projekte'], ['writing', '/blog'], ['publications', '/publikationen']]) {
+    for (const [id, href] of [['projects', '/projekte'], ['writing', '/blog'], ['publications', '/publikationen'], ['now', '/aktuell']]) {
         const heading = page.locator(`#${id}-title a`);
         await expect(heading).toHaveAttribute('href', href);
+        await expect(heading.locator('.related-reference__arrow-mask')).toHaveCSS('opacity', '0');
         await heading.focus();
         await expect(heading.locator('.related-reference__arrow-mask')).toHaveCSS('opacity', '1');
+        await expect(heading.locator('.semantic-link')).toHaveCSS('background-size', '100% 100%');
+        await heading.evaluate(element => element.blur());
     }
+    const post = page.locator('.home-post > a').first();
+    await expect(post.locator('.related-reference__arrow-mask')).toHaveCSS('opacity', '1');
+    await post.focus();
+    await expect(post.locator('.semantic-link')).toHaveCSS('background-size', '100% 100%');
     await expect(page.locator('.home-publications > a')).toHaveClass(/related-reference/);
     await expect(page.locator('.home-now__content .home-now__cta')).toHaveCount(1);
     await expect(page.locator('a a')).toHaveCount(0);
-    await page.evaluate(() => scrollTo(0, 0));
-    await expect.poll(async () => (await page.locator('h1').boundingBox()).width).toBeGreaterThan(400);
-    expect(requests.some(url => /pdf-viewer-|pdf\.worker/.test(url))).toBe(false);
-    expect(errors).toEqual([]);
 });
 
 test('mobile and reduced motion retain readable projects and light paper', async ({ page }) => {
@@ -85,9 +142,10 @@ test('mobile and reduced motion retain readable projects and light paper', async
     await expect(page.locator('.home-now__items')).toHaveCount(0);
 });
 
-test('gallery count does not extend the opening and every repeated photo leaves', async ({ browser }) => {
-    const heights = [];
-    for (const count of [3, 5, 10]) {
+
+test('gallery source count never changes pacing, and every image exits by project 1', async ({ browser }) => {
+    const measurements = [];
+    for (const count of [3, 5, 8, 12]) {
         const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
         await page.route('http://127.0.0.1:8010/', async route => {
             const response = await route.fetch();
@@ -97,44 +155,85 @@ test('gallery count does not extend the opening and every repeated photo leaves'
             });
             await route.fulfill({ response, body: html });
         });
-        await page.goto('http://127.0.0.1:8010/');
-        await expect(page.locator('.pin-spacer')).toHaveCount(2);
-        await page.evaluate(() => document.fonts.ready);
-        heights.push(await page.locator('.pin-spacer').first().evaluate(el => el.offsetHeight));
-        expect(await page.locator('[data-stream-clone]').count()).toBeLessThanOrEqual(12);
-        await page.evaluate(() => scrollTo(0, 1740));
-        await expect.poll(() => page.locator('[data-stream-clone]').evaluateAll(elements => elements.filter(el => {
-            const r = el.getBoundingClientRect();
-            return r.left < innerWidth && r.right > 0 && r.top < innerHeight && r.bottom > 0;
-        }).length)).toBe(0);
+        await page.goto('http://127.0.0.1:8010/'); await master(page);
+        await expect(page.locator('[data-stream-clone]')).toHaveCount(8);
+        await seek(page, 'gallery');
+        const before = await page.locator('[data-stream-clone]').first().boundingBox();
+        await page.mouse.wheel(0, 120); await page.waitForTimeout(500);
+        const after = await page.locator('[data-stream-clone]').first().boundingBox();
+        const distance = Math.abs(after.x - before.x);
+        expect(distance).toBeLessThan(120);
+        measurements.push(await page.evaluate(() => {
+            const t = homeTestTriggers.getById('home-master');
+            return { distance: t.end - t.start, duration: t.animation.duration() };
+        }));
+        await seek(page, 'project-1');
+        expect((await page.evaluate(visibleStates)).photos).toBe(0);
         await page.close();
     }
-    expect(new Set(heights).size).toBe(1);
+    expect(new Set(measurements.map(value => JSON.stringify(value))).size).toBe(1);
 });
 
-test('major section bumps stay attached through scrolling and resize', async ({ page }) => {
-    await page.goto('/');
-    await page.locator('#writing-title').scrollIntoViewIfNeeded();
-    for (const width of [1440, 1280, 820, 390]) {
-        await page.setViewportSize({ width, height: 1000 });
+test('refresh, resize, and restored scroll keep one pin and permanent bumps', async ({ page }) => {
+    const errors = [];
+    page.on('pageerror', error => errors.push(error.message));
+    await page.goto('/'); await master(page);
+    for (const time of [.8, 6.9, 9.1]) {
+        await seek(page, time);
+        await page.evaluate(() => homeTestTriggers.refresh());
         await page.waitForTimeout(400);
+        await expect(page.locator('.pin-spacer')).toHaveCount(1);
+        const paths = await page.locator('[data-project-bump]').evaluateAll(nodes => nodes.map(node => node.getAttribute('d')));
+        expect(new Set(paths).size).toBe(3);
+        await page.setViewportSize({ width: 1280, height: 900 });
+        await page.waitForTimeout(400);
+        await expect(page.locator('.pin-spacer')).toHaveCount(1);
+        await page.setViewportSize({ width: 1440, height: 1000 });
+    }
+    await seek(page, 'project-2');
+    await page.reload(); await master(page);
+    await expect(page.locator('[data-home-project]:not([inert])')).toHaveCount(1);
+    for (const width of [1440, 1280, 1586, 820, 390]) {
+        await page.setViewportSize({ width, height: 1000 });
+        await page.waitForTimeout(500);
         for (const id of ['writing', 'publications', 'now']) {
             await page.locator(`#${id}-title`).scrollIntoViewIfNeeded();
-            await page.waitForTimeout(100);
+            await page.waitForTimeout(200);
             const offset = await page.evaluate(id => {
-                const svg = document.querySelector('[data-home-thread]');
                 const heading = document.querySelector(`#${id}-title`).getBoundingClientRect();
-                const y = heading.top + heading.height / 2 - svg.getBoundingClientRect().top;
-                const path = svg.querySelector('path:last-child');
+                const path = document.querySelector('[data-home-thread] > path:last-child');
+                const y = heading.top + heading.height / 2;
                 let nearest = { distance: Infinity, x: 0 };
-                for (let d = 0; d < path.getTotalLength(); d += 4) {
-                    const point = path.getPointAtLength(d);
+                for (let d = 0; d < path.getTotalLength(); d += 3) {
+                    const point = path.getPointAtLength(d).matrixTransform(path.getScreenCTM());
                     if (Math.abs(point.y - y) < nearest.distance) nearest = { distance: Math.abs(point.y - y), x: point.x };
                 }
-                const rail = heading.left - (innerWidth < 768 ? 23 : 38);
-                return nearest.x - rail;
+                return nearest.x - (heading.left - (innerWidth < 768 ? 23 : 38));
             }, id);
             expect(offset).toBeGreaterThan(width < 768 ? 5 : 16);
+            expect(errors).toEqual([]);
         }
     }
+});
+
+test('native snap approaches projects in both directions without catching other phases', async ({ page }) => {
+    await page.goto('/'); await master(page);
+    for (const time of [.8, 3.4]) {
+        await seek(page, time);
+        const actual = await page.evaluate(() => homeTestTriggers.getById('home-master').animation.time());
+        expect(actual).toBeCloseTo(time, 1);
+    }
+    await seek(page, 'project-1');
+    await seek(page, 'project-2', -.25);
+    await expect.poll(() => page.evaluate(() => homeTestTriggers.getById('home-master').animation.time())).toBeCloseTo(9.1, 1);
+    await seek(page, 'project-3');
+    await seek(page, 'project-2', .25);
+    await expect.poll(() => page.evaluate(() => homeTestTriggers.getById('home-master').animation.time())).toBeCloseTo(9.1, 1);
+    const before = await page.evaluate(() => scrollY);
+    await page.mouse.wheel(0, 120); await page.waitForTimeout(700);
+    expect(await page.evaluate(() => scrollY)).toBeGreaterThan(before + 100);
+    await page.locator('#writing-title').scrollIntoViewIfNeeded();
+    const blogScroll = await page.evaluate(() => scrollY);
+    await page.waitForTimeout(700);
+    expect(await page.evaluate(() => scrollY)).toBe(blogScroll);
 });

@@ -1,5 +1,6 @@
 <article class="home-archive" data-homepage>
     <svg class="home-thread" data-home-thread aria-hidden="true" focusable="false"><path data-home-thread-path /></svg>
+    <div class="home-cinema" data-home-cinema>
     <header class="home-person" data-home-opening>
         <div class="home-person__grid site-container">
             <div class="home-name-slot" data-home-name-slot><h1 class="home-name wordmark" data-home-name aria-label="Jack Ruder"><span class="semantic-link" aria-hidden="true">Jack</span><span class="semantic-link" aria-hidden="true">Ruder</span></h1></div>
@@ -21,6 +22,7 @@
             </div>
         </div>
     </section>
+    </div>
     <section class="home-writing site-container" aria-labelledby="writing-title">
         <h2 id="writing-title" data-home-heading><a class="related-reference related-reference--heading related-reference--reveal" href="/blog" data-related-reference><span class="semantic-link">Blog</span>{{ partial:components/open-file size="heading" }}</a></h2>
         <div class="home-writing__list">
@@ -36,7 +38,7 @@
         {{ partial:components/outlink href="/publikationen" label="Alle Veröffentlichungen" }}
     </section>
     <section class="home-now site-container" aria-labelledby="now-title">
-        <h2 id="now-title" data-home-heading>Aktuell</h2>
+        <h2 id="now-title" data-home-heading><a class="related-reference related-reference--heading related-reference--reveal" href="/aktuell" data-related-reference><span class="semantic-link">Aktuell</span>{{ partial:components/open-file size="heading" }}</a></h2>
         <div class="home-now__content">{{ if now:homepage_summary }}<div class="home-now__summary">{{ now:homepage_summary | bard_html }}</div>{{ /if }}{{ if now:homepage_button_label && now:homepage_button_link }}<div class="home-now__cta">{{ partial:components/button :href="now:homepage_button_link" :label="now:homepage_button_label" }}</div>{{ /if }}</div>
         {{ if now:homepage_links }}<ul class="home-now__links">{{ now:homepage_links limit="3" }}{{ if label && link }}<li>{{ partial:components/outlink :href="link" :label="label" }}</li>{{ /if }}{{ /now:homepage_links }}</ul>{{ /if }}
     </section>

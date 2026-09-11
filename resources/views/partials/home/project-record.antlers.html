@@ -1,6 +1,6 @@
 <article class="home-project" data-home-project>
     <div class="home-project__link">
-        <a class="home-project__copy related-reference related-reference--reveal" href="{{ url }}" data-related-reference>
+        <a class="home-project__copy related-reference" href="{{ url }}" data-related-reference>
             <div class="home-project__meta">{{ if started_at }}<time datetime="{{ started_at format='Y-m-d' }}">{{ started_at format="Y" }}</time>{{ /if }}{{ if project_status }}{{ partial:components/chip :label="project_status:label" }}{{ /if }}</div>
             <h3><span class="semantic-link">{{ title }}</span>{{ partial:components/open-file size="heading" }}</h3>
             {{ if summary }}<p>{{ summary }}</p>{{ /if }}
