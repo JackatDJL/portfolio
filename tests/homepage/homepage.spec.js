@@ -225,10 +225,10 @@ test('native snap approaches projects in both directions without catching other 
     }
     await seek(page, 'project-1');
     await seek(page, 'project-2', -.25);
-    await expect.poll(() => page.evaluate(() => homeTestTriggers.getById('home-master').animation.time())).toBeCloseTo(9.1, 1);
+    await expect.poll(() => page.evaluate(() => homeTestTriggers.getById('home-master').animation.time())).toBeCloseTo(9.8, 1);
     await seek(page, 'project-3');
-    await seek(page, 'project-2', .25);
-    await expect.poll(() => page.evaluate(() => homeTestTriggers.getById('home-master').animation.time())).toBeCloseTo(9.1, 1);
+    await seek(page, 'project-3', -.75);
+    await expect.poll(() => page.evaluate(() => homeTestTriggers.getById('home-master').animation.time())).toBeCloseTo(9.8, 1);
     const before = await page.evaluate(() => scrollY);
     await page.mouse.wheel(0, 120); await page.waitForTimeout(700);
     expect(await page.evaluate(() => scrollY)).toBeGreaterThan(before + 100);
@@ -236,4 +236,26 @@ test('native snap approaches projects in both directions without catching other 
     const blogScroll = await page.evaluate(() => scrollY);
     await page.waitForTimeout(700);
     expect(await page.evaluate(() => scrollY)).toBe(blogScroll);
+});
+
+
+test('words converge directly and project titles align with their own fixed bumps', async ({ page }) => {
+    await page.goto('/'); await master(page);
+    let previousGap = Infinity;
+    for (const time of [.5, .8, 1.1, 1.4, 1.65, 1.85]) {
+        await seek(page, time);
+        const [jack, ruder] = await page.locator('[data-home-name] > span').evaluateAll(words => words.map(word => { const r = word.getBoundingClientRect(); return { x: r.x, y: r.y, width: r.width }; }));
+        expect(ruder.x).toBeGreaterThan(jack.x);
+        expect(ruder.y - jack.y).toBeLessThanOrEqual(previousGap + .1);
+        if (time >= 1.65) expect(Math.abs(ruder.y - jack.y)).toBeLessThan(5);
+        previousGap = ruder.y - jack.y;
+    }
+    for (const index of [0, 1, 2, 1, 0]) {
+        await seek(page, `project-${index + 1}`);
+        const project = page.locator('[data-home-project]').nth(index);
+        await expect(project).toHaveCSS('opacity', '1');
+        const title = await project.locator('h3').boundingBox();
+        const bumpY = await page.locator('[data-project-bump]').nth(index).evaluate(path => { const box = path.getBBox(); return box.y + box.height / 2; });
+        expect(Math.abs(title.y + title.height / 2 - bumpY)).toBeLessThan(2);
+    }
 });

@@ -32,10 +32,10 @@ for (const root of document.querySelectorAll('[data-homepage]')) {
 
     mm.add({ desktop: '(min-width: 64rem) and (min-height: 42rem) and (hover: hover) and (pointer: fine)', reduce: '(prefers-reduced-motion: reduce)', all: 'all' }, context => {
         const full = context.conditions.desktop && !context.conditions.reduce;
-        const state = { travel: 0, inline: 0, peel: 0, establish: full ? 0 : 1 };
+        const state = { travel: 0, peel: 0, establish: full ? 0 : 1 };
         const labels = { hero: 0, thread: .4, 'gallery-in': 1.2, gallery: 2.6, 'project-handoff': 6.0 };
-        projects.forEach((_, i) => { labels[`project-${i + 1}`] = 7.5 + i * 1.6; });
-        labels.release = 7.5 + Math.max(0, projects.length - 1) * 1.6 + .9;
+        projects.forEach((_, i) => { labels[`project-${i + 1}`] = 7.5 + i * 2.3; });
+        labels.release = 7.5 + Math.max(0, projects.length - 1) * 2.3 + .9;
         let timeline, size, alive = true, refreshTimer;
         let active = -2;
         root.classList.toggle('is-home-enhanced', full);
@@ -104,13 +104,18 @@ for (const root of document.querySelectorAll('[data-homepage]')) {
                 x = lerp(size.originX, size.dockX, state.travel);
                 y = lerp(size.originY - scrollY + pinOffset, size.dockY, state.travel);
                 scale = lerp(1, size.scale, state.travel);
-                gsap.set(name, { x, y, scale });
-                gsap.set(words[1], { x: (size.wordWidths[0] + size.font * .22) * state.inline, y: -size.line * state.inline });
+                gsap.set(name, { x: 0, y: 0, scale: 1, height: size.height * scale });
+                gsap.set(words[0], { x, y, scale });
+                // Each word interpolates directly between its measured start and inline destination.
+                const wordX = (size.wordWidths[0] + size.font * .22) * size.scale * state.travel / scale;
+                const wordY = size.line * (1 - state.travel) / scale - size.line;
+                gsap.set(words[1], { x: x + wordX * scale, y: y + size.line * (1 - state.travel) - size.line, scale });
+                state.wordX = wordX; state.wordY = wordY;
                 words.forEach(word => { word.style.backgroundSize = document.documentElement.dataset.theme === 'dark' ? '0% 100%' : `${state.travel * 100}% 100%`; });
             }
             ownership();
             const end = timeline?.scrollTrigger?.end;
-            thread.draw({ ...state, x, y, scale, active, release: Number.isFinite(end) ? Math.min(0, end - scrollY) : 0 });
+            thread.draw({ ...state, x, y, scale, active, emphasis: projects.map((_, i) => { const at = labels[`project-${i + 1}`]; const time = timeline?.time() ?? 0; return Math.min(gsap.utils.clamp(0, 1, (time - at + .8) / .8), i === projects.length - 1 ? 1 : gsap.utils.clamp(0, 1, (labels[`project-${i + 2}`] - time) / 1)); }), release: Number.isFinite(end) ? Math.min(0, end - scrollY) : 0 });
         };
         measureName();
         if (full) {
@@ -121,7 +126,6 @@ for (const root of document.querySelectorAll('[data-homepage]')) {
             Object.entries(labels).forEach(([label, time]) => timeline.addLabel(label, time));
             timeline.fromTo(state, { travel: 0 }, { travel: 1, duration: 1.25, ease: 'power2.inOut' }, 'thread')
                 .fromTo(state, { peel: 0 }, { peel: 1, duration: 1.1, ease: 'power2.inOut' }, 'thread+=.65')
-                .fromTo(state, { inline: 0 }, { inline: 1, duration: .45, ease: 'power2.inOut' }, 'thread+=1.5')
                 .fromTo(state, { establish: 0 }, { establish: 1, duration: .8 }, 'thread+=1.35')
                 .fromTo(intro, { autoAlpha: 1, y: 0 }, { autoAlpha: 0, y: -24, duration: .6 }, 'thread')
                 .fromTo(media, { scale: 1, x: 0, y: 0 }, { scale: () => size.mediaScale, x: () => innerWidth * .26 - size.mediaX, y: () => innerHeight * .15 - size.mediaY, duration: 1.3, ease: 'power2.inOut' }, 'thread')
@@ -130,8 +134,8 @@ for (const root of document.querySelectorAll('[data-homepage]')) {
             timeline.fromTo(projectLayer, { autoAlpha: 0, y: 36 }, { autoAlpha: 1, y: 0, duration: .7, ease: 'power2.out' }, 'project-handoff');
             projects.forEach((project, i) => {
                 const at = labels[`project-${i + 1}`];
-                timeline.fromTo(project, { autoAlpha: 0, x: -20, y: 26 }, { immediateRender: false, autoAlpha: 1, x: 0, y: 0, duration: .38, ease: 'power3.out' }, i === 0 ? labels['project-handoff'] + .85 : at - .38);
-                if (i < projects.length - 1) timeline.fromTo(project, { autoAlpha: 1, x: 0, y: 0 }, { immediateRender: false, autoAlpha: 0, x: -16, y: -22, duration: .28, ease: 'power2.in' }, labels[`project-${i + 2}`] - .48);
+                timeline.fromTo(project, { autoAlpha: 0, x: i === 0 ? -20 : -34, y: i === 0 ? 26 : 46 }, { immediateRender: false, autoAlpha: 1, x: 0, y: 0, duration: i === 0 ? .38 : .8, ease: i === 0 ? 'power3.out' : 'power2.inOut' }, i === 0 ? labels['project-handoff'] + .85 : at - .8);
+                if (i < projects.length - 1) timeline.fromTo(project, { autoAlpha: 1, x: 0, y: 0 }, { immediateRender: false, autoAlpha: 0, x: -30, y: -42, duration: .7, ease: 'power2.inOut' }, labels[`project-${i + 2}`] - 1);
             });
             timeline.to({}, { duration: .01 }, labels.release);
             const points = projects.map((_, i) => labels[`project-${i + 1}`] / timeline.duration());
@@ -142,13 +146,16 @@ for (const root of document.querySelectorAll('[data-homepage]')) {
                     snapTo: value => {
                         const time = value * timeline.duration();
                         if (time < labels['project-1'] || time > labels[`project-${projects.length}`] + .25) return value;
-                        const nearest = gsap.utils.snap(points, value);
-                        // Resolve only while approaching a nearby state. A slow
-                        // wheel notch away from a settled project must not get
-                        // repeatedly pulled back to the same project.
-                        const approaching = (nearest - value) * timeline.scrollTrigger.direction >= 0;
-                        return approaching && Math.abs(nearest - value) * timeline.duration() < .6 ? nearest : value;
-                    }, duration: { min: .12, max: .28 }, delay: .18, inertia: false, directional: false,
+                        // Resolve a partially travelled crossover by its visual
+                        // midpoint, without pulling quiet hold frames backwards.
+                        for (let i = 1; i < projects.length; i++) {
+                            const arrival = labels[`project-${i + 1}`];
+                            if (time >= arrival - 1 && time < arrival) {
+                                return points[time < arrival - .5 ? i - 1 : i];
+                            }
+                        }
+                        return value;
+                    }, duration: { min: .2, max: .5 }, ease: 'power2.inOut', delay: .16, inertia: false, directional: false,
                 } : false,
                 onUpdate: render,
             });
