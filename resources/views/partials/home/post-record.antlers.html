@@ -1,0 +1,4 @@
+<article class="home-post"><a class="related-reference" href="{{ url }}" data-related-reference>
+    <time datetime="{{ date format='Y-m-d' }}">{{ date format="d.m.Y" }}</time><h3><span class="semantic-link">{{ title }}</span>{{ partial:components/open-file size="heading" }}</h3>{{ if summary }}<p>{{ summary }}</p>{{ /if }}
+    {{ if topics }}<ul class="home-post__topics" aria-label="Themen">{{ topics }}<li>{{ partial:components/chip :label="title" }}</li>{{ /topics }}</ul>{{ /if }}
+</a></article>

@@ -5,6 +5,6 @@
         {{ if date }}{{ date | format_translated('j. F Y') }}{{ /if }}
         {{ unless date }}{{ if started_at }}{{ started_at | format_translated('F Y') }}{{ /if }}{{ /unless }}
         {{ if publication_type }}{{ if date }} · {{ /if }}{{ publication_type:label ?? publication_type }}{{ /if }}
-        <span class="related-reference__arrow-mask" aria-hidden="true"><span class="related-reference__arrow">↗</span></span>
+        {{ partial:components/open-file }}
     </span>
 </a>

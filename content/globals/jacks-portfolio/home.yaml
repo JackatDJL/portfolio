@@ -4,4 +4,20 @@ intro:
     content:
       -
         type: text
-        text: 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.'
+        text: 'Ich bin Schüler in der Qualifikationsphase am Gymnasium Athenaeum Stade und verbinde Schule mit vielen technischen, politischen und ehrenamtlichen Projekten. Besonders wichtig sind mir Programmierung, Datenschutz, Open Source, politische Bildung und Europa.'
+personal_media:
+  - photos/jack-20251020.jpg
+  - photos/img-20260602-wa0059.jpg
+  - photos/img-20260614-wa0024.jpg
+  - photos/img-20250629-wa0020.jpg
+  - photos/img-20260520-wa0024.jpg
+  - photos/img-20260602-wa0073.jpg
+featured_projects:
+  - 4739fabf-5726-4d17-ad72-5a5f574e33cd
+  - 8e9f1f56-1feb-46a8-9ae5-a79ec9444c81
+  - 592ac462-1e09-4f35-be25-8308b982fb2b
+featured_posts:
+  - aa8df0f9-e54c-4df4-b15e-b33a65cf618d
+featured_publications:
+  - a6e26f5b-16df-4097-894a-d353e649665c
+  - 0fdf9b1f-0190-433a-9185-b49a4fbb6646
