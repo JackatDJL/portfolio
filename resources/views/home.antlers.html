@@ -13,6 +13,7 @@
             {{ if home:personal_media }}{{ home:personal_media }}{{ unless first }}{{ partial:home/personal-photo }}{{ /unless }}{{ /home:personal_media }}{{ /if }}
         </div>
     </header>
+    </div>
     <section id="projekte" class="home-projects" data-home-projects aria-labelledby="projects-title">
         <div class="home-projects__stage site-container" data-home-project-stage>
             <div class="home-section-heading"><h2 id="projects-title" data-home-heading><a class="related-reference related-reference--heading related-reference--reveal" href="/projekte" data-related-reference><span class="semantic-link">Projekte</span>{{ partial:components/open-file size="heading" }}</a></h2>{{ partial:components/outlink href="/projekte" label="Alle Projekte" }}</div>
@@ -22,7 +23,6 @@
             </div>
         </div>
     </section>
-    </div>
     <section class="home-writing site-container" aria-labelledby="writing-title">
         <h2 id="writing-title" data-home-heading><a class="related-reference related-reference--heading related-reference--reveal" href="/blog" data-related-reference><span class="semantic-link">Blog</span>{{ partial:components/open-file size="heading" }}</a></h2>
         <div class="home-writing__list">

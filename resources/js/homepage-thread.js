@@ -1,24 +1,23 @@
+import { gsap } from 'gsap';
+
 const ns = 'http://www.w3.org/2000/svg';
 const clamp = value => Math.max(0, Math.min(1, value));
 
 // One SVG, with contiguous measured stroke segments. The travelling portion
 // shares the wordmark's transform; the established thread has document anchors.
-export function homepageThread({ root, svg, path, headings, projects, full }) {
+export function homepageThread({ root, svg, path, headings, projects, full, reduce = false }) {
     const travel = document.createElementNS(ns, 'g');
     const body = document.createElementNS(ns, 'g');
-    const railPath = document.createElementNS(ns, 'path');
     const sections = document.createElementNS(ns, 'path');
-    const bumps = projects.map((_, index) => {
-        const p = document.createElementNS(ns, 'path');
-        p.dataset.projectBump = index;
-        body.append(p);
-        return p;
-    });
     path.replaceWith(travel);
     travel.append(path);
-    body.prepend(railPath);
-    svg.append(body, sections);
-    let geometry, movingPath, lastWordPosition, projectGeometry;
+    svg.append(body);
+    body.append(sections);
+    let geometry, movingPath, lastWordPosition;
+    const merge = { amount: 0 };
+    const mergeTimeline = reduce ? null : gsap.timeline({ paused: true })
+        .to(merge, { amount: 1, duration: .4, ease: 'power2.inOut' })
+        .to(merge, { amount: 0, duration: .6, ease: 'power2.inOut' });
     const wave = (rail, start, end, marks) => {
         const points = new Set([start, end]);
         for (let y = start; y < end; y += 6) points.add(y);
@@ -34,16 +33,14 @@ export function homepageThread({ root, svg, path, headings, projects, full }) {
         element.style.visibility = head > tail ? 'visible' : 'hidden';
     };
     return {
-        measure(size, trigger) {
-            const rect = root.getBoundingClientRect();
-            const cinemaTop = rect.top + scrollY;
-            const end = trigger?.end ?? cinemaTop;
+        measure(size) {
             const rail = size.rail;
-            const projectY = headings[0].offsetHeight / 2 + parseFloat(getComputedStyle(root.querySelector('[data-home-project-stage]')).paddingTop);
-            const join = innerHeight;
-            const documentY = element => element.getBoundingClientRect().top + scrollY;
-            const later = headings.slice(1).map(h => ({ y: documentY(h) + h.offsetHeight / 2 - end, radius: 44, depth: innerWidth < 768 ? 9 : 23 }));
-            const bottom = documentY(root) + root.offsetHeight - end - 30;
+            // offsetTop follows layout, independent of entrance transforms.
+            const documentY = element => {
+                let y = 0;
+                for (let node = element; node; node = node.offsetParent) y += node.offsetTop;
+                return y;
+            };
             svg.setAttribute('viewBox', `0 0 ${innerWidth} ${innerHeight}`);
             movingPath = (wordX = 0, wordY = 0) => {
             const first = `M${size.wordWidths[0]},${size.font * .94} Q${size.wordWidths[0] / 2},${size.font * .94 + 7} 0,${size.font * .94}`;
@@ -60,53 +57,54 @@ export function homepageThread({ root, svg, path, headings, projects, full }) {
             };
             const { a, ab, abc, total } = movingPath();
             lastWordPosition = null;
-            if (full) {
-                const layer = root.querySelector('[data-home-projects]');
-                const layerTransform = layer.style.transform;
-                layer.style.transform = 'none';
-                const cinema = root.querySelector('[data-home-cinema]').getBoundingClientRect();
-                const titleCenters = projects.map(project => {
-                    const saved = project.style.transform;
-                    const copy = project.querySelector('.home-project__copy');
-                    project.style.transform = 'none';
-                    copy.style.transform = '';
-                    const title = project.querySelector('h3').getBoundingClientRect();
-                    project.style.transform = saved;
-                    return title.top + title.height / 2 - cinema.top;
-                });
-                layer.style.transform = layerTransform;
-                const marks = [{ y: projectY, radius: 44, depth: 23 }];
-                const small = projects.map((project, i) => {
-                    const y = titleCenters[0] + i * 48;
-                    project.querySelector('.home-project__copy').style.transform = `translateY(${y - titleCenters[i]}px)`;
-                    return { y, radius: 20, depth: 11 };
-                });
-                projectGeometry = { rail, join, marks, small };
-                railPath.setAttribute('d', wave(rail, 0, join, [...marks, ...small]));
-                small.forEach((m, i) => { bumps[i].setAttribute('d', wave(0, m.y - m.radius, m.y + m.radius, [m])); bumps[i].dataset.rail = rail; });
-                sections.setAttribute('d', wave(rail, join, Math.max(join, bottom), later));
-            } else {
-                const marks = headings.map(h => ({ y: documentY(h) + h.offsetHeight / 2, radius: innerWidth < 768 ? 30 : 44, depth: innerWidth < 768 ? 9 : 23 }));
-                projects.forEach(p => { const h = p.querySelector('h3'); marks.push({ y: documentY(h) + h.offsetHeight / 2, radius: 20, depth: 11 }); });
-                sections.setAttribute('d', wave(rail, documentY(headings[0]) - 70, documentY(root) + root.offsetHeight - 30, marks));
-            }
-            geometry = { a, ab, abc, total, end, bodyLength: railPath.getTotalLength() };
+            const marks = headings.map(h => ({ y: documentY(h) + h.offsetHeight / 2, radius: innerWidth < 768 ? 30 : 44, depth: innerWidth < 768 ? 9 : 23 }));
+            projects.forEach(project => {
+                const h = project.querySelector('h3');
+                marks.push({ y: documentY(h) + h.offsetHeight / 2, radius: 20, depth: 11 });
+            });
+            geometry = { a, ab, abc, total, rail, marks,
+                start: full ? 0 : documentY(headings[0]) - 70,
+                end: documentY(root) + root.offsetHeight - 30 };
+
         },
-        draw({ peel = 0, establish = 0, x = 0, y = 0, scale = 1, active = -1, emphasis = [], wordX = 0, wordY = 0, release = 0 }) {
+        draw({ peel = 0, establish = 0, x = 0, y = 0, scale = 1, wordX = 0, wordY = 0, headingShift = 0 }) {
             if (!geometry) return;
             if (full && (lastWordPosition !== `${wordX},${wordY}`)) {
                 Object.assign(geometry, movingPath(wordX, wordY));
                 lastWordPosition = `${wordX},${wordY}`;
             }
-            const { a, ab, abc, total, end, bodyLength } = geometry;
+            const { a, ab, abc, total } = geometry;
+            const headingY = geometry.marks[0].y + headingShift;
+            let expansion = 0;
+            if (headingShift > 0 && !reduce) {
+                for (const project of geometry.marks.slice(headings.length)) {
+                    const reach = geometry.marks[0].radius + project.radius;
+                    const phase = clamp((reach - (project.y - headingY)) / (reach + 100));
+                    // Scrub one gentle receive/settle timeline. No overshoot or
+                    // queued playback when the visitor changes scroll direction.
+                    mergeTimeline.progress(phase);
+                    expansion = Math.max(expansion, merge.amount);
+                }
+                expansion *= innerWidth < 768 ? 1 : 2.5;
+            }
+            const marks = geometry.marks.map((mark, index) => {
+                if (index === 0) return { ...mark, y: headingY, depth: mark.depth + expansion };
+                if (index < headings.length || headingShift === 0) return mark;
+                // The approaching Project bump joins the major bump continuously.
+                // Position alone controls this, so reverse scroll splits it back out.
+                const separation = clamp((mark.y - headingY) / (geometry.marks[0].radius + mark.radius));
+                const blend = separation * separation * (3 - 2 * separation);
+                return { ...mark, depth: mark.depth * blend };
+            });
+            sections.setAttribute('d', wave(geometry.rail, geometry.start, geometry.end, marks));
             travel.setAttribute('transform', `translate(${x} ${y}) scale(${scale})`);
             if (!full) {
                 travel.style.visibility = 'visible';
                 path.style.visibility = 'visible';
                 path.style.strokeDashoffset = '0';
                 path.style.strokeDasharray = `${a} ${ab - a} ${abc - ab} ${total + 1}`;
-                body.style.visibility = 'hidden';
-                sections.setAttribute('transform', `translate(0 ${-scrollY})`);
+                body.style.visibility = 'visible';
+                body.setAttribute('transform', `translate(0 ${-scrollY})`);
                 return;
             }
             travel.style.visibility = '';
@@ -120,15 +118,10 @@ export function homepageThread({ root, svg, path, headings, projects, full }) {
                 range(path, total * clamp(peel) * scale, (abc + (total - abc) * clamp(peel * 1.7)) * scale, total * scale);
             }
             body.style.visibility = establish > 0 ? 'visible' : 'hidden';
-            range(railPath, 0, bodyLength * establish, bodyLength);
-            body.setAttribute('transform', `translate(0 ${release})`);
-            railPath.style.opacity = '.65';
-            const { rail, join, marks, small } = projectGeometry;
-            railPath.setAttribute('d', wave(rail, 0, join, [...marks, ...small.map((m, i) => ({ ...m, depth: m.depth * (1 + (emphasis[i] ?? 0) * .45) }))]));
-            bumps.forEach((p, i) => { const amount = emphasis[i] ?? 0; p.style.opacity = establish === 1 ? String(.3 + amount * .7) : '0'; p.setAttribute('transform', `translate(${p.dataset.rail} 0) scale(${1 + amount * .45} 1)`); });
-            sections.style.visibility = establish === 1 ? 'visible' : 'hidden';
-            sections.setAttribute('transform', `translate(0 ${end - scrollY})`);
+            if (establish < 1) range(sections, 0, scrollY + innerHeight * establish, sections.getTotalLength());
+            else sections.removeAttribute('style');
+            body.setAttribute('transform', `translate(0 ${-scrollY})`);
         },
-        destroy() { projects.forEach(p => { p.querySelector('.home-project__copy').style.transform = ''; }); travel.replaceWith(path); body.remove(); sections.remove(); path.removeAttribute('style'); path.removeAttribute('d'); svg.removeAttribute('viewBox'); },
+        destroy() { mergeTimeline?.kill(); travel.replaceWith(path); body.remove(); path.removeAttribute('style'); path.removeAttribute('d'); svg.removeAttribute('viewBox'); },
     };
 }

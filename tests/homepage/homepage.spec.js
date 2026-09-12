@@ -39,55 +39,51 @@ const visibleStates = () => {
     };
 };
 
-test('one master owns the opening, with a moving tail and controlled handoff', async ({ page }) => {
+test('projects use independent reversible motion and native document scrolling', async ({ page }) => {
     const errors = [];
     page.on('pageerror', error => errors.push(error.message));
-    page.on('console', message => { if (['warning', 'error'].includes(message.type())) errors.push(message.text()); });
-    await page.emulateMedia({ colorScheme: 'dark' });
-    await page.goto('/');
-    await master(page);
-    await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
-    await expect(page.locator('h1')).toHaveCount(1);
-    expect(await page.evaluate(() => homeTestTriggers.getAll().map(t => t.vars.id))).toEqual(['home-master']);
-    await seek(page, .8);
-    const attached = await page.locator('[data-home-thread-path]').evaluate(path => {
-        const point = path.getPointAtLength(0).matrixTransform(path.getScreenCTM());
-        const word = document.querySelector('[data-home-name] > span').getBoundingClientRect();
-        return Math.abs(point.x - word.right);
-    });
-    expect(attached).toBeLessThan(2);
-    await seek(page, 1.3);
-    const tail = await page.locator('[data-home-thread-path]').evaluate(path => parseFloat(path.style.strokeDashoffset));
-    expect(tail).toBeLessThan(0);
-    await seek(page, 2.6);
-    await expect(page.locator('[data-home-thread-path]')).toHaveCSS('visibility', 'hidden');
-    const name = await page.locator('h1').boundingBox();
-    expect(name.y).toBeLessThan(45);
-    expect(name.height).toBeLessThan(55);
-    for (const time of [5.7, 6, 6.3, 6.6, 6.85, 7, 7.2, 7.5, 8.7, 8.85, 8.95, 9.1, 10.3, 10.45, 10.55, 10.7]) {
-        await seek(page, time);
-        const state = await page.evaluate(visibleStates);
-        expect(state.projects).toBeLessThanOrEqual(2);
-        if (state.photos > 0) expect(state.projects).toBeLessThanOrEqual(1);
-        if (time >= 6.3) expect(state.heading || state.photos > 0 || state.projects > 0).toBe(true);
-        if (time >= 7.5) expect(state.photos).toBe(0);
+    await page.goto('/'); await master(page);
+    const triggers = await page.evaluate(() => homeTestTriggers.getAll().map(t => ({ id: t.vars.id, pin: !!t.pin, snap: !!t.vars.snap })));
+    expect(triggers).toEqual([
+        { id: 'home-master', pin: true, snap: false },
+        ...[1, 2, 3].map(i => ({ id: `home-project-${i}`, pin: false, snap: false })),
+    ]);
+    await expect(page.locator('.pin-spacer [data-home-project]')).toHaveCount(0);
+    await expect(page.locator('[data-home-project][inert], [data-home-project][aria-hidden], [data-home-project].is-active')).toHaveCount(0);
+    for (const index of [0, 1, 2, 1, 0]) {
+        for (const progress of [.04, .5, .96, .5]) {
+            await page.evaluate(({ index, progress }) => {
+                const t = homeTestTriggers.getById(`home-project-${index + 1}`);
+                scrollTo(0, t.start + (t.end - t.start) * progress);
+            }, { index, progress });
+            await page.waitForTimeout(80);
+            const copy = page.locator('.home-project__copy').nth(index);
+            const opacity = Number(await copy.evaluate(e => getComputedStyle(e).opacity));
+            if (progress === .5) {
+                expect(opacity).toBe(1);
+                await expect(copy).toHaveCSS('transform', 'matrix(1, 0, 0, 1, 0, 0)');
+            } else expect(opacity).toBeLessThan(1);
+        }
+        const before = await page.evaluate(() => scrollY);
+        await page.mouse.wheel(0, 73); await page.waitForTimeout(350);
+        expect(await page.evaluate(() => scrollY)).toBeCloseTo(before + 73, 0);
+        const stopped = await page.evaluate(() => scrollY);
+        await page.waitForTimeout(600);
+        expect(await page.evaluate(() => scrollY)).toBe(stopped);
     }
-    for (const index of [1, 2, 3, 2, 1]) {
-        await seek(page, `project-${index}`);
-        expect((await page.evaluate(visibleStates)).projects).toBe(1);
-        await expect(page.locator('[data-home-project]:not([inert]) h3')).toHaveText(['prtop↗', 'AtheBlues↗', 'ai-ctx↗'][index - 1]);
-    }
+    await page.mouse.wheel(0, 2800); await page.waitForTimeout(150);
+    await page.mouse.wheel(0, -2800); await page.waitForTimeout(150);
     expect(errors).toEqual([]);
 });
 
 test('entry arrows stay visible and only section headings reveal on focus', async ({ page }) => {
-    await page.goto('/'); await master(page); await seek(page, 'project-1');
-    const link = page.locator('[data-home-project]:not([inert]) .home-project__copy');
+    await page.goto('/'); await master(page); await page.locator('.home-project__copy').first().scrollIntoViewIfNeeded();
+    const link = page.locator('.home-project__copy').first();
     await expect(link.locator('.related-reference__arrow-mask')).toHaveCSS('opacity', '1');
     const bounds = await link.boundingBox();
     await page.mouse.move(bounds.x + bounds.width - 8, bounds.y + bounds.height - 8);
     await expect(link.locator('.semantic-link')).toHaveCSS('background-size', '100% 100%');
-    await page.locator('[data-home-project]:not([inert]) .home-project__artifact').hover();
+    await page.locator('.home-project__artifact').first().hover();
     await expect(link.locator('.semantic-link')).toHaveCSS('background-size', /^0(?:px|%) 100%$/);
     for (const [id, href] of [['projects', '/projekte'], ['writing', '/blog'], ['publications', '/publikationen'], ['now', '/aktuell']]) {
         const heading = page.locator(`#${id}-title a`);
@@ -174,88 +170,65 @@ test('gallery source count never changes pacing, and every image exits by projec
     expect(new Set(measurements.map(value => JSON.stringify(value))).size).toBe(1);
 });
 
-test('refresh, resize, and restored scroll keep one pin and permanent bumps', async ({ page }) => {
-    const errors = [];
-    page.on('pageerror', error => errors.push(error.message));
+test('thread bumps follow real headings through refresh and breakpoints', async ({ page }) => {
     await page.goto('/'); await master(page);
-    for (const time of [.8, 6.9, 9.1]) {
-        await seek(page, time);
-        await page.evaluate(() => homeTestTriggers.refresh());
-        await page.waitForTimeout(400);
-        await expect(page.locator('.pin-spacer')).toHaveCount(1);
-        const paths = await page.locator('[data-project-bump]').evaluateAll(nodes => nodes.map(node => node.getAttribute('d')));
-        expect(new Set(paths).size).toBe(3);
-        await page.setViewportSize({ width: 1280, height: 900 });
-        await page.waitForTimeout(400);
-        await expect(page.locator('.pin-spacer')).toHaveCount(1);
-        await page.setViewportSize({ width: 1440, height: 1000 });
-    }
-    await seek(page, 'project-2');
-    await page.reload(); await master(page);
-    await expect(page.locator('[data-home-project]:not([inert])')).toHaveCount(1);
-    for (const width of [1440, 1280, 1586, 820, 390]) {
+    for (const width of [1440, 1280, 820, 390, 1440]) {
         await page.setViewportSize({ width, height: 1000 });
-        await page.waitForTimeout(500);
-        for (const id of ['writing', 'publications', 'now']) {
-            await page.locator(`#${id}-title`).scrollIntoViewIfNeeded();
-            await page.waitForTimeout(200);
-            const offset = await page.evaluate(id => {
-                const heading = document.querySelector(`#${id}-title`).getBoundingClientRect();
-                const path = document.querySelector('[data-home-thread] > path:last-child');
-                const y = heading.top + heading.height / 2;
+        await page.waitForTimeout(400);
+        await page.evaluate(() => homeTestTriggers.refresh());
+        const headings = page.locator('[data-home-heading], [data-home-project] h3');
+        for (const heading of await headings.all()) {
+            await heading.evaluate(element => {
+                let top = 0;
+                for (let node = element; node; node = node.offsetParent) top += node.offsetTop;
+                scrollTo(0, top - innerHeight / 2);
+            });
+            await page.waitForTimeout(100);
+            const offset = await heading.evaluate(h => {
+                const box = h.getBoundingClientRect();
+                const path = document.querySelector('[data-home-thread] > g:last-child path');
+                const y = box.top + box.height / 2;
                 let nearest = { distance: Infinity, x: 0 };
-                for (let d = 0; d < path.getTotalLength(); d += 3) {
-                    const point = path.getPointAtLength(d).matrixTransform(path.getScreenCTM());
+                const matrix = path.getScreenCTM();
+                for (const vertex of path.getAttribute('d').matchAll(/[ML]([\d.-]+),([\d.-]+)/g)) {
+                    const point = new DOMPoint(Number(vertex[1]), Number(vertex[2])).matrixTransform(matrix);
                     if (Math.abs(point.y - y) < nearest.distance) nearest = { distance: Math.abs(point.y - y), x: point.x };
                 }
-                return nearest.x - (heading.left - (innerWidth < 768 ? 23 : 38));
-            }, id);
-            expect(offset).toBeGreaterThan(width < 768 ? 5 : 16);
-            expect(errors).toEqual([]);
+                const rail = document.querySelector('#projects-title').getBoundingClientRect().left - (innerWidth < 768 ? 23 : 38);
+                return nearest.x - rail;
+            });
+            expect(offset).toBeGreaterThan(7);
+            expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
         }
+        const styles = await page.locator('.home-thread path').evaluateAll(paths => paths.map(p => ({ stroke: getComputedStyle(p).stroke, opacity: getComputedStyle(p).opacity })));
+        expect(new Set(styles.map(s => s.stroke)).size).toBe(1);
+        expect(styles.every(s => s.opacity === '1')).toBe(true);
+        expect(await page.evaluate(() => homeTestTriggers.getAll().filter(t => /^home-project-/.test(t.vars.id)).length)).toBe(3);
+    }
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.waitForTimeout(300);
+    await expect(page.locator('.pin-spacer')).toHaveCount(0);
+    expect(await page.evaluate(() => homeTestTriggers.getAll().length)).toBe(0);
+    for (const copy of await page.locator('.home-project__copy').all()) {
+        await expect(copy).toHaveCSS('opacity', '1');
+        await expect(copy).toHaveCSS('transform', 'none');
     }
 });
 
-test('native snap approaches projects in both directions without catching other phases', async ({ page }) => {
+
+test('photo exit overlaps the natural Projects entry and Blog needs no release', async ({ page }) => {
     await page.goto('/'); await master(page);
-    for (const time of [.8, 3.4]) {
-        await seek(page, time);
-        const actual = await page.evaluate(() => homeTestTriggers.getById('home-master').animation.time());
-        expect(actual).toBeCloseTo(time, 1);
-    }
-    await seek(page, 'project-1');
-    await seek(page, 'project-2', -.25);
-    await expect.poll(() => page.evaluate(() => homeTestTriggers.getById('home-master').animation.time())).toBeCloseTo(9.8, 1);
-    await seek(page, 'project-3');
-    await seek(page, 'project-3', -.75);
-    await expect.poll(() => page.evaluate(() => homeTestTriggers.getById('home-master').animation.time())).toBeCloseTo(9.8, 1);
-    const before = await page.evaluate(() => scrollY);
-    await page.mouse.wheel(0, 120); await page.waitForTimeout(700);
-    expect(await page.evaluate(() => scrollY)).toBeGreaterThan(before + 100);
+    await seek(page, 7);
+    const handoff = await page.evaluate(visibleStates);
+    expect(handoff.photos).toBeGreaterThan(0);
+    expect(handoff.heading).toBe(true);
+    await seek(page, 7.5);
+    expect((await page.evaluate(visibleStates)).photos).toBe(0);
     await page.locator('#writing-title').scrollIntoViewIfNeeded();
-    const blogScroll = await page.evaluate(() => scrollY);
-    await page.waitForTimeout(700);
-    expect(await page.evaluate(() => scrollY)).toBe(blogScroll);
-});
-
-
-test('words converge directly and project titles align with their own fixed bumps', async ({ page }) => {
-    await page.goto('/'); await master(page);
-    let previousGap = Infinity;
-    for (const time of [.5, .8, 1.1, 1.4, 1.65, 1.85]) {
-        await seek(page, time);
-        const [jack, ruder] = await page.locator('[data-home-name] > span').evaluateAll(words => words.map(word => { const r = word.getBoundingClientRect(); return { x: r.x, y: r.y, width: r.width }; }));
-        expect(ruder.x).toBeGreaterThan(jack.x);
-        expect(ruder.y - jack.y).toBeLessThanOrEqual(previousGap + .1);
-        if (time >= 1.65) expect(Math.abs(ruder.y - jack.y)).toBeLessThan(5);
-        previousGap = ruder.y - jack.y;
-    }
-    for (const index of [0, 1, 2, 1, 0]) {
-        await seek(page, `project-${index + 1}`);
-        const project = page.locator('[data-home-project]').nth(index);
-        await expect(project).toHaveCSS('opacity', '1');
-        const title = await project.locator('h3').boundingBox();
-        const bumpY = await page.locator('[data-project-bump]').nth(index).evaluate(path => { const box = path.getBBox(); return box.y + box.height / 2; });
-        expect(Math.abs(title.y + title.height / 2 - bumpY)).toBeLessThan(2);
-    }
+    const before = await page.evaluate(() => scrollY);
+    await page.mouse.wheel(0, 87); await page.waitForTimeout(500);
+    expect(await page.evaluate(() => scrollY)).toBeCloseTo(before + 87, 0);
+    const position = await page.evaluate(() => scrollY);
+    await page.waitForTimeout(400);
+    expect(await page.evaluate(() => scrollY)).toBe(position);
 });

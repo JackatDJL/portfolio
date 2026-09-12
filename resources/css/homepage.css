@@ -1,7 +1,7 @@
 @layer components {
     .home-archive { --home-rail: clamp(18px, 3vw, 58px); position: relative; overflow: clip; }
     .home-archive > .site-container, .home-archive .site-container { width: min(100%, 96rem); padding-left: calc(var(--home-rail) + 38px); padding-right: clamp(1.25rem, 4vw, 5rem); }
-    .home-thread { position: fixed; inset: 0; z-index: 5; width: 100%; height: 100vh; pointer-events: none; overflow: hidden; }
+    .home-thread { position: fixed; inset: 0; z-index: 7; width: 100%; height: 100vh; pointer-events: none; overflow: hidden; }
     .home-thread path { fill: none; stroke: var(--site-accent); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
     .home-person { position: relative; }
     .home-person__grid { display: grid; grid-template-columns: .9fr 1.1fr; gap: 2rem 5vw; align-items: center; min-height: calc(100svh - 81px); padding-block: 3rem; }
@@ -22,6 +22,11 @@
     .home-archive h2 { align-self: start; margin: 0; font-size: clamp(2.6rem, 5.8vw, 6.5rem); font-weight: 800; line-height: 1.03; letter-spacing: -.055em; }
     .home-publications > .related-reference, .home-section-heading > .related-reference, .home-writing__list > .related-reference, .home-now__links .related-reference { display: flex; align-items: center; justify-content: space-between; gap: 1rem; width: fit-content; border-top: 0; }
     .home-projects__stage { padding-top: 6rem; padding-bottom: 4rem; }
+    .home-projects { position: relative; }
+    #projects-title { position: relative; z-index: 6; isolation: isolate; }
+    #projects-title::before { content: ''; visibility: hidden; position: absolute; z-index: -1; top: -80px; bottom: -16px; left: calc(-1 * var(--project-heading-left, 0px)); width: 100vw; background: var(--site-background); }
+    #projects-title::after { content: ''; visibility: hidden; position: absolute; z-index: -1; top: calc(100% + 15px); height: 32px; left: calc(-1 * var(--project-heading-left, 0px)); width: 100vw; background: linear-gradient(to bottom, var(--site-background), transparent); backdrop-filter: blur(5px); mask-image: linear-gradient(to bottom, #000, transparent); pointer-events: none; }
+    #projects-title.is-sticky::before, #projects-title.is-sticky::after { visibility: visible; }
     .home-project__link { display: grid; grid-template-columns: minmax(0, .95fr) minmax(0, 1.05fr); align-items: center; gap: 4vw; padding-block: 4rem; border: 0; }
     .home-project__copy { min-width: 0; border: 0; padding: 1rem 0; }
     .home-project__meta { display: flex; align-items: center; gap: .75rem; font: .8rem var(--font-mono); }
@@ -65,18 +70,15 @@
     .home-name > span { position: relative; }
     @media (min-width: 64rem) and (min-height: 42rem) and (prefers-reduced-motion: no-preference) {
         .is-home-enhanced .home-cinema { position: relative; height: 100svh; }
+        /* Overlap only the final photo exit; Projects remain outside the pin. */
+        .is-home-enhanced .home-projects { margin-top: -80svh; }
         .is-home-enhanced .home-person { position: absolute; inset: 0; height: 100svh; }
-        .is-home-enhanced .home-projects { position: absolute; inset: 0; visibility: hidden; }
         .is-home-enhanced .home-person__grid { height: 100%; min-height: 0; padding-top: 3rem; padding-bottom: 6rem; }
         .is-home-enhanced .home-gallery { position: absolute; inset: 0; display: block; padding: 0; overflow: visible; pointer-events: none; }
         .is-home-enhanced .home-gallery > .home-photo:not([data-stream-clone]) { display: none; }
         .is-home-enhanced .home-gallery .home-photo { position: absolute; top: 15%; width: clamp(18rem, 34vw, 35rem); }
         .is-home-enhanced .home-gallery .home-photo:nth-child(even) { top: 52%; }
         .is-home-enhanced .home-gallery img { max-height: 32svh; }
-        .is-home-enhanced .home-projects__stage { height: 100svh; padding-top: 5.5rem; padding-bottom: 2rem; display: flex; flex-direction: column; }
-        .is-home-enhanced .home-projects__records { position: relative; flex: 1; overflow: visible; }
-        .is-home-enhanced .home-project { position: absolute; inset: 0; }
-        .is-home-enhanced .home-project__link { height: 100%; padding-block: 2rem; }
     }
     @media (max-width: 63.99rem), (max-height: 41.99rem) {
         .home-person__grid { gap: 2rem; }
