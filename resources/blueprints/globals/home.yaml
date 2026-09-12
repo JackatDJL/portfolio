@@ -4,7 +4,7 @@ tabs:
     display: Inhalt
     sections:
       -
-        display: Hero
+        display: Person
         fields:
           -
             handle: intro
@@ -26,6 +26,15 @@ tabs:
               display: Einleitung
               validate:
                 - required
+          -
+            handle: personal_media
+            field:
+              container: assets
+              folder: photos
+              restrict: true
+              type: assets
+              display: Persönliche Fotogalerie
+              instructions: 'Die erste Aufnahme ist das Hauptbild im Einstieg. Weitere Bilder erscheinen in dieser Reihenfolge in der persönlichen Bildfolge.'
       -
         display: Vorgestellt
         fields:
@@ -44,7 +53,15 @@ tabs:
             field:
               collections:
                 - posts
-                - publications
+              max_items: 2
               type: entries
-              display: 'Vorgestellte Blogposts'
+              display: 'Vorgestellte Texte'
               width: 50
+          -
+            handle: featured_publications
+            field:
+              collections:
+                - publications
+              select_across_sites: true
+              type: entries
+              display: 'Vorgestellte Veröffentlichungen'
