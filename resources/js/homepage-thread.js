@@ -24,7 +24,9 @@ export function homepageThread({ root, svg, path, headings, projects, full, redu
         marks.forEach(m => points.add(m.y));
         return [...points].filter(y => y >= start && y <= end).sort((a, b) => a - b).map((y, i) => {
             const offset = marks.reduce((sum, m) => sum + (Math.abs(y - m.y) < m.radius ? (1 + Math.cos((y - m.y) / m.radius * Math.PI)) * m.depth / 2 : 0), 0);
-            return `${i ? 'L' : 'M'}${rail + offset},${y}`;
+            // A document-anchored wave adds softness without idle animation.
+            const ripple = Math.sin(y * Math.PI * 2 / (innerHeight * 2)) * (innerWidth < 768 ? 1.5 : 3);
+            return `${i ? 'L' : 'M'}${rail + ripple + offset},${y}`;
         }).join(' ');
     };
     const range = (element, tail, head, total) => {
