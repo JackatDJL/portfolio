@@ -30,7 +30,7 @@ for (const root of document.querySelectorAll('[data-homepage]')) {
 
 
     mm.add({ desktop: '(min-width: 64rem) and (min-height: 42rem) and (hover: hover) and (pointer: fine)', reduce: '(prefers-reduced-motion: reduce)', all: 'all' }, context => {
-        const full = context.conditions.desktop && !context.conditions.reduce;
+        const full = context.conditions.desktop && !context.conditions.reduce && projects.length > 0;
         const state = { travel: 0, peel: 0, establish: full ? 0 : 1 };
         const labels = { hero: 0, thread: .4, 'gallery-in': 1.2, gallery: 2.6 };
         labels['project-1'] = 7.5; // Existing photo-stream endpoint.
@@ -163,7 +163,6 @@ for (const root of document.querySelectorAll('[data-homepage]')) {
         };
         const scroll = () => render();
         window.addEventListener('scroll', scroll, { passive: true });
-        window.addEventListener('resize', refresh);
         window.addEventListener('load', refresh);
         const images = [...root.querySelectorAll('img')];
         images.forEach(img => img.addEventListener('load', refresh));
@@ -176,7 +175,6 @@ for (const root of document.querySelectorAll('[data-homepage]')) {
             alive = false;
             clearTimeout(refreshTimer);
             window.removeEventListener('scroll', scroll);
-            window.removeEventListener('resize', refresh);
             window.removeEventListener('load', refresh);
             images.forEach(img => img.removeEventListener('load', refresh));
             observer.disconnect();

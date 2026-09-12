@@ -232,3 +232,47 @@ test('photo exit overlaps the natural Projects entry and Blog needs no release',
     await page.waitForTimeout(400);
     expect(await page.evaluate(() => scrollY)).toBe(position);
 });
+
+
+test('thread coordinates match its rendered box when viewport dimensions differ', async ({ page }) => {
+    await page.goto('/'); await master(page);
+    for (const width of [1440, 390]) {
+        await page.setViewportSize({ width, height: 1000 });
+        await page.waitForTimeout(400);
+        await page.locator('[data-home-thread]').evaluate(svg => {
+            // Reproduce a scrollbar gutter and a large-viewport/mobile-toolbar gap.
+            svg.style.width = 'calc(100% - 17px)';
+            svg.style.height = 'calc(100vh + 80px)';
+        });
+        await page.evaluate(() => homeTestTriggers.refresh());
+        const geometry = await page.locator('[data-home-thread]').evaluate(svg => {
+            const frame = svg.getBoundingClientRect();
+            const viewBox = svg.viewBox.baseVal;
+            const matrix = svg.getScreenCTM();
+            return { width: frame.width, height: frame.height, viewWidth: viewBox.width, viewHeight: viewBox.height,
+                scaleX: matrix.a, scaleY: matrix.d, x: matrix.e, y: matrix.f };
+        });
+        expect(geometry.viewWidth).toBe(geometry.width);
+        expect(geometry.viewHeight).toBe(geometry.height);
+        expect(geometry.scaleX).toBe(1);
+        expect(geometry.scaleY).toBe(1);
+        expect(geometry.x).toBe(0);
+        expect(geometry.y).toBe(0);
+    }
+});
+
+test('empty Projects use the normal presentation without a Hero pin or stream clones', async ({ page }) => {
+    const errors = [];
+    page.on('pageerror', error => errors.push(error.message));
+    await page.route('http://127.0.0.1:8010/', async route => {
+        const response = await route.fetch();
+        const body = (await response.text()).replace(/<article class="home-project"[\s\S]*?<\/article>/g, '');
+        await route.fulfill({ response, body });
+    });
+    await page.goto('/');
+    await page.waitForFunction(() => document.querySelector('[data-home-thread-path]').hasAttribute('d'));
+    await expect(page.locator('[data-home-project], .pin-spacer, [data-stream-clone]')).toHaveCount(0);
+    await expect(page.locator('[data-homepage]')).not.toHaveClass(/is-home-enhanced/);
+    await expect(page.locator('[data-home-person-media]')).toBeVisible();
+    expect(errors).toEqual([]);
+});

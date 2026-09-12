@@ -43,7 +43,8 @@ export function homepageThread({ root, svg, path, headings, projects, full, redu
                 for (let node = element; node; node = node.offsetParent) y += node.offsetTop;
                 return y;
             };
-            svg.setAttribute('viewBox', `0 0 ${innerWidth} ${innerHeight}`);
+            const frame = svg.getBoundingClientRect();
+            svg.setAttribute('viewBox', `0 0 ${frame.width} ${frame.height}`);
             movingPath = (wordX = 0, wordY = 0) => {
             const first = `M${size.wordWidths[0]},${size.font * .94} Q${size.wordWidths[0] / 2},${size.font * .94 + 7} 0,${size.font * .94}`;
             const connector = ` C-35,${size.font * .94} -35,${size.line + size.font * .94} ${wordX},${size.line + size.font * .94 + wordY}`;
