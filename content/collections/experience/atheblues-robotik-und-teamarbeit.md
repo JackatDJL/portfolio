@@ -12,4 +12,13 @@ body:
     content:
       - type: text
         text: 'AtheBlues verband für mich Robotik mit einer echten Teamaufgabe. Neben der technischen Arbeit gehörten Vorbereitung, Abstimmung und die Pflege gemeinsamer Werkzeuge dazu.'
+  - type: heading
+    attrs: { level: 2 }
+    content:
+      - type: text
+        text: 'RoboCup als Teamarbeit'
+  - type: paragraph
+    content:
+      - type: text
+        text: 'Im Team arbeiteten wir an Robotik und Wettbewerbsvorbereitung. Parallel half ich bei der Team-Website und an einer gemeinsamen technischen Grundlage für die verschiedenen Teile der Arbeit.'
 ---

@@ -24,3 +24,6 @@ preferences:
   locale: en
   formatting_locale: de
   theme: null
+  assets:
+    assets:
+      mode: grid

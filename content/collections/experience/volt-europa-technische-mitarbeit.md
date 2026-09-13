@@ -10,5 +10,14 @@ body:
   - type: paragraph
     content:
       - type: text
-        text: 'Ich wirke an technischen Aufgaben im europäischen Volt-Umfeld mit. Dieser Eintrag bleibt absichtlich auf der Ebene öffentlich vertretbarer Arbeit. Private Repositories, interne Infrastruktur und unveröffentlichte Funktionen werden nicht benannt.'
+        text: 'Ich wirke an technischen Aufgaben im europäischen Volt-Umfeld mit und bringe Erfahrungen aus Webentwicklung und digitalen Werkzeugen ein.'
+  - type: heading
+    attrs: { level: 2 }
+    content:
+      - type: text
+        text: 'Zusammenarbeit über Länder hinweg'
+  - type: paragraph
+    content:
+      - type: text
+        text: 'Volt Europa verbindet Teams aus mehreren Ländern. Meine technische Mitarbeit bewegt sich in diesem gemeinsamen Kontext und ergänzt meine Arbeit bei Volt Deutschland.'
 ---

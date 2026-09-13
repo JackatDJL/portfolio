@@ -1,22 +1,26 @@
 ---
 id: 4f80be4f-bb54-469d-b4ab-9712c68d7197
-published: false
+published: true
 blueprint: project
 title: Prism
-summary: 'Prism ist die spätere Arbeitsbezeichnung für The Presentation Foundation, ein Versuch, Präsentationsmaterial online zu verwalten und zugänglich zu machen.'
+summary: 'Prism, ursprünglich The Presentation Foundation, ist eine Webanwendung für das Bereitstellen und Verwalten von Präsentationsmaterial.'
 project_status: experiment
 featured: false
 used_technologies: [TypeScript, TanStack Start, Cloudflare]
-repository_url: 'https://github.com/djl-foundation/presentation-foundation'
+repository_url: 'https://github.com/DJL-Foundation/prism'
+website_url: 'https://pr.djl.foundation'
+started_at: '2025-02-20'
 topics: [education, web-development, oss]
 noindex: true
+seo_title: 'Prism | Jack Ruder'
+seo_description: 'Prism ist eine Webanwendung für das Bereitstellen und Verwalten von Präsentationsmaterial.'
 content:
   - type: paragraph
     content:
       - type: text
-        text: 'Das Projekt begann als The Presentation Foundation und wurde später unter dem Namen Prism weitergeführt. Es geht um die Ablage und Verteilung von Präsentationsmaterial, nicht um ein einzelnes Präsentationsformat.'
+        text: 'Das Projekt begann als The Presentation Foundation und wird heute als Prism weitergeführt. Es soll Präsentationen an einem Ort ablegen, zugänglich machen und verteilen.'
   - type: paragraph
     content:
       - type: text
-        text: 'Die aktuelle Codebasis zeigt eine Neuaufsetzung mit TanStack Start. Das Vorhaben ist noch kein abgeschlossenes Produkt. Der Eintrag fasst die Entwicklungslinie zusammen, statt mehrere fast gleiche Repository-Einträge anzulegen.'
+        text: 'Die aktuelle Codebasis ist mit TanStack Start aufgebaut und ergänzt die Oberfläche um eine Datenmodellierung für Präsentationen. Das Vorhaben ist noch in Entwicklung.'
 ---

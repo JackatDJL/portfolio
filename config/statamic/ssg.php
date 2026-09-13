@@ -61,6 +61,8 @@ return [
         '/projekte',
         '/blog',
         '/publikationen',
+        '/cv',
+        '/cv/allgemeines-profil',
     ],
 
     /*

@@ -12,4 +12,13 @@ body:
     content:
       - type: text
         text: 'Ich habe das Erstwählerforum gegründet und im Team mitorganisiert. Die Arbeit verband politische Bildung mit Organisation und digitaler Umsetzung.'
+  - type: heading
+    attrs: { level: 2 }
+    content:
+      - type: text
+        text: 'Fragen junger Menschen zum Ausgangspunkt machen'
+  - type: paragraph
+    content:
+      - type: text
+        text: 'Das Forum brachte Schülerinnen und Schüler mit politischen Akteurinnen und Akteuren zusammen. Ich arbeitete an Kommunikation, Organisation und den öffentlichen digitalen Teilen der Veranstaltung.'
 ---

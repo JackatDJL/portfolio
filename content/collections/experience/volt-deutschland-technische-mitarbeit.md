@@ -10,5 +10,14 @@ body:
   - type: paragraph
     content:
       - type: text
-        text: 'Ich unterstütze technische Arbeit im deutschen Volt-Umfeld. Die Beschreibung nennt keine internen Systeme oder nicht öffentliche Details.'
+        text: 'Ich unterstütze die technische Arbeit bei Volt Deutschland mit Beiträgen an Webanwendungen und digitalen Werkzeugen.'
+  - type: heading
+    attrs: { level: 2 }
+    content:
+      - type: text
+        text: 'Technik für politische Arbeit'
+  - type: paragraph
+    content:
+      - type: text
+        text: 'Die Arbeit reicht von Webentwicklung bis zur Mitarbeit an digitalen Arbeitsabläufen. Wichtig ist dabei, dass technische Lösungen für Menschen in einer politischen Organisation verständlich und nutzbar bleiben.'
 ---

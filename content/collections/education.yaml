@@ -1,9 +1,10 @@
 title: Bildung
 icon: buildings-city-hall
-template: default
+template: education/show
 layout: layout
 revisions: false
 sort_dir: asc
+route: '/cv/edu/{slug}'
 date_behavior:
   past: null
   future: null

@@ -1,5 +1,6 @@
 ---
 id: 592ac462-1e09-4f35-be25-8308b982fb2b
+published: true
 blueprint: project
 title: ai-ctx
 summary: 'ai-ctx ist ein kleines TypeScript-CLI, das eine lokale Codebase in brauchbaren Kontext für KI-Modelle im Browser übersetzt. Es entstand zu einer Zeit, als ich lokal entwickeln wollte, aber noch keinen guten agentischen Coding-Workflow zur Verfügung hatte.'

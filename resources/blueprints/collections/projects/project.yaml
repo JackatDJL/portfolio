@@ -71,8 +71,6 @@ tabs:
             field:
               type: date
               display: 'Gestartet am'
-              validate:
-                - required
           -
             handle: ended_at
             field:
@@ -159,8 +157,6 @@ tabs:
               max_files: 1
               type: assets
               display: Titelbild
-              validate:
-                - required
           -
             handle: gallery
             field:

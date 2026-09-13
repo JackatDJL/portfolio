@@ -22,3 +22,5 @@ Route::get('/design-system', function () {
 Route::statamic('/projekte', 'projects/index', ['title' => 'Projekte']);
 Route::statamic('/blog', 'posts/index', ['title' => 'Blog']);
 Route::statamic('/publikationen', 'publications/index', ['title' => 'Publikationen']);
+Route::statamic('/cv', 'cv/show', ['title' => 'Lebenslauf']);
+Route::statamic('/cv/{profile}', 'cv/profile');

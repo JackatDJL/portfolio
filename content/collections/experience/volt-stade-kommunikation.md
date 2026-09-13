@@ -10,5 +10,14 @@ body:
   - type: paragraph
     content:
       - type: text
-        text: 'Bei Volt Stade verantworte ich Pressearbeit, soziale Medien, Website und öffentliche Kommunikation. Interne Planungen und nicht veröffentlichte Inhalte sind nicht Teil dieses Eintrags.'
+        text: 'Bei Volt Stade verantworte ich Pressearbeit, soziale Medien, Website und öffentliche Kommunikation. Die Rolle verbindet Texte, Gestaltung und technische Pflege mit der Aufgabe, lokale Themen verständlich nach außen zu tragen.'
+  - type: heading
+    attrs: { level: 2 }
+    content:
+      - type: text
+        text: 'Kommunikation, die vor Ort ankommt'
+  - type: paragraph
+    content:
+      - type: text
+        text: 'Ich arbeite an Presseanfragen und Mitteilungen, plane Inhalte für soziale Medien und pflege die öffentliche Website. Auch Kommunikation rund um Veranstaltungen und Programme gehört zu diesem Arbeitsbereich.'
 ---

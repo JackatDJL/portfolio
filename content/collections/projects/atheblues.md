@@ -1,5 +1,6 @@
 ---
 id: 8e9f1f56-1feb-46a8-9ae5-a79ec9444c81
+published: true
 blueprint: project
 title: AtheBlues
 summary: 'AtheBlues ist ein RoboCup-Robotikteam am Athenaeum Stade. Für mich verband das Projekt Robotik, Teamarbeit und Softwareentwicklung: vom Wettbewerb selbst bis zur Team-Website und einer eigenen technischen Infrastruktur im Monorepo.'

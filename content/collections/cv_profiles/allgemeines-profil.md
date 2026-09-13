@@ -1,6 +1,6 @@
 ---
 id: f978b1e4-fab4-41fc-aa1a-cf7c0fa19014
-published: false
+published: true
 blueprint: cv_profile
 title: 'Allgemeines Profil'
 summary: 'Ein neutrales Ausgangsprofil für Bewerbungen. Es verbindet technische Arbeit, Organisationsverantwortung, politische Bildung, Open Source und Schule, ohne eine einzelne Richtung vorwegzunehmen.'

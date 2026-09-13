@@ -1,0 +1,26 @@
+<article>
+    <div class="detail-container detail-hero cv-detail-hero">
+        <div class="detail-hero__content">
+            {{ partial:components/eyebrow label="Erfahrung" }}
+            <h1 class="mt-4 text-4xl md:text-6xl"><span class="cv-marker">{{ title }}</span></h1>
+            <p class="mt-4 font-display text-2xl font-bold tracking-tight">{{ organisation }}</p>
+            {{ if started_at }}<p class="mt-3 text-sm text-muted">{{ started_at | format_translated('F Y') }}{{ if ended_at }} bis {{ ended_at | format_translated('F Y') }}{{ /if }}</p>{{ /if }}
+            {{ if summary }}<p class="detail-hero__summary reading-width mt-6 text-lg"><span>{{ summary }}</span></p>{{ /if }}
+        </div>
+    </div>
+    <div class="detail-layout detail-container">
+        <div class="detail-layout__main">{{ partial:bard/prose :content="body" }}</div>
+        <aside class="detail-layout__rail" aria-label="Kontext">
+            {{ if projects }}
+                {{ partial:detail/meta-group label="Projekte" }}
+                    {{ projects }}{{ partial:components/related-reference }}{{ /projects }}
+                {{ /partial:detail/meta-group }}
+            {{ /if }}
+            {{ if topics }}
+                {{ partial:detail/meta-group label="Themen" }}
+                    <div class="flex flex-wrap gap-2">{{ topics }}{{ partial:components/chip :label="title" classes="chip-topic" }}{{ /topics }}</div>
+                {{ /partial:detail/meta-group }}
+            {{ /if }}
+        </aside>
+    </div>
+</article>

@@ -1,5 +1,6 @@
 ---
 id: 4739fabf-5726-4d17-ad72-5a5f574e33cd
+published: true
 blueprint: project
 title: prtop
 summary: 'prtop ist eine keyboard-first Terminal-Oberfläche für Pull Requests und Merge Requests über mehrere Git-Plattformen hinweg. Das Ziel ist ein gemeinsamer Workflow für GitHub, GitLab und Forgejo beziehungsweise Codeberg, ohne für jeden Anbieter ein anderes Tool zu brauchen.'
