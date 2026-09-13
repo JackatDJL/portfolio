@@ -80,3 +80,33 @@ tabs:
               instructions: '(Als Hintergrund benutzt)'
       -
         display: Beziehungen
+        fields:
+          -
+            handle: related_projects
+            field:
+              collections:
+                - projects
+              type: entries
+              display: 'Projekte aus der Zeit'
+          -
+            handle: related_posts
+            field:
+              collections:
+                - posts
+              type: entries
+              display: 'Schul-/ Bildungsbezogene Posts'
+          -
+            handle: related_publications
+            field:
+              collections:
+                - publications
+              type: entries
+              display: 'Veröffentlichungen durch die Bildungsstätte'
+              instructions: 'Auch nicht direkt durch die Institution veröffentlicht'
+      -
+        display: SEO
+        collapsible: true
+        collapsed: true
+        fields:
+          -
+            import: seo
