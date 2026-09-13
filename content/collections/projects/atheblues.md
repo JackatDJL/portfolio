@@ -31,6 +31,8 @@ topics:
   - robocup
   - web-development
   - teamwork
+related_experience:
+  - 3d43dec1-8c16-4268-97a2-ce8e1af46e85
 updated_by: 7098a585-4701-4963-95aa-52c0d85d3e7d
 updated_at: 1788610999
 content:

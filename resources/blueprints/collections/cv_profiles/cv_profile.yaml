@@ -1,0 +1,19 @@
+title: Lebenslauf-Profil
+tabs:
+  main:
+    display: Basis
+    sections:
+      -
+        fields:
+          - handle: title
+            field: { type: text, display: Titel, validate: [required] }
+          - handle: summary
+            field: { type: textarea, display: Profil }
+          - handle: experience
+            field: { type: entries, collections: [experience], display: Erfahrung }
+          - handle: projects
+            field: { type: entries, collections: [projects], display: Projekte }
+          - handle: education
+            field: { type: entries, collections: [education], display: Bildung }
+          - handle: publications
+            field: { type: entries, collections: [publications], display: Veröffentlichungen }
