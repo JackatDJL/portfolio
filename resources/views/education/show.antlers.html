@@ -1,26 +1,23 @@
 <article class="education-detail">
-    <div class="detail-container detail-hero education-detail__hero">
-        <div class="detail-hero__grid">
-            <div class="detail-hero__content">
-                {{ partial:components/eyebrow label="Bildung" }}
-                <h1 class="mt-4 text-4xl md:text-6xl"><span class="cv-marker">{{ title }}</span></h1>
-                {{ if programme }}<p class="mt-4 font-display text-2xl font-bold tracking-tight">{{ programme }}</p>{{ /if }}
-                {{ if started_at }}<p class="mt-3 text-sm text-muted">Seit {{ started_at | format_translated('F Y') }}</p>{{ /if }}
-                {{ if summary }}<p class="detail-hero__summary reading-width mt-6 text-lg"><span>{{ summary }}</span></p>{{ /if }}
-            </div>
-            {{ if cover }}<figure class="media-figure detail-hero__cover"><img src="{{ glide:cover width='1440' }}" alt="{{ cover:alt }}" width="{{ cover:width }}" height="{{ cover:height }}" decoding="async"></figure>{{ /if }}
+    <header class="education-hero {{ if cover }}education-hero--image{{ /if }}">
+        {{ if cover }}<figure class="education-hero__image"><img src="{{ glide:cover width='1920' }}" alt="{{ cover:alt }}" width="{{ cover:width }}" height="{{ cover:height }}" fetchpriority="high" decoding="async">{{ partial:media/attribution :asset="cover" }}</figure>{{ /if }}
+        <div class="education-hero__content detail-container">
+            {{ partial:components/eyebrow label="Bildung" }}
+            <h1>{{ title }}</h1>
+            <div class="education-hero__period">{{ if programme }}<p>{{ programme }}</p>{{ /if }}<p>{{ partial:cv/period }}</p></div>
+            {{ if summary }}<p class="education-hero__summary">{{ summary }}</p>{{ /if }}
         </div>
-    </div>
+    </header>
     <div class="detail-layout detail-container">
         <div class="detail-layout__main">{{ partial:bard/prose :content="content" }}</div>
         <aside class="detail-layout__rail" aria-label="Kontext">
             {{ if related_projects }}
                 {{ partial:detail/meta-group label="Projekte aus dieser Zeit" }}
-                    {{ related_projects }}{{ partial:components/related-reference }}{{ /related_projects }}
+                    {{ related_projects }}{{ partial:components/related-reference inline="true" }}{{ /related_projects }}
                 {{ /partial:detail/meta-group }}
             {{ /if }}
-            {{ if related_posts }}{{ partial:detail/meta-group label="Beiträge" }}{{ related_posts }}{{ partial:components/related-reference }}{{ /related_posts }}{{ /partial:detail/meta-group }}{{ /if }}
-            {{ if related_publications }}{{ partial:detail/meta-group label="Veröffentlichungen" }}{{ related_publications }}{{ partial:components/related-reference }}{{ /related_publications }}{{ /partial:detail/meta-group }}{{ /if }}
+            {{ if related_posts }}{{ partial:detail/meta-group label="Beiträge" }}{{ related_posts }}{{ partial:components/related-reference inline="true" }}{{ /related_posts }}{{ /partial:detail/meta-group }}{{ /if }}
+            {{ if related_publications }}{{ partial:detail/meta-group label="Veröffentlichungen" }}{{ related_publications }}{{ partial:components/related-reference inline="true" }}{{ /related_publications }}{{ /partial:detail/meta-group }}{{ /if }}
             {{ if topics }}<div class="mt-7 flex flex-wrap gap-2">{{ topics }}{{ partial:components/chip :label="title" classes="chip-topic" }}{{ /topics }}</div>{{ /if }}
         </aside>
     </div>

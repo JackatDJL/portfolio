@@ -1,0 +1,32 @@
+@layer components {
+    .asset-attribution { display: block; font-size: .75rem; line-height: 1.5; color: var(--site-text-muted); overflow-wrap: anywhere; }
+    .asset-attribution__caption, .asset-attribution__credit { display: block; }
+    .asset-attribution__credit { font-size: .72rem; }
+    .asset-attribution a { text-decoration: underline; text-underline-offset: .15em; }
+    .detail-hero__cover .asset-attribution { position: absolute; bottom: .5rem; right: .75rem; z-index: 2; max-width: 65%; padding: .25rem .5rem; background: var(--site-background); pointer-events: auto; }
+    .media-gallery { --gallery-height: clamp(17rem, 48svh, 32rem); min-width: 0; margin-block: 2rem; }
+    .media-gallery__track { align-items: start; gap: 1rem; scroll-snap-type: x mandatory; }
+    .media-gallery .media-gallery__item { flex: none; width: min(calc(var(--gallery-height) * var(--image-width) / var(--image-height)), 88%); margin: 0; scroll-snap-align: start; }
+    .media-gallery .media-gallery__item img { width: 100%; height: auto; aspect-ratio: var(--image-ratio); object-fit: contain; border-radius: 0; }
+    .media-gallery__controls { align-items: center; }
+    .media-gallery__controls[hidden] { display: none; }
+    .media-gallery__position { margin-right: auto; color: var(--site-text-muted); font-size: .8rem; font-variant-numeric: tabular-nums; }
+    .media-gallery__button { width: 2.75rem; height: 2.75rem; cursor: pointer; }
+    .media-gallery__button:disabled { opacity: .35; cursor: default; }
+    .project-gallery { margin-top: 2rem; }
+    @media (max-width: 63.99rem) {
+        .project-detail .detail-hero__cover { width: calc(100% + 2 * var(--spacing-gutter)); }
+    }
+    @media (min-width: 48rem) and (max-width: 63.99rem) {
+        .project-detail .detail-hero__cover { width: calc(100% + 2 * var(--spacing-gutter-lg)); }
+    }
+    @media (max-width: 47.99rem) {
+        .media-gallery { --gallery-height: 23rem; }
+        .media-gallery .media-gallery__item { width: min(calc(var(--gallery-height) * var(--image-width) / var(--image-height)), 88%); }
+    }
+}
+@media print {
+    .media-gallery__controls { display: none; }
+    .media-gallery__track { display: flex; overflow: visible; flex-wrap: wrap; }
+    .media-gallery .media-gallery__item { width: 30%; break-inside: avoid; }
+}

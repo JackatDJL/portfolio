@@ -226,3 +226,6 @@
     .site-header__identity-anchor { position: fixed; top: 1.5rem; font: 800 24px/1.2 var(--font-display); letter-spacing: -.04em; visibility: hidden; pointer-events: none; }
     .related-reference:focus-within .semantic-link { background-size: 100% 100%; }
 }
+
+@import "./cv.css";
+@import "./gallery.css";

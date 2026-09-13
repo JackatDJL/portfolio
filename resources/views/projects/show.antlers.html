@@ -1,14 +1,8 @@
 {{# Projekt-Detailseite: Intro, Lesebereich, Kontext-Rail. #}}
-<article>
+<article class="project-detail">
     {{ partial:detail/layout intro="projects/hero" aside="projects/rail" }}
         {{ partial:bard/prose :content="content" }}
 
-        {{ if gallery }}
-            {{ gallery }}
-                {{ if id != cover:id }}
-                    {{ partial:gallery/figure classes="mt-gutter-lg" }}
-                {{ /if }}
-            {{ /gallery }}
-        {{ /if }}
+        {{ partial:gallery/figures :assets="gallery" classes="project-gallery" }}
     {{ /partial:detail/layout }}
 </article>
