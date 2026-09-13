@@ -1,0 +1,112 @@
+title: Bildung
+tabs:
+  main:
+    display: Basis
+    sections:
+      -
+        fields:
+          -
+            handle: title
+            field:
+              type: text
+              required: true
+              display: Einrichtung
+              validate:
+                - required
+          -
+            handle: programme
+            field:
+              type: text
+              display: Bildungsgang
+          -
+            handle: summary
+            field:
+              type: textarea
+              display: Zusammenfassung
+          -
+            handle: topics
+            field:
+              type: terms
+              taxonomies:
+                - topics
+              display: Themen
+  sidebar:
+    display: Sidebar
+    sections:
+      -
+        fields:
+          -
+            handle: slug
+            field:
+              type: slug
+              localizable: true
+              validate: 'max:200'
+          -
+            handle: started_at
+            field:
+              type: date
+              display: 'Begonnen am'
+              width: 50
+          -
+            handle: ended_at
+            field:
+              type: date
+              display: 'Beendet am'
+              width: 50
+  content:
+    display: Inhalt
+    sections:
+      -
+        display: 'New Section'
+        fields:
+          -
+            import: page_content
+  relations_media:
+    display: 'Beziehungen & Medien'
+    sections:
+      -
+        display: Medien
+        fields:
+          -
+            handle: cover
+            field:
+              container: assets
+              folder: cv/education
+              dynamic: slug
+              restrict: true
+              max_files: 1
+              type: assets
+              display: Titelbild
+              instructions: '(Als Hintergrund benutzt)'
+      -
+        display: Beziehungen
+        fields:
+          -
+            handle: related_projects
+            field:
+              collections:
+                - projects
+              type: entries
+              display: 'Projekte aus der Zeit'
+          -
+            handle: related_posts
+            field:
+              collections:
+                - posts
+              type: entries
+              display: 'Schul-/ Bildungsbezogene Posts'
+          -
+            handle: related_publications
+            field:
+              collections:
+                - publications
+              type: entries
+              display: 'Veröffentlichungen durch die Bildungsstätte'
+              instructions: 'Auch nicht direkt durch die Institution veröffentlicht'
+      -
+        display: SEO
+        collapsible: true
+        collapsed: true
+        fields:
+          -
+            import: seo

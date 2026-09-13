@@ -1,0 +1,55 @@
+<article class="cv-document content-width">
+    <header class="cv-document__header">
+        {{ partial:components/eyebrow label="Lebenslauf" }}
+        <h1 class="mt-4 text-4xl md:text-6xl"><span class="cv-marker">{{ title }}</span></h1>
+        {{ if summary }}<p class="mt-6 max-w-2xl text-lg text-muted">{{ summary }}</p>{{ /if }}
+    </header>
+
+    {{ if experience }}
+        <section class="cv-section" aria-labelledby="cv-experience-title">
+            <h2 id="cv-experience-title">Erfahrung</h2>
+            <div class="cv-records">
+                {{ experience }}
+                    <a class="cv-record related-reference" href="{{ url }}" data-related-reference>
+                        <div>
+                            <h3><span class="semantic-link">{{ title }}</span>{{ partial:components/open-file size="heading" }}</h3>
+                            <p class="cv-record__organisation">{{ organisation }}</p>
+                        </div>
+                        {{ if summary }}<p class="cv-record__summary">{{ summary }}</p>{{ /if }}
+                    </a>
+                {{ /experience }}
+            </div>
+        </section>
+    {{ /if }}
+
+    {{ if education }}
+        <section class="cv-section" aria-labelledby="cv-education-title">
+            <h2 id="cv-education-title">Bildung</h2>
+            <div class="cv-records">
+                {{ education }}
+                    <a class="cv-record related-reference" href="{{ url }}" data-related-reference>
+                        <div>
+                            <h3><span class="semantic-link">{{ title }}</span>{{ partial:components/open-file size="heading" }}</h3>
+                            {{ if programme }}<p class="cv-record__organisation">{{ programme }}</p>{{ /if }}
+                        </div>
+                        {{ if summary }}<p class="cv-record__summary">{{ summary }}</p>{{ /if }}
+                    </a>
+                {{ /education }}
+            </div>
+        </section>
+    {{ /if }}
+
+    {{ if projects }}
+        <section class="cv-section" aria-labelledby="cv-projects-title">
+            <h2 id="cv-projects-title">Ausgewählte Projekte</h2>
+            <div class="cv-records">{{ projects }}{{ partial:components/related-reference }}{{ /projects }}</div>
+        </section>
+    {{ /if }}
+
+    {{ if publications }}
+        <section class="cv-section" aria-labelledby="cv-publications-title">
+            <h2 id="cv-publications-title">Veröffentlichungen</h2>
+            <div class="cv-records">{{ publications }}{{ partial:components/related-reference }}{{ /publications }}</div>
+        </section>
+    {{ /if }}
+</article>

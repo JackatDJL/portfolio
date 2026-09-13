@@ -15,6 +15,15 @@ preferences:
       after_save: continue_editing
     publications:
       view: list
+    education:
+      view: list
+    experience:
+      view: list
+    cv_profiles:
+      view: list
   locale: en
   formatting_locale: de
   theme: null
+  assets:
+    assets:
+      mode: grid

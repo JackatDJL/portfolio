@@ -1,9 +1,10 @@
 title: Erfahrung
 icon: labs-idea-experimental-flask
-template: default
+template: experience/show
 layout: layout
 revisions: false
 sort_dir: asc
+route: '/cv/exp/{slug}'
 date_behavior:
   past: null
   future: null

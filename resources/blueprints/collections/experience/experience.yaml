@@ -1,0 +1,64 @@
+title: Erfahrung
+tabs:
+  main:
+    display: Basis
+    sections:
+      -
+        fields:
+          -
+            handle: title
+            field:
+              type: text
+              required: true
+              display: Rolle
+              validate:
+                - required
+          -
+            handle: organisation
+            field:
+              type: text
+              display: Organisation
+              validate:
+                - required
+          -
+            handle: summary
+            field:
+              type: textarea
+              display: Zusammenfassung
+          -
+            handle: started_at
+            field:
+              type: date
+              display: 'Begonnen am'
+          -
+            handle: ended_at
+            field:
+              type: date
+              display: 'Beendet am'
+          -
+            handle: projects
+            field:
+              type: entries
+              collections:
+                - projects
+              display: Projekte
+          -
+            handle: topics
+            field:
+              type: terms
+              taxonomies:
+                - topics
+              display: Themen
+          -
+            import: bard_body
+  sidebar:
+    display: Sidebar
+    sections:
+      -
+        fields:
+          -
+            handle: slug
+            field:
+              type: slug
+              localizable: true
+              validate: 'max:200'
