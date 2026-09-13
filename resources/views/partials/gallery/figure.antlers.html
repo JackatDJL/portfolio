@@ -1,7 +1,4 @@
-{{# Einzelne Abbildung; benötigt den Asset-Kontext (url, alt, width, height). #}}
-<figure class="media-figure media-gallery__item">
-    <img src="{{ glide:url width="960" }}" alt="{{ alt }}" width="{{ width }}" height="{{ height }}" loading="lazy" decoding="async">
-    {{ if caption }}
-        <figcaption>{{ caption }}</figcaption>
-    {{ /if }}
+<figure class="media-figure media-gallery__item" style="--image-ratio: {{ width }} / {{ height }}; --image-width: {{ width }}; --image-height: {{ height }}">
+    <img src="{{ glide:url width='1280' }}" alt="{{ alt }}" width="{{ width }}" height="{{ height }}" loading="lazy" decoding="async">
+    {{ partial:media/attribution :caption_override="caption" :credit_override="cc" :rights_override="rights" }}
 </figure>

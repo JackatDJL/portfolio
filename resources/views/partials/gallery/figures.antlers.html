@@ -1,14 +1,12 @@
-{{# Bildliste als Abbildungen; braucht eine Asset-Liste im Parameter `assets`. #}}
 {{ if assets }}
-    <section class="media-gallery {{ classes ?? '' }}" aria-label="Bildergalerie" data-media-gallery>
-        <div class="media-gallery__track" tabindex="0">
-            {{ assets }}
-                {{ partial:gallery/figure }}
-            {{ /assets }}
-        </div>
-        <div class="media-gallery__controls">
-            <button class="media-gallery__button" type="button" data-gallery-previous aria-label="Vorheriges Bild">←</button>
-            <button class="media-gallery__button" type="button" data-gallery-next aria-label="Nächstes Bild">→</button>
-        </div>
-    </section>
+<section class="media-gallery {{ classes ?? '' }}" aria-label="Bildergalerie" aria-roledescription="Karussell" data-media-gallery>
+    <div class="media-gallery__track" tabindex="0" role="group" aria-label="Bilder, mit Pfeiltasten blättern">
+        {{ assets }}{{ partial:gallery/figure }}{{ /assets }}
+    </div>
+    <div class="media-gallery__controls" hidden>
+        <span class="media-gallery__position" data-gallery-position aria-live="polite" aria-atomic="true"></span>
+        <button class="media-gallery__button" type="button" data-gallery-previous aria-label="Vorheriges Bild">←</button>
+        <button class="media-gallery__button" type="button" data-gallery-next aria-label="Nächstes Bild">→</button>
+    </div>
+</section>
 {{ /if }}

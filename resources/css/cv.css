@@ -1,0 +1,101 @@
+/* CV documents and chapters use the site's existing type and semantic palette. */
+@layer components {
+    .cv-document { padding-block: 3rem 4rem; }
+    .cv-document__header { display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 2rem; padding-bottom: 2rem; border-bottom: 3px solid var(--site-text); }
+    .cv-document__header h1 { margin: .35rem 0 0; font-size: clamp(3.5rem, 6vw, 5.5rem); line-height: 1; letter-spacing: -.055em; }
+    .cv-introduction { max-width: 42ch; margin-top: 1rem; }
+    .cv-contact { font-style: normal; font-size: .875rem; line-height: 1.8; }
+    .cv-contact > a { font-weight: 600; }
+    .cv-contact__links { display: flex; gap: 1rem; }
+    .cv-inline-link { display: inline; padding: 0; border: 0; }
+    .cv-inline-link > .related-reference__arrow-mask { display: inline-grid; vertical-align: middle; margin-left: .12em; }
+    .cv-section { display: grid; grid-template-columns: 12rem minmax(0, 1fr); gap: 2rem; margin-top: 0; padding-top: 1.8rem; }
+    .cv-section > h2 { margin: .8rem 0 0; font-size: 1.5rem; letter-spacing: -.035em; }
+    .cv-record { display: grid; grid-template-columns: 10rem minmax(0,1fr); gap: 1.5rem; padding: 1rem 0; border-top: 1px solid var(--site-border); }
+    .cv-record h3 { margin: 0; font-size: 1.2rem; line-height: 1.25; }
+    .cv-record__organisation { margin: .2rem 0 0; color: var(--site-text); font-size: .875rem; font-weight: 600; line-height: 1.4; }
+    .cv-record__summary { margin: .45rem 0 0; font-size: .875rem; line-height: 1.55; max-width: 66ch; }
+    .cv-period { font-size: .78rem; line-height: 1.6; color: var(--site-text-muted); font-variant-numeric: tabular-nums; }
+    .cv-record__context .cv-period { margin-top: .4rem; }
+    .cv-link-tail { white-space: nowrap; }
+    .cv-relation-title { font-family: var(--font-display); font-weight: 700; font-size: 1.125rem; line-height: 1.3; }
+    .cv-source-link { font-size: .875rem; line-height: 1.6; }
+    .cv-source-link + .cv-source-link { margin-top: 1rem; }
+    .cv-relation-meta { display: block; margin-top: .4rem; font-size: .8rem; color: var(--site-text-muted); }
+    .cv-chapter-nav { display: flex; gap: 1.2rem; align-items: center; padding-block: 2rem; font-size: .85rem; }
+    .cv-chapter-nav > span { color: var(--site-text-muted); }
+    .experience-detail { padding-bottom: 4rem; }
+    .experience-header, .experience-content { display: grid; grid-template-columns: 15rem minmax(0,1fr); gap: 3rem; }
+    .experience-header { border-top: 2px solid var(--site-text); border-bottom: 1px solid var(--site-border); padding-block: 2.5rem; }
+    .experience-organisation { font: 700 1.8rem/1.15 var(--font-display); letter-spacing: -.03em; }
+    .experience-context .cv-period { margin-top: 1rem; }
+    .experience-header h1 { font-size: clamp(2.5rem, 4.5vw, 4.2rem); line-height: 1.02; letter-spacing: -.045em; max-width: 20ch; }
+    .experience-summary { font-size: 1.1rem; line-height: 1.55; max-width: 58ch; margin-top: 1.4rem; }
+    .experience-content { padding-top: 2.5rem; }
+    .experience-content aside > * + * { margin-top: 2rem; }
+    .experience-detail .prose-site h2, .education-detail .prose-site h2 { font-size: clamp(1.7rem, 2.5vw, 2.3rem); margin-top: 2rem; }
+    .experience-detail .prose-site { font-size: 1rem; line-height: 1.75; }
+    .experience-work { margin-top: 3rem; }
+    .cv-project-work { border-top: 1px solid var(--site-border); padding-block: 2rem; }
+    .cv-project-work__intro { max-width: 46rem; margin: 0 0 1.5rem; }
+    .cv-project-work__intro h2 { font-size: 1.8rem; }
+    .cv-project-work__intro p { margin: .8rem 0; line-height: 1.65; color: var(--site-text-muted); }
+    .education-hero { position: relative; display: flex; align-items: end; isolation: isolate; min-height: 30rem; padding-block: 4rem; }
+    .education-hero--image { min-height: calc(100svh - 5rem); color: #f5faf6; padding-block: 5rem 6.5rem; }
+    .education-hero__image { position: absolute; inset: 0; z-index: -1; margin: 0; background: #07100c; }
+    .education-hero__image img { width: 100%; height: 100%; object-fit: cover; object-position: center 48%; }
+    .education-hero__image::after { position: absolute; inset: 0; content: ''; background: linear-gradient(0deg, rgb(3 12 8 / .94), rgb(3 12 8 / .62) 36%, rgb(3 12 8 / .04) 78%); }
+    .education-hero__content h1 { font-size: clamp(3rem, 6vw, 6rem); line-height: .98; letter-spacing: -.045em; max-width: 16ch; margin: 1rem 0 1.5rem; }
+    .education-hero--image .eyebrow { color: #93e8ba; }
+    .education-hero__period { display: flex; flex-wrap: wrap; align-items: baseline; gap: .6rem 2rem; font-weight: 600; }
+    .education-hero__summary { max-width: 58ch; margin-top: 1rem; font-size: 1rem; line-height: 1.65; }
+    .education-hero__image .asset-attribution { position: absolute; bottom: 1.2rem; right: max(1.5rem, calc((100% - 68rem) / 2)); left: 1.5rem; text-align: right; z-index: 2; color: #f5faf6; }
+    .education-hero__image .asset-attribution__credit { color: inherit; }
+    .education-detail .detail-layout { padding-top: 3rem; }
+    @media (max-width: 63.99rem) {
+        .cv-section { grid-template-columns: 9rem minmax(0,1fr); gap: 1.5rem; }
+        .cv-record { grid-template-columns: 8rem minmax(0,1fr); gap: 1rem; }
+        .experience-header, .experience-content { grid-template-columns: 11rem minmax(0,1fr); gap: 2rem; }
+    }
+    @media (max-width: 47.99rem) {
+        .cv-document { padding-block: 2rem 3rem; }
+        .cv-document__header { grid-template-columns: 1fr; gap: 1.25rem; }
+        .cv-section { display: block; padding-top: 1.5rem; }
+        .cv-section > h2 { margin: 0 0 .8rem; font-size: 1.6rem; }
+        .cv-record { grid-template-columns: 1fr; gap: .45rem; padding: 1rem 0; }
+        .cv-record__context { display: flex; flex-wrap: wrap; align-items: baseline; gap: .3rem 1rem; }
+        .cv-record__context .cv-period { margin: 0; }
+        .cv-record__organisation { margin: 0; }
+        .cv-record > .cv-period:empty { display: none; }
+        .cv-record h3 { font-size: 1.25rem; }
+        .experience-header, .experience-content { display: flex; flex-direction: column; gap: 1.5rem; }
+        .experience-header { padding-block: 1.5rem; }
+        .experience-organisation { font-size: 1.35rem; }
+        .experience-content aside { order: 2; }
+        .education-hero--image { min-height: calc(100svh - 5rem); padding-block: 10rem 7rem; }
+        .education-hero__image img { object-position: 55% center; }
+        .education-hero__image::after { background: linear-gradient(0deg, rgb(3 12 8 / .96), rgb(3 12 8 / .72) 55%, rgb(3 12 8 / .08)); }
+        .education-hero__content h1 { font-size: clamp(2.5rem, 10vw, 4rem); }
+        .education-hero__image .asset-attribution { text-align: left; right: 1.5rem; font-size: .7rem; }
+    }
+}
+@media print {
+    @page { size: A4; margin: 14mm; }
+    html:has(.cv-document) { background: #fff !important; color-scheme: light; }
+    body:has(.cv-document), body:has(.cv-document) .site-shell { background: white !important; color: black !important; }
+    .cv-document { --site-text: #000; --site-text-muted: #333; --site-border: #bbb; --site-border-strong: #000; padding: 0; font-size: 9pt; }
+    .cv-document__header { grid-template-columns: 1fr auto; gap: 8mm; padding-bottom: 2mm; }
+    .cv-document__header h1 { font-size: 26pt; }
+    .cv-document .eyebrow, .cv-contact { font-size: 8pt; }
+    .cv-section { display: grid; grid-template-columns: 30mm minmax(0,1fr); gap: 5mm; padding-top: 2mm; break-inside: auto; }
+    .cv-section > h2 { font-size: 13pt; margin: 2mm 0 0; break-after: avoid; }
+    .cv-record { display: grid; grid-template-columns: 27mm minmax(0,1fr); gap: 4mm; padding: 1mm 0; break-inside: avoid; }
+    .cv-record h3 { font-size: 10pt; }
+    .cv-record__summary, .cv-record__organisation, .cv-period { color: #333; font-size: 8pt; line-height: 1.3; }
+    .cv-record__summary { margin-top: 1mm; }
+    .cv-document .semantic-link { text-decoration: none; }
+    .cv-chapter-nav { display: none; }
+    .education-hero--image { min-height: 0; padding: 0; color: black; }
+    .education-hero__image { display: none; }
+    .education-hero__content h1 { font-size: 28pt; }
+}
