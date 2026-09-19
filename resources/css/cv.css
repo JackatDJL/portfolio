@@ -10,6 +10,8 @@
         border-radius: var(--radius-sm);
         background: var(--site-surface);
         box-shadow: 3px 4px 0 color-mix(in srgb, var(--site-shadow-color) 14%, transparent);
+        --cv-accent: var(--site-accent);
+        --cv-accent-soft: color-mix(in srgb, var(--cv-accent) 18%, var(--site-background));
     }
     .cv-document::before {
         position: absolute;
@@ -35,11 +37,13 @@
         isolation: isolate;
     }
     .cv-header-geometry { position: absolute; inset: 0; z-index: -1; width: 100%; height: 100%; }
-    .cv-header-geometry path:first-child { fill: var(--site-accent-soft); }
-    .cv-header-geometry path:last-child { fill: color-mix(in srgb, var(--site-accent) 48%, var(--site-surface-strong)); }
+    .cv-header-geometry path:first-child { fill: var(--cv-accent-soft); }
+    .cv-header-geometry path:last-child { fill: color-mix(in srgb, var(--cv-accent) 48%, var(--site-surface-strong)); }
     .cv-document__identity { align-self: end; position: relative; z-index: 1; }
     .cv-document__header h1 { margin: .3rem 0 0; font-size: clamp(3.15rem, 9vw, 5.65rem); line-height: .84; letter-spacing: -.07em; }
     .cv-document__subtitle { margin: 1rem 0 0; font-size: .82rem; font-weight: 600; letter-spacing: .025em; }
+    .cv-document__recipient { margin: .8rem 0 0; color: var(--cv-accent); font-size: .88rem; font-weight: 750; }
+    .cv-document__context { max-width: 46ch; margin: .45rem 0 0; font-size: .78rem; line-height: 1.45; }
     .cv-portrait { position: relative; z-index: 1; width: clamp(8rem, 21vw, 10.5rem); aspect-ratio: 1; margin: 0 0 -.5rem auto; overflow: hidden; border: 2px solid var(--site-border-strong); border-radius: 48% 52% 44% 56% / 56% 43% 57% 44%; background: var(--site-surface-strong); transform: rotate(3deg); }
     .cv-portrait img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 42%; transform: rotate(-3deg) scale(1.08); }
     .cv-document__body { display: grid; grid-template-columns: 10.5rem minmax(0, 1fr); gap: clamp(1.5rem, 4vw, 3rem); padding-top: clamp(1.75rem, 4vw, 2.8rem); }
@@ -51,6 +55,12 @@
     .cv-contact p:first-child { margin-top: 0; }
     .cv-contact a { font-weight: 650; }
     .cv-contact__label { display: block; color: var(--site-text-muted); font-size: .66rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+    .cv-contact [data-cv-private] { display: block; white-space: pre-line; }
+    .cv-contact__mask { display: grid; gap: .22rem; width: 100%; padding-block: .18rem; }
+    .cv-contact__mask i { display: block; width: 68%; height: .55rem; border-radius: .15rem; background: color-mix(in srgb, var(--site-text-muted) 24%, transparent); }
+    .cv-contact__mask--long i { width: 92%; }
+    .cv-contact__mask--two-lines i:last-child { width: 72%; }
+    .cv-online-title { margin-top: 1.2rem !important; }
     .cv-contact__links { display: grid; gap: .35rem; margin-top: 1rem; font-size: .76rem; }
     .cv-inline-link { display: inline; padding: 0; border: 0; }
     .cv-inline-link > .related-reference__arrow-mask { display: inline-grid; margin-left: .12em; vertical-align: middle; }
@@ -60,10 +70,10 @@
     .cv-section__heading { margin-bottom: .45rem; }
     .cv-section__heading h2 { margin: 0; font-size: clamp(1.45rem, 3vw, 1.85rem); letter-spacing: -.04em; }
     .cv-records { position: relative; }
-    .cv-records--thread > svg { position: absolute; z-index: 1; top: 0; bottom: 0; left: 0; width: 1.7rem; height: 100%; overflow: visible; pointer-events: none; }
-    .cv-records--thread > svg path { fill: none; stroke: var(--site-accent); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+    .cv-records--thread > svg { position: absolute; z-index: 1; top: 0; bottom: 0; left: 0; width: 1.25rem; height: 100%; overflow: visible; pointer-events: none; }
+    .cv-records--thread > svg path { fill: none; stroke: var(--cv-accent); stroke-width: 1; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
     .cv-record { position: relative; display: grid; grid-template-columns: 8.4rem minmax(0, 1fr); gap: 1rem; padding: 1rem 0; border-top: 1px solid var(--site-border); break-inside: avoid; }
-    .cv-section--timeline .cv-record { grid-template-columns: 1rem 9.5rem minmax(0, 1fr); gap: .8rem; padding-left: 0; }
+    .cv-section--timeline .cv-record { grid-template-columns: 1.25rem 9.5rem minmax(0, 1fr); gap: .8rem; padding-left: 0; }
     .cv-section--timeline .cv-record__context, .cv-section--timeline .cv-record > .cv-period { grid-column: 2; }
     .cv-section--timeline .cv-record__content { grid-column: 3; }
     .cv-record h3 { margin: 0; font: 700 1.04rem/1.2 var(--font-display); letter-spacing: -.025em; }
@@ -117,7 +127,7 @@
         .cv-support h2 { grid-column: 1 / -1; margin: 0; }
         .cv-contact__links { margin: 0; }
         .cv-section { padding-bottom: 1.7rem; }
-        .cv-section--timeline .cv-record { grid-template-columns: 1rem minmax(0, 1fr); gap: .7rem; }
+        .cv-section--timeline .cv-record { grid-template-columns: 1.25rem minmax(0, 1fr); gap: .7rem; }
         .cv-section--timeline .cv-record__context, .cv-section--timeline .cv-record > .cv-period { grid-column: 2; }
         .cv-section--timeline .cv-record__content { grid-column: 2; }
         .cv-record__context { display: flex; flex-wrap: wrap; gap: .25rem .8rem; align-items: baseline; }
@@ -133,6 +143,13 @@
         .education-hero__image::after { background: linear-gradient(0deg, rgb(3 12 8 / .96), rgb(3 12 8 / .72) 55%, rgb(3 12 8 / .08)); }
         .education-hero__content h1 { font-size: clamp(2.5rem, 10vw, 4rem); }
         .education-hero__image .asset-attribution { text-align: left; right: 1.5rem; font-size: .7rem; }
+    }
+    @media (max-width: 30rem) {
+        .cv-records--thread > svg { display: none; }
+        .cv-section--timeline .cv-record { grid-template-columns: minmax(0, 1fr); }
+        .cv-section--timeline .cv-record__context,
+        .cv-section--timeline .cv-record > .cv-period,
+        .cv-section--timeline .cv-record__content { grid-column: 1; }
     }
 }
 html[data-theme='dark'] .cv-document::before { opacity: .035; mix-blend-mode: screen; }

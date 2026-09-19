@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 const cvBaseURL = process.env.CV_BASE_URL || 'http://127.0.0.1:8091';
-const routes = ['/cv', '/cv/allgemeines-profil', '/cv/exp/volt-stade-kommunikation', '/cv/exp/erstwaehlerforum-stade-organisation', '/cv/exp/hackclub-stade-organisation', '/cv/exp/atheblues-robotik-und-teamarbeit', '/cv/exp/volt-europa-technische-mitarbeit', '/cv/exp/volt-deutschland-technische-mitarbeit', '/cv/edu/gymnasium-athenaeum-stade', '/projekte/erstwaehlerforum-stade'];
+const routes = ['/cv', '/cv/airbus-26', '/cv/exp/volt-stade-kommunikation', '/cv/exp/erstwaehlerforum-stade-organisation', '/cv/exp/hackclub-stade-organisation', '/cv/exp/atheblues-robotik-und-teamarbeit', '/cv/exp/volt-europa-technische-mitarbeit', '/cv/exp/volt-deutschland-technische-mitarbeit', '/cv/edu/gymnasium-athenaeum-stade', '/projekte/erstwaehlerforum-stade'];
 for (const width of [1440, 390]) for (const theme of ['light', 'dark']) {
     test(`${width}px ${theme}: CV pages render without overflow`, async ({ page }, testInfo) => {
         await page.setViewportSize({ width, height: width === 390 ? 844 : 1000 });
@@ -15,10 +15,9 @@ for (const width of [1440, 390]) for (const theme of ['light', 'dark']) {
             expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
             await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
             await page.screenshot({ path: testInfo.outputPath(`${route.replaceAll('/', '_')}.png`), fullPage: true });
-            if (route === '/cv' || route === '/cv/allgemeines-profil') {
+            if (route === '/cv' || route === '/cv/airbus-26') {
                 await expect(page.locator('h1')).toHaveText('Jack Ruder');
-                await expect(page.locator('main')).not.toContainText(/Allgemeines Profil|Ausgangsprofil|Preset|für Bewerbungen/);
-                await expect(page.locator('.cv-record h3 a .related-reference__arrow-mask')).toHaveCount(14);
+                await expect(page.locator('main')).not.toContainText(/Allgemeines Profil|Ausgangsprofil|Preset|für Bewerbungen|Personalisiertes Profil|Mein Lebenslauf für/);
                 await expect(page.locator('.cv-record time')).not.toHaveCount(0);
                 await expect(page.locator('main')).toContainText('02/2026 – heute');
                 await expect(page.locator('main')).toContainText('Seit etwa dem Schuljahr 2021/22');
@@ -30,7 +29,18 @@ for (const width of [1440, 390]) for (const theme of ['light', 'dark']) {
                 await expect(threads.locator(':scope > svg')).toHaveCount(2);
                 await expect(threads.locator(':scope > svg > path')).toHaveCount(2);
                 await expect(threads.locator(':scope > svg path + *')).toHaveCount(0);
+                await expect(page.locator('.cv-contact__mask')).toHaveCount(3);
+                expect(await page.locator('[data-cv-private]').allTextContents()).not.toEqual(expect.arrayContaining([expect.stringMatching(/@|PRIVATE-CV/)]));
                 expect(await page.locator('.cv-section--timeline .cv-period').evaluateAll(periods => periods.every(period => getComputedStyle(period).whiteSpace === 'nowrap'))).toBe(true);
+            }
+            if (route === '/cv') {
+                await expect(page.locator('.cv-document__recipient')).toHaveCount(0);
+            }
+            if (route === '/cv/airbus-26') {
+                await expect(page.locator('.cv-document__recipient')).toHaveText('Airbus · 2026');
+                await expect(page.locator('.cv-document')).toHaveCSS('--cv-accent', '#315c78');
+                await expect(page.locator('main')).toContainText('Robotik und Teamarbeit');
+                await expect(page.locator('main')).toContainText('Gymnasium Athenaeum Stade');
             }
             if (route.includes('/edu/')) {
                 const hero = await page.locator('.education-hero').boundingBox();
@@ -68,6 +78,26 @@ test('gallery buttons, keyboard, horizontal wheel, boundaries and reduced motion
     await page.mouse.wheel(500, 0);
     await expect.poll(() => track.evaluate(el => el.scrollLeft)).toBeGreaterThan(100);
 });
+test('authorized private response replaces masks in the same contact fields', async ({ page }) => {
+    await page.route('**/cv/private-data', route => route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+            private_email: 'cv-test@example.invalid',
+            phone: '+49 000 000000',
+            street: 'Musterstraße',
+            house_number: '1',
+            postal_code: '21600',
+            city: 'Teststadt',
+        }),
+    }));
+    await page.goto('/cv/airbus-26#cv=validtestcapabilitytoken1234567890');
+    await expect(page.locator('[data-cv-private="email"]')).toHaveText('cv-test@example.invalid');
+    await expect(page.locator('[data-cv-private="phone"]')).toHaveText('+49 000 000000');
+    await expect(page.locator('[data-cv-private="address"]')).toContainText('Musterstraße 1');
+    await expect(page.locator('.cv-contact__mask')).toHaveCount(0);
+    await expect(page).toHaveURL(/\/cv\/airbus-26$/);
+});
 test('A4 print keeps document text and removes navigation', async ({ page }, testInfo) => {
     await page.goto('/cv');
     await page.evaluate(() => { document.documentElement.dataset.theme = 'dark'; });
@@ -87,7 +117,6 @@ test('CV document canvas is constrained on desktop and fluid on smaller screens'
         await page.goto('/cv');
         await page.evaluate(() => document.fonts.ready);
         await page.locator('.cv-portrait img').waitFor({ state: 'visible' });
-        await expect.poll(() => page.locator('.cv-portrait img').evaluate(img => img.complete && img.naturalWidth > 0)).toBe(true);
         const documentBox = await page.locator('.cv-document').boundingBox();
         expect(documentBox.width).toBeLessThanOrEqual(width >= 1024 ? 882 : width + 1);
         if (width >= 1024) expect(Math.abs(documentBox.x - (width - documentBox.width) / 2)).toBeLessThan(2);

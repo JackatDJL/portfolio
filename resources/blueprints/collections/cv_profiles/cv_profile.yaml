@@ -1,48 +1,34 @@
 title: Lebenslauf-Profil
 tabs:
   main:
-    display: Basis
+    display: Profil
     sections:
       -
+        display: Empfänger
+        instructions: 'Das Profil erbt Identität, Kontaktdaten, Erfahrung und Bildung aus dem Lebenslauf.'
         fields:
           - handle: title
             field: { type: text, display: Titel, validate: [required] }
-          - handle: summary
-            field: { type: textarea, display: Profil }
-          - handle: experience
-            field: { type: entries, collections: [experience], display: Erfahrung }
+          - handle: recipient_name
+            field: { type: text, display: Empfänger, width: 50 }
+          - handle: application_year
+            field: { type: integer, display: Jahr, width: 25 }
+          - handle: accent_color
+            field:
+              type: color
+              display: Akzentfarbe
+              instructions: 'Wirkt nur innerhalb des CV-Dokuments. Markenfarben vor Verwendung anhand einer verlässlichen Quelle prüfen.'
+              width: 25
+          - handle: optional_context
+            field:
+              type: textarea
+              display: Kurzer Kontext
+              instructions: 'Optional und sachlich. Leer lassen, wenn Empfänger und Jahr ausreichen.'
+      -
+        display: Auswahl
+        instructions: 'Leere Felder verwenden die Standardauswahl aus Globals → Lebenslauf.'
+        fields:
           - handle: projects
             field: { type: entries, collections: [projects], display: Projekte }
-          - handle: education
-            field: { type: entries, collections: [education], display: Bildung }
           - handle: publications
             field: { type: entries, collections: [publications], display: Veröffentlichungen }
-      -
-        display: Kenntnisse
-        instructions: 'Nur konkrete, für dieses Profil relevante Kenntnisse. Keine Skalen, Balken oder geschätzten Prozentwerte.'
-        fields:
-          - handle: knowledge
-            field:
-              type: grid
-              display: Kenntnisse
-              fields:
-                - handle: category
-                  field: { type: text, display: Bereich, validate: [required] }
-                - handle: items
-                  field: { type: textarea, display: Einträge, instructions: 'Eine Kenntnis pro Zeile. Sprachstufen nur mit belegter Angabe, etwa C1 oder Muttersprache.' }
-      -
-        display: Druckabschluss
-        instructions: 'Wird nur im gedruckten Lebenslauf gezeigt. Leere Felder erscheinen nicht.'
-        fields:
-          - handle: print_place
-            field: { type: text, display: Ort, width: 50 }
-          - handle: print_date
-            field: { type: text, display: Datum, width: 50 }
-          - handle: signature
-            field:
-              type: assets
-              container: assets
-              folder: cv/signatures
-              restrict: true
-              max_files: 1
-              display: Unterschrift

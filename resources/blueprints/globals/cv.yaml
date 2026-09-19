@@ -1,0 +1,117 @@
+title: Lebenslauf
+tabs:
+  general:
+    display: Allgemein
+    sections:
+      -
+        display: Identität
+        fields:
+          - handle: full_name
+            field:
+              type: text
+              display: Vollständiger Name
+              validate: [required]
+              width: 50
+          - handle: public_location
+            field:
+              type: text
+              display: Öffentlicher Standort
+              instructions: 'Ungefährer Standort, nicht die private Anschrift.'
+              width: 50
+          - handle: profile_image
+            field:
+              type: assets
+              container: assets
+              folder: profile_pictures
+              restrict: true
+              max_files: 1
+              display: Profilbild
+          - handle: website
+            field: { type: text, input_type: url, display: Website, width: 33 }
+          - handle: github_url
+            field: { type: text, input_type: url, display: GitHub, width: 33 }
+          - handle: codeberg_url
+            field: { type: text, input_type: url, display: Codeberg, width: 33 }
+  personal:
+    display: Persönliche Daten
+    sections:
+      -
+        display: Private Kontaktangaben
+        instructions: 'Diese Angaben werden verschlüsselt gespeichert und nur über einen gültigen privaten CV-Link ausgeliefert.'
+        fields:
+          - handle: private_email
+            field:
+              type: protected_text
+              input_type: email
+              display: Private E-Mail-Adresse
+              instructions: 'Private E-Mail-Adresse für Lebensläufe. Wird verschlüsselt gespeichert und nur über einen gültigen privaten CV-Link ausgeliefert.'
+          - handle: phone
+            field: { type: protected_text, input_type: tel, display: Telefon, width: 50 }
+          - handle: street
+            field: { type: protected_text, display: Straße, width: 50 }
+          - handle: house_number
+            field: { type: protected_text, display: Hausnummer, width: 25 }
+          - handle: postal_code
+            field: { type: protected_text, display: Postleitzahl, width: 25 }
+          - handle: city
+            field: { type: protected_text, display: Ort, width: 50 }
+          - handle: country
+            field: { type: protected_text, display: Land, width: 50 }
+          - handle: date_of_birth
+            field: { type: protected_text, input_type: date, display: Geburtsdatum, width: 50 }
+          - handle: place_of_birth
+            field: { type: protected_text, display: Geburtsort, width: 50 }
+      -
+        display: Privaten Lebenslauf testen
+        instructions: 'Der Test-Link gilt 15 Minuten und nutzt dieselbe geschützte Datenfreigabe wie ein Empfänger-Link.'
+        fields:
+          - handle: private_test_link
+            field:
+              type: html
+              display: Test-Link
+              html: '<a class="btn" href="/cp/cv/private-link?path=/cv" target="_blank" rel="noopener">Test-Link öffnen</a>'
+  cv:
+    display: Lebenslauf
+    sections:
+      -
+        display: Kenntnisse
+        instructions: 'Nur konkrete Angaben. Keine Prozentwerte oder Bewertungsbalken.'
+        fields:
+          - handle: knowledge
+            field:
+              type: grid
+              display: Kenntnisse
+              add_row: Bereich hinzufügen
+              fields:
+                - handle: category
+                  field: { type: text, display: Bereich, validate: [required], width: 33 }
+                - handle: items
+                  field: { type: textarea, display: Einträge, validate: [required], width: 67 }
+  defaults:
+    display: Standardauswahl
+    sections:
+      -
+        display: Inhalte für /cv
+        instructions: 'Profile können Projekte und Veröffentlichungen überschreiben. Ohne eigene Auswahl gilt diese Standardauswahl.'
+        fields:
+          - handle: projects
+            field: { type: entries, collections: [projects], display: Projekte }
+          - handle: publications
+            field: { type: entries, collections: [publications], display: Veröffentlichungen }
+  print:
+    display: Druck / PDF
+    sections:
+      -
+        fields:
+          - handle: print_place
+            field: { type: text, display: Ort, width: 50 }
+          - handle: print_date
+            field: { type: text, display: Datum, width: 50 }
+          - handle: signature
+            field:
+              type: assets
+              container: assets
+              folder: cv/signatures
+              restrict: true
+              max_files: 1
+              display: Unterschrift

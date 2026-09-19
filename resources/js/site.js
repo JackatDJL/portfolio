@@ -1,9 +1,11 @@
 if (document.querySelector('[data-project-stream]')) import('./collection-preview.js');
 if (document.querySelector('[data-homepage]')) import('./homepage.js');
 if (document.querySelector('[data-cv-thread]')) import('./cv-thread.js');
+if (document.querySelector('[data-cv-private-panel]')) import('./cv-private.js').then(({ initCvPrivateData }) => initCvPrivateData());
 import { initThemeSwitcher } from './theme.js';
 import { gsap } from 'gsap';
 import { ScrollToPlugin } from 'gsap/ScrollToPlugin';
+import { buildThreadPath } from './thread-bump.js';
 
 if (document.querySelector('[data-pdf-viewer]')) import('./pdf-viewer.js');
 if (document.querySelector('[data-citation-dialog]')) import('./citation-dialog.js');
@@ -126,20 +128,7 @@ const initContextRailLine = () => {
                 { y: state.activeY, depth: state.activeDepth },
                 { y: state.hoverY, depth: state.hoverDepth },
             ].filter(({ depth }) => depth > 0.05).sort((a, b) => a.y - b.y);
-            let cursor = 0;
-            const commands = ['M 2 0'];
-            for (const { y, depth } of bumps) {
-                const shoulder = Math.min(9, Math.max(3, depth * 0.72));
-                const start = Math.max(cursor, y - 15);
-                const end = Math.min(state.height, y + 15);
-                const tip = 2 + depth;
-                commands.push(`V ${start}`);
-                commands.push(`C 2 ${y - shoulder}, ${tip} ${y - shoulder}, ${tip} ${y}`);
-                commands.push(`C ${tip} ${y + shoulder}, 2 ${y + shoulder}, 2 ${end}`);
-                cursor = end;
-            }
-            commands.push(`V ${state.height}`);
-            line.setAttribute('d', commands.join(' '));
+            line.setAttribute('d', buildThreadPath({ rail: 2, height: state.height, marks: bumps }));
         };
 
         const linkY = (link) => {

@@ -12,3 +12,7 @@ preview_targets:
     label: Entry
     url: '{permalink}'
     refresh: true
+  -
+    label: 'Privaten Link öffnen'
+    url: '/cp/cv/private-link?path=/cv/{slug}'
+    refresh: false

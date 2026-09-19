@@ -1,0 +1,53 @@
+const composeAddress = (data) => [
+    [data.street, data.house_number].filter(Boolean).join(' '),
+    [data.postal_code, data.city].filter(Boolean).join(' '),
+    data.country,
+].filter(Boolean).join('\n');
+
+export const initCvPrivateData = ({ watch = true } = {}) => {
+    const panel = document.querySelector('[data-cv-private-panel]');
+    if (!(panel instanceof HTMLElement)) return;
+
+    const retryOnHashChange = () => {
+        if (watch) window.addEventListener('hashchange', () => initCvPrivateData(), { once: true });
+    };
+    const match = location.hash.match(/^#cv=([A-Za-z0-9]{32,})$/);
+    if (!match) {
+        retryOnHashChange();
+        return;
+    }
+
+    const setValue = (name, value, href) => {
+        const field = panel.querySelector(`[data-cv-private="${name}"]`);
+        if (!(field instanceof HTMLElement) || !value) return;
+        if (!href) {
+            field.textContent = value;
+            return;
+        }
+        const link = document.createElement('a');
+        link.className = 'semantic-link';
+        link.href = href;
+        link.textContent = value;
+        field.replaceChildren(link);
+    };
+
+    fetch(panel.dataset.cvPrivateEndpoint || '/cv/private-data', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({ token: match[1], path: location.pathname }),
+    })
+        .then(response => response.ok ? response.json() : null)
+        .then(data => {
+            if (!data) {
+                retryOnHashChange();
+                return;
+            }
+            setValue('email', data.private_email, data.private_email ? `mailto:${data.private_email}` : null);
+            setValue('phone', data.phone, data.phone ? `tel:${data.phone.replace(/[^+0-9]/g, '')}` : null);
+            setValue('address', composeAddress(data));
+            history.replaceState(null, '', location.pathname + location.search);
+            document.documentElement.dataset.cvPrivateReady = 'true';
+            document.dispatchEvent(new CustomEvent('cv:private-ready'));
+        })
+        .catch(retryOnHashChange);
+};

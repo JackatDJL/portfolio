@@ -9,7 +9,7 @@ export default defineConfig({
     timeout: 60_000,
     workers: 1,
     webServer: {
-        command: `php artisan serve --host=127.0.0.1 --port=${port} --no-reload`,
+        command: `/usr/bin/php -S 127.0.0.1:${port} -t public public/index.php`,
         url: `${baseURL}/cv`,
         reuseExistingServer: true,
     },

@@ -1,49 +1,63 @@
-<article class="cv-document" aria-label="Lebenslauf von {{ site:name }}">
+<article class="cv-document" aria-label="Lebenslauf von {{ cv:full_name }}"{{ if accent_color }} style="--cv-accent: {{ accent_color }}"{{ /if }}>
     <header class="cv-document__header">
         <svg class="cv-header-geometry" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path d="M0 0H100V38L70 72 38 49 0 64Z" /><path d="M100 38V100H56L70 72Z" /></svg>
         <div class="cv-document__identity">
-            <h1>{{ site:name }}</h1>
-            <p class="cv-document__subtitle">Stade, Niedersachsen</p>
+            <h1>{{ cv:full_name }}</h1>
+            {{ if recipient_name }}<p class="cv-document__recipient">{{ recipient_name }}{{ if application_year }} · {{ application_year }}{{ /if }}</p>{{ /if }}
+            {{ if optional_context }}<p class="cv-document__context">{{ optional_context }}</p>{{ /if }}
+            {{ if cv:public_location }}<p class="cv-document__subtitle">{{ cv:public_location }}</p>{{ /if }}
         </div>
-        <figure class="cv-portrait"><img src="/assets/profile_pictures/jack-20251020.jpg" alt="Jack Ruder" width="720" height="720" fetchpriority="high" decoding="async"></figure>
+        {{ if cv:profile_image }}<figure class="cv-portrait"><img src="{{ cv:profile_image:url }}" alt="{{ cv:full_name }}" width="720" height="720" fetchpriority="high" decoding="async"></figure>{{ /if }}
     </header>
     <div class="cv-document__body">
         <aside class="cv-support" aria-label="Persönliche Angaben">
-            <section class="cv-support__panel" aria-labelledby="cv-contact-title">
+            <section class="cv-support__panel" aria-labelledby="cv-contact-title" data-cv-private-panel data-cv-private-endpoint="/cv/private-data">
                 <h2 id="cv-contact-title">Kontakt</h2>
-                <address class="cv-contact">{{ if site:email }}<p><span class="cv-contact__label">E-Mail</span><a class="semantic-link" href="mailto:{{ site:email }}">{{ site:email }}</a></p>{{ /if }}{{ if site:location }}<p>{{ site:location }}</p>{{ /if }}</address>
-                <nav class="cv-contact__links" aria-label="Profile">{{ if site:website_url }}{{ partial:components/outlink :href="site:website_url" label="Website" classes="cv-inline-link" }}{{ /if }}{{ if site:github_url }}{{ partial:components/outlink :href="site:github_url" label="GitHub" classes="cv-inline-link" }}{{ /if }}{{ if site:codeberg_url }}{{ partial:components/outlink :href="site:codeberg_url" label="Codeberg" classes="cv-inline-link" }}{{ /if }}</nav>
+                <address class="cv-contact">
+                    <p><span class="cv-contact__label">E-Mail</span><span data-cv-private="email">{{ partial:cv/mask width="long" }}</span></p>
+                    <p><span class="cv-contact__label">Telefon</span><span data-cv-private="phone">{{ partial:cv/mask width="medium" }}</span></p>
+                    <p><span class="cv-contact__label">Anschrift</span><span data-cv-private="address">{{ partial:cv/mask width="long" lines="2" }}</span></p>
+                    {{ if cv:public_location }}<p><span class="cv-contact__label">Standort</span>{{ cv:public_location }}</p>{{ /if }}
+                </address>
+                <h2 class="cv-online-title">Online</h2>
+                <nav class="cv-contact__links" aria-label="Profile">
+                    {{ if cv:website }}{{ partial:components/outlink :href="cv:website" label="Website" classes="cv-inline-link" }}{{ /if }}
+                    {{ if cv:github_url }}{{ partial:components/outlink :href="cv:github_url" label="GitHub" classes="cv-inline-link" }}{{ /if }}
+                    {{ if cv:codeberg_url }}{{ partial:components/outlink :href="cv:codeberg_url" label="Codeberg" classes="cv-inline-link" }}{{ /if }}
+                </nav>
             </section>
         </aside>
         <div class="cv-document__career">
-            {{ if experience }}
             <section class="cv-section cv-section--timeline" aria-labelledby="cv-experience-title">
                 <div class="cv-section__heading"><h2 id="cv-experience-title">Erfahrung</h2></div>
-                <div class="cv-records cv-records--thread" data-cv-thread>{{ experience }}
+                <div class="cv-records cv-records--thread" data-cv-thread>
+                    {{ collection:experience sort="started_at:desc" }}
                     <article class="cv-record"><div class="cv-record__context"><div class="cv-period">{{ partial:cv/period }}</div><p class="cv-record__organisation">{{ organisation }}</p></div><div class="cv-record__content"><h3><a class="related-reference cv-inline-link" href="{{ url }}" data-related-reference>{{ partial:cv/link-title }}</a></h3>{{ if summary }}<p class="cv-record__summary">{{ summary }}</p>{{ /if }}</div></article>
-                {{ /experience }}</div>
+                    {{ /collection:experience }}
+                </div>
             </section>
-            {{ /if }}
-            {{ if education }}
             <section class="cv-section cv-section--timeline" aria-labelledby="cv-education-title">
                 <div class="cv-section__heading"><h2 id="cv-education-title">Bildung</h2></div>
-                <div class="cv-records cv-records--thread" data-cv-thread>{{ education }}
+                <div class="cv-records cv-records--thread" data-cv-thread>
+                    {{ collection:education sort="started_at:desc" }}
                     <article class="cv-record cv-record--education"><div class="cv-period">{{ partial:cv/period }}</div><div class="cv-record__content"><h3><a class="related-reference cv-inline-link" href="{{ url }}" data-related-reference>{{ partial:cv/link-title }}</a></h3>{{ if programme }}<p class="cv-record__organisation">{{ programme }}</p>{{ /if }}{{ if summary }}<p class="cv-record__summary">{{ summary }}</p>{{ /if }}</div></article>
-                {{ /education }}</div>
+                    {{ /collection:education }}
+                </div>
             </section>
+            {{ if cv:knowledge }}
+            <section class="cv-section" aria-labelledby="cv-knowledge-title"><div class="cv-section__heading"><h2 id="cv-knowledge-title">Kenntnisse</h2></div><div class="cv-records">{{ cv:knowledge }}<article class="cv-record cv-record--reference"><p class="cv-period">{{ category }}</p><div class="cv-record__content"><p class="cv-relation-meta cv-knowledge-items">{{ items | nl2br }}</p></div></article>{{ /cv:knowledge }}</div></section>
             {{ /if }}
-            {{ if knowledge }}
-            <section class="cv-section" aria-labelledby="cv-knowledge-title"><div class="cv-section__heading"><h2 id="cv-knowledge-title">Kenntnisse</h2></div><div class="cv-records">{{ knowledge }}<article class="cv-record cv-record--reference"><p class="cv-period">{{ category }}</p><div class="cv-record__content"><p class="cv-relation-meta cv-knowledge-items">{{ items | nl2br }}</p></div></article>{{ /knowledge }}</div></section>
-            {{ /if }}
-            {{ if projects }}
-            <section class="cv-section" aria-labelledby="cv-projects-title"><div class="cv-section__heading"><h2 id="cv-projects-title">Projekte</h2></div><div class="cv-records">{{ projects }}{{ if published && project_status != 'confidential' }}{{ partial:cv/reference }}{{ /if }}{{ /projects }}</div></section>
-            {{ /if }}
-            {{ if publications }}
-            <section class="cv-section" aria-labelledby="cv-publications-title"><div class="cv-section__heading"><h2 id="cv-publications-title">Veröffentlichungen</h2></div><div class="cv-records">{{ publications }}{{ partial:cv/reference }}{{ /publications }}</div></section>
-            {{ /if }}
+            <section class="cv-section" aria-labelledby="cv-projects-title"><div class="cv-section__heading"><h2 id="cv-projects-title">Projekte</h2></div><div class="cv-records">
+                {{ if projects }}{{ projects }}{{ if published && project_status != 'confidential' }}{{ partial:cv/reference }}{{ /if }}{{ /projects }}
+                {{ else }}{{ cv:projects }}{{ if published && project_status != 'confidential' }}{{ partial:cv/reference }}{{ /if }}{{ /cv:projects }}{{ /if }}
+            </div></section>
+            <section class="cv-section" aria-labelledby="cv-publications-title"><div class="cv-section__heading"><h2 id="cv-publications-title">Veröffentlichungen</h2></div><div class="cv-records">
+                {{ if publications }}{{ publications }}{{ partial:cv/reference }}{{ /publications }}
+                {{ else }}{{ cv:publications }}{{ partial:cv/reference }}{{ /cv:publications }}{{ /if }}
+            </div></section>
         </div>
     </div>
-    {{ if print_place || print_date || signature }}
-        <footer class="cv-document__print-footer" aria-label="Ort, Datum und Unterschrift">{{ if print_place || print_date }}<p>{{ print_place }}{{ if print_place && print_date }}, {{ /if }}{{ print_date }}</p>{{ /if }}{{ if signature }}<img src="{{ signature:url }}" alt="Unterschrift von {{ site:name }}">{{ /if }}</footer>
+    {{ if cv:print_place || cv:print_date || cv:signature }}
+        <footer class="cv-document__print-footer" aria-label="Ort, Datum und Unterschrift">{{ if cv:print_place || cv:print_date }}<p>{{ cv:print_place }}{{ if cv:print_place && cv:print_date }}, {{ /if }}{{ cv:print_date }}</p>{{ /if }}{{ if cv:signature }}<img src="{{ cv:signature:url }}" alt="Unterschrift von {{ cv:full_name }}">{{ /if }}</footer>
     {{ /if }}
 </article>
