@@ -68,9 +68,23 @@ test('A4 print keeps document text and removes navigation', async ({ page }, tes
     await expect(page.locator('html')).toHaveCSS('color-scheme', 'light');
     await expect(page.locator('.site-header')).toBeHidden();
     await expect(page.locator('.site-footer')).toBeHidden();
-    await expect(page.locator('h1')).toHaveCSS('font-size', '34.6667px');
+    await expect(page.locator('h1')).toHaveCSS('font-size', '38.6667px');
     await page.pdf({ path: testInfo.outputPath('cv-a4.pdf'), format: 'A4', printBackground: true, preferCSSPageSize: true });
     await page.screenshot({ path: testInfo.outputPath('cv-print.png'), fullPage: true });
+});
+test('CV document canvas is constrained on desktop and fluid on smaller screens', async ({ page }, testInfo) => {
+    for (const width of [1920, 1440, 1024, 768, 390]) {
+        await page.setViewportSize({ width, height: 1000 });
+        await page.goto('/cv');
+        await page.evaluate(() => document.fonts.ready);
+        await page.locator('.cv-portrait img').waitFor({ state: 'visible' });
+        await expect.poll(() => page.locator('.cv-portrait img').evaluate(img => img.complete && img.naturalWidth > 0)).toBe(true);
+        const documentBox = await page.locator('.cv-document').boundingBox();
+        expect(documentBox.width).toBeLessThanOrEqual(width >= 1024 ? 882 : width + 1);
+        if (width >= 1024) expect(Math.abs(documentBox.x - (width - documentBox.width) / 2)).toBeLessThan(2);
+        expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+        await page.screenshot({ path: testInfo.outputPath(`cv-${width}.png`), fullPage: true });
+    }
 });
 test('mobile gallery responds to native touch swipe', async ({ browser }) => {
     const context = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
