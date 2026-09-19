@@ -1,6 +1,8 @@
 /* The CV is a document inside the site, not another collection page. */
 @layer components {
     .cv-document {
+        position: relative;
+        isolation: isolate;
         width: min(calc(100% - 2rem), 55rem);
         margin: clamp(1.5rem, 4vw, 4rem) auto;
         padding: clamp(1.25rem, 3vw, 2.5rem);
@@ -8,6 +10,17 @@
         border-radius: var(--radius-sm);
         background: var(--site-surface);
         box-shadow: 3px 4px 0 color-mix(in srgb, var(--site-shadow-color) 14%, transparent);
+    }
+    .cv-document::before {
+        position: absolute;
+        z-index: -1;
+        inset: 0;
+        pointer-events: none;
+        content: '';
+        opacity: .028;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='257' height='181' viewBox='0 0 257 181'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.47 .71' numOctaves='3' seed='19' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.9'/%3E%3C/svg%3E");
+        background-size: 257px 181px;
+        mix-blend-mode: multiply;
     }
     .cv-document__header {
         position: relative;
@@ -34,33 +47,35 @@
     .cv-support__panel { padding: 1rem; border: 1px solid var(--site-border); border-radius: var(--radius-md); background: color-mix(in srgb, var(--site-background) 72%, transparent); }
     .cv-support h2 { margin: 0 0 .8rem; font: 700 .82rem/1.2 var(--font-display); letter-spacing: .04em; text-transform: uppercase; }
     .cv-contact { font-size: .76rem; font-style: normal; line-height: 1.55; overflow-wrap: anywhere; }
-    .cv-contact > a { font-weight: 650; }
     .cv-contact p { margin: .55rem 0 0; color: var(--site-text-muted); }
+    .cv-contact p:first-child { margin-top: 0; }
+    .cv-contact a { font-weight: 650; }
+    .cv-contact__label { display: block; color: var(--site-text-muted); font-size: .66rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
     .cv-contact__links { display: grid; gap: .35rem; margin-top: 1rem; font-size: .76rem; }
     .cv-inline-link { display: inline; padding: 0; border: 0; }
     .cv-inline-link > .related-reference__arrow-mask { display: inline-grid; margin-left: .12em; vertical-align: middle; }
     .cv-document__career { min-width: 0; }
     .cv-section { margin: 0; padding: 0 0 2rem; }
     .cv-section + .cv-section { padding-top: .2rem; }
-    .cv-section__heading { display: grid; grid-template-columns: auto minmax(3.5rem, 1fr); align-items: center; gap: .8rem; margin-bottom: .45rem; }
+    .cv-section__heading { margin-bottom: .45rem; }
     .cv-section__heading h2 { margin: 0; font-size: clamp(1.45rem, 3vw, 1.85rem); letter-spacing: -.04em; }
-    .cv-section__heading svg { width: 100%; height: 1rem; overflow: visible; }
-    .cv-section__heading path { fill: none; stroke: var(--site-accent); stroke-width: 2; stroke-linecap: round; vector-effect: non-scaling-stroke; }
     .cv-records { position: relative; }
-    .cv-section--timeline .cv-records::before { position: absolute; top: 0; bottom: 0; left: .86rem; width: 2px; background: var(--site-accent); content: ""; }
+    .cv-records--thread > svg { position: absolute; z-index: 1; top: 0; bottom: 0; left: 0; width: 1.7rem; height: 100%; overflow: visible; pointer-events: none; }
+    .cv-records--thread > svg path { fill: none; stroke: var(--site-accent); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
     .cv-record { position: relative; display: grid; grid-template-columns: 8.4rem minmax(0, 1fr); gap: 1rem; padding: 1rem 0; border-top: 1px solid var(--site-border); break-inside: avoid; }
-    .cv-section--timeline .cv-record { grid-template-columns: 1rem 7rem minmax(0, 1fr); gap: .8rem; padding-left: 0; }
-    .cv-record__thread-mark { position: relative; z-index: 1; width: 1.75rem; height: 2rem; margin-top: -.05rem; overflow: visible; }
-    .cv-record__thread-mark path { fill: none; stroke: var(--site-accent); stroke-width: 2; vector-effect: non-scaling-stroke; }
-    .cv-record__thread-mark circle { fill: var(--site-background); stroke: var(--site-accent); stroke-width: 2; }
+    .cv-section--timeline .cv-record { grid-template-columns: 1rem 9.5rem minmax(0, 1fr); gap: .8rem; padding-left: 0; }
+    .cv-section--timeline .cv-record__context, .cv-section--timeline .cv-record > .cv-period { grid-column: 2; }
+    .cv-section--timeline .cv-record__content { grid-column: 3; }
     .cv-record h3 { margin: 0; font: 700 1.04rem/1.2 var(--font-display); letter-spacing: -.025em; }
     .cv-record__organisation { margin: .35rem 0 0; color: var(--site-text); font-size: .76rem; font-weight: 650; line-height: 1.35; }
     .cv-record__summary { max-width: 55ch; margin: .42rem 0 0; color: var(--site-text-muted); font-size: .79rem; line-height: 1.48; }
-    .cv-period { margin: .08rem 0 0; color: var(--site-text-muted); font-size: .72rem; line-height: 1.42; font-variant-numeric: tabular-nums; }
+    .cv-period { margin: .08rem 0 0; color: var(--site-text-muted); font-size: .72rem; line-height: 1.42; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .cv-period__approx { white-space: normal; }
     .cv-record__context .cv-record__organisation { margin-top: .42rem; }
     .cv-record--reference { grid-template-columns: 8.4rem minmax(0, 1fr); padding-block: .8rem; }
     .cv-relation-meta { margin: .4rem 0 0; color: var(--site-text-muted); font-size: .74rem; line-height: 1.45; }
     .cv-link-tail { white-space: nowrap; }
+    .cv-document__print-footer { display: none; }
     .cv-chapter-nav { display: flex; gap: 1.2rem; align-items: center; padding-block: 2rem; font-size: .85rem; }
     .cv-chapter-nav > span { color: var(--site-text-muted); }
     .experience-detail { padding-bottom: 4rem; }
@@ -120,16 +135,19 @@
         .education-hero__image .asset-attribution { text-align: left; right: 1.5rem; font-size: .7rem; }
     }
 }
+html[data-theme='dark'] .cv-document::before { opacity: .035; mix-blend-mode: screen; }
 @media print {
     @page { size: A4; margin: 13mm; }
     html:has(.cv-document) { background: #fff !important; color-scheme: light; }
     body:has(.cv-document), body:has(.cv-document) .site-shell { background: white !important; color: black !important; }
     .cv-document { width: auto; margin: 0; padding: 0; border: 0; border-radius: 0; box-shadow: none; background: white; font-size: 9pt; --site-text: #000; --site-text-muted: #333; --site-border: #bbb; --site-border-strong: #000; --site-accent: #16836c; --site-accent-soft: #d9f2e7; }
+    .cv-document::before { display: none; }
     .cv-document__header { grid-template-columns: 1fr; min-height: 32mm; padding: 7mm; border-width: 1pt; }
     .cv-document__header { background: white; }
     .cv-header-geometry { display: none; }
     .cv-document__header h1 { font-size: 29pt; }
-    .cv-document__subtitle, .cv-document .eyebrow, .cv-contact, .cv-contact__links { font-size: 8pt; }
+    .cv-document__subtitle, .cv-document .eyebrow, .cv-contact__links { font-size: 8pt; }
+    .cv-document .cv-contact { font-size: 7pt; overflow-wrap: normal; }
     .cv-portrait { display: none; }
     .cv-document__body { grid-template-columns: 30mm minmax(0, 1fr); gap: 6mm; padding-top: 6mm; }
     .cv-support__panel { padding: 3mm; border-radius: 0; background: white; color: black; }
@@ -138,7 +156,8 @@
     .cv-section__heading { margin-bottom: 1mm; break-after: avoid; }
     .cv-section__heading h2 { font-size: 14pt; }
     .cv-record, .cv-record--reference { grid-template-columns: 25mm minmax(0, 1fr); gap: 3mm; padding: 1.5mm 0; break-inside: avoid; }
-    .cv-section--timeline .cv-record { grid-template-columns: 5mm 20mm minmax(0, 1fr); gap: 2mm; }
+    .cv-section--timeline .cv-record { grid-template-columns: 5mm 30mm minmax(0, 1fr); gap: 2mm; }
+    .cv-records--thread > svg { width: 5mm; }
     .cv-record h3 { font-size: 10pt; }
     .cv-record__summary, .cv-record__organisation, .cv-period, .cv-relation-meta { font-size: 8pt; line-height: 1.32; }
     .cv-record__summary { margin-top: 1mm; }
@@ -147,4 +166,7 @@
     .education-hero--image { min-height: 0; padding: 0; color: black; }
     .education-hero__image { display: none; }
     .education-hero__content h1 { font-size: 28pt; }
+    .cv-document__print-footer { display: flex; align-items: end; justify-content: space-between; gap: 15mm; margin: 8mm 0 0 36mm; padding-top: 4mm; border-top: 1px solid var(--site-border); font-size: 8pt; break-inside: avoid; }
+    .cv-document__print-footer p { margin: 0; }
+    .cv-document__print-footer img { width: 32mm; max-height: 12mm; object-fit: contain; object-position: right bottom; }
 }

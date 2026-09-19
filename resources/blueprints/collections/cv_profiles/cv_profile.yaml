@@ -17,3 +17,32 @@ tabs:
             field: { type: entries, collections: [education], display: Bildung }
           - handle: publications
             field: { type: entries, collections: [publications], display: Veröffentlichungen }
+      -
+        display: Kenntnisse
+        instructions: 'Nur konkrete, für dieses Profil relevante Kenntnisse. Keine Skalen, Balken oder geschätzten Prozentwerte.'
+        fields:
+          - handle: knowledge
+            field:
+              type: grid
+              display: Kenntnisse
+              fields:
+                - handle: category
+                  field: { type: text, display: Bereich, validate: [required] }
+                - handle: items
+                  field: { type: textarea, display: Einträge, instructions: 'Eine Kenntnis pro Zeile. Sprachstufen nur mit belegter Angabe, etwa C1 oder Muttersprache.' }
+      -
+        display: Druckabschluss
+        instructions: 'Wird nur im gedruckten Lebenslauf gezeigt. Leere Felder erscheinen nicht.'
+        fields:
+          - handle: print_place
+            field: { type: text, display: Ort, width: 50 }
+          - handle: print_date
+            field: { type: text, display: Datum, width: 50 }
+          - handle: signature
+            field:
+              type: assets
+              container: assets
+              folder: cv/signatures
+              restrict: true
+              max_files: 1
+              display: Unterschrift

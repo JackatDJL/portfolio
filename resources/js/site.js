@@ -1,5 +1,6 @@
 if (document.querySelector('[data-project-stream]')) import('./collection-preview.js');
 if (document.querySelector('[data-homepage]')) import('./homepage.js');
+if (document.querySelector('[data-cv-thread]')) import('./cv-thread.js');
 import { initThemeSwitcher } from './theme.js';
 import { gsap } from 'gsap';
 import { ScrollToPlugin } from 'gsap/ScrollToPlugin';

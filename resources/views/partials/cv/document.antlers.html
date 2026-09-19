@@ -2,7 +2,6 @@
     <header class="cv-document__header">
         <svg class="cv-header-geometry" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path d="M0 0H100V38L70 72 38 49 0 64Z" /><path d="M100 38V100H56L70 72Z" /></svg>
         <div class="cv-document__identity">
-            {{ partial:components/eyebrow label="Lebenslauf" }}
             <h1>{{ site:name }}</h1>
             <p class="cv-document__subtitle">Stade, Niedersachsen</p>
         </div>
@@ -12,33 +11,39 @@
         <aside class="cv-support" aria-label="Persönliche Angaben">
             <section class="cv-support__panel" aria-labelledby="cv-contact-title">
                 <h2 id="cv-contact-title">Kontakt</h2>
-                <address class="cv-contact">{{ if site:email }}<a class="semantic-link" href="mailto:{{ site:email }}">{{ site:email }}</a>{{ /if }}{{ if site:location }}<p>{{ site:location }}</p>{{ /if }}</address>
-                <nav class="cv-contact__links" aria-label="Profile">{{ if site:github_url }}{{ partial:components/outlink :href="site:github_url" label="GitHub" classes="cv-inline-link" }}{{ /if }}{{ if site:codeberg_url }}{{ partial:components/outlink :href="site:codeberg_url" label="Codeberg" classes="cv-inline-link" }}{{ /if }}</nav>
+                <address class="cv-contact">{{ if site:email }}<p><span class="cv-contact__label">E-Mail</span><a class="semantic-link" href="mailto:{{ site:email }}">{{ site:email }}</a></p>{{ /if }}{{ if site:location }}<p>{{ site:location }}</p>{{ /if }}</address>
+                <nav class="cv-contact__links" aria-label="Profile">{{ if site:website_url }}{{ partial:components/outlink :href="site:website_url" label="Website" classes="cv-inline-link" }}{{ /if }}{{ if site:github_url }}{{ partial:components/outlink :href="site:github_url" label="GitHub" classes="cv-inline-link" }}{{ /if }}{{ if site:codeberg_url }}{{ partial:components/outlink :href="site:codeberg_url" label="Codeberg" classes="cv-inline-link" }}{{ /if }}</nav>
             </section>
         </aside>
         <div class="cv-document__career">
             {{ if experience }}
             <section class="cv-section cv-section--timeline" aria-labelledby="cv-experience-title">
-                <div class="cv-section__heading"><h2 id="cv-experience-title">Erfahrung</h2><svg viewBox="0 0 150 16" aria-hidden="true" focusable="false"><path d="M0 8H112c11 0 11-8 19-8s8 8 19 8" /></svg></div>
-                <div class="cv-records">{{ experience }}
-                    <article class="cv-record"><svg class="cv-record__thread-mark" viewBox="0 0 28 32" aria-hidden="true" focusable="false"><path d="M14 0v8c0 5-9 4-9 10s9 5 9 10v4" /><circle cx="14" cy="18" r="3.5" /></svg><div class="cv-record__context"><div class="cv-period">{{ partial:cv/period }}</div><p class="cv-record__organisation">{{ organisation }}</p></div><div class="cv-record__content"><h3><a class="related-reference cv-inline-link" href="{{ url }}" data-related-reference>{{ partial:cv/link-title }}</a></h3>{{ if summary }}<p class="cv-record__summary">{{ summary }}</p>{{ /if }}</div></article>
+                <div class="cv-section__heading"><h2 id="cv-experience-title">Erfahrung</h2></div>
+                <div class="cv-records cv-records--thread" data-cv-thread>{{ experience }}
+                    <article class="cv-record"><div class="cv-record__context"><div class="cv-period">{{ partial:cv/period }}</div><p class="cv-record__organisation">{{ organisation }}</p></div><div class="cv-record__content"><h3><a class="related-reference cv-inline-link" href="{{ url }}" data-related-reference>{{ partial:cv/link-title }}</a></h3>{{ if summary }}<p class="cv-record__summary">{{ summary }}</p>{{ /if }}</div></article>
                 {{ /experience }}</div>
             </section>
             {{ /if }}
             {{ if education }}
             <section class="cv-section cv-section--timeline" aria-labelledby="cv-education-title">
-                <div class="cv-section__heading"><h2 id="cv-education-title">Bildung</h2><svg viewBox="0 0 150 16" aria-hidden="true" focusable="false"><path d="M0 8H112c11 0 11-8 19-8s8 8 19 8" /></svg></div>
-                <div class="cv-records">{{ education }}
-                    <article class="cv-record cv-record--education"><svg class="cv-record__thread-mark" viewBox="0 0 28 32" aria-hidden="true" focusable="false"><path d="M14 0v8c0 5-9 4-9 10s9 5 9 10v4" /><circle cx="14" cy="18" r="3.5" /></svg><div class="cv-period">{{ partial:cv/period }}</div><div class="cv-record__content"><h3><a class="related-reference cv-inline-link" href="{{ url }}" data-related-reference>{{ partial:cv/link-title }}</a></h3>{{ if programme }}<p class="cv-record__organisation">{{ programme }}</p>{{ /if }}{{ if summary }}<p class="cv-record__summary">{{ summary }}</p>{{ /if }}</div></article>
+                <div class="cv-section__heading"><h2 id="cv-education-title">Bildung</h2></div>
+                <div class="cv-records cv-records--thread" data-cv-thread>{{ education }}
+                    <article class="cv-record cv-record--education"><div class="cv-period">{{ partial:cv/period }}</div><div class="cv-record__content"><h3><a class="related-reference cv-inline-link" href="{{ url }}" data-related-reference>{{ partial:cv/link-title }}</a></h3>{{ if programme }}<p class="cv-record__organisation">{{ programme }}</p>{{ /if }}{{ if summary }}<p class="cv-record__summary">{{ summary }}</p>{{ /if }}</div></article>
                 {{ /education }}</div>
             </section>
             {{ /if }}
+            {{ if knowledge }}
+            <section class="cv-section" aria-labelledby="cv-knowledge-title"><div class="cv-section__heading"><h2 id="cv-knowledge-title">Kenntnisse</h2></div><div class="cv-records">{{ knowledge }}<article class="cv-record cv-record--reference"><p class="cv-period">{{ category }}</p><div class="cv-record__content"><p class="cv-relation-meta cv-knowledge-items">{{ items | nl2br }}</p></div></article>{{ /knowledge }}</div></section>
+            {{ /if }}
             {{ if projects }}
-            <section class="cv-section" aria-labelledby="cv-projects-title"><div class="cv-section__heading"><h2 id="cv-projects-title">Projekte</h2><svg viewBox="0 0 150 16" aria-hidden="true" focusable="false"><path d="M0 8H112c11 0 11-8 19-8s8 8 19 8" /></svg></div><div class="cv-records">{{ projects }}{{ if published && project_status != 'confidential' }}{{ partial:cv/reference }}{{ /if }}{{ /projects }}</div></section>
+            <section class="cv-section" aria-labelledby="cv-projects-title"><div class="cv-section__heading"><h2 id="cv-projects-title">Projekte</h2></div><div class="cv-records">{{ projects }}{{ if published && project_status != 'confidential' }}{{ partial:cv/reference }}{{ /if }}{{ /projects }}</div></section>
             {{ /if }}
             {{ if publications }}
-            <section class="cv-section" aria-labelledby="cv-publications-title"><div class="cv-section__heading"><h2 id="cv-publications-title">Veröffentlichungen</h2><svg viewBox="0 0 150 16" aria-hidden="true" focusable="false"><path d="M0 8H112c11 0 11-8 19-8s8 8 19 8" /></svg></div><div class="cv-records">{{ publications }}{{ partial:cv/reference }}{{ /publications }}</div></section>
+            <section class="cv-section" aria-labelledby="cv-publications-title"><div class="cv-section__heading"><h2 id="cv-publications-title">Veröffentlichungen</h2></div><div class="cv-records">{{ publications }}{{ partial:cv/reference }}{{ /publications }}</div></section>
             {{ /if }}
         </div>
     </div>
+    {{ if print_place || print_date || signature }}
+        <footer class="cv-document__print-footer" aria-label="Ort, Datum und Unterschrift">{{ if print_place || print_date }}<p>{{ print_place }}{{ if print_place && print_date }}, {{ /if }}{{ print_date }}</p>{{ /if }}{{ if signature }}<img src="{{ signature:url }}" alt="Unterschrift von {{ site:name }}">{{ /if }}</footer>
+    {{ /if }}
 </article>

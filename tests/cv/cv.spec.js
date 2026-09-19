@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+const cvBaseURL = process.env.CV_BASE_URL || 'http://127.0.0.1:8091';
 const routes = ['/cv', '/cv/allgemeines-profil', '/cv/exp/volt-stade-kommunikation', '/cv/exp/erstwaehlerforum-stade-organisation', '/cv/exp/hackclub-stade-organisation', '/cv/exp/atheblues-robotik-und-teamarbeit', '/cv/exp/volt-europa-technische-mitarbeit', '/cv/exp/volt-deutschland-technische-mitarbeit', '/cv/edu/gymnasium-athenaeum-stade', '/projekte/erstwaehlerforum-stade'];
 for (const width of [1440, 390]) for (const theme of ['light', 'dark']) {
     test(`${width}px ${theme}: CV pages render without overflow`, async ({ page }, testInfo) => {
@@ -19,9 +20,17 @@ for (const width of [1440, 390]) for (const theme of ['light', 'dark']) {
                 await expect(page.locator('main')).not.toContainText(/Allgemeines Profil|Ausgangsprofil|Preset|für Bewerbungen/);
                 await expect(page.locator('.cv-record h3 a .related-reference__arrow-mask')).toHaveCount(14);
                 await expect(page.locator('.cv-record time')).not.toHaveCount(0);
-                await expect(page.locator('main')).toContainText('Februar 2026');
+                await expect(page.locator('main')).toContainText('02/2026 – heute');
                 await expect(page.locator('main')).toContainText('Seit etwa dem Schuljahr 2021/22');
                 await expect(page.locator('main time[datetime="2026-02"]')).toHaveCount(1);
+                await expect(page.locator('.cv-record__thread-mark, .cv-record circle')).toHaveCount(0);
+                expect(await page.locator('.cv-records--thread').evaluateAll(roots => roots.every(root => getComputedStyle(root, '::before').content === 'none'))).toBe(true);
+                const threads = page.locator('[data-cv-thread]');
+                await expect(threads).toHaveCount(2);
+                await expect(threads.locator(':scope > svg')).toHaveCount(2);
+                await expect(threads.locator(':scope > svg > path')).toHaveCount(2);
+                await expect(threads.locator(':scope > svg path + *')).toHaveCount(0);
+                expect(await page.locator('.cv-section--timeline .cv-period').evaluateAll(periods => periods.every(period => getComputedStyle(period).whiteSpace === 'nowrap'))).toBe(true);
             }
             if (route.includes('/edu/')) {
                 const hero = await page.locator('.education-hero').boundingBox();
@@ -89,7 +98,7 @@ test('CV document canvas is constrained on desktop and fluid on smaller screens'
 test('mobile gallery responds to native touch swipe', async ({ browser }) => {
     const context = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
     const page = await context.newPage();
-    await page.goto('http://127.0.0.1:8091/projekte/erstwaehlerforum-stade');
+    await page.goto(`${cvBaseURL}/projekte/erstwaehlerforum-stade`);
     const track = page.locator('.media-gallery__track');
     await track.scrollIntoViewIfNeeded();
     const box = await track.boundingBox();
