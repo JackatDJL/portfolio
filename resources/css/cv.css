@@ -111,7 +111,7 @@
     .cv-chapter-nav { display: flex; gap: 1.2rem; align-items: center; padding-block: 2rem; font-size: .85rem; }
     .cv-chapter-nav > span { color: var(--site-text-muted); }
     .experience-detail { padding-bottom: 4rem; }
-    .experience-content { display: grid; grid-template-columns: 15rem minmax(0,1fr); gap: 3rem; }
+    .experience-content { display: grid; grid-template-columns: minmax(0,1fr) 15rem; gap: 3rem; }
     .experience-header { border-top: 2px solid var(--site-text); border-bottom: 1px solid var(--site-border); padding-block: 2.5rem; }
     .experience-header h1 { margin: .7rem 0 0; font-size: clamp(2.5rem, 4.5vw, 4.2rem); line-height: 1.02; letter-spacing: -.045em; max-width: 20ch; }
     .experience-header__meta { display: flex; flex-wrap: wrap; align-items: baseline; gap: .35rem 1rem; margin-top: 1rem; }
@@ -119,42 +119,42 @@
     .experience-header__meta .cv-period { margin: 0; }
     .experience-summary { font-size: 1.1rem; line-height: 1.55; max-width: 58ch; margin-top: 1.4rem; }
     .experience-content { padding-top: 2.5rem; }
-    .experience-rail { position: relative; align-self: start; }
+    .experience-rail { position: relative; grid-column: 2; align-self: start; }
+    .experience-content > .detail-layout__main { grid-column: 1; grid-row: 1; }
     .experience-rail .article-context-rail__content > * + * { margin-top: 2rem; }
     .experience-rail .article-context-rail__line { left: -.9rem; }
     .experience-detail .prose-site h2, .education-detail .prose-site h2 { font-size: clamp(1.7rem, 2.5vw, 2.3rem); margin-top: 2rem; }
     .experience-detail .prose-site { font-size: 1rem; line-height: 1.75; }
-    .experience-work { margin-top: 3rem; }
-    .cv-project-work { border-top: 1px solid var(--site-border); padding-block: 2rem; }
-    .cv-project-work__intro { max-width: 46rem; margin: 0 0 1.5rem; }
-    .cv-project-work__intro h2 { font-size: 1.8rem; }
-    .cv-project-work__intro p { margin: .8rem 0; line-height: 1.65; color: var(--site-text-muted); }
-    .cv-project-work__links { display: flex; flex-wrap: wrap; gap: .6rem 1.2rem; }
-    .cv-explore { position: relative; isolation: isolate; width: min(calc(100% - 2rem), 68rem); margin: 0 auto clamp(4rem, 8vw, 8rem); padding-top: 5rem; --link-accent: var(--cv-accent); --link-marker: color-mix(in srgb, var(--cv-accent) 34%, transparent); }
-    .cv-explore__preview { position: absolute; inset: 0 8% auto; display: grid; gap: 1rem; height: 8rem; padding: 1.2rem 1.5rem; overflow: hidden; border: 1px solid color-mix(in srgb, var(--cv-accent) 35%, var(--site-border)); border-radius: var(--radius-sm); background: color-mix(in srgb, var(--cv-accent) 8%, var(--site-surface)); filter: blur(5px); opacity: .72; mask-image: linear-gradient(to bottom, #000, transparent); }
-    .cv-explore__preview span { height: 1rem; border-radius: 99px; background: color-mix(in srgb, var(--cv-accent) 25%, var(--site-border)); }
-    .cv-explore__preview span:nth-child(2) { width: 68%; }
-    .cv-explore__preview span:nth-child(3) { width: 82%; }
-    .cv-explore__reveal { position: relative; z-index: 2; display: flex; align-items: center; gap: .55rem; margin: 0 auto; border-color: var(--cv-accent); background: var(--site-surface); box-shadow: 4px 5px 0 color-mix(in srgb, var(--cv-accent) 55%, var(--site-shadow-color)); color: var(--site-text); }
+    .cv-explore { position: relative; isolation: isolate; margin: clamp(1.25rem, 3vw, 2rem) 0 0; --link-accent: var(--cv-accent); --link-marker: color-mix(in srgb, var(--cv-accent) 34%, transparent); }
+    .cv-explore__teaser { position: relative; display: grid; min-height: 6.5rem; place-items: center; overflow: hidden; border-block: 1px solid var(--site-border); }
+    .cv-explore__preview { position: absolute; inset: .8rem 4%; display: flex; align-items: center; gap: clamp(2rem, 8vw, 5rem); filter: blur(4px); opacity: .62; mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent); }
+    .cv-explore__preview::before { position: absolute; right: 0; left: 0; height: 1px; background: var(--cv-accent); content: ''; }
+    .cv-explore__preview span { z-index: 1; width: .7rem; height: .7rem; border: 2px solid var(--site-background); background: var(--cv-accent); transform: rotate(45deg); }
+    .cv-explore__preview i { width: 6rem; height: 2.4rem; background: color-mix(in srgb, var(--cv-accent) 12%, var(--site-surface)); }
+    .cv-explore__reveal { position: relative; z-index: 2; margin: 0 auto; border-color: var(--cv-accent); background: var(--site-surface); color: var(--site-text); }
     .cv-explore__reveal:focus-visible { outline-color: var(--cv-accent); }
-    .cv-explore__content { position: relative; padding: clamp(1.3rem, 4vw, 3rem); border: 2px solid var(--site-border-strong); border-radius: var(--radius-sm); background: var(--site-surface); box-shadow: 5px 6px 0 color-mix(in srgb, var(--cv-accent) 35%, transparent); }
+    .cv-explore__content { position: relative; height: min(34rem, 68vh); min-height: 27rem; overflow: hidden; border-block: 1px solid var(--site-border); background: color-mix(in srgb, var(--cv-accent) 5%, var(--site-surface)); }
     .cv-explore__content[hidden] { display: none; }
-    .cv-explore__content > header { max-width: 42rem; margin-bottom: 2rem; }
-    .cv-explore__content h2 { margin: .5rem 0 0; font-size: clamp(2rem, 5vw, 4rem); letter-spacing: -.045em; }
-    .cv-explore__close { position: absolute; top: 1rem; right: 1rem; display: grid; width: 2.65rem; height: 2.65rem; place-items: center; border: 2px solid var(--site-border-strong); border-radius: 50%; background: var(--site-background); color: inherit; font-size: 1.6rem; line-height: 1; cursor: pointer; }
-    .cv-milestones { position: relative; }
-    .cv-milestones > svg { position: absolute; inset: 0 auto 0 0; width: 1.25rem; height: 100%; overflow: visible; pointer-events: none; }
-    .cv-milestones > svg path { fill: none; stroke: var(--cv-accent); stroke-width: 1.5; vector-effect: non-scaling-stroke; }
-    .cv-milestone { display: grid; grid-template-columns: 1.25rem 9rem minmax(0, 1fr); gap: 1rem; padding: 1.5rem 0; border-top: 1px solid var(--site-border); }
-    .cv-milestone__date { grid-column: 2; margin: .1rem 0 0; color: var(--site-text-muted); font-size: .8rem; font-variant-numeric: tabular-nums; }
-    .cv-milestone__body { grid-column: 3; }
-    .cv-milestone__body h3 { margin: 0; font-size: clamp(1.3rem, 3vw, 2rem); }
-    .cv-milestone__body > p { max-width: 58ch; margin: .6rem 0 0; line-height: 1.6; }
+    .cv-explore__close { position: absolute; z-index: 5; top: .8rem; right: .8rem; display: grid; width: 2.35rem; height: 2.35rem; place-items: center; border: 1px solid var(--site-border-strong); border-radius: 50%; background: var(--site-background); color: inherit; font-size: 1.35rem; cursor: pointer; }
+    .cv-timeline, .cv-timeline__stage { height: 100%; }
+    .cv-timeline__stage { position: relative; overflow: hidden; }
+    .cv-timeline__playhead { position: absolute; z-index: 3; top: 2.5rem; bottom: 2rem; left: 36%; width: 1px; background: color-mix(in srgb, var(--site-text) 45%, transparent); pointer-events: none; }
+    .cv-timeline__playhead span { position: absolute; top: 5rem; left: -.32rem; width: .65rem; height: .65rem; border: 1px solid var(--site-text); background: var(--cv-accent); transform: rotate(45deg); }
+    .cv-timeline__track { position: relative; width: 180rem; height: 100%; }
+    .cv-timeline__track > svg { position: absolute; top: 7.82rem; left: 0; width: 100%; height: 1rem; overflow: visible; }
+    .cv-timeline__track > svg path { fill: none; stroke: var(--cv-accent); stroke-width: 1; vector-effect: non-scaling-stroke; }
+    .cv-milestone { position: absolute; top: 5.3rem; left: var(--timeline-position); width: min(26rem, 28vw); padding: 4.7rem 1rem 1rem 0; opacity: .38; transform: translateX(-50%); transition: opacity .25s ease, transform .25s ease; }
+    .cv-milestone[data-active] { opacity: 1; transform: translateX(-50%) translateY(-.25rem); }
+    .cv-milestone__node { position: absolute; top: 2.2rem; left: calc(50% - .38rem); width: .76rem; height: .76rem; border: 2px solid var(--site-surface); background: var(--cv-accent); transform: rotate(45deg); }
+    .cv-milestone__date { margin: 0 0 .6rem; color: var(--site-text-muted); font-size: .72rem; font-variant-numeric: tabular-nums; }
+    .cv-milestone__body h3 { margin: 0; font-size: clamp(1.2rem, 2.2vw, 1.8rem); }
+    .cv-milestone__body > p { margin: .55rem 0 0; font-size: .82rem; line-height: 1.5; }
     .cv-milestone__organisation { color: var(--site-text-muted); font-size: .85rem; font-weight: 650; }
-    .cv-milestone__relations { margin-top: 1rem; }
+    .cv-milestone__relations { display: flex; flex-wrap: wrap; gap: .45rem .9rem; margin-top: .9rem; font-size: .75rem; }
     .education-hero { position: relative; display: flex; align-items: end; isolation: isolate; min-height: 30rem; padding-block: 4rem; }
     .education-hero--image { min-height: calc(100svh - 5rem); color: #f5faf6; padding-block: 5rem 6.5rem; }
-    .education-hero__image { position: absolute; inset: 0; z-index: -1; margin: 0; background: #07100c; }
+    .education-hero__image { position: absolute; inset: 0; z-index: -1; margin: 0; border-radius: 0; background: #07100c; }
+    .education-hero__image img, .education-hero__figure { border-radius: 0 !important; }
     .education-hero__figure { width: 100%; height: 100%; margin: 0; }
     .education-hero__image img { width: 100%; height: 100%; object-fit: cover; object-position: center 48%; }
     .education-hero__image::after { position: absolute; inset: 0; content: ''; background: linear-gradient(0deg, rgb(3 12 8 / .94), rgb(3 12 8 / .62) 36%, rgb(3 12 8 / .04) 78%); }
@@ -187,8 +187,14 @@
         .experience-header { padding-block: 1.5rem; }
         .experience-organisation { font-size: 1.35rem; }
         .experience-content aside { order: 2; }
-        .cv-milestone { grid-template-columns: 1.25rem minmax(0, 1fr); gap: .7rem; }
-        .cv-milestone__date, .cv-milestone__body { grid-column: 2; }
+        .experience-rail, .experience-content > .detail-layout__main { grid-column: auto; grid-row: auto; }
+        .cv-explore__content { height: auto; min-height: 0; overflow: visible; padding: 4rem 0 1rem; }
+        .cv-timeline__stage { overflow-x: auto; scroll-snap-type: x mandatory; overscroll-behavior-inline: contain; }
+        .cv-timeline__playhead { display: none; }
+        .cv-timeline__track { display: flex; gap: 1rem; width: max-content !important; height: auto; padding: 1rem; transform: none !important; }
+        .cv-timeline__track > svg { top: 3.1rem; left: 1rem; width: calc(100% - 2rem); }
+        .cv-milestone { position: relative; top: auto; left: auto; flex: 0 0 min(78vw, 22rem); width: auto; min-height: 20rem; padding: 5rem 1rem 1rem; opacity: 1; transform: none !important; scroll-snap-align: center; }
+        .cv-milestone__node { top: 1.72rem; }
         .education-hero--image { min-height: calc(100svh - 5rem); padding-block: 10rem 7rem; }
         .education-hero__image img { object-position: 55% center; }
         .education-hero__image::after { background: linear-gradient(0deg, rgb(3 12 8 / .96), rgb(3 12 8 / .72) 55%, rgb(3 12 8 / .08)); }
@@ -253,4 +259,13 @@ html[data-theme='dark'] .cv-document::before { opacity: .035; mix-blend-mode: sc
     .cv-document__print-footer { display: flex; clear: both; align-items: end; justify-content: space-between; gap: 15mm; margin: 4mm 0 0 47mm; padding-top: 3mm; border-top: 1px solid var(--site-border); font-size: 7pt; break-inside: avoid; }
     .cv-document__print-footer p { margin: 0; }
     .cv-document__print-footer img { width: 32mm; max-height: 12mm; object-fit: contain; object-position: right bottom; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .cv-explore__content { height: auto; min-height: 0; overflow: visible; padding: 4rem 0 1rem; }
+    .cv-timeline__stage { overflow-x: auto; scroll-snap-type: x mandatory; }
+    .cv-timeline__playhead { display: none; }
+    .cv-timeline__track { display: flex; gap: 1rem; width: max-content !important; height: auto; padding: 1rem; transform: none !important; }
+    .cv-timeline__track > svg { top: 3.1rem; left: 1rem; width: calc(100% - 2rem); }
+    .cv-milestone { position: relative; top: auto; left: auto; flex: 0 0 min(78vw, 22rem); width: auto; min-height: 20rem; padding: 5rem 1rem 1rem; opacity: 1; transform: none !important; scroll-snap-align: center; transition: none; }
+    .cv-milestone__node { top: 1.72rem; }
 }

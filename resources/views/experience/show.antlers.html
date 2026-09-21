@@ -1,5 +1,5 @@
 <article class="experience-detail detail-container">
-    <nav class="cv-chapter-nav" aria-label="Lebenslauf">{{ partial:components/outlink href="/cv" label="Lebenslauf" classes="cv-inline-link" }}<span>Erfahrung</span></nav>
+    <nav class="cv-chapter-nav" aria-label="Lebenslauf"><a class="btn btn-ghost" href="/cv">← Lebenslauf</a><span>Erfahrung</span></nav>
     <header class="experience-header">
         {{ partial:components/eyebrow label="Erfahrung" }}
         <h1>{{ title }}</h1>
@@ -21,11 +21,4 @@
         </aside>
         <div class="detail-layout__main">{{ partial:bard/prose :content="body" }}</div>
     </div>
-    {{ if projects }}<div class="experience-work">{{ projects }}{{ if published && project_status != 'confidential' }}
-        <section class="cv-project-work">
-            <div class="cv-project-work__intro"><h2><a class="related-reference cv-inline-link" href="{{ url }}" data-related-reference>{{ partial:cv/link-title size="lg" }}</a></h2>{{ if summary }}<p>{{ summary }}</p>{{ /if }}
-            <div class="cv-project-work__links">{{ if website_url }}{{ partial:components/outlink :href="website_url" label="Webseite" classes="cv-inline-link" size="sm" }}{{ /if }}{{ if repository_url }}{{ partial:components/outlink :href="repository_url" label="Repository" classes="cv-inline-link" size="sm" }}{{ /if }}</div></div>
-            {{ if gallery }}{{ partial:gallery/figures :assets="gallery" }}{{ elseif cover }}{{ cover }}{{ partial:gallery/figure }}{{ /cover }}{{ /if }}
-        </section>
-    {{ /if }}{{ /projects }}</div>{{ /if }}
 </article>

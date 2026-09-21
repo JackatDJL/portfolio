@@ -12,6 +12,7 @@ $app->make(Kernel::class)->bootstrap();
 
 $variables = GlobalSet::find('cv')?->inDefaultSite();
 $private = $variables ? CvPrivateData::reveal($variables) : [];
+$private = array_intersect_key($private, array_flip(['private_email', 'phone', 'street', 'house_number', 'postal_code', 'city', 'date_of_birth']));
 $address = implode(' ', array_filter([
     $private['street'] ?? null,
     $private['house_number'] ?? null,

@@ -17,5 +17,6 @@ topics:
   - robotics
   - robocup
   - teamwork
-published: true
+updated_by: 7098a585-4701-4963-95aa-52c0d85d3e7d
+updated_at: 1790023317
 ---

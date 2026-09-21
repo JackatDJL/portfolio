@@ -1,8 +1,8 @@
 <?php
 
+use App\Http\Controllers\CvPdfController;
 use App\Http\Controllers\CvPrivateDataController;
 use App\Http\Controllers\CvPrivateLinkController;
-use App\Http\Controllers\CvPdfController;
 use Illuminate\Support\Facades\Route;
 use Statamic\View\View;
 
@@ -34,9 +34,15 @@ Route::get('/cv/{profile}/pdf', CvPdfController::class)
     ->middleware('throttle:6,1')
     ->name('cv.profile.pdf');
 
-Route::get('/cp/cv/private-link', [CvPrivateLinkController::class, 'open'])
+Route::post('/cp/cv/private-link/temporary', [CvPrivateLinkController::class, 'temporary'])
     ->middleware(['statamic.cp', 'statamic.cp.authenticated'])
-    ->name('cv.private-link');
+    ->name('cv.private-link.temporary');
+Route::post('/cp/cv/private-link/permanent', [CvPrivateLinkController::class, 'permanent'])
+    ->middleware(['statamic.cp', 'statamic.cp.authenticated'])
+    ->name('cv.private-link.permanent');
+Route::delete('/cp/cv/private-link/permanent', [CvPrivateLinkController::class, 'revoke'])
+    ->middleware(['statamic.cp', 'statamic.cp.authenticated'])
+    ->name('cv.private-link.revoke');
 
 Route::statamic('/projekte', 'projects/index', ['title' => 'Projekte']);
 Route::statamic('/blog', 'posts/index', ['title' => 'Blog']);

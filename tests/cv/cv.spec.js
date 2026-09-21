@@ -29,9 +29,9 @@ for (const width of [1440, 390]) for (const theme of ['light', 'dark']) {
                 await expect(page.locator('.cv-record__thread-mark, .cv-record circle')).toHaveCount(0);
                 expect(await page.locator('.cv-records--thread').evaluateAll(roots => roots.every(root => getComputedStyle(root, '::before').content === 'none'))).toBe(true);
                 const threads = page.locator('[data-cv-thread]');
-                await expect(threads).toHaveCount(3);
-                await expect(threads.locator(':scope > svg')).toHaveCount(3);
-                await expect(threads.locator(':scope > svg > path')).toHaveCount(3);
+                await expect(threads).toHaveCount(2);
+                await expect(threads.locator(':scope > svg')).toHaveCount(2);
+                await expect(threads.locator(':scope > svg > path')).toHaveCount(2);
                 await expect(threads.locator(':scope > svg path + *')).toHaveCount(0);
                 await expect(page.locator('.cv-contact__mask')).toHaveCount(3);
                 expect(await page.locator('[data-cv-private]').allTextContents()).not.toEqual(expect.arrayContaining([expect.stringMatching(/@|PRIVATE-CV/)]));
@@ -97,6 +97,34 @@ test('interactive CV is opt-in, keyboard accessible, closeable and excluded from
     await expect(content).toBeHidden();
     await page.emulateMedia({ media: 'print' });
     await expect(page.locator('.cv-explore')).toBeHidden();
+});
+test('desktop timeline pins, advances, reverses and releases into Experience', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto('/cv');
+    await page.locator('[data-cv-explore-open]').click();
+    const content = page.locator('[data-cv-explore-content]');
+    const track = page.locator('[data-cv-timeline-track]');
+    await expect(content).toBeVisible();
+    await content.scrollIntoViewIfNeeded();
+    const start = await track.evaluate(el => getComputedStyle(el).transform);
+    await page.mouse.wheel(0, 900);
+    await expect.poll(() => track.evaluate(el => getComputedStyle(el).transform)).not.toBe(start);
+    const forward = await track.evaluate(el => getComputedStyle(el).transform);
+    await page.mouse.wheel(0, -450);
+    await expect.poll(() => track.evaluate(el => getComputedStyle(el).transform)).not.toBe(forward);
+    for (let index = 0; index < 6; index++) await page.mouse.wheel(0, 1200);
+    await expect.poll(() => page.locator('#cv-experience-title').evaluate(el => el.getBoundingClientRect().top)).toBeLessThan(900);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+});
+test('CV detail navigation and sidebar composition use the parent route correctly', async ({ page }) => {
+    await page.goto('/cv/exp/atheblues-robotik-und-teamarbeit');
+    await expect(page.locator('.cv-chapter-nav a')).toHaveText('← Lebenslauf');
+    const [main, rail] = await Promise.all([page.locator('.experience-content > .detail-layout__main').boundingBox(), page.locator('.experience-rail').boundingBox()]);
+    expect(rail.x).toBeGreaterThan(main.x + main.width);
+    await expect(page.locator('.experience-work, .cv-project-work')).toHaveCount(0);
+    await page.goto('/cv/edu/gymnasium-athenaeum-stade');
+    await expect(page.locator('.cv-chapter-nav a')).toHaveText('← Lebenslauf');
+    await expect(page.locator('.education-hero__image')).toHaveCSS('border-radius', '0px');
 });
 test('profile personalization does not move the fixed header geometry', async ({ page }) => {
     const geometry = async (route) => {

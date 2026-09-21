@@ -4,11 +4,14 @@ namespace Tests\Feature;
 
 use App\Support\CvCapabilities;
 use App\Support\CvPdfRenderer;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Mockery;
 use Tests\TestCase;
 
 class CvPdfExportTest extends TestCase
 {
+    use RefreshDatabase;
+
     public function test_public_export_returns_a_pdf_from_the_canonical_renderer(): void
     {
         $pdf = $this->fakePdf();
@@ -26,7 +29,7 @@ class CvPdfExportTest extends TestCase
 
     public function test_authorized_profile_export_forwards_only_a_valid_profile_capability(): void
     {
-        $token = CvCapabilities::issue('/cv/airbus-26');
+        $token = CvCapabilities::issueTemporary('/cv/airbus-26')['token'];
         $pdf = $this->fakePdf();
         $renderer = Mockery::mock(CvPdfRenderer::class);
         $renderer->shouldReceive('render')->once()->with('airbus-26', true)->andReturn($pdf);

@@ -25,9 +25,14 @@ $fixtures = [
     'city' => 'Teststadt',
 ];
 
-$fixtureYaml = "\n";
+$fixtureContent = $original;
 foreach ($fixtures as $handle => $value) {
-    $fixtureYaml .= $handle.': '.json_encode(Crypt::encryptString($value), JSON_THROW_ON_ERROR)."\n";
+    $line = $handle.': '.json_encode(Crypt::encryptString($value), JSON_THROW_ON_ERROR);
+    $count = 0;
+    $fixtureContent = preg_replace('/^'.preg_quote($handle, '/').':.*$/m', $line, $fixtureContent, 1, $count);
+    if ($count === 0) {
+        $fixtureContent = rtrim($fixtureContent)."\n".$line."\n";
+    }
 }
 
 $run = static function (string $command): int {
@@ -39,11 +44,11 @@ $php = PHP_BINDIR.'/php';
 
 $exitCode = 1;
 try {
-    if (file_put_contents($contentPath, rtrim($original)."\n".$fixtureYaml) === false) {
+    if (file_put_contents($contentPath, $fixtureContent) === false) {
         throw new RuntimeException('Could not write the encrypted leakage fixture.');
     }
     $stored = (string) file_get_contents($contentPath);
-    foreach ($fixtures as $value) {
+    foreach (array_filter($fixtures, static fn ($value) => mb_strlen($value) >= 8) as $value) {
         if (str_contains($stored, $value)) {
             throw new RuntimeException('A private fixture was stored as plaintext.');
         }

@@ -8,6 +8,25 @@
         {{ if recipient_name || optional_context }}<div class="cv-document__profile-slot">{{ if recipient_name }}<p class="cv-document__recipient">{{ recipient_name }}{{ if application_year }} · {{ application_year }}{{ /if }}</p>{{ /if }}{{ if optional_context }}<p class="cv-document__context">{{ optional_context }}</p>{{ /if }}</div>{{ /if }}
         {{ if cv:profile_image }}<div class="cv-portrait">{{ partial:media/image :asset="cv:profile_image" mode="content" figure_class="cv-portrait__figure" image_class="cv-portrait__image" width="480" sizes="11rem" loading="eager" fetchpriority="high" }}</div>{{ /if }}
     </header>
+    {{ _profile_milestones = milestones ?? cv:milestones }}
+    {{ if _profile_milestones }}
+    <section class="cv-explore" aria-label="Interaktiver Zeitstrahl" data-cv-explore>
+        <div class="cv-explore__teaser">
+            <div class="cv-explore__preview" aria-hidden="true"><span></span><i></i><span></span><i></i><span></span></div>
+            <button class="btn cv-explore__reveal" type="button" aria-expanded="false" aria-controls="cv-explore-content" data-cv-explore-open>Zeitstrahl öffnen</button>
+        </div>
+        <div class="cv-explore__content" id="cv-explore-content" role="region" aria-label="Stationen" hidden data-cv-explore-content>
+            <button class="cv-explore__close" type="button" aria-label="Zeitstrahl schließen" data-cv-explore-close>×</button>
+            <div class="cv-timeline" data-cv-timeline><div class="cv-timeline__stage">
+                <div class="cv-timeline__playhead" aria-hidden="true"><span></span></div>
+                <div class="cv-timeline__track" data-cv-timeline-track>
+                    <svg aria-hidden="true" focusable="false" preserveAspectRatio="none"><path d="M0 42 H1000" /></svg>
+                    {{ _profile_milestones }}{{ partial:cv/milestone }}{{ /_profile_milestones }}
+                </div>
+            </div></div>
+        </div>
+    </section>
+    {{ /if }}
     <div class="cv-document__body">
         <aside class="cv-support" aria-label="Persönliche Angaben" data-cv-private-panel data-cv-private-endpoint="/cv/private-data">
             <section class="cv-support__section" aria-labelledby="cv-contact-title">
@@ -81,19 +100,3 @@
         <footer class="cv-document__print-footer" aria-label="Ort, Datum und Unterschrift">{{ if cv:print_place || cv:print_date }}<p>{{ cv:print_place }}{{ if cv:print_place && cv:print_date }}, {{ /if }}{{ cv:print_date }}</p>{{ /if }}{{ if cv:signature }}<img src="{{ cv:signature:url }}" alt="Unterschrift von {{ cv:full_name }}">{{ /if }}</footer>
     {{ /if }}
 </article>
-{{ _profile_milestones = milestones ?? cv:milestones }}
-{{ if _profile_milestones }}
-<section class="cv-explore" aria-labelledby="cv-explore-title" data-cv-explore style="--cv-accent: {{ accent_color ?? 'var(--site-accent)' }}">
-    <div class="cv-explore__preview" aria-hidden="true"><span></span><span></span><span></span></div>
-    <button class="btn cv-explore__reveal" type="button" aria-expanded="false" aria-controls="cv-explore-content" data-cv-explore-open>
-        <span>Mehr Stationen entdecken</span>{{ partial:components/open-file size="lg" }}
-    </button>
-    <div class="cv-explore__content" id="cv-explore-content" hidden data-cv-explore-content>
-        <button class="cv-explore__close" type="button" aria-label="Interaktiven Lebenslauf schließen" data-cv-explore-close>×</button>
-        <header><p class="eyebrow">Chronologie</p><h2 id="cv-explore-title">Projekte und Stationen</h2></header>
-        <div class="cv-milestones" data-cv-thread>
-            {{ _profile_milestones }}{{ partial:cv/milestone }}{{ /_profile_milestones }}
-        </div>
-    </div>
-</section>
-{{ /if }}

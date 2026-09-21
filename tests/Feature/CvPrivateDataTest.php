@@ -3,14 +3,18 @@
 namespace Tests\Feature;
 
 use App\Fieldtypes\ProtectedText;
-use Illuminate\Support\Facades\Cache;
+use App\Support\CvCapabilities;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\DB;
 use Statamic\Facades\GlobalSet;
 use Statamic\Facades\User;
 use Tests\TestCase;
 
 class CvPrivateDataTest extends TestCase
 {
+    use RefreshDatabase;
+
     private const SENTINELS = [
         'private_email' => 'PRIVATE-CV-EMAIL-SENTINEL@example.invalid',
         'phone' => 'PRIVATE-CV-PHONE-SENTINEL',
@@ -50,10 +54,10 @@ class CvPrivateDataTest extends TestCase
         $original = $variables->data()->all();
         $encrypted = collect(self::SENTINELS)->map(fn ($value) => Crypt::encryptString($value))->all();
         $variables->data(array_merge($original, $encrypted));
-        Cache::put('cv-capability:'.hash('sha256', 'test-capability'), ['path' => '/cv'], now()->addMinute());
+        $capability = CvCapabilities::issueTemporary('/cv');
 
         try {
-            $response = $this->postJson('/cv/private-data', ['token' => 'test-capability', 'path' => '/cv']);
+            $response = $this->postJson('/cv/private-data', ['token' => $capability['token'], 'path' => '/cv']);
             $response->assertOk()->assertJson(self::SENTINELS);
             $this->assertStringContainsString('no-store', $response->headers->get('Cache-Control'));
         } finally {
@@ -63,26 +67,42 @@ class CvPrivateDataTest extends TestCase
 
     public function test_invalid_or_wrong_profile_capability_is_rejected(): void
     {
-        Cache::put('cv-capability:'.hash('sha256', 'profile-capability'), ['path' => '/cv/airbus-26'], now()->addMinute());
+        $capability = CvCapabilities::issueTemporary('/cv/airbus-26');
 
         $this->postJson('/cv/private-data', ['token' => 'wrong', 'path' => '/cv'])->assertNotFound();
-        $this->postJson('/cv/private-data', ['token' => 'profile-capability', 'path' => '/cv'])->assertNotFound();
-        $this->postJson('/cv/private-data', ['token' => 'profile-capability', 'path' => '/cv/airbus-26'])->assertOk();
+        $this->postJson('/cv/private-data', ['token' => $capability['token'], 'path' => '/cv'])->assertNotFound();
+        $this->postJson('/cv/private-data', ['token' => $capability['token'], 'path' => '/cv/airbus-26'])->assertOk();
     }
 
     public function test_control_panel_utility_issues_a_real_profile_scoped_capability(): void
     {
         $this->actingAs(User::findByEmail('jack@djl.foundation'));
 
-        $response = $this->get('/cp/cv/private-link?path=/cv/airbus-26');
-        $response->assertRedirectContains('/cv/airbus-26#cv=');
-        preg_match('/#cv=([A-Za-z0-9]+)/', (string) $response->headers->get('Location'), $matches);
-
-        $this->assertNotEmpty($matches[1] ?? null);
+        $response = $this->postJson('/cp/cv/private-link/temporary', ['path' => '/cv/airbus-26'])->assertOk();
+        preg_match('/#cv=([A-Za-z0-9]+)/', $response->json('url'), $matches);
         $this->postJson('/cv/private-data', [
             'token' => $matches[1],
             'path' => '/cv/airbus-26',
         ])->assertOk();
     }
 
+    public function test_permanent_profile_link_is_stable_scoped_and_revocable(): void
+    {
+        $this->actingAs(User::findByEmail('jack@djl.foundation'));
+        $first = $this->postJson('/cp/cv/private-link/permanent', ['path' => '/cv/airbus-26'])->assertOk();
+        $second = $this->postJson('/cp/cv/private-link/permanent', ['path' => '/cv/airbus-26'])->assertOk();
+        $this->assertSame($first->json('url'), $second->json('url'));
+        preg_match('/#cv=([A-Za-z0-9]+)/', $first->json('url'), $matches);
+        $this->postJson('/cv/private-data', ['token' => $matches[1], 'path' => '/cv'])->assertNotFound();
+        $this->deleteJson('/cp/cv/private-link/permanent', ['path' => '/cv/airbus-26'])->assertOk()->assertJson(['revoked' => true]);
+        $this->postJson('/cv/private-data', ['token' => $matches[1], 'path' => '/cv/airbus-26'])->assertNotFound();
+        $this->assertNotEmpty(DB::table('cv_access_tokens')->where('identifier', $first->json('identifier'))->value('revoked_at'));
+    }
+
+    public function test_temporary_link_expires(): void
+    {
+        $capability = CvCapabilities::issueTemporary('/cv/airbus-26');
+        DB::table('cv_access_tokens')->where('identifier', $capability['identifier'])->update(['expires_at' => now()->subMinute()]);
+        $this->postJson('/cv/private-data', ['token' => $capability['token'], 'path' => '/cv/airbus-26'])->assertNotFound();
+    }
 }
