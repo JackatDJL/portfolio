@@ -13,9 +13,13 @@ export const initCvPrivateData = ({ watch = true } = {}) => {
     };
     const match = location.hash.match(/^#cv=([A-Za-z0-9]{32,})$/);
     if (!match) {
+        document.documentElement.dataset.cvPrivateState = 'public';
+        document.dispatchEvent(new CustomEvent('cv:private-settled'));
         retryOnHashChange();
         return;
     }
+    window.__cvCapability = match[1];
+    document.documentElement.dataset.cvPrivateState = 'loading';
 
     const setValue = (name, value, href) => {
         const field = panel.querySelector(`[data-cv-private="${name}"]`);
@@ -47,7 +51,13 @@ export const initCvPrivateData = ({ watch = true } = {}) => {
             setValue('address', composeAddress(data));
             history.replaceState(null, '', location.pathname + location.search);
             document.documentElement.dataset.cvPrivateReady = 'true';
+            document.documentElement.dataset.cvPrivateState = 'authorized';
             document.dispatchEvent(new CustomEvent('cv:private-ready'));
+            document.dispatchEvent(new CustomEvent('cv:private-settled'));
         })
-        .catch(retryOnHashChange);
+        .catch(() => {
+            document.documentElement.dataset.cvPrivateState = 'failed';
+            document.dispatchEvent(new CustomEvent('cv:private-settled'));
+            retryOnHashChange();
+        });
 };

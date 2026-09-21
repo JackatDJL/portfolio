@@ -74,6 +74,20 @@ tabs:
     display: Lebenslauf
     sections:
       -
+        display: Über mich
+        instructions: 'Kurzer, lebenslaufspezifischer Text. Empfohlen sind 60 bis 120 Wörter.'
+        fields:
+          - handle: about
+            field:
+              type: bard
+              display: Über mich
+              buttons: [bold, italic, removeformat, anchor]
+              smart_typography: true
+              link_collections: [pages, projects, publications]
+              select_across_sites: true
+              remove_empty_nodes: true
+              sets: {}
+      -
         display: Kenntnisse
         instructions: 'Nur konkrete Angaben. Keine Prozentwerte oder Bewertungsbalken.'
         fields:
@@ -86,7 +100,16 @@ tabs:
                 - handle: category
                   field: { type: text, display: Bereich, validate: [required], width: 33 }
                 - handle: items
-                  field: { type: textarea, display: Einträge, validate: [required], width: 67 }
+                  field:
+                    type: grid
+                    display: Einträge
+                    add_row: Eintrag hinzufügen
+                    width: 67
+                    fields:
+                      - handle: label
+                        field: { type: text, display: Bezeichnung, validate: [required], width: 50 }
+                      - handle: context
+                        field: { type: text, display: 'Niveau oder Kontext (optional)', width: 50 }
   defaults:
     display: Standardauswahl
     sections:

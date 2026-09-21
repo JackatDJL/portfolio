@@ -1,4 +1,8 @@
 import { test, expect } from '@playwright/test';
+import { execFile } from 'node:child_process';
+import { readFile } from 'node:fs/promises';
+import { promisify } from 'node:util';
+const execFileAsync = promisify(execFile);
 const cvBaseURL = process.env.CV_BASE_URL || 'http://127.0.0.1:8091';
 const routes = ['/cv', '/cv/airbus-26', '/cv/exp/volt-stade-kommunikation', '/cv/exp/erstwaehlerforum-stade-organisation', '/cv/exp/hackclub-stade-organisation', '/cv/exp/atheblues-robotik-und-teamarbeit', '/cv/exp/volt-europa-technische-mitarbeit', '/cv/exp/volt-deutschland-technische-mitarbeit', '/cv/edu/gymnasium-athenaeum-stade', '/projekte/erstwaehlerforum-stade'];
 for (const width of [1440, 390]) for (const theme of ['light', 'dark']) {
@@ -98,18 +102,46 @@ test('authorized private response replaces masks in the same contact fields', as
     await expect(page.locator('.cv-contact__mask')).toHaveCount(0);
     await expect(page).toHaveURL(/\/cv\/airbus-26$/);
 });
-test('A4 print keeps document text and removes navigation', async ({ page }, testInfo) => {
+test('A4 PDF preserves CV design and removes browser print chrome', async ({ page }, testInfo) => {
     await page.goto('/cv');
     await page.evaluate(() => { document.documentElement.dataset.theme = 'dark'; });
     await page.emulateMedia({ media: 'print' });
-    await expect(page.locator('.cv-document__header')).toHaveCSS('border-bottom-color', 'rgb(0, 0, 0)');
-    await expect(page.locator('html')).toHaveCSS('background-color', 'rgb(255, 255, 255)');
+    await expect(page.locator('.cv-header-geometry')).toBeVisible();
+    await expect(page.locator('.cv-portrait')).toBeVisible();
     await expect(page.locator('html')).toHaveCSS('color-scheme', 'light');
     await expect(page.locator('.site-header')).toBeHidden();
     await expect(page.locator('.site-footer')).toBeHidden();
-    await expect(page.locator('h1')).toHaveCSS('font-size', '38.6667px');
-    await page.pdf({ path: testInfo.outputPath('cv-a4.pdf'), format: 'A4', printBackground: true, preferCSSPageSize: true });
+    await expect(page.locator('.cv-record__print-thread').first()).toBeVisible();
+    const pdfPath = testInfo.outputPath('cv-a4.pdf');
+    await page.pdf({ path: pdfPath, format: 'A4', printBackground: true, preferCSSPageSize: true, displayHeaderFooter: false });
+    expect((await readFile(pdfPath)).subarray(0, 5).toString()).toBe('%PDF-');
+    const [{ stdout: text }, { stdout: info }] = await Promise.all([
+        execFileAsync('pdftotext', [pdfPath, '-']),
+        execFileAsync('pdfinfo', [pdfPath]),
+    ]);
+    expect(text).toContain('Jack Ruder');
+    expect(text).not.toMatch(/localhost|\d+ of \d+|20\/09\/2026/);
+    expect(info).toContain('Pages:           2');
     await page.screenshot({ path: testInfo.outputPath('cv-print.png'), fullPage: true });
+});
+
+test('authorized A4 PDF contains resolved private values and public PDF does not', async ({ page }, testInfo) => {
+    await page.route('**/cv/private-data', route => route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ private_email: 'PRIVATE-CV-PDF-SENTINEL@example.invalid', phone: '+49 000 000000', street: 'Musterstraße', house_number: '1', postal_code: '21600', city: 'Teststadt' }),
+    }));
+    await page.goto('/cv#cv=validtestcapabilitytoken1234567890');
+    await expect(page.locator('[data-cv-private="email"]')).toHaveText('PRIVATE-CV-PDF-SENTINEL@example.invalid');
+    const authorizedPath = testInfo.outputPath('cv-authorized.pdf');
+    await page.pdf({ path: authorizedPath, format: 'A4', printBackground: true, preferCSSPageSize: true, displayHeaderFooter: false });
+    expect((await execFileAsync('pdftotext', [authorizedPath, '-'])).stdout.replace(/[\s-]/g, '')).toContain('PRIVATECVPDFSENTINEL@example.invalid');
+
+    await page.unroute('**/cv/private-data');
+    await page.goto('/cv');
+    const publicPath = testInfo.outputPath('cv-public.pdf');
+    await page.pdf({ path: publicPath, format: 'A4', printBackground: true, preferCSSPageSize: true, displayHeaderFooter: false });
+    expect((await execFileAsync('pdftotext', [publicPath, '-'])).stdout.replace(/[\s-]/g, '')).not.toContain('PRIVATECVPDFSENTINEL');
 });
 test('CV document canvas is constrained on desktop and fluid on smaller screens', async ({ page }, testInfo) => {
     for (const width of [1920, 1440, 1024, 768, 390]) {
@@ -117,6 +149,8 @@ test('CV document canvas is constrained on desktop and fluid on smaller screens'
         await page.goto('/cv');
         await page.evaluate(() => document.fonts.ready);
         await page.locator('.cv-portrait img').waitFor({ state: 'visible' });
+        await expect.poll(() => page.locator('.cv-portrait img').evaluate(image => image.complete && image.naturalWidth > 0)).toBe(true);
+        await page.locator('.cv-portrait img').evaluate(image => image.decode());
         const documentBox = await page.locator('.cv-document').boundingBox();
         expect(documentBox.width).toBeLessThanOrEqual(width >= 1024 ? 882 : width + 1);
         if (width >= 1024) expect(Math.abs(documentBox.x - (width - documentBox.width) / 2)).toBeLessThan(2);

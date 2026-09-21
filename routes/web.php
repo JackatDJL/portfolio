@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CvPrivateDataController;
 use App\Http\Controllers\CvPrivateLinkController;
+use App\Http\Controllers\CvPdfController;
 use Illuminate\Support\Facades\Route;
 use Statamic\View\View;
 
@@ -23,6 +24,10 @@ Route::get('/design-system', function () {
 
 Route::post('/cv/private-data', [CvPrivateDataController::class, 'reveal'])
     ->name('cv.private-data');
+
+Route::post('/cv/pdf', CvPdfController::class)
+    ->middleware('throttle:6,1')
+    ->name('cv.pdf');
 
 Route::get('/cp/cv/private-link', [CvPrivateLinkController::class, 'open'])
     ->middleware(['statamic.cp', 'statamic.cp.authenticated'])

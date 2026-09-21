@@ -13,6 +13,18 @@ const drawThread = (root) => {
     svg.append(path);
     root.prepend(svg);
 
+    for (const record of records) {
+        const printSvg = document.createElementNS(ns, 'svg');
+        const printPath = document.createElementNS(ns, 'path');
+        printSvg.classList.add('cv-record__print-thread');
+        printSvg.setAttribute('viewBox', '0 0 20 100');
+        printSvg.setAttribute('preserveAspectRatio', 'none');
+        printSvg.setAttribute('aria-hidden', 'true');
+        printPath.setAttribute('d', buildThreadPath({ rail: 2, height: 100, marks: [{ y: 50 }] }));
+        printSvg.append(printPath);
+        record.prepend(printSvg);
+    }
+
     const render = () => {
         const frame = root.getBoundingClientRect();
         const height = Math.max(1, root.clientHeight);

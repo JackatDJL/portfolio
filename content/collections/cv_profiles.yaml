@@ -3,6 +3,7 @@ icon: content-book-open
 template: default
 layout: layout
 revisions: false
+route: '/cv/{slug}'
 sort_dir: asc
 date_behavior:
   past: null

@@ -1,3 +1,7 @@
+<nav class="cv-actions" aria-label="Lebenslauf exportieren">
+    <button class="btn btn-secondary cv-actions__pdf" type="button" data-cv-pdf data-cv-pdf-path="{{ current_uri }}">Als PDF</button>
+    <span class="cv-actions__status" data-cv-pdf-status role="status" aria-live="polite"></span>
+</nav>
 <article class="cv-document" aria-label="Lebenslauf von {{ cv:full_name }}"{{ if accent_color }} style="--cv-accent: {{ accent_color }}"{{ /if }}>
     <header class="cv-document__header">
         <svg class="cv-header-geometry" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path d="M0 0H100V38L70 72 38 49 0 64Z" /><path d="M100 38V100H56L70 72Z" /></svg>
@@ -10,8 +14,8 @@
         {{ if cv:profile_image }}<figure class="cv-portrait"><img src="{{ cv:profile_image:url }}" alt="{{ cv:full_name }}" width="720" height="720" fetchpriority="high" decoding="async"></figure>{{ /if }}
     </header>
     <div class="cv-document__body">
-        <aside class="cv-support" aria-label="Persönliche Angaben">
-            <section class="cv-support__panel" aria-labelledby="cv-contact-title" data-cv-private-panel data-cv-private-endpoint="/cv/private-data">
+        <aside class="cv-support" aria-label="Persönliche Angaben" data-cv-private-panel data-cv-private-endpoint="/cv/private-data">
+            <section class="cv-support__section" aria-labelledby="cv-contact-title">
                 <h2 id="cv-contact-title">Kontakt</h2>
                 <address class="cv-contact">
                     <p><span class="cv-contact__label">E-Mail</span><span data-cv-private="email">{{ partial:cv/mask width="long" }}</span></p>
@@ -19,7 +23,25 @@
                     <p><span class="cv-contact__label">Anschrift</span><span data-cv-private="address">{{ partial:cv/mask width="long" lines="2" }}</span></p>
                     {{ if cv:public_location }}<p><span class="cv-contact__label">Standort</span>{{ cv:public_location }}</p>{{ /if }}
                 </address>
-                <h2 class="cv-online-title">Online</h2>
+            </section>
+            {{ if cv:about }}
+            <section class="cv-support__section cv-support__about" aria-labelledby="cv-about-title">
+                <h2 id="cv-about-title">Über mich</h2>
+                {{ partial:bard/prose :content="cv:about" classes="cv-about" }}
+            </section>
+            {{ /if }}
+            {{ if cv:knowledge }}
+            <section class="cv-support__section cv-support__knowledge" aria-labelledby="cv-knowledge-title">
+                <h2 id="cv-knowledge-title">Kenntnisse</h2>
+                <div class="cv-knowledge-groups">
+                    {{ cv:knowledge }}
+                    <div class="cv-knowledge-group"><h3>{{ category }}</h3><ul>{{ items }}<li><span>{{ label }}</span>{{ if context }}<small>{{ context }}</small>{{ /if }}</li>{{ /items }}</ul></div>
+                    {{ /cv:knowledge }}
+                </div>
+            </section>
+            {{ /if }}
+            <section class="cv-support__section" aria-labelledby="cv-online-title">
+                <h2 id="cv-online-title">Online</h2>
                 <nav class="cv-contact__links" aria-label="Profile">
                     {{ if cv:website }}{{ partial:components/outlink :href="cv:website" label="Website" classes="cv-inline-link" }}{{ /if }}
                     {{ if cv:github_url }}{{ partial:components/outlink :href="cv:github_url" label="GitHub" classes="cv-inline-link" }}{{ /if }}
@@ -40,14 +62,11 @@
                 <div class="cv-section__heading"><h2 id="cv-education-title">Bildung</h2></div>
                 <div class="cv-records cv-records--thread" data-cv-thread>
                     {{ collection:education sort="started_at:desc" }}
-                    <article class="cv-record cv-record--education"><div class="cv-period">{{ partial:cv/period }}</div><div class="cv-record__content"><h3><a class="related-reference cv-inline-link" href="{{ url }}" data-related-reference>{{ partial:cv/link-title }}</a></h3>{{ if programme }}<p class="cv-record__organisation">{{ programme }}</p>{{ /if }}{{ if summary }}<p class="cv-record__summary">{{ summary }}</p>{{ /if }}</div></article>
+                    <article class="cv-record cv-record--education"><div class="cv-record__context"><div class="cv-period">{{ partial:cv/period }}</div><p class="cv-record__organisation">{{ title }}</p></div><div class="cv-record__content"><h3><a class="related-reference cv-inline-link" href="{{ url }}" data-related-reference>{{ programme ?? title }}<span class="cv-link-tail">{{ partial:components/open-file }}</span></a></h3>{{ if summary }}<p class="cv-record__summary">{{ summary }}</p>{{ /if }}</div></article>
                     {{ /collection:education }}
                 </div>
             </section>
-            {{ if cv:knowledge }}
-            <section class="cv-section" aria-labelledby="cv-knowledge-title"><div class="cv-section__heading"><h2 id="cv-knowledge-title">Kenntnisse</h2></div><div class="cv-records">{{ cv:knowledge }}<article class="cv-record cv-record--reference"><p class="cv-period">{{ category }}</p><div class="cv-record__content"><p class="cv-relation-meta cv-knowledge-items">{{ items | nl2br }}</p></div></article>{{ /cv:knowledge }}</div></section>
-            {{ /if }}
-            <section class="cv-section" aria-labelledby="cv-projects-title"><div class="cv-section__heading"><h2 id="cv-projects-title">Projekte</h2></div><div class="cv-records">
+            <section class="cv-section cv-section--projects" aria-labelledby="cv-projects-title"><div class="cv-section__heading"><h2 id="cv-projects-title">Projekte</h2></div><div class="cv-records">
                 {{ if projects }}{{ projects }}{{ if published && project_status != 'confidential' }}{{ partial:cv/reference }}{{ /if }}{{ /projects }}
                 {{ else }}{{ cv:projects }}{{ if published && project_status != 'confidential' }}{{ partial:cv/reference }}{{ /if }}{{ /cv:projects }}{{ /if }}
             </div></section>
@@ -57,7 +76,7 @@
             </div></section>
         </div>
     </div>
-    {{ if cv:print_place || cv:print_date || cv:signature }}
+    {{ if cv:print_date || cv:signature }}
         <footer class="cv-document__print-footer" aria-label="Ort, Datum und Unterschrift">{{ if cv:print_place || cv:print_date }}<p>{{ cv:print_place }}{{ if cv:print_place && cv:print_date }}, {{ /if }}{{ cv:print_date }}</p>{{ /if }}{{ if cv:signature }}<img src="{{ cv:signature:url }}" alt="Unterschrift von {{ cv:full_name }}">{{ /if }}</footer>
     {{ /if }}
 </article>
