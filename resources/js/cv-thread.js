@@ -3,7 +3,7 @@ import { buildThreadPath, TOC_BUMP } from './thread-bump.js';
 const ns = 'http://www.w3.org/2000/svg';
 
 const drawThread = (root) => {
-    const records = [...root.querySelectorAll(':scope > .cv-record')];
+    const records = [...root.querySelectorAll(':scope > .cv-record, :scope > .cv-milestone')];
     if (!records.length) return;
 
     const svg = document.createElementNS(ns, 'svg');
@@ -13,7 +13,7 @@ const drawThread = (root) => {
     svg.append(path);
     root.prepend(svg);
 
-    for (const record of records) {
+    for (const record of records.filter(record => record.classList.contains('cv-record'))) {
         const printSvg = document.createElementNS(ns, 'svg');
         const printPath = document.createElementNS(ns, 'path');
         printSvg.classList.add('cv-record__print-thread');

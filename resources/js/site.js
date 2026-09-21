@@ -2,7 +2,7 @@ if (document.querySelector('[data-project-stream]')) import('./collection-previe
 if (document.querySelector('[data-homepage]')) import('./homepage.js');
 if (document.querySelector('[data-cv-thread]')) import('./cv-thread.js');
 if (document.querySelector('[data-cv-private-panel]')) import('./cv-private.js').then(({ initCvPrivateData }) => initCvPrivateData());
-if (document.querySelector('[data-cv-pdf]')) import('./cv-pdf.js').then(({ initCvPdf }) => initCvPdf());
+if (document.querySelector('[data-cv-explore]')) import('./cv-explore.js').then(({ initCvExplore }) => initCvExplore());
 import { initThemeSwitcher } from './theme.js';
 import { gsap } from 'gsap';
 import { ScrollToPlugin } from 'gsap/ScrollToPlugin';

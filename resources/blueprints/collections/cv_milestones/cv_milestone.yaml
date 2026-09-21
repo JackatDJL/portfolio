@@ -1,0 +1,57 @@
+title: CV-Meilenstein
+tabs:
+  main:
+    display: Meilenstein
+    sections:
+      -
+        fields:
+          - handle: title
+            field: { type: text, display: Titel, validate: [required] }
+          - handle: date_label
+            field: { type: text, display: Zeitraum, validate: [required], width: 40 }
+          - handle: category
+            field:
+              type: select
+              display: Kategorie
+              width: 30
+              options:
+                project: Projekt
+                competition: Wettbewerb
+                volunteering: Ehrenamt
+                organisation: Organisation
+                technical: Technik
+                personal: Persönlich
+          - handle: featured
+            field: { type: toggle, display: Hervorgehoben, width: 30 }
+          - handle: summary
+            field: { type: textarea, display: Zusammenfassung, validate: [required] }
+          - handle: body
+            field: { type: bard, display: Inhalt, buttons: [bold, italic, removeformat, anchor, unorderedlist, orderedlist], sets: {} }
+          - handle: organisation
+            field: { type: text, display: Organisation }
+          - handle: related_projects
+            field: { type: entries, collections: [projects], display: Projekte }
+          - handle: related_experience
+            field: { type: entries, collections: [experience], display: Erfahrung }
+          - handle: related_education
+            field: { type: entries, collections: [education], display: Bildung }
+          - handle: links
+            field:
+              type: grid
+              display: Links
+              fields:
+                - handle: label
+                  field: { type: text, display: Bezeichnung, validate: [required] }
+                - handle: href
+                  field: { type: link, display: Link, validate: [required] }
+          - handle: media
+            field: { type: assets, container: assets, display: Medien }
+          - handle: topics
+            field: { type: terms, taxonomies: [topics], display: Themen }
+  sidebar:
+    display: Sidebar
+    sections:
+      -
+        fields:
+          - handle: slug
+            field: { type: slug, validate: ['max:200'] }

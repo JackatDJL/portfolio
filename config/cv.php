@@ -2,7 +2,7 @@
 
 return [
     'access_token_hash' => env('CV_ACCESS_TOKEN_HASH'),
-    'pdf_base_url' => env('CV_PDF_BASE_URL', env('APP_URL', 'http://localhost:8000')),
+    'canonical_base_url' => env('CV_CANONICAL_BASE_URL', 'https://jack.djl.foundation'),
     'pdf_timeout' => (int) env('CV_PDF_TIMEOUT', 60),
-    'bun' => env('CV_BUN_BINARY', 'bun'),
+    'lualatex' => env('CV_LUALATEX_BINARY', 'lualatex'),
 ];

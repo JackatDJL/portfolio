@@ -110,6 +110,20 @@ tabs:
                         field: { type: text, display: Bezeichnung, validate: [required], width: 50 }
                       - handle: context
                         field: { type: text, display: 'Niveau oder Kontext (optional)', width: 50 }
+      -
+        display: Soft Skills
+        instructions: 'Selbst formulierte Eigenschaften mit optionalem kurzem Kontext. Keine Bewertungen oder Prozentwerte.'
+        fields:
+          - handle: soft_skills
+            field:
+              type: grid
+              display: Soft Skills
+              add_row: Soft Skill hinzufügen
+              fields:
+                - handle: label
+                  field: { type: text, display: Bezeichnung, validate: [required], width: 40 }
+                - handle: context
+                  field: { type: text, display: 'Kurzer Kontext (optional)', width: 60 }
   defaults:
     display: Standardauswahl
     sections:
@@ -121,6 +135,8 @@ tabs:
             field: { type: entries, collections: [projects], display: Projekte }
           - handle: publications
             field: { type: entries, collections: [publications], display: Veröffentlichungen }
+          - handle: milestones
+            field: { type: entries, collections: [cv_milestones], display: 'Interaktive Meilensteine' }
   print:
     display: Druck / PDF
     sections:

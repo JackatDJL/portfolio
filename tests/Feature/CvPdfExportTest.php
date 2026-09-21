@@ -13,10 +13,10 @@ class CvPdfExportTest extends TestCase
     {
         $pdf = $this->fakePdf();
         $renderer = Mockery::mock(CvPdfRenderer::class);
-        $renderer->shouldReceive('render')->once()->with('/cv', null)->andReturn($pdf);
+        $renderer->shouldReceive('render')->once()->with(null, false)->andReturn($pdf);
         $this->app->instance(CvPdfRenderer::class, $renderer);
 
-        $response = $this->postJson('/cv/pdf', ['path' => '/cv', 'token' => '']);
+        $response = $this->get('/cv/pdf');
 
         $response->assertOk();
         $this->assertSame('application/pdf', $response->headers->get('Content-Type'));
@@ -29,19 +29,19 @@ class CvPdfExportTest extends TestCase
         $token = CvCapabilities::issue('/cv/airbus-26');
         $pdf = $this->fakePdf();
         $renderer = Mockery::mock(CvPdfRenderer::class);
-        $renderer->shouldReceive('render')->once()->with('/cv/airbus-26', $token)->andReturn($pdf);
+        $renderer->shouldReceive('render')->once()->with('airbus-26', true)->andReturn($pdf);
         $this->app->instance(CvPdfRenderer::class, $renderer);
 
-        $this->postJson('/cv/pdf', ['path' => '/cv/airbus-26', 'token' => $token])->assertOk();
+        $this->get('/cv/airbus-26/pdf?token='.$token)->assertOk();
     }
 
-    public function test_export_rejects_an_invalid_capability_without_starting_chromium(): void
+    public function test_export_rejects_an_invalid_capability_without_starting_lualatex(): void
     {
         $renderer = Mockery::mock(CvPdfRenderer::class);
         $renderer->shouldNotReceive('render');
         $this->app->instance(CvPdfRenderer::class, $renderer);
 
-        $this->postJson('/cv/pdf', ['path' => '/cv', 'token' => 'invalid'])->assertNotFound();
+        $this->get('/cv/pdf?token=invalid')->assertNotFound();
     }
 
     private function fakePdf(): string

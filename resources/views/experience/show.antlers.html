@@ -1,21 +1,30 @@
 <article class="experience-detail detail-container">
     <nav class="cv-chapter-nav" aria-label="Lebenslauf">{{ partial:components/outlink href="/cv" label="Lebenslauf" classes="cv-inline-link" }}<span>Erfahrung</span></nav>
     <header class="experience-header">
-        <div class="experience-context"><p class="experience-organisation">{{ organisation }}</p><p class="cv-period">{{ partial:cv/period detailed="true" }}</p></div>
-        <div><h1>{{ title }}</h1>{{ if summary }}<p class="experience-summary">{{ summary }}</p>{{ /if }}</div>
+        {{ partial:components/eyebrow label="Erfahrung" }}
+        <h1>{{ title }}</h1>
+        <div class="experience-header__meta"><p class="experience-organisation">{{ organisation }}</p><p class="cv-period">{{ partial:cv/period detailed="true" }}</p></div>
+        {{ if summary }}<p class="experience-summary">{{ summary }}</p>{{ /if }}
     </header>
+    {{ partial:components/table-of-contents variant="mobile" label="Auf dieser Seite" aria_label="Inhalt dieser Erfahrung" }}
     <div class="experience-content">
-        <aside aria-label="Kontext">
-            {{ if topics }}{{ partial:detail/meta-group label="Themen" }}<div class="flex flex-wrap gap-2">{{ topics }}{{ partial:components/chip :label="title" classes="chip-topic" }}{{ /topics }}</div>{{ /partial:detail/meta-group }}{{ /if }}
-            {{ if projects }}{{ partial:detail/meta-group label="Projekte" }}{{ projects }}{{ if published && project_status != 'confidential' }}{{ partial:components/related-reference inline="true" }}{{ /if }}{{ /projects }}{{ /partial:detail/meta-group }}{{ /if }}
-            {{ if links }}{{ partial:detail/meta-group label="Öffentliche Quellen" }}{{ links }}<p class="cv-source-link"><a class="related-reference cv-inline-link" href="{{ href }}" data-related-reference>{{ partial:cv/link-title :title="label" }}</a></p>{{ /links }}{{ /partial:detail/meta-group }}{{ /if }}
+        <aside class="experience-rail" aria-label="Kontext" data-context-rail>
+            <svg class="article-context-rail__line" aria-hidden="true" focusable="false"><path data-context-line /></svg>
+            <div class="article-context-rail__content">
+                {{ partial:components/table-of-contents variant="rail" label="Auf dieser Seite" aria_label="Inhalt dieser Erfahrung" }}
+                {{ partial:detail/meta-group label="Zeitraum" }}<p class="cv-period">{{ partial:cv/period detailed="true" }}</p>{{ /partial:detail/meta-group }}
+                {{ partial:detail/meta-group label="Organisation" }}<p>{{ organisation }}</p>{{ /partial:detail/meta-group }}
+                {{ if topics }}{{ partial:detail/meta-group label="Themen" }}<div class="flex flex-wrap gap-2">{{ topics }}{{ partial:components/chip :label="title" classes="chip-topic" }}{{ /topics }}</div>{{ /partial:detail/meta-group }}{{ /if }}
+                {{ if projects }}{{ partial:detail/meta-group label="Projekte" }}{{ projects }}{{ if published && project_status != 'confidential' }}{{ partial:components/related-reference inline="true" }}{{ /if }}{{ /projects }}{{ /partial:detail/meta-group }}{{ /if }}
+                {{ if links }}{{ partial:detail/meta-group label="Öffentliche Quellen" }}{{ links }}<p class="cv-source-link">{{ partial:components/outlink :href="href" :label="label" classes="cv-inline-link" size="sm" }}</p>{{ /links }}{{ /partial:detail/meta-group }}{{ /if }}
+            </div>
         </aside>
         <div class="detail-layout__main">{{ partial:bard/prose :content="body" }}</div>
     </div>
     {{ if projects }}<div class="experience-work">{{ projects }}{{ if published && project_status != 'confidential' }}
         <section class="cv-project-work">
-            <div class="cv-project-work__intro"><h2><a class="related-reference cv-inline-link" href="{{ url }}" data-related-reference>{{ partial:cv/link-title }}</a></h2>{{ if summary }}<p>{{ summary }}</p>{{ /if }}
-            {{ if website_url }}{{ partial:components/outlink :href="website_url" label="Webseite" classes="cv-inline-link" }}{{ /if }}</div>
+            <div class="cv-project-work__intro"><h2><a class="related-reference cv-inline-link" href="{{ url }}" data-related-reference>{{ partial:cv/link-title size="lg" }}</a></h2>{{ if summary }}<p>{{ summary }}</p>{{ /if }}
+            <div class="cv-project-work__links">{{ if website_url }}{{ partial:components/outlink :href="website_url" label="Webseite" classes="cv-inline-link" size="sm" }}{{ /if }}{{ if repository_url }}{{ partial:components/outlink :href="repository_url" label="Repository" classes="cv-inline-link" size="sm" }}{{ /if }}</div></div>
             {{ if gallery }}{{ partial:gallery/figures :assets="gallery" }}{{ elseif cover }}{{ cover }}{{ partial:gallery/figure }}{{ /cover }}{{ /if }}
         </section>
     {{ /if }}{{ /projects }}</div>{{ /if }}

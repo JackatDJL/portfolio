@@ -1,7 +1,7 @@
 ---
 id: 04d5407d-e18b-49e6-8ac5-9f54146b88cc
 blueprint: cv_profile
-title: 'Airbus 2026'
+title: 'Airbus 2027'
 recipient_name: Airbus
 application_year: 2027
 accent_color: '#315c78'
@@ -12,6 +12,9 @@ projects:
 publications:
   - 0fdf9b1f-0190-433a-9185-b49a4fbb6646
   - a6e26f5b-16df-4097-894a-d353e649665c
+milestones:
+  - e02fdc80-3a4a-4417-aa7f-a554cf7eccb2
+  - 54b21346-ada2-4110-a005-88fad17d61c9
 updated_by: 7098a585-4701-4963-95aa-52c0d85d3e7d
 updated_at: 1789995706
 ---

@@ -29,9 +29,9 @@ for (const width of [1440, 390]) for (const theme of ['light', 'dark']) {
                 await expect(page.locator('.cv-record__thread-mark, .cv-record circle')).toHaveCount(0);
                 expect(await page.locator('.cv-records--thread').evaluateAll(roots => roots.every(root => getComputedStyle(root, '::before').content === 'none'))).toBe(true);
                 const threads = page.locator('[data-cv-thread]');
-                await expect(threads).toHaveCount(2);
-                await expect(threads.locator(':scope > svg')).toHaveCount(2);
-                await expect(threads.locator(':scope > svg > path')).toHaveCount(2);
+                await expect(threads).toHaveCount(3);
+                await expect(threads.locator(':scope > svg')).toHaveCount(3);
+                await expect(threads.locator(':scope > svg > path')).toHaveCount(3);
                 await expect(threads.locator(':scope > svg path + *')).toHaveCount(0);
                 await expect(page.locator('.cv-contact__mask')).toHaveCount(3);
                 expect(await page.locator('[data-cv-private]').allTextContents()).not.toEqual(expect.arrayContaining([expect.stringMatching(/@|PRIVATE-CV/)]));
@@ -41,7 +41,7 @@ for (const width of [1440, 390]) for (const theme of ['light', 'dark']) {
                 await expect(page.locator('.cv-document__recipient')).toHaveCount(0);
             }
             if (route === '/cv/airbus-26') {
-                await expect(page.locator('.cv-document__recipient')).toHaveText('Airbus · 2026');
+                await expect(page.locator('.cv-document__recipient')).toHaveText('Airbus · 2027');
                 await expect(page.locator('.cv-document')).toHaveCSS('--cv-accent', '#315c78');
                 await expect(page.locator('main')).toContainText('Robotik und Teamarbeit');
                 await expect(page.locator('main')).toContainText('Gymnasium Athenaeum Stade');
@@ -81,6 +81,33 @@ test('gallery buttons, keyboard, horizontal wheel, boundaries and reduced motion
     await track.hover();
     await page.mouse.wheel(500, 0);
     await expect.poll(() => track.evaluate(el => el.scrollLeft)).toBeGreaterThan(100);
+});
+test('interactive CV is opt-in, keyboard accessible, closeable and excluded from print', async ({ page }) => {
+    await page.goto('/cv');
+    const open = page.locator('[data-cv-explore-open]');
+    const content = page.locator('[data-cv-explore-content]');
+    await expect(open).toHaveAttribute('aria-expanded', 'false');
+    await expect(content).toBeHidden();
+    await open.focus();
+    await page.keyboard.press('Enter');
+    await expect(content).toBeVisible();
+    await expect(open).toHaveAttribute('aria-expanded', 'true');
+    await expect(page.locator('.cv-milestone')).toHaveCount(2);
+    await page.keyboard.press('Escape');
+    await expect(content).toBeHidden();
+    await page.emulateMedia({ media: 'print' });
+    await expect(page.locator('.cv-explore')).toBeHidden();
+});
+test('profile personalization does not move the fixed header geometry', async ({ page }) => {
+    const geometry = async (route) => {
+        await page.goto(route);
+        await page.evaluate(() => document.fonts.ready);
+        return page.evaluate(() => {
+            const box = selector => { const rect = document.querySelector(selector).getBoundingClientRect(); return [rect.x, rect.y, rect.width, rect.height]; };
+            return { name: box('.cv-document__header h1'), location: box('.cv-document__subtitle'), portrait: box('.cv-portrait'), header: box('.cv-document__header') };
+        });
+    };
+    expect(await geometry('/cv/airbus-26')).toEqual(await geometry('/cv'));
 });
 test('authorized private response replaces masks in the same contact fields', async ({ page }) => {
     await page.route('**/cv/private-data', route => route.fulfill({

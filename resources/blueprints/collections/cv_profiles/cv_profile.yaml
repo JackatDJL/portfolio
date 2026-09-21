@@ -32,3 +32,9 @@ tabs:
             field: { type: entries, collections: [projects], display: Projekte }
           - handle: publications
             field: { type: entries, collections: [publications], display: Veröffentlichungen }
+          - handle: milestones
+            field:
+              type: entries
+              collections: [cv_milestones]
+              display: 'Interaktive Meilensteine'
+              instructions: 'Verweist auf gemeinsame Meilensteine. Einträge nicht pro Profil duplizieren.'

@@ -25,9 +25,14 @@ Route::get('/design-system', function () {
 Route::post('/cv/private-data', [CvPrivateDataController::class, 'reveal'])
     ->name('cv.private-data');
 
-Route::post('/cv/pdf', CvPdfController::class)
+Route::get('/cv/pdf', CvPdfController::class)
     ->middleware('throttle:6,1')
     ->name('cv.pdf');
+
+Route::get('/cv/{profile}/pdf', CvPdfController::class)
+    ->where('profile', '[a-z0-9-]+')
+    ->middleware('throttle:6,1')
+    ->name('cv.profile.pdf');
 
 Route::get('/cp/cv/private-link', [CvPrivateLinkController::class, 'open'])
     ->middleware(['statamic.cp', 'statamic.cp.authenticated'])

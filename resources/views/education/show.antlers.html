@@ -1,6 +1,6 @@
 <article class="education-detail">
     <header class="education-hero {{ if cover }}education-hero--image{{ /if }}">
-        {{ if cover }}<figure class="education-hero__image"><img src="{{ glide:cover width='1920' }}" alt="{{ cover:alt }}" width="{{ cover:width }}" height="{{ cover:height }}" fetchpriority="high" decoding="async">{{ partial:media/attribution :asset="cover" }}</figure>{{ /if }}
+        {{ if cover }}<div class="education-hero__image">{{ partial:media/image :asset="cover" mode="content" figure_class="education-hero__figure" image_class="education-hero__asset" width="1920" sizes="100vw" loading="eager" fetchpriority="high" }}</div>{{ /if }}
         <div class="education-hero__content detail-container">
             {{ partial:components/eyebrow label="Bildung" }}
             <h1>{{ title }}</h1>
