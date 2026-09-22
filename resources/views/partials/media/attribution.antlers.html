@@ -1,0 +1,10 @@
+{{# Asset fields remain authoritative; Bard may override caption and supply a legacy credit. #}}
+{{ _caption = caption_override ?? asset:caption }}
+{{ _credit = asset:cc ?? credit_override }}
+{{ _rights = asset:rights ?? rights_override }}
+{{ if _caption || (_credit && _rights != 'jack') }}
+<figcaption class="asset-attribution">
+    {{ if _caption }}<span class="asset-attribution__caption">{{ _caption | entities }}</span>{{ /if }}
+    {{ if _credit && _rights != 'jack' && _credit != _caption }}<span class="asset-attribution__credit">{{ attribution :text="_credit" }}</span>{{ /if }}
+</figcaption>
+{{ /if }}

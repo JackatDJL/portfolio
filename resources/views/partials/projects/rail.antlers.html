@@ -41,7 +41,7 @@
             {{ /partial:detail/meta-group }}
         {{ /if }}
 
-        {{ if related_projects || related_experience }}
+        {{ if related_projects }}
             {{ partial:detail/meta-group label="Verwandtes" }}
                 <div class="space-y-3">
                     {{ if related_projects }}
@@ -49,11 +49,7 @@
                             {{ partial:components/related-reference }}
                         {{ /related_projects }}
                     {{ /if }}
-                    {{ if related_experience }}
-                        {{ related_experience }}
-                            {{ partial:components/related-reference }}
-                        {{ /related_experience }}
-                    {{ /if }}
+
                 </div>
             {{ /partial:detail/meta-group }}
         {{ /if }}

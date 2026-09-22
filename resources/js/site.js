@@ -291,13 +291,7 @@ for (const button of document.querySelectorAll('[data-copy-target]')) {
     });
 }
 
-for (const gallery of document.querySelectorAll('[data-media-gallery]')) {
-    const track = gallery.querySelector('.media-gallery__track');
-    if (!(track instanceof HTMLElement)) continue;
-    const move = (direction) => track.scrollBy({ left: direction * track.clientWidth * 0.82, behavior: 'smooth' });
-    gallery.querySelector('[data-gallery-previous]')?.addEventListener('click', () => move(-1));
-    gallery.querySelector('[data-gallery-next]')?.addEventListener('click', () => move(1));
-}
+if (document.querySelector('[data-media-gallery]')) import('./gallery.js');
 
 const menu = document.querySelector('#site-menu');
 const menuButton = document.querySelector('[data-menu-trigger]');

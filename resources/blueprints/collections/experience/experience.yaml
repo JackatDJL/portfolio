@@ -31,6 +31,21 @@ tabs:
               type: date
               display: 'Begonnen am'
           -
+            handle: started_at_precision
+            field:
+              type: select
+              display: Genauigkeit des Beginns
+              default: day
+              options:
+                day: Tag bekannt
+                month: Nur Monat bekannt
+          -
+            handle: period_label
+            field:
+              type: text
+              display: Abweichende Zeitangabe
+              instructions: 'Für ungefähre Zeiträume oder Schuljahre. Ersetzt die Datumsanzeige, ohne ein genaues Datum zu erfinden.'
+          -
             handle: ended_at
             field:
               type: date
@@ -49,6 +64,16 @@ tabs:
               taxonomies:
                 - topics
               display: Themen
+          -
+            handle: links
+            field:
+              type: grid
+              display: Öffentliche Quellen und Links
+              fields:
+                - handle: label
+                  field: { type: text, display: Bezeichnung, validate: [required] }
+                - handle: href
+                  field: { type: link, display: Link, validate: [required] }
           -
             import: bard_body
   sidebar:
