@@ -4,7 +4,25 @@
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>{{ (title ?? site:name) | sanitize }}</title>
+        <meta name="csrf-token" content="{{ csrf_token }}">
+        {{ if segment_1 == "cv" }}
+        <meta name="referrer" content="no-referrer">
+        <script>
+            window.__cvExchangeFragment = () => {
+                if (!/^\/cv(?:\/[a-z0-9-]+)?$/.test(location.pathname) || !location.hash.startsWith('#cv=')) return Promise.resolve(true);
+                const match = location.hash.match(/^#cv=([A-Za-z0-9]{64})$/);
+                history.replaceState(null, '', location.pathname + location.search);
+                if (!match) return Promise.resolve(false);
+                return fetch('/cv/token-exchange', {
+                    method: 'POST', credentials: 'same-origin', referrerPolicy: 'no-referrer',
+                    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+                    body: JSON.stringify({ path: location.pathname, token: match[1] }),
+                }).then(response => response.ok);
+            };
+            window.__cvExchange = window.__cvExchangeFragment();
+        </script>
+        {{ /if }}
+        <title>{{ cv_title | sanitize }}</title>
         <script>
             try {
                 const theme = localStorage.getItem('jack-theme');

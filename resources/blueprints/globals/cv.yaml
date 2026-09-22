@@ -1,0 +1,158 @@
+title: Lebenslauf
+tabs:
+  general:
+    display: Allgemein
+    sections:
+      -
+        display: Identität
+        fields:
+          - handle: full_name
+            field:
+              type: text
+              display: Vollständiger Name
+              validate: [required]
+              width: 50
+          - handle: public_location
+            field:
+              type: text
+              display: Öffentlicher Standort
+              instructions: 'Ungefährer Standort, nicht die private Anschrift.'
+              width: 50
+          - handle: profile_image
+            field:
+              type: assets
+              container: assets
+              folder: profile_pictures
+              restrict: true
+              max_files: 1
+              display: Profilbild
+          - handle: website
+            field: { type: text, input_type: url, display: Website, width: 33 }
+          - handle: github_url
+            field: { type: text, input_type: url, display: GitHub, width: 33 }
+          - handle: codeberg_url
+            field: { type: text, input_type: url, display: Codeberg, width: 33 }
+  personal:
+    display: Persönliche Daten
+    sections:
+      -
+        display: Private Kontaktangaben
+        instructions: 'Diese Angaben werden verschlüsselt gespeichert und nur über einen gültigen privaten CV-Link ausgeliefert.'
+        fields:
+          - handle: private_email
+            field:
+              type: protected_text
+              input_type: email
+              display: Private E-Mail-Adresse
+              instructions: 'Private E-Mail-Adresse für Lebensläufe. Wird verschlüsselt gespeichert und nur über einen gültigen privaten CV-Link ausgeliefert.'
+          - handle: phone
+            field: { type: protected_text, input_type: tel, display: Telefon, width: 50 }
+          - handle: street
+            field: { type: protected_text, display: Straße, width: 50 }
+          - handle: house_number
+            field: { type: protected_text, display: Hausnummer, width: 25 }
+          - handle: postal_code
+            field: { type: protected_text, display: Postleitzahl, width: 25 }
+          - handle: city
+            field: { type: protected_text, display: Ort, width: 50 }
+          - handle: country
+            field: { type: protected_text, display: Land, width: 50 }
+          - handle: date_of_birth
+            field: { type: protected_text, input_type: date, display: Geburtsdatum, width: 50 }
+          - handle: place_of_birth
+            field: { type: protected_text, display: Geburtsort, width: 50 }
+      -
+        display: Privaten Lebenslauf testen
+        instructions: 'Der Test-Link gilt 15 Minuten und nutzt dieselbe geschützte Datenfreigabe wie ein Empfänger-Link.'
+        fields:
+          - handle: private_test_link
+            field:
+              type: html
+              display: Test-Link
+              html: '<div data-cv-profile-access><div class="mb-4"><h3 class="font-bold mb-2">Temporärer Prüf-Link</h3><button type="button" class="btn" data-action="temporary">Erstellen</button> <button type="button" class="btn" data-copy="temporary">Kopieren</button><p class="text-sm mt-2" data-state="temporary"></p></div><div class="mb-4"><h3 class="font-bold mb-2">Dauerhafter Link</h3><button type="button" class="btn" data-action="permanent">Erstellen</button> <button type="button" class="btn" data-copy="permanent">Kopieren</button> <button type="button" class="btn-danger" data-action="revoke">Widerrufen</button><p class="text-sm mt-2" data-state="permanent"></p></div><div><h3 class="font-bold mb-2">PDF</h3><button type="button" class="btn" data-pdf="public">Öffentliches PDF</button> <button type="button" class="btn" data-pdf="private">Privates PDF prüfen</button> <button type="button" class="btn" data-pdf="copy">PDF-URL kopieren</button></div><div class="mt-4"><h3 class="font-bold mb-2">QR-Code</h3><select data-qr-source aria-label="QR-Quelle"><option value="public">Öffentlicher CV</option><option value="temporary">Temporärer privater Link</option><option value="permanent">Dauerhafter privater Link</option></select> <button type="button" class="btn" data-qr="generate">Vorschau erzeugen</button> <button type="button" class="btn" data-qr="download">SVG herunterladen</button> <button type="button" class="btn" data-qr="copy">URL kopieren</button><div class="mt-2" data-qr-preview></div><p class="text-sm mt-2" data-qr-warning hidden>Wer diesen QR-Code erhält oder fotografiert, kann auf den privaten Lebenslauf zugreifen, bis der Link abläuft oder widerrufen wird.</p></div><p class="mt-3 text-sm" role="status" aria-live="polite" data-cv-access-status></p></div>'
+  cv:
+    display: Lebenslauf
+    sections:
+      -
+        display: Über mich
+        instructions: 'Kurzer, lebenslaufspezifischer Text. Empfohlen sind 60 bis 120 Wörter.'
+        fields:
+          - handle: about
+            field:
+              type: bard
+              display: Über mich
+              buttons: [bold, italic, removeformat, anchor]
+              smart_typography: true
+              link_collections: [pages, projects, publications]
+              select_across_sites: true
+              remove_empty_nodes: true
+              sets: {}
+      -
+        display: Kenntnisse
+        instructions: 'Nur konkrete Angaben. Keine Prozentwerte oder Bewertungsbalken.'
+        fields:
+          - handle: knowledge
+            field:
+              type: grid
+              display: Kenntnisse
+              add_row: Bereich hinzufügen
+              fields:
+                - handle: category
+                  field: { type: text, display: Bereich, validate: [required], width: 33 }
+                - handle: items
+                  field:
+                    type: grid
+                    display: Einträge
+                    add_row: Eintrag hinzufügen
+                    width: 67
+                    fields:
+                      - handle: label
+                        field: { type: text, display: Bezeichnung, validate: [required], width: 50 }
+                      - handle: context
+                        field: { type: text, display: 'Niveau oder Kontext (optional)', width: 50 }
+      -
+        display: Soft Skills
+        instructions: 'Selbst formulierte Eigenschaften mit optionalem kurzem Kontext. Keine Bewertungen oder Prozentwerte.'
+        fields:
+          - handle: soft_skills
+            field:
+              type: grid
+              display: Soft Skills
+              add_row: Soft Skill hinzufügen
+              fields:
+                - handle: label
+                  field: { type: text, display: Bezeichnung, validate: [required], width: 40 }
+                - handle: context
+                  field: { type: text, display: 'Kurzer Kontext (optional)', width: 60 }
+  defaults:
+    display: Standardauswahl
+    sections:
+      -
+        display: Inhalte für /cv
+        instructions: 'Profile können Projekte und Veröffentlichungen überschreiben. Ohne eigene Auswahl gilt diese Standardauswahl.'
+        fields:
+          - handle: projects
+            field: { type: entries, collections: [projects], display: Projekte }
+          - handle: publications
+            field: { type: entries, collections: [publications], display: Veröffentlichungen }
+          - handle: interactive_timeline
+            field: { type: toggle, display: Interaktiver Zeitstrahl, default: true }
+          - handle: milestones
+            field: { type: entries, collections: [cv_milestones], display: 'Interaktive Meilensteine' }
+  print:
+    display: Druck / PDF
+    sections:
+      -
+        fields:
+          - handle: print_place
+            field: { type: text, display: Ort, width: 50 }
+          - handle: print_date
+            field: { type: text, display: Datum, width: 50 }
+          - handle: signature
+            field:
+              type: assets
+              container: assets
+              folder: cv/signatures
+              restrict: true
+              max_files: 1
+              display: Unterschrift

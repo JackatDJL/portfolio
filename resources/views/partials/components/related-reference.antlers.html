@@ -1,17 +1,16 @@
 {{ if inline }}
-<a class="related-reference" href="{{ url }}" data-related-reference>
-    <span class="cv-relation-title">{{ partial:cv/link-title }}</span>
-    {{ if date || started_at || publication_type }}<span class="cv-relation-meta">{{ if date }}{{ date | format_translated('j. F Y') }}{{ elseif started_at }}{{ started_at | format_translated('F Y') }}{{ /if }}{{ if publication_type }} · {{ publication_type:label ?? publication_type }}{{ /if }}</span>{{ /if }}
+<a class="related-reference related-reference--inline" href="{{ url }}" data-related-reference>
+    <span class="related-reference__title"><span class="semantic-link">{{ title }}</span>{{ partial:components/open-file size="md" }}</span>
+    {{ if date || started_at || publication_type }}<span class="related-reference__meta">{{ if date }}{{ date | format_translated('j. F Y') }}{{ elseif started_at }}{{ started_at | format_translated('F Y') }}{{ /if }}{{ if publication_type }} · {{ publication_type:label ?? publication_type }}{{ /if }}</span>{{ /if }}
 </a>
 {{ else }}
 {{# Canonical compact relation. It derives its optional metadata from the resolved entry. #}}
 <a class="related-reference" href="{{ url }}" data-related-reference>
-    <span class="font-display text-base font-bold tracking-tight semantic-link">{{ title }}</span>
+    <span class="font-display text-base font-bold tracking-tight related-reference__title"><span class="semantic-link">{{ title }}</span>{{ partial:components/open-file size="md" }}</span>
     <span class="related-reference__footer mt-1 text-sm text-muted">
         {{ if date }}{{ date | format_translated('j. F Y') }}{{ /if }}
         {{ unless date }}{{ if started_at }}{{ started_at | format_translated('F Y') }}{{ /if }}{{ /unless }}
         {{ if publication_type }}{{ if date }} · {{ /if }}{{ publication_type:label ?? publication_type }}{{ /if }}
-        {{ partial:components/open-file }}
     </span>
 </a>
 {{ /if }}

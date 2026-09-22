@@ -1,6 +1,3 @@
 {{ if image }}
-<figure class="media-figure article-breakout article-breakout--{{ width_mode ?? 'reading' }} article-motion">
-    <img src="{{ glide:image width='1600' }}" alt="{{ alt ?? image:alt }}" width="{{ image:width }}" height="{{ image:height }}" loading="lazy" decoding="async">
-    {{ partial:media/attribution :asset="image" :caption_override="caption" :credit_override="credit" }}
-</figure>
+{{ partial:media/image :asset="image" mode="content" figure_class="article-breakout article-breakout--{width_mode ?? 'reading'} article-motion" width="1600" sizes="(min-width: 80rem) 72rem, 92vw" :alt_override="alt" :caption_override="caption" :credit_override="credit" }}
 {{ /if }}

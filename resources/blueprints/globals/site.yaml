@@ -41,6 +41,13 @@ tabs:
               instructions: 'Ungefähr, nicht die ganze Adresse.'
               validate:
                 - required
+          -
+            handle: website_url
+            field:
+              input_type: url
+              type: text
+              display: Öffentliche Website
+              instructions: 'Nur eine absichtlich öffentliche Adresse.'
       -
         display: 'Über dich'
         fields:

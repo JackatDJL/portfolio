@@ -1,0 +1,9 @@
+{{# Canonical asset renderer. Callers must explicitly choose content or decorative semantics. #}}
+{{ if mode == 'decorative' }}
+    <img class="{{ image_class ?? '' }}" src="{{ glide:asset width='{width ?? 1280}' }}" alt="" width="{{ asset:width }}" height="{{ asset:height }}" loading="{{ loading ?? 'lazy' }}" decoding="async"{{ if asset:focus_css }} style="object-position: {{ asset:focus_css }}"{{ /if }}{{ if sizes }} sizes="{{ sizes }}" srcset="{{ glide:asset width='480' }} 480w, {{ glide:asset width='800' }} 800w, {{ glide:asset width='1280' }} 1280w, {{ glide:asset width='1920' }} 1920w"{{ /if }}>
+{{ else }}
+    <figure class="media-figure {{ figure_class ?? '' }}"{{ if ratio }} style="--image-ratio: {{ ratio }}"{{ /if }}>
+        <img class="{{ image_class ?? '' }}" src="{{ glide:asset width='{width ?? 1280}' }}" alt="{{ alt_override ?? asset:alt }}" width="{{ asset:width }}" height="{{ asset:height }}" loading="{{ loading ?? 'lazy' }}" decoding="async"{{ if asset:focus_css }} style="object-position: {{ asset:focus_css }}"{{ /if }}{{ if fetchpriority }} fetchpriority="{{ fetchpriority }}"{{ /if }}{{ if sizes }} sizes="{{ sizes }}" srcset="{{ glide:asset width='480' }} 480w, {{ glide:asset width='800' }} 800w, {{ glide:asset width='1280' }} 1280w, {{ glide:asset width='1920' }} 1920w"{{ /if }}>
+        {{ partial:media/attribution :asset="asset" :caption_override="caption_override" :credit_override="credit_override" :rights_override="rights_override" }}
+    </figure>
+{{ /if }}

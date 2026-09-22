@@ -1,0 +1,11 @@
+<article class="cv-milestone" data-cv-milestone data-date="{{ chronology }}">
+    <span class="cv-milestone__node" aria-hidden="true"></span>
+    <p class="cv-milestone__date">{{ date_label }}</p>
+    <div class="cv-milestone__body">
+        <h3>{{ title }}</h3>
+        {{ if organisation }}<p class="cv-milestone__organisation">{{ organisation }}</p>{{ /if }}
+        <p>{{ summary }}</p>
+        {{ if related_projects || related_experience || related_education || links }}<div class="cv-milestone__relations" aria-label="Verwandte Inhalte">{{ if related_projects }}{{ related_projects }}{{ partial:components/related-reference inline="true" }}{{ /related_projects }}{{ /if }}{{ if related_experience }}{{ related_experience }}{{ partial:components/related-reference inline="true" }}{{ /related_experience }}{{ /if }}{{ if related_education }}{{ related_education }}{{ partial:components/related-reference inline="true" }}{{ /related_education }}{{ /if }}{{ if links }}{{ links }}{{ partial:components/outlink :href="href" :label="label" classes="related-reference--text" size="sm" }}{{ /links }}{{ /if }}</div>{{ /if }}
+        {{ if media }}{{ partial:gallery/figures :assets="media" classes="cv-milestone__media" }}{{ /if }}
+    </div>
+</article>

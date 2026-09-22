@@ -2,8 +2,10 @@
 
 namespace App\Providers;
 
+use App\Fieldtypes\ProtectedText;
 use App\Tags\HomepageProjects;
 use Illuminate\Support\ServiceProvider;
+use Statamic\Statamic;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -20,6 +22,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        ProtectedText::register();
+        \App\Tags\CvTitle::register();
         HomepageProjects::register();
+        Statamic::externalScript(asset('/cp-cv-profile-access.js'));
     }
 }

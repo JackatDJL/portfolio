@@ -21,6 +21,9 @@ preferences:
       view: list
     cv_profiles:
       view: list
+      after_save: continue_editing
+    cv_milestones:
+      view: list
   locale: en
   formatting_locale: de
   theme: null

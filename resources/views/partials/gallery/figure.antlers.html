@@ -1,4 +1,4 @@
 <figure class="media-figure media-gallery__item" style="--image-ratio: {{ width }} / {{ height }}; --image-width: {{ width }}; --image-height: {{ height }}">
-    <img src="{{ glide:url width='1280' }}" alt="{{ alt }}" width="{{ width }}" height="{{ height }}" loading="lazy" decoding="async">
+    <img src="{{ glide:url width='1280' }}" srcset="{{ glide:url width='480' }} 480w, {{ glide:url width='800' }} 800w, {{ glide:url width='1280' }} 1280w" sizes="(min-width: 64rem) 56rem, 88vw" alt="{{ alt }}" width="{{ width }}" height="{{ height }}" loading="lazy" decoding="async">
     {{ partial:media/attribution :caption_override="caption" :credit_override="cc" :rights_override="rights" }}
 </figure>

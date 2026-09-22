@@ -15,7 +15,6 @@ fields:
         - removeformat
         - quote
         - anchor
-        - image
         - table
         - underline
         - strikethrough

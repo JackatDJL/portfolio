@@ -3,6 +3,7 @@ icon: content-book-open
 template: default
 layout: layout
 revisions: false
+route: '/cv/{slug}'
 sort_dir: asc
 date_behavior:
   past: null
@@ -12,3 +13,7 @@ preview_targets:
     label: Entry
     url: '{permalink}'
     refresh: true
+  -
+    label: 'Privaten Link öffnen'
+    url: '/cp/cv/private-link?path=/cv/{slug}'
+    refresh: false

@@ -6,8 +6,9 @@
         {{ elseif cover && publication_url }}
             <figure class="publication-preview article-breakout--wide">
                 <a href="{{ publication_url }}" target="_blank" rel="noreferrer" aria-label="{{ title }} öffnen">
-                    <img src="{{ glide:cover width=1440 }}" alt="{{ cover:alt ?? title }}" width="{{ cover:width }}" height="{{ cover:height }}" decoding="async">
+                    <img src="{{ glide:cover width=1440 }}" srcset="{{ glide:cover width=720 }} 720w, {{ glide:cover width=1440 }} 1440w" sizes="(min-width: 64rem) 56rem, 92vw" alt="{{ cover:alt }}" width="{{ cover:width }}" height="{{ cover:height }}" loading="lazy" decoding="async">
                 </a>
+                {{ partial:media/attribution :asset="cover" }}
             </figure>
         {{ /if }}
 

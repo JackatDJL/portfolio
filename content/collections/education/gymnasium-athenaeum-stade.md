@@ -25,7 +25,7 @@ content:
     content:
       -
         type: text
-        text: 'Am Gymnasium Athenaeum Stade besuche ich die Qualifikationsphase. Die Schule ist der Ort, an dem viele meiner Projekte aus Robotik, politischer Bildung und Webentwicklung zusammengekommen sind.'
+        text: 'Am Athenaeum Stade bin ich seit 2018 Schüler. Einen großen Teil meiner Projekte habe ich im Umfeld der Schule begonnen oder umgesetzt, darunter Robotik, die Projektwoche Nachhaltige Webentwicklung und das Erstwählerforum Stade.'
   -
     type: heading
     attrs:
@@ -33,25 +33,11 @@ content:
     content:
       -
         type: text
-        text: 'Schule als Projektort'
+        text: 'Projekte an der Schule'
   -
     type: paragraph
     content:
       -
         type: text
-        text: 'Mit AtheBlues wurde Robotik zum Teamprojekt. Das Erstwählerforum und die Projektwoche Nachhaltige Webentwicklung brachten Organisation, politische Bildung und praktische Softwarearbeit in den Schulalltag.'
-  -
-    type: heading
-    attrs:
-      level: 2
-    content:
-      -
-        type: text
-        text: 'Was ich mitnehme'
-  -
-    type: paragraph
-    content:
-      -
-        type: text
-        text: 'Neben dem Unterricht war das Athenaeum für mich ein Ort, an dem eigene Vorhaben Platz hatten. Aus Ideen wurden Veranstaltungen, Websites und Teamarbeit mit Menschen aus unterschiedlichen Jahrgängen.'
+        text: 'In der Robotik AG arbeite ich seit ungefähr dem Schuljahr 2021/22 an eigenen Robotern und später im Team AtheBlues. Beim Erstwählerforum Stade gehörten Organisation, Kommunikation und die öffentliche technische Infrastruktur zu meiner Arbeit. In der Projektwoche Nachhaltige Webentwicklung habe ich mit Schülerinnen und Schülern an Webseiten und Ideen für nachhaltigere Web- und Servertechnik gearbeitet.'
 ---

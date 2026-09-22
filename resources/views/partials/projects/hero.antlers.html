@@ -27,9 +27,6 @@
     </div>
 
     {{ if cover }}
-        <figure class="media-figure detail-hero__cover">
-            <img src="{{ glide:cover width="960" }}" alt="{{ cover:alt }}" width="{{ cover:width }}" height="{{ cover:height }}" decoding="async">
-            {{ partial:media/attribution :asset="cover" }}
-        </figure>
+        {{ partial:media/image :asset="cover" mode="content" figure_class="detail-hero__cover" width="1280" sizes="(min-width: 64rem) 42vw, 92vw" loading="eager" fetchpriority="high" }}
     {{ /if }}
 </div>

@@ -1,19 +1,54 @@
 title: Lebenslauf-Profil
 tabs:
   main:
-    display: Basis
+    display: Profil
     sections:
       -
+        display: Empfänger
+        instructions: 'Das Profil erbt Identität, Kontaktdaten, Erfahrung und Bildung aus dem Lebenslauf.'
         fields:
           - handle: title
             field: { type: text, display: Titel, validate: [required] }
-          - handle: summary
-            field: { type: textarea, display: Profil }
-          - handle: experience
-            field: { type: entries, collections: [experience], display: Erfahrung }
+          - handle: recipient_name
+            field: { type: text, display: Empfänger, width: 50 }
+          - handle: application_year
+            field: { type: integer, display: Jahr, width: 25 }
+          - handle: accent_color
+            field:
+              type: color
+              display: Akzentfarbe
+              instructions: 'Wirkt nur innerhalb des CV-Dokuments. Markenfarben vor Verwendung anhand einer verlässlichen Quelle prüfen.'
+              width: 25
+          - handle: optional_context
+            field:
+              type: textarea
+              display: Kurzer Kontext
+              instructions: 'Optional und sachlich. Leer lassen, wenn Empfänger und Jahr ausreichen.'
+      -
+        display: Auswahl
+        instructions: 'Leere Felder verwenden die Standardauswahl aus Globals → Lebenslauf.'
+        fields:
           - handle: projects
             field: { type: entries, collections: [projects], display: Projekte }
-          - handle: education
-            field: { type: entries, collections: [education], display: Bildung }
           - handle: publications
             field: { type: entries, collections: [publications], display: Veröffentlichungen }
+          - handle: interactive_timeline
+            field:
+              type: select
+              display: Interaktiver Zeitstrahl
+              default: inherit
+              options: { inherit: Übernehmen, show: Anzeigen, hide: Ausblenden }
+          - handle: milestones
+            field:
+              type: entries
+              collections: [cv_milestones]
+              display: 'Interaktive Meilensteine'
+              instructions: 'Verweist auf gemeinsame Meilensteine. Einträge nicht pro Profil duplizieren.'
+      -
+        display: Zugriffslinks
+        fields:
+          - handle: cv_access_links
+            field:
+              type: html
+              sanitize: false
+              html: '<div data-cv-profile-access><div class="mb-4"><h3 class="font-bold mb-2">Temporärer Prüf-Link</h3><button type="button" class="btn" data-action="temporary">Erstellen</button> <button type="button" class="btn" data-copy="temporary">Kopieren</button><p class="text-sm mt-2" data-state="temporary"></p></div><div class="mb-4"><h3 class="font-bold mb-2">Dauerhafter Link</h3><button type="button" class="btn" data-action="permanent">Erstellen</button> <button type="button" class="btn" data-copy="permanent">Kopieren</button> <button type="button" class="btn-danger" data-action="revoke">Widerrufen</button><p class="text-sm mt-2" data-state="permanent"></p></div><div><h3 class="font-bold mb-2">PDF</h3><button type="button" class="btn" data-pdf="public">Öffentliches PDF</button> <button type="button" class="btn" data-pdf="private">Privates PDF prüfen</button> <button type="button" class="btn" data-pdf="copy">PDF-URL kopieren</button></div><div class="mt-4"><h3 class="font-bold mb-2">QR-Code</h3><select data-qr-source aria-label="QR-Quelle"><option value="public">Öffentlicher CV</option><option value="temporary">Temporärer privater Link</option><option value="permanent">Dauerhafter privater Link</option></select> <button type="button" class="btn" data-qr="generate">Vorschau erzeugen</button> <button type="button" class="btn" data-qr="download">SVG herunterladen</button> <button type="button" class="btn" data-qr="copy">URL kopieren</button><div class="mt-2" data-qr-preview></div><p class="text-sm mt-2" data-qr-warning hidden>Wer diesen QR-Code erhält oder fotografiert, kann auf den privaten Lebenslauf zugreifen, bis der Link abläuft oder widerrufen wird.</p></div><p class="mt-3 text-sm" role="status" aria-live="polite" data-cv-access-status></p></div>'

@@ -1,1 +1,136 @@
-{}
+full_name: 'Jack Ruder'
+public_location: 'Stade, Niedersachsen'
+profile_image: profile_pictures/jack-20251020.jpg
+website: 'https://jack.djl.foundation'
+github_url: 'https://github.com/JackatDJL'
+codeberg_url: 'https://codeberg.org/jkxrx'
+private_email: eyJpdiI6IlZaZlpFSWJadXJyZWkvUVdLblRnVlE9PSIsInZhbHVlIjoicHdOeDJZeGIzUlBUL3ZVWFF0a3hVUT09IiwibWFjIjoiYmUyNmVjZWEwNDZiYjM2YjBhMDFhNzU4ZTU0YWM5YjBjMmRjZmI4MzE0ODEwMmIzNDE3MTg1YmVmOTNjYjhlNCIsInRhZyI6IiJ9
+phone: eyJpdiI6ImVDVE1EbHhZTHVvcFhsdUN1dFZxVnc9PSIsInZhbHVlIjoiQ0hiYmpaTVV5byt0RTJNc2thT25wUT09IiwibWFjIjoiNzlmOWI2N2QzNTAwYzdjMTNmYmFjYzAxMzk5ZmFlNGY2OThlNGYzYmJkMTBhM2U0MTY2NmVhZWNlYmVkYzQxZCIsInRhZyI6IiJ9
+street: eyJpdiI6IjBYMThlK2J3Y0NEOGFoempobCtmd3c9PSIsInZhbHVlIjoiVjFVRUNLYnF1VVJPaXdFb050YVMrZz09IiwibWFjIjoiMjk5ZTQzNDQxMjcwMmM5M2E1YjE3ODU0ZGJhNWQ5YjIxOWE5OWMwMzg0YzcwYmJiZjE2ZWJjNmU4NWY2ODU4NCIsInRhZyI6IiJ9
+house_number: eyJpdiI6Ik9RcWljWldaV25HZXVINzN6aDcxNmc9PSIsInZhbHVlIjoiS1FBWkVaVVhvZjY5dFJwK2VrTnZCdz09IiwibWFjIjoiODczNjNlMWNiMTQwM2EzMzRkY2E4YmJhMWIzZDZkNGMzMGNlMWQ1NWFlMjZjY2Y5YzM0YzNhNTc4MjM2NmIxNyIsInRhZyI6IiJ9
+postal_code: eyJpdiI6ImtEazBUMUYxY2JEVERtZTlOUkdDMnc9PSIsInZhbHVlIjoiYVMvWGZBak1CY3R6RURJWkgvUkhwZz09IiwibWFjIjoiMzNhZGExYTc4N2JiMDMxYjQ1NmM2OWJmNTM2MDdlOTFlMjNkM2EwZTRkMmZiYWJjOWFiZjlkMjFmZjFlNzUwZSIsInRhZyI6IiJ9
+city: eyJpdiI6InBwOFcvMzhzUVhpR2grNGNLUGlDNVE9PSIsInZhbHVlIjoieHZaNFN2WFovM2o4d1VNS3V6YUJpdz09IiwibWFjIjoiNjNkZjBkZWFlNWE4ZDkyYjg5ZDAzMGIxZmNkOGRiMDhjY2MwMmM1NzIwMGQwZGY3Yzc4NmVjMDJjM2Y0NDIzOCIsInRhZyI6IiJ9
+country: eyJpdiI6InduNkwyQUV1VStjcjdzb3hzdnBYU1E9PSIsInZhbHVlIjoiZ2hrRXVlNkRZbVA4UkZJMzJsUC9aUT09IiwibWFjIjoiYWNkOTkxYjViOTBiNDc3YWEyYTgyNzM4YzdiZDRmZmQ5YmVhYzYzNzIxZWJmMTBiM2Y4NDk3MzY1ZmIyMzFkOSIsInRhZyI6IiJ9
+date_of_birth: eyJpdiI6IjJFT1BNcjNRRG9VdEh0YWhOY0lHdXc9PSIsInZhbHVlIjoieVRTaWJ6bXRkMWQ5TVhYOWNOWFBjZz09IiwibWFjIjoiMDQ5NDdiMDMzZjA5MzJhYWM2NGJhZGM5ZGQzYjY2ZDUyMjA5ZTBiNWU1ZTBhYjVlNjAwMTIzZGNmODAwMDBjZiIsInRhZyI6IiJ9
+place_of_birth: eyJpdiI6InBBTHlIeVdLUTUyeFVJYnhEMGdSMEE9PSIsInZhbHVlIjoiaGFqT2kyQThJOEFybk9HS3d0WGk2QT09IiwibWFjIjoiMDhlYzU0ZjRhODYzZjQyODVhMjEyNzY3ZGM0YjFhYzQxMWRhMDk3YzdjOTJmYTEzMjliYzI3ZTEyNzA2MjMxZCIsInRhZyI6IiJ9
+about:
+  -
+    type: paragraph
+    content:
+      -
+        type: text
+        text: 'Ich entwickle Software, organisiere Projekte und arbeite gern dort, wo Technik mit echten Aufgaben zusammenkommt. Besonders beschäftige ich mich mit Webentwicklung, Open Source, Datenschutz und digitalen Werkzeugen. Neben eigenen Softwareprojekten engagiere ich mich in Robotik, politischer Bildung und Kommunikation. Dabei übernehme ich sowohl technische Arbeit als auch Organisation und Verantwortung im Team.'
+knowledge:
+  -
+    id: VUoio8kGj0ZsgIfHSwxzg
+    category: Webentwicklung
+    items:
+      -
+        id: xeZIXE9U9bj6ILHqx3WLO
+        label: Typescript
+        context: 'sehr sicher im täglichen Einsatz'
+      -
+        id: tCKQGp5_G44AFZQ--XzMi
+        label: React
+        context: 'regelmäßiger Einsatz in eigenen Projekten'
+      -
+        id: u12CqZXnN7yInED7MCZsm
+        label: 'Tanstack Start'
+        context: 'derzeit bevorzugtes Framework'
+      -
+        id: LH1WzYneliXr1eOeXGjAJ
+        label: Next.js
+        context: 'umfangreiche Projekterfahrung'
+      -
+        id: 8QNxCQbgA7wUo3wqsVcTS
+        label: 'Laravel & Statamic'
+        context: 'praktische Erfahrung durch diese Website und CMS-Projekte'
+  -
+    id: 2VwTNnh6ZBdphMLI2ds_6
+    category: 'Backend & Systeme'
+    items:
+      -
+        id: yAeSvycSl4Z9eMnqyfpAY
+        label: Rust
+        context: 'praktische Projekterfahrung'
+      -
+        id: HuUNfMemCKPhcOvom8F8Z
+        label: Tokio
+        context: 'asynchrone Rust-Anwendungen'
+      -
+        id: POiM4chPFziSW58kePtrc
+        label: Node.js
+        context: 'Webanwendungen und Tooling'
+      -
+        id: 474-CBkqyVKDGlVHMZ2-X
+        label: Effect
+        context: 'lieblings Typescript libary'
+      -
+        id: myGVeIkuXwBMB_IjTNwqS
+        label: PostgreSQL
+        context: 'relationale Datenmodelle'
+      -
+        id: _Oy6k0o24zlQq0czzSsNL
+        label: Linux
+        context: 'tägliche Entwicklungsumgebung und Serverbetrieb'
+  -
+    id: 2m0zKQTqEsAL9xGA0ottO
+    category: 'Werkzeuge & Open Source'
+    items:
+      -
+        id: Wt8qXuNxQxdLiIBdi_aL9
+        label: Git
+        context: 'täglicher Entwicklungsworkflow'
+      -
+        id: QChyhtywaz3SX8-u_eV6k
+        label: 'GitHub / Codeberg / GitLab'
+        context: 'Repository- und Review-Workflows'
+      -
+        id: 27_t5fR8DwpdPxE9l2Afo
+        label: Docker
+        context: 'Entwicklungs- und Testumgebungen'
+      -
+        id: p2R9yPAMWnHNV8o3jDSm3
+        label: 'LaTeX / LuaLaTeX'
+        context: 'Dokumente und technische Veröffentlichungen'
+soft_skills:
+  -
+    id: bPPG6zmODHeUgyeGwHoQG
+    label: 'Eigenständiges Arbeiten'
+    context: 'Ich entwickle Projekte von der ersten Idee bis zur technischen Umsetzung und kann mich selbstständig in neue Themen einarbeiten.'
+  -
+    id: GS3an7WK3OcF-mr1uW9Mh
+    label: Teamarbeit
+    context: 'Erfahrung aus Robotik, Veranstaltungsorganisation, schulischen Projekten und politischer Arbeit mit sehr unterschiedlichen Teams.'
+  -
+    id: viqG1vBDxiFAH7WeHzxaX
+    label: Kommunikation
+    context: 'Ich schreibe Presse- und Webtexte, erkläre technische Themen und arbeite regelmäßig mit Menschen außerhalb der Softwareentwicklung zusammen.'
+  -
+    id: '-oE8GfsSC4ZZLLnTr9AwY'
+    label: Organisation
+    context: 'Ich plane Projekte, Veranstaltungen und technische Arbeit parallel und übernehme Verantwortung für konkrete Ergebnisse.'
+  -
+    id: y7f5PTRegK-LC3Sx1Qs1T
+    label: 'Analytisches Arbeiten'
+    context: 'Ich zerlege technische Probleme gern in kleinere Teile und arbeite mich auch in unbekannte Systeme und Codebasen ein.'
+projects:
+  - 4739fabf-5726-4d17-ad72-5a5f574e33cd
+  - 1b4ba371-c0b4-4fae-8a93-1f2fabf11477
+  - 8e9f1f56-1feb-46a8-9ae5-a79ec9444c81
+  - 00979e47-6007-439e-b10c-f1b47cc99863
+  - 840804f5-d413-4824-a847-769393170ed4
+publications:
+  - 0fdf9b1f-0190-433a-9185-b49a4fbb6646
+  - a6e26f5b-16df-4097-894a-d353e649665c
+interactive_timeline: false
+milestones:
+  - 8a69338b-dca0-436e-b6f5-e0c96ace327a
+  - ff83e089-6578-4f8a-9a4f-22ad780452c8
+  - ad79c3f3-ac9f-4fe8-ba6b-fca12fdb7ae3
+  - e02fdc80-3a4a-4417-aa7f-a554cf7eccb2
+  - 54b21346-ada2-4110-a005-88fad17d61c9
+  - 432a2d8b-1efd-442b-929b-a4286026cf7f
+  - 39248867-2c4a-4d7f-82ab-22758b8d97e3
+  - 18cd3b40-f6d5-4919-8b0c-be941c133659
+print_place: Stade
