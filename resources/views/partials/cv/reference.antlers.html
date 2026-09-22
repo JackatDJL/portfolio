@@ -1,5 +1,5 @@
 <article class="cv-record cv-record--reference">
     <p class="cv-period">{{ if date }}{{ date | format('m/Y') }}{{ elseif started_at }}{{ started_at | format('m/Y') }}{{ /if }}</p>
-    <div class="cv-record__content"><h3><a class="related-reference cv-inline-link" href="{{ url }}" data-related-reference>{{ partial:cv/link-title }}</a></h3>
+    <div class="cv-record__content"><h3><a class="related-reference related-reference--text" href="{{ url }}" data-related-reference>{{ partial:components/link-title }}</a></h3>
     {{ if publication_type }}<p class="cv-relation-meta">{{ publication_type:label ?? publication_type }}{{ if publisher }} · {{ publisher }}{{ /if }}{{ if doi }} · DOI {{ doi }}{{ /if }}</p>{{ elseif summary }}<p class="cv-record__summary">{{ summary }}</p>{{ /if }}</div>
 </article>

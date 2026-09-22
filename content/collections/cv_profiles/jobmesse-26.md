@@ -2,6 +2,7 @@
 id: 04d5407d-e18b-49e6-8ac5-9f54146b88cc
 blueprint: cv_profile
 title: 'Jobmesse 2026'
+accent_color: '#5adbbd'
 recipient_name: 'An die Firmen der Jobmesse 2026'
 application_year: 2026
 projects:

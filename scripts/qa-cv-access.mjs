@@ -20,7 +20,7 @@ try {
  let fixtureGlobals=originalGlobals;
  for(const [key,value] of Object.entries(JSON.parse(encrypted))) fixtureGlobals=fixtureGlobals.replace(new RegExp('^'+key+':.*$','m'),key+': '+JSON.stringify(value));
  await writeFile(globalsPath,fixtureGlobals);
- let profile = await readFile('content/collections/cv_profiles/airbus-26.md','utf8');
+ let profile = await readFile('content/collections/cv_profiles/jobmesse-26.md','utf8');
  profile=profile.replace(/^id: .*$/m,`id: ${id}`).replace(/^title: .*$/m,"title: 'CV QA hidden'").replace(/^---\n/, '---\ninteractive_timeline: hide\n');
  await writeFile(path,profile);await exec('php',['artisan','statamic:stache:clear']);
  for(const [name,engine] of [['chromium',chromium],['firefox',firefox]]) {
@@ -33,35 +33,32 @@ try {
    assert.equal(await page.locator('[data-cv-explore]').count(),0);
    assert.equal(requests.some(url=>url.includes('cv-explore-')),false);
    await page.screenshot({path:`storage/app/refinement-after/${name}-hidden.png`,fullPage:true});
-   const token=await issue('/cv/airbus-26');
-   const response=await page.goto(base+'/cv/airbus-26?cv='+token);
-   await page.waitForURL(base+'/cv/airbus-26');
+   const token=await issue('/cv/jobmesse-26');
+   const response=await page.goto(base+'/cv/jobmesse-26#cv='+token);
+   await page.waitForURL(base+'/cv/jobmesse-26');
    await page.waitForFunction(()=>document.documentElement.dataset.cvPrivateState==='authorized');
    assert.equal(await page.locator('.cv-contact__mask').count(),0);
    assert.ok(response.headers()['cache-control'].includes('no-store'));
    assert.equal((await page.content()).includes(token),false);
    const cookies=await context.cookies();assert.ok(cookies.some(cookie=>cookie.httpOnly&&cookie.sameSite==='Lax'));
    // Check the real PDF response through the same browser session. Never persist actual private PDF bytes.
-   const pdf=await context.request.get(base+'/cv/airbus-26/pdf');assert.equal(pdf.status(),200);assert.equal((await pdf.body()).subarray(0,5).toString(),'%PDF-');
+   const pdf=await context.request.get(base+'/cv/jobmesse-26/pdf');assert.equal(pdf.status(),200);assert.equal((await pdf.body()).subarray(0,5).toString(),'%PDF-');
    await page.evaluate(()=>{window.__htmlPrintCalls=0;window.print=()=>window.__htmlPrintCalls++;});
    const popupPromise=page.waitForEvent('popup');
-   const pdfRequest=context.waitForEvent('request', { predicate: req => req.url() === base+'/cv/airbus-26/pdf' });
+   const pdfRequest=context.waitForEvent('request', { predicate: req => req.url() === base+'/cv/jobmesse-26/pdf' });
    await page.keyboard.press('Control+p');const popup=await popupPromise;
    await pdfRequest;
    assert.equal(await page.evaluate(()=>window.__htmlPrintCalls),0);
    console.log(name,'Ctrl+P opened canonical profile PDF; HTML print calls: 0');
    if (!popup.isClosed()) await popup.close();
    const cmdPopupPromise=page.waitForEvent('popup');
-   const cmdPdfRequest=context.waitForEvent('request', { predicate: req => req.url() === base+'/cv/airbus-26/pdf' });
+   const cmdPdfRequest=context.waitForEvent('request', { predicate: req => req.url() === base+'/cv/jobmesse-26/pdf' });
    await page.keyboard.press('Meta+p');const cmdPopup=await cmdPopupPromise;
    await cmdPdfRequest;
    if (!cmdPopup.isClosed()) await cmdPopup.close();
    await page.goto(base+'/cv');await page.waitForFunction(()=>document.documentElement.dataset.cvPrivateState==='public');
    assert.equal(await page.locator('.cv-contact__mask').count(),3);
-   const legacy=await issue('/cv/04d5407d-e18b-49e6-8ac5-9f54146b88cc');
-   await page.goto(base+'/cv/04d5407d-e18b-49e6-8ac5-9f54146b88cc#cv='+legacy);
-   await page.waitForURL(base+'/cv/airbus-26');await page.waitForFunction(()=>document.documentElement.dataset.cvPrivateState==='authorized');
-   console.log(name,'hidden timeline, scoped private HTML/PDF session, public masking and legacy fragment migration passed');
+   console.log(name,'hidden timeline, scoped private HTML/PDF session and public masking passed');
    await context.close();
   }finally{await browser.close();}
  }

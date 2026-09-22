@@ -3,6 +3,7 @@
 use App\Http\Controllers\CvPdfController;
 use App\Http\Controllers\CvPrivateDataController;
 use App\Http\Controllers\CvPrivateLinkController;
+use App\Http\Controllers\CvTokenExchangeController;
 use Illuminate\Support\Facades\Route;
 use Statamic\View\View;
 
@@ -24,6 +25,9 @@ Route::get('/design-system', function () {
 
 Route::post('/cv/private-data', [CvPrivateDataController::class, 'reveal'])
     ->name('cv.private-data');
+Route::post('/cv/token-exchange', CvTokenExchangeController::class)
+    ->middleware('throttle:12,1')
+    ->name('cv.token-exchange');
 
 Route::get('/cv/pdf', CvPdfController::class)
     ->middleware('throttle:6,1')
@@ -51,3 +55,4 @@ Route::statamic('/cv', 'cv/show', ['title' => 'Lebenslauf']);
 Route::statamic('/cv/{profile}', 'cv/profile');
 
 Route::get('/cp/cv/private-link/status', [CvPrivateLinkController::class, 'status'])->middleware(['statamic.cp', 'statamic.cp.authenticated']);
+Route::get('/cp/cv/private-link/qr', [CvPrivateLinkController::class, 'qr'])->middleware(['statamic.cp', 'statamic.cp.authenticated']);

@@ -8,8 +8,7 @@
     .collection-topics, .project-technologies { list-style: none; padding: 0; margin: 1.25rem 0 0; }
     .collection-topics .chip { font-size: 0.75rem; }
     .collection-arrow-mask { display: inline-grid; margin-left: .08em; vertical-align: .08em; }
-    .collection-link .related-reference__arrow-mask { width: .9em; height: .9em; }
-    .collection-link .related-reference__arrow { font-family: var(--font-sans); font-size: .65em; }
+    .collection-link .related-reference__arrow { font-family: var(--font-sans); }
     .project-stream { border-top: 1px solid var(--site-border-strong); }
     .project-record { position: relative; padding-block: clamp(2.75rem, 7vw, 6.5rem); border-bottom: 1px solid var(--site-border); transition: opacity 300ms var(--ease-standard), transform 300ms var(--ease-standard); }
     .project-record__time { display: flex; align-items: baseline; gap: 1rem; margin-bottom: 1.5rem; font-family: var(--font-mono); font-size: 0.875rem; color: var(--site-text-muted); }

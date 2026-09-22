@@ -11,11 +11,8 @@ export const initCvPrivateData = ({ watch = true } = {}) => {
     const retryOnHashChange = () => {
         if (watch) window.addEventListener('hashchange', () => initCvPrivateData(), { once: true });
     };
-    const match = location.hash.match(/^#cv=([A-Za-z0-9]{32,})$/);
-    if (match) {
-        location.replace(location.pathname + '?cv=' + encodeURIComponent(match[1]));
-        return;
-    }
+    const exchange = window.__cvExchange ?? window.__cvExchangeFragment?.() ?? Promise.resolve(true);
+    window.__cvExchange = undefined;
     document.documentElement.dataset.cvPrivateState = 'loading';
 
     const setValue = (name, value, href) => {
@@ -32,12 +29,14 @@ export const initCvPrivateData = ({ watch = true } = {}) => {
         field.replaceChildren(link);
     };
 
-    fetch(panel.dataset.cvPrivateEndpoint || '/cv/private-data', {
+    exchange.then(ok => ok ? fetch(panel.dataset.cvPrivateEndpoint || '/cv/private-data', {
         method: 'POST',
+        credentials: 'same-origin',
+        referrerPolicy: 'no-referrer',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         body: JSON.stringify({ path: location.pathname }),
-    })
-        .then(response => response.ok ? response.json() : null)
+    }) : null)
+        .then(response => response?.ok ? response.json() : null)
         .then(data => {
             if (!data) {
                 document.documentElement.dataset.cvPrivateState = 'public';
@@ -48,7 +47,6 @@ export const initCvPrivateData = ({ watch = true } = {}) => {
             setValue('email', data.private_email, data.private_email ? `mailto:${data.private_email}` : null);
             setValue('phone', data.phone, data.phone ? `tel:${data.phone.replace(/[^+0-9]/g, '')}` : null);
             setValue('address', composeAddress(data));
-            history.replaceState(null, '', location.pathname + location.search);
             document.documentElement.dataset.cvPrivateReady = 'true';
             document.documentElement.dataset.cvPrivateState = 'authorized';
             document.dispatchEvent(new CustomEvent('cv:private-ready'));

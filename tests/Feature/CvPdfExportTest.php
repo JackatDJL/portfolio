@@ -29,14 +29,15 @@ class CvPdfExportTest extends TestCase
 
     public function test_authorized_profile_export_forwards_only_a_valid_profile_capability(): void
     {
-        $token = CvCapabilities::issueTemporary('/cv/airbus-26')['token'];
+        $token = CvCapabilities::issueTemporary('/cv/jobmesse-26')['token'];
         $pdf = $this->fakePdf();
         $renderer = Mockery::mock(CvPdfRenderer::class);
-        $renderer->shouldReceive('render')->once()->with('airbus-26', true)->andReturn($pdf);
+        $renderer->shouldReceive('render')->once()->with('jobmesse-26', true)->andReturn($pdf);
         $this->app->instance(CvPdfRenderer::class, $renderer);
 
-        $this->get('/cv/airbus-26/pdf?token='.$token)->assertRedirect('/cv/airbus-26/pdf');
-        $this->get('/cv/airbus-26/pdf')->assertOk();
+        $this->get('/cv/jobmesse-26/pdf?token='.$token)->assertNotFound();
+        $this->postJson('/cv/token-exchange', ['path' => '/cv/jobmesse-26', 'token' => $token])->assertOk();
+        $this->get('/cv/jobmesse-26/pdf')->assertOk();
     }
 
     public function test_export_rejects_an_invalid_capability_without_starting_lualatex(): void

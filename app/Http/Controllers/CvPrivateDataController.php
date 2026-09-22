@@ -13,10 +13,9 @@ class CvPrivateDataController extends Controller
 {
     public function reveal(Request $request): JsonResponse
     {
-        $token = (string) $request->input('token', '');
         $path = (string) $request->input('path', '/cv');
 
-        if (! preg_match('#^/cv(?:/[a-z0-9-]+)?$#', $path) || ! (CvCapabilities::sessionAllows($request, $path) || ($token !== '' && CvCapabilities::allows($token, $path)))) {
+        if (! preg_match('#^/cv(?:/[a-z0-9-]+)?$#', $path) || ! CvCapabilities::sessionAllows($request, $path)) {
             abort(404);
         }
 

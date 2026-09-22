@@ -62,7 +62,7 @@ return [
         '/blog',
         '/publikationen',
         '/cv',
-        '/cv/airbus-26',
+        '/cv/jobmesse-26',
     ],
 
     /*

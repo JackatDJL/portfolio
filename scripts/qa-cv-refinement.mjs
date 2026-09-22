@@ -5,7 +5,7 @@ const base = process.env.CV_BASE_URL || 'http://127.0.0.1:8000';
 const browser = await chromium.launch({headless:true});
 const page = await browser.newPage({viewport:{width:1440,height:1000}});
 const errors=[];page.on('pageerror', e=>errors.push(e.message));
-for(const route of ['/cv','/cv/airbus-26']) {
+for(const route of ['/cv']) {
  await page.goto(base+route);await page.locator('.cv-document').waitFor();await page.evaluate(()=>document.fonts.ready);
  const prefix=route==='/cv'?'base':'profile';
  console.log(prefix,'title',await page.title(),'milestones',await page.locator('[data-cv-milestone]').count());

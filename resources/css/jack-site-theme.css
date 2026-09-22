@@ -842,12 +842,18 @@
 
     .related-reference { display: block; border-top: 1px solid var(--site-border); padding: 0.75rem 0; color: inherit; text-decoration: none; }
     .related-reference__footer { display: flex; min-height: 1.35rem; align-items: start; justify-content: space-between; gap: 0.75rem; }
-    .related-reference__arrow-mask { display: grid; width: 1em; height: 1em; flex: none; place-items: center; overflow: clip; border-radius: 50%; }
-    .related-reference__arrow { display: inline-block; color: var(--link-accent, var(--site-text)); font-size: .78em; font-weight: 700; line-height: 1; transition: transform 180ms var(--ease-emphasized); will-change: transform; }
-    .link-icon--xs { font-size: .72em; }
-    .link-icon--sm { font-size: .86em; }
+    .related-reference__arrow-mask { display: grid; width: 1.2em; height: 1.2em; flex: none; place-items: center; overflow: clip; border-radius: 50%; }
+    .related-reference__arrow { display: inline-block; color: var(--link-accent, var(--site-text)); font-size: 1.15em; font-weight: 700; line-height: 1; transition: transform 180ms var(--ease-emphasized); will-change: transform; }
+    .related-reference__title { display: inline; }
+    .related-reference__title > .related-reference__arrow-mask { display: inline-grid; margin-left: .2em; vertical-align: -.08em; }
+    .related-reference--inline { padding: .55rem 0; }
+    .related-reference--inline .related-reference__meta { display: block; margin-top: .25rem; color: var(--site-text-muted); font-size: .74rem; line-height: 1.45; }
+    .related-reference--text { display: inline; padding: 0; border: 0; }
+    .related-reference--text > .related-reference__arrow-mask { display: inline-grid; margin-left: .2em; vertical-align: -.08em; }
+    .link-icon--xs { font-size: .85em; }
+    .link-icon--sm { font-size: .95em; }
     .link-icon--md { font-size: 1em; }
-    .link-icon--lg, .link-icon--heading { font-size: 1.28em; }
+    .link-icon--lg, .link-icon--heading { font-size: 1.12em; }
     .related-reference:hover .semantic-link, .related-reference:focus-visible .semantic-link { background-size: 100% 100%; }
     .related-reference:hover .related-reference__arrow, .related-reference:focus-visible .related-reference__arrow, .collection-link:hover .related-reference__arrow, .collection-link:focus-visible .related-reference__arrow { transform: translate(3px, -3px); }
     .related-reference:active .related-reference__arrow, .collection-link:active .related-reference__arrow { transform: translate(0, 0); }

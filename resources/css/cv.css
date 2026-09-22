@@ -12,8 +12,10 @@
         box-shadow: 3px 4px 0 color-mix(in srgb, var(--site-shadow-color) 14%, transparent);
         --cv-accent: var(--site-accent);
         --cv-accent-soft: color-mix(in srgb, var(--cv-accent) 18%, var(--site-background));
-        --link-accent: var(--cv-accent);
+        --cv-accent-foreground: color-mix(in srgb, var(--cv-accent) 35%, var(--site-text));
+        --link-accent: var(--cv-accent-foreground);
         --link-marker: color-mix(in srgb, var(--cv-accent) 34%, transparent);
+        --site-focus: var(--cv-accent-foreground);
     }
     .cv-document::before {
         position: absolute;
@@ -45,7 +47,7 @@
     .cv-document__header h1 { margin: .3rem 0 0; font-size: clamp(3.15rem, 9vw, 5.65rem); line-height: .84; letter-spacing: -.07em; }
     .cv-document__subtitle { margin: 1rem 0 0; font-size: .82rem; font-weight: 600; letter-spacing: .025em; }
     .cv-document__profile-slot { position: absolute; z-index: 2; top: clamp(1.3rem, 3vw, 2rem); left: clamp(1.4rem, 4vw, 2.5rem); width: min(42%, 18rem); }
-    .cv-document__recipient { margin: 0; color: var(--cv-accent); font-size: .88rem; font-weight: 750; }
+    .cv-document__recipient { margin: 0; color: var(--cv-accent-foreground); font-size: .88rem; font-weight: 750; }
     .cv-document__context { max-width: 46ch; margin: .3rem 0 0; font-size: .72rem; line-height: 1.4; }
     .cv-portrait { position: relative; z-index: 1; width: clamp(8rem, 21vw, 10.5rem); aspect-ratio: 1; margin: 0 0 -.5rem auto; overflow: hidden; border: 2px solid var(--site-border-strong); border-radius: 48% 52% 44% 56% / 56% 43% 57% 44%; background: var(--site-surface-strong); transform: rotate(3deg); }
     .cv-portrait img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 42%; transform: rotate(-3deg) scale(1.08); }
@@ -82,9 +84,6 @@
     .cv-support__soft-skills ul { display: grid; gap: .45rem; margin: 0; padding: 0; list-style: none; font-size: .75rem; line-height: 1.35; }
     .cv-support__soft-skills li { display: grid; }
     .cv-support__soft-skills small { color: var(--site-text-muted); font-size: .68rem; }
-    .cv-inline-link { display: inline; padding: 0; border: 0; }
-    .cv-inline-link > .related-reference__arrow-mask { display: inline-grid; margin-left: .12em; vertical-align: middle; }
-    .cv-link-tail .related-reference__arrow-mask { display: inline-grid; margin-left: .12em; vertical-align: .08em; }
     .cv-document__career { min-width: 0; }
     .cv-section { margin: 0; padding: 0 0 2rem; }
     .cv-section + .cv-section { padding-top: .2rem; }
@@ -106,7 +105,6 @@
     .cv-record__content .cv-record__organisation { margin-top: .3rem; }
     .cv-record--reference { grid-template-columns: 8.4rem minmax(0, 1fr); padding-block: .8rem; }
     .cv-relation-meta { margin: .4rem 0 0; color: var(--site-text-muted); font-size: .74rem; line-height: 1.45; }
-    .cv-link-tail { white-space: nowrap; }
     .cv-document__print-footer { display: none; }
     .cv-chapter-nav { display: flex; gap: 1.2rem; align-items: center; padding-block: 2rem; font-size: .85rem; }
     .cv-chapter-nav > span { color: var(--site-text-muted); }
@@ -126,14 +124,10 @@
     .experience-detail .prose-site h2, .education-detail .prose-site h2 { font-size: clamp(1.7rem, 2.5vw, 2.3rem); margin-top: 2rem; }
     .experience-detail .prose-site { font-size: 1rem; line-height: 1.75; }
     .cv-explore { position: relative; margin: .75rem 0 0; --link-accent: var(--cv-accent); }
-    .cv-explore__teaser { display: grid; height: 64px; place-items: center; }
+    .cv-explore__teaser { display: grid; height: 48px; place-items: center; }
     .cv-explore__teaser[hidden] { display: none; }
     .cv-explore__preview { display: none; }
-    .cv-explore__reveal { position: relative; padding: .9rem 1.4rem; border: 0; background: transparent; color: inherit; font: inherit; font-size: .85rem; font-weight: 600; cursor: pointer; }
-    .cv-explore__reveal svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; fill: none; stroke: var(--cv-accent); stroke-width: 1.5; }
-    .cv-explore__reveal:hover svg { animation: cv-wave .8s ease-in-out infinite alternate; }
-    .cv-explore__reveal:active { transform: translateY(2px); }
-    .cv-explore__reveal:focus-visible { outline: 2px solid var(--cv-accent); outline-offset: 4px; }
+    .cv-explore__reveal { font-size: .85rem; }
     @keyframes cv-wave { to { transform: skewX(-3deg) scaleY(1.08); stroke-dasharray: 9 2; } }
     .cv-explore__content { position: relative; height: clamp(320px, 45vh, 480px); border-block: 1px solid var(--site-border); background: color-mix(in srgb, var(--cv-accent) 5%, var(--site-surface)); }
     .cv-explore__content[hidden] { display: none; }
@@ -169,7 +163,7 @@
     .education-detail .detail-layout { padding-top: 3rem; }
     @media (max-width: 47.99rem) {
         .cv-document { width: 100%; margin: 0; padding: 1rem; border-right: 0; border-left: 0; border-radius: 0; box-shadow: none; }
-        .cv-document__header { grid-template-columns: minmax(0, 1fr) 7.1rem; min-height: 11rem; padding: 1.25rem; }
+        .cv-document__header { grid-template-columns: minmax(0, 1fr) 7.1rem; min-height: 13.5rem; padding: 1.25rem; }
         .cv-document__header h1 { font-size: clamp(2.7rem, 15vw, 4rem); }
         .cv-portrait { width: 6.7rem; margin-bottom: -.4rem; }
         .cv-document__body { display: block; padding-top: 1.5rem; }
@@ -272,9 +266,8 @@ html[data-theme='dark'] .cv-document::before { opacity: .035; mix-blend-mode: sc
     .cv-milestone__node { top: 1.72rem; }
 }
 
-@media (prefers-reduced-motion: reduce) { .cv-explore__reveal svg { animation: none !important; } }
 
-.education-hero__back { position: absolute; z-index: 4; top: 1.5rem; left: max(1.25rem, calc((100vw - 68rem) / 2)); padding: .55rem .8rem; color: white; background: #111a16b8; border: 1px solid #ffffff80; text-decoration: none; }
+.education-hero__back { position: absolute; z-index: 4; top: 1.5rem; left: max(1.25rem, calc((100vw - 68rem) / 2)); --site-text: #f5faf6; --site-border: #ffffff80; --site-surface: #111a16; background: #111a16b8; }
 
 .cv-milestone[data-active] { opacity: 1; }
 .cv-milestone__body h3 { font-size: 1.25rem; }

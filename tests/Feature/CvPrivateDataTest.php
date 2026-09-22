@@ -57,7 +57,8 @@ class CvPrivateDataTest extends TestCase
         $capability = CvCapabilities::issueTemporary('/cv');
 
         try {
-            $response = $this->postJson('/cv/private-data', ['token' => $capability['token'], 'path' => '/cv']);
+            $this->postJson('/cv/token-exchange', ['token' => $capability['token'], 'path' => '/cv'])->assertOk();
+            $response = $this->postJson('/cv/private-data', ['path' => '/cv']);
             $response->assertOk()->assertJson(self::SENTINELS);
             $this->assertStringContainsString('no-store', $response->headers->get('Cache-Control'));
         } finally {
@@ -67,42 +68,60 @@ class CvPrivateDataTest extends TestCase
 
     public function test_invalid_or_wrong_profile_capability_is_rejected(): void
     {
-        $capability = CvCapabilities::issueTemporary('/cv/airbus-26');
+        $capability = CvCapabilities::issueTemporary('/cv/jobmesse-26');
 
-        $this->postJson('/cv/private-data', ['token' => 'wrong', 'path' => '/cv'])->assertNotFound();
-        $this->postJson('/cv/private-data', ['token' => $capability['token'], 'path' => '/cv'])->assertNotFound();
-        $this->postJson('/cv/private-data', ['token' => $capability['token'], 'path' => '/cv/airbus-26'])->assertOk();
+        $this->postJson('/cv/token-exchange', ['token' => 'wrong', 'path' => '/cv'])->assertUnprocessable();
+        $this->postJson('/cv/token-exchange', ['token' => $capability['token'], 'path' => '/cv'])->assertNotFound();
+        $this->postJson('/cv/token-exchange', ['token' => $capability['token'], 'path' => '/cv/jobmesse-26'])->assertOk();
+        $this->postJson('/cv/private-data', ['path' => '/cv/jobmesse-26'])->assertOk();
     }
 
     public function test_control_panel_utility_issues_a_real_profile_scoped_capability(): void
     {
         $this->actingAs(User::findByEmail('jack@djl.foundation'));
 
-        $response = $this->postJson('/cp/cv/private-link/temporary', ['path' => '/cv/airbus-26'])->assertOk();
-        preg_match('/\?cv=([A-Za-z0-9]+)/', $response->json('url'), $matches);
-        $this->postJson('/cv/private-data', [
+        $response = $this->postJson('/cp/cv/private-link/temporary', ['path' => '/cv/jobmesse-26'])->assertOk();
+        preg_match('/#cv=([A-Za-z0-9]+)/', $response->json('url'), $matches);
+        $this->postJson('/cv/token-exchange', [
             'token' => $matches[1],
-            'path' => '/cv/airbus-26',
+            'path' => '/cv/jobmesse-26',
         ])->assertOk();
     }
 
     public function test_permanent_profile_link_is_stable_scoped_and_revocable(): void
     {
         $this->actingAs(User::findByEmail('jack@djl.foundation'));
-        $first = $this->postJson('/cp/cv/private-link/permanent', ['path' => '/cv/airbus-26'])->assertOk();
-        $second = $this->postJson('/cp/cv/private-link/permanent', ['path' => '/cv/airbus-26'])->assertOk();
+        $first = $this->postJson('/cp/cv/private-link/permanent', ['path' => '/cv/jobmesse-26'])->assertOk();
+        $second = $this->postJson('/cp/cv/private-link/permanent', ['path' => '/cv/jobmesse-26'])->assertOk();
         $this->assertSame($first->json('url'), $second->json('url'));
-        preg_match('/\?cv=([A-Za-z0-9]+)/', $first->json('url'), $matches);
-        $this->postJson('/cv/private-data', ['token' => $matches[1], 'path' => '/cv'])->assertNotFound();
-        $this->deleteJson('/cp/cv/private-link/permanent', ['path' => '/cv/airbus-26'])->assertOk()->assertJson(['revoked' => true]);
-        $this->postJson('/cv/private-data', ['token' => $matches[1], 'path' => '/cv/airbus-26'])->assertNotFound();
+        preg_match('/#cv=([A-Za-z0-9]+)/', $first->json('url'), $matches);
+        $this->postJson('/cv/token-exchange', ['token' => $matches[1], 'path' => '/cv'])->assertNotFound();
+        $this->deleteJson('/cp/cv/private-link/permanent', ['path' => '/cv/jobmesse-26'])->assertOk()->assertJson(['revoked' => true]);
+        $this->postJson('/cv/token-exchange', ['token' => $matches[1], 'path' => '/cv/jobmesse-26'])->assertNotFound();
         $this->assertNotEmpty(DB::table('cv_access_tokens')->where('identifier', $first->json('identifier'))->value('revoked_at'));
     }
 
     public function test_temporary_link_expires(): void
     {
-        $capability = CvCapabilities::issueTemporary('/cv/airbus-26');
+        $capability = CvCapabilities::issueTemporary('/cv/jobmesse-26');
         DB::table('cv_access_tokens')->where('identifier', $capability['identifier'])->update(['expires_at' => now()->subMinute()]);
-        $this->postJson('/cv/private-data', ['token' => $capability['token'], 'path' => '/cv/airbus-26'])->assertNotFound();
+        $this->postJson('/cv/token-exchange', ['token' => $capability['token'], 'path' => '/cv/jobmesse-26'])->assertNotFound();
+    }
+
+    public function test_control_panel_qr_uses_canonical_public_and_active_private_urls(): void
+    {
+        $this->actingAs(User::findByEmail('jack@djl.foundation'));
+        $public = $this->get('/cp/cv/private-link/qr?path=/cv/jobmesse-26&source=public')->assertOk();
+        $this->assertStringContainsString('<svg', $public->getContent());
+        $this->assertStringContainsString('image/svg+xml', $public->headers->get('Content-Type'));
+        $this->get('/cp/cv/private-link/qr?path=/cv/jobmesse-26&source=temporary')->assertNotFound();
+
+        $link = $this->postJson('/cp/cv/private-link/temporary', ['path' => '/cv/jobmesse-26'])->assertOk();
+        $this->assertStringContainsString('/cv/jobmesse-26#cv=', $link->json('url'));
+        $private = $this->get('/cp/cv/private-link/qr?path=/cv/jobmesse-26&source=temporary')->assertOk();
+        $this->assertStringContainsString('<svg', $private->getContent());
+        $this->assertStringContainsString('no-store', $private->headers->get('Cache-Control'));
+        DB::table('cv_access_tokens')->where('identifier', $link->json('identifier'))->update(['expires_at' => now()->subMinute()]);
+        $this->get('/cp/cv/private-link/qr?path=/cv/jobmesse-26&source=temporary')->assertNotFound();
     }
 }

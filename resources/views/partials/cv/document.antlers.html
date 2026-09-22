@@ -13,7 +13,7 @@
     <section class="cv-explore" aria-label="Interaktiver Zeitstrahl" data-cv-explore>
         <div class="cv-explore__teaser">
             <div class="cv-explore__preview" aria-hidden="true"><span></span><i></i><span></span><i></i><span></span></div>
-            <button class="cv-explore__reveal" type="button" aria-expanded="false" aria-controls="cv-explore-content" data-cv-explore-open><svg viewBox="0 0 300 52" preserveAspectRatio="none" aria-hidden="true"><path d="M10 8 Q75 2 150 7 T290 8 Q298 26 290 44 Q220 50 150 45 T10 44 Q2 26 10 8Z" /></svg><span>Interaktiven Zeitstrahl öffnen</span></button>
+            <button class="btn btn-secondary cv-explore__reveal" type="button" aria-expanded="false" aria-controls="cv-explore-content" data-cv-explore-open><span>Zeitstrahl öffnen</span></button>
         </div>
         <div class="cv-explore__content" id="cv-explore-content" role="region" aria-label="Stationen" hidden data-cv-explore-content>
             <button class="cv-explore__close" type="button" aria-label="Zeitstrahl schließen" data-cv-explore-close>{{ partial:components/close-icon }}</button>
@@ -63,9 +63,9 @@
             <section class="cv-support__section" aria-labelledby="cv-online-title">
                 <h2 id="cv-online-title">Online</h2>
                 <nav class="cv-contact__links" aria-label="Profile">
-                    {{ if cv:website }}{{ partial:components/outlink :href="cv:website" label="Website" classes="cv-inline-link" }}{{ /if }}
-                    {{ if cv:github_url }}{{ partial:components/outlink :href="cv:github_url" label="GitHub" classes="cv-inline-link" }}{{ /if }}
-                    {{ if cv:codeberg_url }}{{ partial:components/outlink :href="cv:codeberg_url" label="Codeberg" classes="cv-inline-link" }}{{ /if }}
+                    {{ if cv:website }}{{ partial:components/outlink :href="cv:website" label="Website" classes="related-reference--text" }}{{ /if }}
+                    {{ if cv:github_url }}{{ partial:components/outlink :href="cv:github_url" label="GitHub" classes="related-reference--text" }}{{ /if }}
+                    {{ if cv:codeberg_url }}{{ partial:components/outlink :href="cv:codeberg_url" label="Codeberg" classes="related-reference--text" }}{{ /if }}
                 </nav>
             </section>
         </aside>
@@ -74,7 +74,7 @@
                 <div class="cv-section__heading"><h2 id="cv-experience-title">Erfahrung</h2></div>
                 <div class="cv-records cv-records--thread" data-cv-thread>
                     {{ collection:experience sort="started_at:desc" }}
-                    <article class="cv-record"><div class="cv-record__content"><h3><a class="related-reference cv-inline-link" href="{{ url }}" data-related-reference>{{ partial:cv/link-title size="md" }}</a></h3><p class="cv-record__organisation">{{ organisation }}</p>{{ if summary }}<p class="cv-record__summary">{{ summary }}</p>{{ /if }}</div><div class="cv-record__context"><div class="cv-period">{{ partial:cv/period }}</div></div></article>
+                    <article class="cv-record"><div class="cv-record__content"><h3><a class="related-reference related-reference--text" href="{{ url }}" data-related-reference>{{ partial:components/link-title size="md" }}</a></h3><p class="cv-record__organisation">{{ organisation }}</p>{{ if summary }}<p class="cv-record__summary">{{ summary }}</p>{{ /if }}</div><div class="cv-record__context"><div class="cv-period">{{ partial:cv/period }}</div></div></article>
                     {{ /collection:experience }}
                 </div>
             </section>
@@ -82,7 +82,7 @@
                 <div class="cv-section__heading"><h2 id="cv-education-title">Bildung</h2></div>
                 <div class="cv-records cv-records--thread" data-cv-thread>
                     {{ collection:education sort="started_at:desc" }}
-                    <article class="cv-record cv-record--education"><div class="cv-record__content"><h3><a class="related-reference cv-inline-link" href="{{ url }}" data-related-reference>{{ partial:cv/link-title :title="programme ?? title" size="md" }}</a></h3><p class="cv-record__organisation">{{ title }}</p>{{ if summary }}<p class="cv-record__summary">{{ summary }}</p>{{ /if }}</div><div class="cv-record__context"><div class="cv-period">{{ partial:cv/period }}</div></div></article>
+                    <article class="cv-record cv-record--education"><div class="cv-record__content"><h3><a class="related-reference related-reference--text" href="{{ url }}" data-related-reference>{{ partial:components/link-title :title="programme ?? title" size="md" }}</a></h3><p class="cv-record__organisation">{{ title }}</p>{{ if summary }}<p class="cv-record__summary">{{ summary }}</p>{{ /if }}</div><div class="cv-record__context"><div class="cv-period">{{ partial:cv/period }}</div></div></article>
                     {{ /collection:education }}
                 </div>
             </section>

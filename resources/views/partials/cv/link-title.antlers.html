@@ -1,1 +1,0 @@
-{{ _last_word = title | explode(' ') | last }}<span class="semantic-link">{{ title | remove_right(_last_word) }}<span class="cv-link-tail">{{ _last_word }}{{ partial:components/open-file :size="size" }}</span></span>

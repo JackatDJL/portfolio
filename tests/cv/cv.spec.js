@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises';
 import { promisify } from 'node:util';
 const execFileAsync = promisify(execFile);
 const cvBaseURL = process.env.CV_BASE_URL || 'http://127.0.0.1:8091';
-const routes = ['/cv', '/cv/airbus-26', '/cv/exp/volt-stade-kommunikation', '/cv/exp/erstwaehlerforum-stade-organisation', '/cv/exp/hackclub-stade-organisation', '/cv/exp/atheblues-robotik-und-teamarbeit', '/cv/exp/volt-europa-technische-mitarbeit', '/cv/exp/volt-deutschland-technische-mitarbeit', '/cv/edu/gymnasium-athenaeum-stade', '/projekte/erstwaehlerforum-stade'];
+const routes = ['/cv', '/cv/jobmesse-26', '/cv/exp/volt-stade-kommunikation', '/cv/exp/erstwaehlerforum-stade-organisation', '/cv/exp/hackclub-stade-organisation', '/cv/exp/atheblues-robotik-und-teamarbeit', '/cv/exp/volt-europa-technische-mitarbeit', '/cv/exp/volt-deutschland-technische-mitarbeit', '/cv/edu/gymnasium-athenaeum-stade', '/projekte/erstwaehlerforum-stade'];
 for (const width of [1440, 390]) for (const theme of ['light', 'dark']) {
     test(`${width}px ${theme}: CV pages render without overflow`, async ({ page }, testInfo) => {
         await page.setViewportSize({ width, height: width === 390 ? 844 : 1000 });
@@ -19,7 +19,7 @@ for (const width of [1440, 390]) for (const theme of ['light', 'dark']) {
             expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
             await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
             await page.screenshot({ path: testInfo.outputPath(`${route.replaceAll('/', '_')}.png`), fullPage: true });
-            if (route === '/cv' || route === '/cv/airbus-26') {
+            if (route === '/cv' || route === '/cv/jobmesse-26') {
                 await expect(page.locator('h1')).toHaveText('Jack Ruder');
                 await expect(page.locator('main')).not.toContainText(/Allgemeines Profil|Ausgangsprofil|Preset|für Bewerbungen|Personalisiertes Profil|Mein Lebenslauf für/);
                 await expect(page.locator('.cv-record time')).not.toHaveCount(0);
@@ -40,9 +40,9 @@ for (const width of [1440, 390]) for (const theme of ['light', 'dark']) {
             if (route === '/cv') {
                 await expect(page.locator('.cv-document__recipient')).toHaveCount(0);
             }
-            if (route === '/cv/airbus-26') {
-                await expect(page.locator('.cv-document__recipient')).toHaveText('Airbus 2027');
-                await expect(page.locator('.cv-document')).toHaveCSS('--cv-accent', '#315c78');
+            if (route === '/cv/jobmesse-26') {
+                await expect(page.locator('.cv-document__recipient')).toHaveText('Jobmesse 2026');
+                await expect(page.locator('.cv-document')).toHaveCSS('--cv-accent', '#5adbbd');
                 await expect(page.locator('main')).toContainText('Robotik und Teamarbeit');
                 await expect(page.locator('main')).toContainText('Gymnasium Athenaeum Stade');
             }
@@ -135,7 +135,7 @@ test('profile personalization does not move the fixed header geometry', async ({
             return { name: box('.cv-document__header h1'), location: box('.cv-document__subtitle'), portrait: box('.cv-portrait'), header: box('.cv-document__header') };
         });
     };
-    expect(await geometry('/cv/airbus-26')).toEqual(await geometry('/cv'));
+    expect(await geometry('/cv/jobmesse-26')).toEqual(await geometry('/cv'));
 });
 test('authorized private response replaces masks in the same contact fields', async ({ page }) => {
     await page.route('**/cv/private-data', route => route.fulfill({
@@ -150,12 +150,12 @@ test('authorized private response replaces masks in the same contact fields', as
             city: 'Teststadt',
         }),
     }));
-    await page.goto('/cv/airbus-26');
+    await page.goto('/cv/jobmesse-26');
     await expect(page.locator('[data-cv-private="email"]')).toHaveText('cv-test@example.invalid');
     await expect(page.locator('[data-cv-private="phone"]')).toHaveText('+49 000 000000');
     await expect(page.locator('[data-cv-private="address"]')).toContainText('Musterstraße 1');
     await expect(page.locator('.cv-contact__mask')).toHaveCount(0);
-    await expect(page).toHaveURL(/\/cv\/airbus-26$/);
+    await expect(page).toHaveURL(/\/cv\/jobmesse-26$/);
 });
 test('canonical LuaLaTeX PDF preserves identity and public masks', async ({ request }, testInfo) => {
     const response = await request.get('/cv/pdf');
@@ -185,6 +185,28 @@ test('CV document canvas is constrained on desktop and fluid on smaller screens'
         if (width >= 1024) expect(Math.abs(documentBox.x - (width - documentBox.width) / 2)).toBeLessThan(2);
         expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
         await page.screenshot({ path: testInfo.outputPath(`cv-${width}.png`), fullPage: true });
+    }
+});
+test('Jobmesse release renders at all target widths with its timeline off', async ({ page }, testInfo) => {
+    for (const width of [1920, 1440, 1024, 768, 390]) {
+        await page.setViewportSize({ width, height: 1000 });
+        await page.goto('/cv/jobmesse-26');
+        await page.evaluate(() => document.fonts.ready);
+        await page.locator('.cv-portrait img').evaluate(image => image.decode());
+        await expect(page.locator('[data-cv-explore]')).toHaveCount(0);
+        await expect(page.locator('main')).toContainText('Eigenständiges Arbeiten');
+        expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+        await page.screenshot({ path: testInfo.outputPath(`jobmesse-${width}.png`), fullPage: true });
+        for (const [kind, route] of [
+            ['experience', '/cv/exp/volt-stade-kommunikation'],
+            ['education', '/cv/edu/gymnasium-athenaeum-stade'],
+        ]) {
+            await page.goto(route);
+            await page.evaluate(() => document.fonts.ready);
+            await expect(page.locator('a.btn-ghost[href="/cv"]')).toBeVisible();
+            expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+            await page.screenshot({ path: testInfo.outputPath(`${kind}-${width}.png`), fullPage: true });
+        }
     }
 });
 test('mobile gallery responds to native touch swipe', async ({ browser }) => {

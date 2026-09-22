@@ -1,7 +1,6 @@
 <article class="experience-detail detail-container">
     <nav class="cv-chapter-nav" aria-label="Lebenslauf"><a class="btn btn-ghost" href="/cv">← Lebenslauf</a><span>Erfahrung</span></nav>
     <header class="experience-header">
-        {{ partial:components/eyebrow label="Erfahrung" }}
         <h1>{{ title }}</h1>
         <div class="experience-header__meta"><p class="experience-organisation">{{ organisation }}</p><p class="cv-period">{{ partial:cv/period detailed="true" }}</p></div>
         {{ if summary }}<p class="experience-summary">{{ summary }}</p>{{ /if }}
@@ -16,7 +15,7 @@
                 {{ partial:detail/meta-group label="Organisation" }}<p>{{ organisation }}</p>{{ /partial:detail/meta-group }}
                 {{ if topics }}{{ partial:detail/meta-group label="Themen" }}<div class="flex flex-wrap gap-2">{{ topics }}{{ partial:components/chip :label="title" classes="chip-topic" }}{{ /topics }}</div>{{ /partial:detail/meta-group }}{{ /if }}
                 {{ if projects }}{{ partial:detail/meta-group label="Projekte" }}{{ projects }}{{ if published && project_status != 'confidential' }}{{ partial:components/related-reference inline="true" }}{{ /if }}{{ /projects }}{{ /partial:detail/meta-group }}{{ /if }}
-                {{ if links }}{{ partial:detail/meta-group label="Öffentliche Quellen" }}{{ links }}<p class="cv-source-link">{{ partial:components/outlink :href="href" :label="label" classes="cv-inline-link" size="sm" }}</p>{{ /links }}{{ /partial:detail/meta-group }}{{ /if }}
+                {{ if links }}{{ partial:detail/meta-group label="Öffentliche Quellen" }}{{ links }}<p class="cv-source-link">{{ partial:components/outlink :href="href" :label="label" classes="related-reference--text" size="sm" }}</p>{{ /links }}{{ /partial:detail/meta-group }}{{ /if }}
             </div>
         </aside>
         <div class="detail-layout__main">{{ partial:bard/prose :content="body" }}</div>
