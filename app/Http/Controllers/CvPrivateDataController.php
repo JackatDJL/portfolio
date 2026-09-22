@@ -16,7 +16,7 @@ class CvPrivateDataController extends Controller
         $token = (string) $request->input('token', '');
         $path = (string) $request->input('path', '/cv');
 
-        if (! preg_match('#^/cv(?:/[a-z0-9-]+)?$#', $path) || ! CvCapabilities::allows($token, $path)) {
+        if (! preg_match('#^/cv(?:/[a-z0-9-]+)?$#', $path) || ! (CvCapabilities::sessionAllows($request, $path) || ($token !== '' && CvCapabilities::allows($token, $path)))) {
             abort(404);
         }
 

@@ -5,7 +5,7 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token }}">
-        <title>{{ (title ?? site:name) | sanitize }}</title>
+        <title>{{ cv_title | sanitize }}</title>
         <script>
             try {
                 const theme = localStorage.getItem('jack-theme');

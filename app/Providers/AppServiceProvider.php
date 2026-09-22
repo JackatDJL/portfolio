@@ -23,6 +23,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         ProtectedText::register();
+        \App\Tags\CvTitle::register();
         HomepageProjects::register();
         Statamic::externalScript(asset('/cp-cv-profile-access.js'));
     }

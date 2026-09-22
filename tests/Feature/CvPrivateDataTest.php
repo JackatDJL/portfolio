@@ -79,7 +79,7 @@ class CvPrivateDataTest extends TestCase
         $this->actingAs(User::findByEmail('jack@djl.foundation'));
 
         $response = $this->postJson('/cp/cv/private-link/temporary', ['path' => '/cv/airbus-26'])->assertOk();
-        preg_match('/#cv=([A-Za-z0-9]+)/', $response->json('url'), $matches);
+        preg_match('/\?cv=([A-Za-z0-9]+)/', $response->json('url'), $matches);
         $this->postJson('/cv/private-data', [
             'token' => $matches[1],
             'path' => '/cv/airbus-26',
@@ -92,7 +92,7 @@ class CvPrivateDataTest extends TestCase
         $first = $this->postJson('/cp/cv/private-link/permanent', ['path' => '/cv/airbus-26'])->assertOk();
         $second = $this->postJson('/cp/cv/private-link/permanent', ['path' => '/cv/airbus-26'])->assertOk();
         $this->assertSame($first->json('url'), $second->json('url'));
-        preg_match('/#cv=([A-Za-z0-9]+)/', $first->json('url'), $matches);
+        preg_match('/\?cv=([A-Za-z0-9]+)/', $first->json('url'), $matches);
         $this->postJson('/cv/private-data', ['token' => $matches[1], 'path' => '/cv'])->assertNotFound();
         $this->deleteJson('/cp/cv/private-link/permanent', ['path' => '/cv/airbus-26'])->assertOk()->assertJson(['revoked' => true]);
         $this->postJson('/cv/private-data', ['token' => $matches[1], 'path' => '/cv/airbus-26'])->assertNotFound();

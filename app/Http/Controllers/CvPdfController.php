@@ -14,11 +14,13 @@ final class CvPdfController extends Controller
         $path = '/cv'.($profile ? '/'.$profile : '');
         $token = (string) $request->query('token', '');
         if ($token !== '' && ! CvCapabilities::allows($token, $path)) abort(404);
-        $pdf = $renderer->render($profile, $token !== '');
+        $pdf = $renderer->render($profile, !$request->boolean('public') && ($token !== '' || CvCapabilities::sessionAllows($request, $path)));
         return response()->download($pdf, 'Jack-Ruder-Lebenslauf'.($profile ? '-'.$profile : '').'.pdf', [
             'Content-Type' => 'application/pdf',
             'Cache-Control' => 'private, no-store',
+            'Content-Disposition' => 'inline; filename="Jack-Ruder-Lebenslauf.pdf"',
+            'Referrer-Policy' => 'no-referrer',
             'X-Robots-Tag' => 'noindex, nofollow, noarchive',
-        ])->deleteFileAfterSend();
+        ] , 'inline')->deleteFileAfterSend();
     }
 }

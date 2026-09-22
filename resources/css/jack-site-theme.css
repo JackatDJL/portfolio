@@ -1108,3 +1108,6 @@
     .related-reference--reveal:hover .related-reference__arrow-mask,
     .related-reference--reveal:focus-visible .related-reference__arrow-mask { opacity: 1; }
 }
+
+.close-icon { display: block; width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1.6; }
+.citation-dialog__close, .cv-explore__close { display: grid; place-items: center; padding: 0; line-height: 1; }

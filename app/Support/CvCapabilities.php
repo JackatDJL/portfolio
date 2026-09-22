@@ -43,12 +43,32 @@ final class CvCapabilities
 
         $hash = hash('sha256', $token);
         $capability = DB::table('cv_access_tokens')->where('token_hash', $hash)->whereNull('revoked_at')->first();
-        if (! $capability || ! hash_equals($capability->profile_path, $path) || ($capability->expires_at && now()->isAfter($capability->expires_at))) {
+        if (! $capability || ! self::sameScope($capability->profile_path, $path) || ($capability->expires_at && now()->isAfter($capability->expires_at))) {
             return false;
         }
         DB::table('cv_access_tokens')->where('id', $capability->id)->update(['last_used_at' => now(), 'updated_at' => now()]);
 
         return true;
+    }
+
+    private static function sameScope(string $stored, string $path): bool
+    {
+        if (hash_equals($stored, $path)) return true;
+        $entry = \Statamic\Facades\Entry::find(basename($stored));
+        return $entry && $entry->collectionHandle() === 'cv_profiles' && '/cv/'.$entry->slug() === $path;
+    }
+
+    public static function sessionAllows(\Illuminate\Http\Request $request, string $path): bool
+    {
+        $hash = $request->session()->get('cv_grants.'.hash('sha256', $path));
+        if (!is_string($hash)) return false;
+        $legacyHash = (string) config('cv.access_token_hash');
+        if (preg_match('/^[0-9a-f]{64}$/', $legacyHash) && hash_equals($legacyHash, $hash)) return true;
+        $record = DB::table('cv_access_tokens')->where('token_hash', $hash)->whereNull('revoked_at')->first();
+        if (!$record || ($record->expires_at && now()->isAfter($record->expires_at))) return false;
+        if (hash_equals($record->profile_path, $path)) return true;
+        $legacy = \Statamic\Facades\Entry::find(basename($record->profile_path));
+        return $legacy && $legacy->collectionHandle() === 'cv_profiles' && '/cv/'.$legacy->slug() === $path;
     }
 
     private static function store(string $token, string $path, string $kind, $expiresAt = null): array

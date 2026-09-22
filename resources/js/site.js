@@ -319,3 +319,5 @@ if (menu instanceof HTMLDialogElement && menuButton instanceof HTMLButtonElement
     menu.addEventListener('close', () => { menuButton.setAttribute('aria-expanded', 'false'); menuButton.focus(); });
     menu.addEventListener('cancel', (event) => { event.preventDefault(); closeMenu(); });
 }
+
+if (document.querySelector(".cv-document")) import("./cv-print.js");

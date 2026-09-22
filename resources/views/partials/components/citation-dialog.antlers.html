@@ -8,7 +8,7 @@
                     <p class="eyebrow">Zitieren</p>
                     <h2 id="citation-dialog-title-{{ id }}">{{ publication_type:label ?? publication_type }} zitieren</h2>
                 </div>
-                <button class="btn btn-ghost citation-dialog__close" type="button" data-citation-close aria-label="Zitationsdialog schließen">×</button>
+                <button class="btn btn-ghost citation-dialog__close" type="button" data-citation-close aria-label="Zitationsdialog schließen">{{ partial:components/close-icon }}</button>
             </header>
 
             <div class="citation-dialog__authors" hidden>{{ authors }}<span data-citation-author>{{ name }}</span>{{ /authors }}</div>

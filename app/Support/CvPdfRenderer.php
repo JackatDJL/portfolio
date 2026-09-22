@@ -29,7 +29,8 @@ class CvPdfRenderer
                 $environment
             );
             $process->setTimeout((float) config('cv.pdf_timeout', 60));
-            $process->mustRun();
+            $process->run();
+            if (!$process->isSuccessful()) throw new RuntimeException('CV PDF compilation failed. Compiler output is suppressed to protect private fields.');
             $output = $root.'/cv.pdf';
             if (! is_file($output) || file_get_contents($output, false, null, 0, 5) !== '%PDF-') throw new RuntimeException('LuaLaTeX did not produce a valid PDF.');
             $directory = storage_path('app/private/cv-pdf');

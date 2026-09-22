@@ -5,18 +5,18 @@
             <h1>{{ cv:full_name }}</h1>
             {{ if cv:public_location }}<p class="cv-document__subtitle">{{ cv:public_location }}</p>{{ /if }}
         </div>
-        {{ if recipient_name || optional_context }}<div class="cv-document__profile-slot">{{ if recipient_name }}<p class="cv-document__recipient">{{ recipient_name }}{{ if application_year }} · {{ application_year }}{{ /if }}</p>{{ /if }}{{ if optional_context }}<p class="cv-document__context">{{ optional_context }}</p>{{ /if }}</div>{{ /if }}
+        {{ if profile_title || optional_context }}<div class="cv-document__profile-slot">{{ if profile_title }}<p class="cv-document__recipient">{{ profile_title }}</p>{{ /if }}{{ if optional_context }}<p class="cv-document__context">{{ optional_context }}</p>{{ /if }}</div>{{ /if }}
         {{ if cv:profile_image }}<div class="cv-portrait">{{ partial:media/image :asset="cv:profile_image" mode="content" figure_class="cv-portrait__figure" image_class="cv-portrait__image" width="480" sizes="11rem" loading="eager" fetchpriority="high" }}</div>{{ /if }}
     </header>
     {{ _profile_milestones = milestones ?? cv:milestones }}
-    {{ if _profile_milestones }}
+    {{ if _profile_milestones && interactive_timeline != "hide" && (interactive_timeline == "show" || cv:interactive_timeline !== false) }}
     <section class="cv-explore" aria-label="Interaktiver Zeitstrahl" data-cv-explore>
         <div class="cv-explore__teaser">
             <div class="cv-explore__preview" aria-hidden="true"><span></span><i></i><span></span><i></i><span></span></div>
-            <button class="btn cv-explore__reveal" type="button" aria-expanded="false" aria-controls="cv-explore-content" data-cv-explore-open>Zeitstrahl öffnen</button>
+            <button class="cv-explore__reveal" type="button" aria-expanded="false" aria-controls="cv-explore-content" data-cv-explore-open><svg viewBox="0 0 300 52" preserveAspectRatio="none" aria-hidden="true"><path d="M10 8 Q75 2 150 7 T290 8 Q298 26 290 44 Q220 50 150 45 T10 44 Q2 26 10 8Z" /></svg><span>Interaktiven Zeitstrahl öffnen</span></button>
         </div>
         <div class="cv-explore__content" id="cv-explore-content" role="region" aria-label="Stationen" hidden data-cv-explore-content>
-            <button class="cv-explore__close" type="button" aria-label="Zeitstrahl schließen" data-cv-explore-close>×</button>
+            <button class="cv-explore__close" type="button" aria-label="Zeitstrahl schließen" data-cv-explore-close>{{ partial:components/close-icon }}</button>
             <div class="cv-timeline" data-cv-timeline><div class="cv-timeline__stage">
                 <div class="cv-timeline__playhead" aria-hidden="true"><span></span></div>
                 <div class="cv-timeline__track" data-cv-timeline-track>
@@ -41,7 +41,7 @@
             {{ if cv:about }}
             <section class="cv-support__section cv-support__about" aria-labelledby="cv-about-title">
                 <h2 id="cv-about-title">Über mich</h2>
-                {{ partial:bard/prose :content="cv:about" classes="cv-about" }}
+                <div class="prose-site cv-about">{{ cv:about }}</div>
             </section>
             {{ /if }}
             {{ if cv:knowledge }}

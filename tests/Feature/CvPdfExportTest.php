@@ -35,7 +35,8 @@ class CvPdfExportTest extends TestCase
         $renderer->shouldReceive('render')->once()->with('airbus-26', true)->andReturn($pdf);
         $this->app->instance(CvPdfRenderer::class, $renderer);
 
-        $this->get('/cv/airbus-26/pdf?token='.$token)->assertOk();
+        $this->get('/cv/airbus-26/pdf?token='.$token)->assertRedirect('/cv/airbus-26/pdf');
+        $this->get('/cv/airbus-26/pdf')->assertOk();
     }
 
     public function test_export_rejects_an_invalid_capability_without_starting_lualatex(): void

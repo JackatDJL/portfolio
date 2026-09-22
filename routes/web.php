@@ -49,3 +49,5 @@ Route::statamic('/blog', 'posts/index', ['title' => 'Blog']);
 Route::statamic('/publikationen', 'publications/index', ['title' => 'Publikationen']);
 Route::statamic('/cv', 'cv/show', ['title' => 'Lebenslauf']);
 Route::statamic('/cv/{profile}', 'cv/profile');
+
+Route::get('/cp/cv/private-link/status', [CvPrivateLinkController::class, 'status'])->middleware(['statamic.cp', 'statamic.cp.authenticated']);

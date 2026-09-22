@@ -41,7 +41,7 @@ for (const width of [1440, 390]) for (const theme of ['light', 'dark']) {
                 await expect(page.locator('.cv-document__recipient')).toHaveCount(0);
             }
             if (route === '/cv/airbus-26') {
-                await expect(page.locator('.cv-document__recipient')).toHaveText('Airbus · 2027');
+                await expect(page.locator('.cv-document__recipient')).toHaveText('Airbus 2027');
                 await expect(page.locator('.cv-document')).toHaveCSS('--cv-accent', '#315c78');
                 await expect(page.locator('main')).toContainText('Robotik und Teamarbeit');
                 await expect(page.locator('main')).toContainText('Gymnasium Athenaeum Stade');
@@ -92,7 +92,7 @@ test('interactive CV is opt-in, keyboard accessible, closeable and excluded from
     await page.keyboard.press('Enter');
     await expect(content).toBeVisible();
     await expect(open).toHaveAttribute('aria-expanded', 'true');
-    await expect(page.locator('.cv-milestone')).toHaveCount(2);
+    await expect(page.locator('.cv-milestone')).toHaveCount(8);
     await page.keyboard.press('Escape');
     await expect(content).toBeHidden();
     await page.emulateMedia({ media: 'print' });
@@ -123,7 +123,7 @@ test('CV detail navigation and sidebar composition use the parent route correctl
     expect(rail.x).toBeGreaterThan(main.x + main.width);
     await expect(page.locator('.experience-work, .cv-project-work')).toHaveCount(0);
     await page.goto('/cv/edu/gymnasium-athenaeum-stade');
-    await expect(page.locator('.cv-chapter-nav a')).toHaveText('← Lebenslauf');
+    await expect(page.locator('.education-hero__back')).toHaveText('← Lebenslauf');
     await expect(page.locator('.education-hero__image')).toHaveCSS('border-radius', '0px');
 });
 test('profile personalization does not move the fixed header geometry', async ({ page }) => {
@@ -150,54 +150,28 @@ test('authorized private response replaces masks in the same contact fields', as
             city: 'Teststadt',
         }),
     }));
-    await page.goto('/cv/airbus-26#cv=validtestcapabilitytoken1234567890');
+    await page.goto('/cv/airbus-26');
     await expect(page.locator('[data-cv-private="email"]')).toHaveText('cv-test@example.invalid');
     await expect(page.locator('[data-cv-private="phone"]')).toHaveText('+49 000 000000');
     await expect(page.locator('[data-cv-private="address"]')).toContainText('Musterstraße 1');
     await expect(page.locator('.cv-contact__mask')).toHaveCount(0);
     await expect(page).toHaveURL(/\/cv\/airbus-26$/);
 });
-test('A4 PDF preserves CV design and removes browser print chrome', async ({ page }, testInfo) => {
-    await page.goto('/cv');
-    await page.evaluate(() => { document.documentElement.dataset.theme = 'dark'; });
-    await page.emulateMedia({ media: 'print' });
-    await expect(page.locator('.cv-header-geometry')).toBeVisible();
-    await expect(page.locator('.cv-portrait')).toBeVisible();
-    await expect(page.locator('html')).toHaveCSS('color-scheme', 'light');
-    await expect(page.locator('.site-header')).toBeHidden();
-    await expect(page.locator('.site-footer')).toBeHidden();
-    await expect(page.locator('.cv-record__print-thread').first()).toBeVisible();
-    const pdfPath = testInfo.outputPath('cv-a4.pdf');
-    await page.pdf({ path: pdfPath, format: 'A4', printBackground: true, preferCSSPageSize: true, displayHeaderFooter: false });
-    expect((await readFile(pdfPath)).subarray(0, 5).toString()).toBe('%PDF-');
+test('canonical LuaLaTeX PDF preserves identity and public masks', async ({ request }, testInfo) => {
+    const response = await request.get('/cv/pdf');
+    expect(response.ok()).toBe(true);
+    expect(response.headers()['content-type']).toContain('application/pdf');
+    const pdfPath = testInfo.outputPath('cv-canonical.pdf');
+    await (await import('node:fs/promises')).writeFile(pdfPath, await response.body());
     const [{ stdout: text }, { stdout: info }] = await Promise.all([
-        execFileAsync('pdftotext', [pdfPath, '-']),
-        execFileAsync('pdfinfo', [pdfPath]),
+        execFileAsync('pdftotext', [pdfPath, '-']), execFileAsync('pdfinfo', [pdfPath]),
     ]);
     expect(text).toContain('Jack Ruder');
-    expect(text).not.toMatch(/localhost|\d+ of \d+|20\/09\/2026/);
+    expect(text).toContain('Geschützte Angabe');
+    expect(text).not.toContain('Interaktiven Zeitstrahl öffnen');
     expect(info).toContain('Pages:           2');
-    await page.screenshot({ path: testInfo.outputPath('cv-print.png'), fullPage: true });
 });
 
-test('authorized A4 PDF contains resolved private values and public PDF does not', async ({ page }, testInfo) => {
-    await page.route('**/cv/private-data', route => route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({ private_email: 'PRIVATE-CV-PDF-SENTINEL@example.invalid', phone: '+49 000 000000', street: 'Musterstraße', house_number: '1', postal_code: '21600', city: 'Teststadt' }),
-    }));
-    await page.goto('/cv#cv=validtestcapabilitytoken1234567890');
-    await expect(page.locator('[data-cv-private="email"]')).toHaveText('PRIVATE-CV-PDF-SENTINEL@example.invalid');
-    const authorizedPath = testInfo.outputPath('cv-authorized.pdf');
-    await page.pdf({ path: authorizedPath, format: 'A4', printBackground: true, preferCSSPageSize: true, displayHeaderFooter: false });
-    expect((await execFileAsync('pdftotext', [authorizedPath, '-'])).stdout.replace(/[\s-]/g, '')).toContain('PRIVATECVPDFSENTINEL@example.invalid');
-
-    await page.unroute('**/cv/private-data');
-    await page.goto('/cv');
-    const publicPath = testInfo.outputPath('cv-public.pdf');
-    await page.pdf({ path: publicPath, format: 'A4', printBackground: true, preferCSSPageSize: true, displayHeaderFooter: false });
-    expect((await execFileAsync('pdftotext', [publicPath, '-'])).stdout.replace(/[\s-]/g, '')).not.toContain('PRIVATECVPDFSENTINEL');
-});
 test('CV document canvas is constrained on desktop and fluid on smaller screens', async ({ page }, testInfo) => {
     for (const width of [1920, 1440, 1024, 768, 390]) {
         await page.setViewportSize({ width, height: 1000 });

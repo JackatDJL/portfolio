@@ -1,6 +1,7 @@
 ---
 id: 54b21346-ada2-4110-a005-88fad17d61c9
 blueprint: cv_milestone
+chronology: '2024-04'
 title: 'Deutsche Meisterschaft mit AtheBlues'
 date_label: 'April 2024'
 category: competition

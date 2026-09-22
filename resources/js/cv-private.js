@@ -12,13 +12,10 @@ export const initCvPrivateData = ({ watch = true } = {}) => {
         if (watch) window.addEventListener('hashchange', () => initCvPrivateData(), { once: true });
     };
     const match = location.hash.match(/^#cv=([A-Za-z0-9]{32,})$/);
-    if (!match) {
-        document.documentElement.dataset.cvPrivateState = 'public';
-        document.dispatchEvent(new CustomEvent('cv:private-settled'));
-        retryOnHashChange();
+    if (match) {
+        location.replace(location.pathname + '?cv=' + encodeURIComponent(match[1]));
         return;
     }
-    window.__cvCapability = match[1];
     document.documentElement.dataset.cvPrivateState = 'loading';
 
     const setValue = (name, value, href) => {
@@ -38,11 +35,13 @@ export const initCvPrivateData = ({ watch = true } = {}) => {
     fetch(panel.dataset.cvPrivateEndpoint || '/cv/private-data', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify({ token: match[1], path: location.pathname }),
+        body: JSON.stringify({ path: location.pathname }),
     })
         .then(response => response.ok ? response.json() : null)
         .then(data => {
             if (!data) {
+                document.documentElement.dataset.cvPrivateState = 'public';
+                document.dispatchEvent(new CustomEvent('cv:private-settled'));
                 retryOnHashChange();
                 return;
             }
