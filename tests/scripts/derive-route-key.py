@@ -6,6 +6,7 @@ import os
 import pty
 import re
 import select
+import signal
 import subprocess
 import time
 from pathlib import Path
@@ -44,27 +45,43 @@ def check_hidden_prompt():
     sent = False
     child_status = None
     deadline = time.monotonic() + 10
-    while time.monotonic() < deadline:
-        ready, _, _ = select.select([terminal], [], [], 0.1)
-        if ready:
-            try:
-                chunk = os.read(terminal, 4096)
-            except OSError:
+    try:
+        while time.monotonic() < deadline:
+            ready, _, _ = select.select([terminal], [], [], 0.1)
+            if ready:
+                try:
+                    chunk = os.read(terminal, 4096)
+                except OSError:
+                    break
+                if not chunk:
+                    break
+                output.extend(chunk)
+                if not sent and b"Master key: " in output:
+                    os.write(terminal, TEST_MASTER.encode() + b"\n")
+                    sent = True
+            waited, status = os.waitpid(pid, os.WNOHANG)
+            if waited:
+                child_status = status
                 break
-            if not chunk:
-                break
-            output.extend(chunk)
-            if not sent and b"Master key: " in output:
-                os.write(terminal, TEST_MASTER.encode() + b"\n")
-                sent = True
-        waited, status = os.waitpid(pid, os.WNOHANG)
-        if waited:
-            child_status = status
-            break
 
-    if child_status is None:
-        _, child_status = os.waitpid(pid, 0)
-    os.close(terminal)
+        if child_status is None:
+            waited, status = os.waitpid(pid, os.WNOHANG)
+            if waited:
+                child_status = status
+            else:
+                raise AssertionError("hidden terminal prompt did not complete before timeout")
+    finally:
+        if child_status is None:
+            try:
+                os.killpg(pid, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
+            try:
+                _, child_status = os.waitpid(pid, 0)
+            except ChildProcessError:
+                pass
+        os.close(terminal)
+
     if not sent or child_status != 0:
         raise AssertionError("hidden terminal prompt did not complete successfully")
     if TEST_MASTER.encode() in output:
@@ -103,6 +120,12 @@ def main():
     missing = run(master=None)
     if missing.returncode == 0 or "route is required" not in missing.stderr:
         raise AssertionError("missing routes should fail clearly")
+    repeated_route_separator = run("--raw", "cv/jobmesse-26//")
+    if repeated_route_separator.returncode == 0 or "repeated path separators" not in repeated_route_separator.stderr:
+        raise AssertionError("repeated route separators should fail clearly")
+    empty_scope = run("--raw", "--scope", "", "cv/jobmesse-26")
+    if empty_scope.returncode == 0 or "non-empty name" not in empty_scope.stderr:
+        raise AssertionError("an explicitly empty scope should fail clearly")
     non_tty = run("--raw", "cv/jobmesse-26", master=None)
     if non_tty.returncode == 0 or "no terminal is available" not in non_tty.stderr:
         raise AssertionError("no-tty use should fail clearly without a master")

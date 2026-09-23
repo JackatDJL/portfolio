@@ -33,6 +33,10 @@ while (($#)); do
                 exit 2
             fi
             scope_override=$1
+            if [[ -z "$scope_override" ]]; then
+                printf 'Error: --scope needs a non-empty name.\n' >&2
+                exit 2
+            fi
             ;;
         -h|--help)
             usage
@@ -58,6 +62,11 @@ done
 if [[ -z "$route_input" ]]; then
     printf 'Error: a route is required.\n' >&2
     usage >&2
+    exit 2
+fi
+
+if [[ "$route_input" == *//* ]]; then
+    printf 'Error: route must not contain repeated path separators.\n' >&2
     exit 2
 fi
 

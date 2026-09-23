@@ -253,7 +253,7 @@ test('shared sidebars stick as a whole only when they fit the viewport', async (
         };
     });
     await expect.poll(() => longRail.evaluate((rail) => rail.classList.contains('article-context-rail--sticky'))).toBe(false);
-    expect(await longRail).not.toHaveCSS('position', 'sticky');
+    await expect(longRail).not.toHaveCSS('position', 'sticky');
     expect(longToc.tocOverflow).not.toBe('auto');
     expect(longToc.listOverflow).not.toBe('auto');
     expect(longToc.listScrollHeight).toBeLessThanOrEqual(longToc.listClientHeight + 1);
