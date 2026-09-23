@@ -10,8 +10,14 @@
         </div>
     </header>
     <div class="detail-layout detail-container">
-        <div class="detail-layout__main">{{ partial:bard/prose :content="content" }}</div>
+        <div class="detail-layout__main">
+            {{ partial:components/table-of-contents variant="mobile" single_section="true" }}
+            {{ partial:bard/prose :content="content" }}
+        </div>
         <aside class="detail-layout__rail" aria-label="Kontext">
+            {{ partial:components/context-rail }}
+            {{ partial:components/table-of-contents variant="rail" single_section="true" }}
+            <dl class="project-meta">
             {{ if related_projects }}
                 {{ partial:detail/meta-group label="Projekte aus dieser Zeit" }}
                     {{ related_projects }}{{ partial:components/related-reference inline="true" }}{{ /related_projects }}
@@ -19,7 +25,9 @@
             {{ /if }}
             {{ if related_posts }}{{ partial:detail/meta-group label="Beiträge" }}{{ related_posts }}{{ partial:components/related-reference inline="true" }}{{ /related_posts }}{{ /partial:detail/meta-group }}{{ /if }}
             {{ if related_publications }}{{ partial:detail/meta-group label="Veröffentlichungen" }}{{ related_publications }}{{ partial:components/related-reference inline="true" }}{{ /related_publications }}{{ /partial:detail/meta-group }}{{ /if }}
-            {{ if topics }}<div class="mt-7 flex flex-wrap gap-2">{{ topics }}{{ partial:components/chip :label="title" classes="chip-topic" }}{{ /topics }}</div>{{ /if }}
+            {{ if topics }}{{ partial:detail/meta-group label="Themen" }}<div class="flex flex-wrap gap-2">{{ topics }}{{ partial:components/chip :label="title" classes="chip-topic" }}{{ /topics }}</div>{{ /partial:detail/meta-group }}{{ /if }}
+            </dl>
+            {{ /partial:components/context-rail }}
         </aside>
     </div>
 </article>

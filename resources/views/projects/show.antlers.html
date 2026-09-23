@@ -1,6 +1,7 @@
 {{# Projekt-Detailseite: Intro, Lesebereich, Kontext-Rail. #}}
 <article class="project-detail">
     {{ partial:detail/layout intro="projects/hero" aside="projects/rail" }}
+        {{ partial:components/table-of-contents variant="mobile" }}
         {{ partial:bard/prose :content="content" }}
 
         {{ partial:gallery/figures :assets="gallery" classes="project-gallery" }}

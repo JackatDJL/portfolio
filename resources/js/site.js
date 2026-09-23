@@ -5,13 +5,10 @@ if (document.querySelector('[data-cv-private-panel]')) import('./cv-private.js')
 if (document.querySelector('[data-cv-explore]')) import('./cv-explore.js').then(({ initCvExplore }) => initCvExplore());
 import { initThemeSwitcher } from './theme.js';
 import { gsap } from 'gsap';
-import { ScrollToPlugin } from 'gsap/ScrollToPlugin';
 import { buildThreadPath } from './thread-bump.js';
 
 if (document.querySelector('[data-pdf-viewer]')) import('./pdf-viewer.js');
 if (document.querySelector('[data-citation-dialog]')) import('./citation-dialog.js');
-
-gsap.registerPlugin(ScrollToPlugin);
 
 initThemeSwitcher();
 
@@ -33,8 +30,8 @@ const initArticleToc = () => {
     const allHeadings = [...article.querySelectorAll('h2, h3')]
         .filter((heading) => !heading.closest('[data-toc-exclude]'));
     const h2Count = allHeadings.filter((heading) => heading.tagName === 'H2').length;
-    const isLongEnough = article.textContent.trim().length >= 1200;
-    if (h2Count < 2 || (allHeadings.length < 3 && !isLongEnough)) return;
+    const allowsSingleSection = tocTargets.some((toc) => toc.hasAttribute('data-article-toc-single'));
+    if (h2Count < 2 && !(h2Count === 1 && allowsSingleSection)) return;
 
     const usedIds = new Set([...document.querySelectorAll('[id]')].map(({ id }) => id));
     const headings = allHeadings.filter((heading) => heading.tagName === 'H2' || h2Count >= 2);
@@ -87,12 +84,10 @@ const initArticleToc = () => {
         setCurrent(id);
         history.pushState(null, '', `#${id}`);
 
-        const target = Math.max(0, window.scrollY + heading.getBoundingClientRect().top - 104);
-        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-            window.scrollTo({ top: target });
-            return;
-        }
-        gsap.to(window, { duration: 0.7, ease: 'power2.inOut', scrollTo: { y: target, autoKill: true } });
+        heading.scrollIntoView({
+            behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth',
+            block: 'start',
+        });
     }));
 
     const intersectionStates = new Map();
@@ -109,7 +104,7 @@ const initArticleToc = () => {
         let hashId;
         try { hashId = decodeURIComponent(window.location.hash.slice(1)); } catch { hashId = window.location.hash.slice(1); }
         const target = document.getElementById(hashId);
-        if (target) window.requestAnimationFrame(() => target.scrollIntoView());
+        if (target) window.requestAnimationFrame(() => target.scrollIntoView({ behavior: 'instant', block: 'start' }));
     }
 };
 
@@ -123,6 +118,15 @@ const initContextRailLine = () => {
 
         const state = { activeY: 0, activeDepth: 0, hoverY: 0, hoverDepth: 0, height: 1 };
         const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const wideRail = window.matchMedia('(min-width: 64rem)');
+
+        const updateStickyState = () => {
+            const rootFontSize = Number.parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+            const stickyTopRem = Number.parseFloat(getComputedStyle(rail).getPropertyValue('--context-rail-sticky-top')) || 0;
+            const availableHeight = window.innerHeight - stickyTopRem * rootFontSize;
+            const fitsViewport = rail.getBoundingClientRect().height <= availableHeight;
+            rail.classList.toggle('article-context-rail--sticky', wideRail.matches && fitsViewport);
+        };
 
         const render = () => {
             const bumps = [
@@ -191,8 +195,11 @@ const initContextRailLine = () => {
             onUpdate: render,
         });
 
-        const draw = () => {
-            state.height = Math.max(1, rail.clientHeight);
+        const draw = (force = false) => {
+            updateStickyState();
+            const nextHeight = Math.max(1, rail.clientHeight);
+            if (!force && svg.hasAttribute('viewBox') && Math.abs(nextHeight - state.height) < 1) return;
+            state.height = nextHeight;
             svg.setAttribute('viewBox', `0 0 20 ${state.height}`);
             svg.setAttribute('preserveAspectRatio', 'none');
 
@@ -207,9 +214,13 @@ const initContextRailLine = () => {
             settleAt(linkY(activeLink));
         };
 
-        draw();
-        if ('ResizeObserver' in window) new ResizeObserver(draw).observe(rail);
-        else window.addEventListener('resize', draw);
+        draw(true);
+        const railContent = rail.querySelector('.article-context-rail__content') || rail;
+        if ('ResizeObserver' in window) new ResizeObserver(() => requestAnimationFrame(() => draw())).observe(railContent);
+        else window.addEventListener('resize', () => draw(true));
+        document.fonts?.ready.then(() => draw(true));
+        window.addEventListener('resize', updateStickyState);
+        wideRail.addEventListener('change', updateStickyState);
         document.addEventListener('article:toc-change', () => {
             const activeLink = rail.querySelector('.article-toc a[aria-current="true"]');
             if (activeLink instanceof HTMLElement) settleAt(linkY(activeLink));
@@ -224,7 +235,7 @@ const initContextRailLine = () => {
             const link = event.target.closest('.article-toc a');
             if (link instanceof HTMLElement && rail.contains(link) && !link.contains(event.relatedTarget)) clearHoverIntent();
         });
-        window.addEventListener('load', draw, { once: true });
+        window.addEventListener('load', () => draw(true), { once: true });
     }
 };
 

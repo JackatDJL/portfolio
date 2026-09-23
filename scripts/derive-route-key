@@ -1,0 +1,138 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+    cat <<'USAGE'
+Usage: ./scripts/derive-route-key [--raw] [--scope NAME] ROUTE
+
+Derive a deterministic, route-scoped HMAC-SHA256 key. ROUTE may be a path such
+as cv/jobmesse-26; its first segment becomes the default scope. A route without
+a slash uses the app scope. --scope overrides the scope.
+
+The master is read silently from the terminal. For automation, set
+JACK_HOMEPAGE_MASTER_KEY in the process environment; avoid putting it in shell
+history. --raw prints only the URL-safe, unpadded base64 key.
+
+This utility is separate from Laravel APP_KEY and the random, revocable CV
+share-token system.
+USAGE
+}
+
+raw=false
+scope_override=
+route_input=
+while (($#)); do
+    case "$1" in
+        --raw)
+            raw=true
+            ;;
+        --scope)
+            shift
+            if (($# == 0)); then
+                printf 'Error: --scope needs a name.\n' >&2
+                exit 2
+            fi
+            scope_override=$1
+            if [[ -z "$scope_override" ]]; then
+                printf 'Error: --scope needs a non-empty name.\n' >&2
+                exit 2
+            fi
+            ;;
+        -h|--help)
+            usage
+            exit 0
+            ;;
+        --*)
+            printf 'Error: unknown option: %s\n' "$1" >&2
+            usage >&2
+            exit 2
+            ;;
+        *)
+            if [[ -n "$route_input" ]]; then
+                printf 'Error: supply exactly one route.\n' >&2
+                usage >&2
+                exit 2
+            fi
+            route_input=$1
+            ;;
+    esac
+    shift
+done
+
+if [[ -z "$route_input" ]]; then
+    printf 'Error: a route is required.\n' >&2
+    usage >&2
+    exit 2
+fi
+
+if [[ "$route_input" == *//* ]]; then
+    printf 'Error: route must not contain repeated path separators.\n' >&2
+    exit 2
+fi
+
+route=${route_input#/}
+route=${route%/}
+if [[ -z "$route" || ! "$route" =~ ^[A-Za-z0-9._/-]+$ || "$route" == *//* || "$route" =~ (^|/)\.\.?(/|$) ]]; then
+    printf 'Error: route must contain only letters, numbers, dots, underscores, hyphens, and single path separators.\n' >&2
+    exit 2
+fi
+
+if [[ -n "$scope_override" ]]; then
+    scope=$scope_override
+    if [[ "$route" == */* ]]; then
+        route_id=${route#*/}
+    else
+        route_id=$route
+    fi
+elif [[ "$route" == */* ]]; then
+    scope=${route%%/*}
+    route_id=${route#*/}
+else
+    scope=app
+    route_id=$route
+fi
+
+if [[ ! "$scope" =~ ^[A-Za-z0-9._-]+$ || -z "$route_id" ]]; then
+    printf 'Error: scope and route identifier must be non-empty and use letters, numbers, dots, underscores, or hyphens.\n' >&2
+    exit 2
+fi
+
+master_key=${JACK_HOMEPAGE_MASTER_KEY-}
+if [[ -z "$master_key" ]]; then
+    if ! { exec 3<>/dev/tty; } 2>/dev/null; then
+        printf 'Error: no master key was provided and no terminal is available. Set JACK_HOMEPAGE_MASTER_KEY for automation.\n' >&2
+        exit 2
+    fi
+    printf 'Master key: ' >&3
+    if ! IFS= read -r -s master_key <&3; then
+        printf '\nError: could not read the master key.\n' >&3
+        exit 2
+    fi
+    printf '\n' >&3
+    exec 3>&-
+fi
+
+if [[ -z "$master_key" ]]; then
+    printf 'Error: the master key must not be empty.\n' >&2
+    exit 2
+fi
+
+namespace="jack-homepage:v1:$scope"
+derived_key=$(printf '%s' "$master_key" | python3 -c '
+import base64
+import hashlib
+import hmac
+import sys
+
+master = sys.stdin.buffer.read()
+namespace, route = sys.argv[1:]
+digest = hmac.new(master, f"{namespace}:{route}".encode("utf-8"), hashlib.sha256).digest()
+print(base64.urlsafe_b64encode(digest).decode("ascii").rstrip("="))
+' "$namespace" "$route_id")
+unset master_key
+
+if [[ "$raw" == true ]]; then
+    printf '%s\n' "$derived_key"
+else
+    printf 'Route:\n  %s\nNamespace:\n  %s\nDerived key:\n  %s\n' "$route" "$namespace" "$derived_key"
+fi

@@ -1,5 +1,7 @@
 {{# Projekt-Kontext: Zeitraum, Technologien (hervorgehoben + genutzt, ohne Doppelnennung), Themen, Verwandtes. #}}
-<dl class="project-meta">
+{{ partial:components/context-rail }}
+    {{ partial:components/table-of-contents variant="rail" }}
+    <dl class="project-meta">
         {{ if started_at }}
             {{ partial:detail/meta-group label="Zeitraum" }}
                 {{ if ended_at }}
@@ -54,3 +56,4 @@
             {{ /partial:detail/meta-group }}
         {{ /if }}
     </dl>
+{{ /partial:components/context-rail }}
