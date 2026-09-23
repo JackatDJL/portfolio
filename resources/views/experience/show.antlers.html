@@ -7,16 +7,17 @@
     </header>
     {{ partial:components/table-of-contents variant="mobile" label="Auf dieser Seite" aria_label="Inhalt dieser Erfahrung" }}
     <div class="experience-content">
-        <aside class="experience-rail" aria-label="Kontext" data-context-rail>
-            <svg class="article-context-rail__line" aria-hidden="true" focusable="false"><path data-context-line /></svg>
-            <div class="article-context-rail__content">
+        <aside class="detail-layout__rail experience-rail" aria-label="Kontext">
+            {{ partial:components/context-rail }}
                 {{ partial:components/table-of-contents variant="rail" label="Auf dieser Seite" aria_label="Inhalt dieser Erfahrung" }}
-                {{ partial:detail/meta-group label="Zeitraum" }}<p class="cv-period">{{ partial:cv/period detailed="true" }}</p>{{ /partial:detail/meta-group }}
-                {{ partial:detail/meta-group label="Organisation" }}<p>{{ organisation }}</p>{{ /partial:detail/meta-group }}
-                {{ if topics }}{{ partial:detail/meta-group label="Themen" }}<div class="flex flex-wrap gap-2">{{ topics }}{{ partial:components/chip :label="title" classes="chip-topic" }}{{ /topics }}</div>{{ /partial:detail/meta-group }}{{ /if }}
-                {{ if projects }}{{ partial:detail/meta-group label="Projekte" }}{{ projects }}{{ if published && project_status != 'confidential' }}{{ partial:components/related-reference inline="true" }}{{ /if }}{{ /projects }}{{ /partial:detail/meta-group }}{{ /if }}
-                {{ if links }}{{ partial:detail/meta-group label="Öffentliche Quellen" }}{{ links }}<p class="cv-source-link">{{ partial:components/outlink :href="href" :label="label" classes="related-reference--text" size="sm" }}</p>{{ /links }}{{ /partial:detail/meta-group }}{{ /if }}
-            </div>
+                <dl class="project-meta">
+                    {{ partial:detail/meta-group label="Zeitraum" }}<p class="cv-period">{{ partial:cv/period detailed="true" }}</p>{{ /partial:detail/meta-group }}
+                    {{ partial:detail/meta-group label="Organisation" }}<p>{{ organisation }}</p>{{ /partial:detail/meta-group }}
+                    {{ if topics }}{{ partial:detail/meta-group label="Themen" }}<div class="flex flex-wrap gap-2">{{ topics }}{{ partial:components/chip :label="title" classes="chip-topic" }}{{ /topics }}</div>{{ /partial:detail/meta-group }}{{ /if }}
+                    {{ if projects }}{{ partial:detail/meta-group label="Projekte" }}{{ projects }}{{ if published && project_status != 'confidential' }}{{ partial:components/related-reference inline="true" }}{{ /if }}{{ /projects }}{{ /partial:detail/meta-group }}{{ /if }}
+                    {{ if links }}{{ partial:detail/meta-group label="Öffentliche Quellen" }}{{ links }}<p class="cv-source-link">{{ partial:components/outlink :href="href" :label="label" classes="related-reference--text" size="sm" }}</p>{{ /links }}{{ /partial:detail/meta-group }}{{ /if }}
+                </dl>
+            {{ /partial:components/context-rail }}
         </aside>
         <div class="detail-layout__main">{{ partial:bard/prose :content="body" }}</div>
     </div>

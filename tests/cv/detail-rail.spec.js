@@ -31,6 +31,14 @@ test('CV document links keep the shared semantic-link and arrow treatment', asyn
             await expect(titleLink.locator('.link-icon--md')).toBeVisible();
         }
 
+        const linkAndThreadColors = await experience.evaluate((link) => ({
+            underline: getComputedStyle(link.querySelector('.semantic-link')).textDecorationColor,
+            arrow: getComputedStyle(link.querySelector('.related-reference__arrow')).color,
+            thread: getComputedStyle(document.querySelector('.cv-records--thread > svg path')).stroke,
+        }));
+        expect(linkAndThreadColors.underline).toBe(linkAndThreadColors.thread);
+        expect(linkAndThreadColors.arrow).toBe(linkAndThreadColors.thread);
+
         const longTitle = page.locator('.cv-document__career a[href*="projektwoche-nachhaltige-webentwicklung"]');
         await expect(longTitle.locator('.semantic-link')).toHaveText('Projektwoche Nachhaltige Webentwicklung');
         await expect(longTitle.locator('.related-reference__arrow-mask')).toBeVisible();
@@ -118,7 +126,7 @@ test('CV document links keep the shared semantic-link and arrow treatment', asyn
     expect(wrappedProjectArrow.arrowCenterY).toBeLessThanOrEqual(wrappedProjectArrow.lastLineBottom + 2);
 });
 
-test('detail TOCs stick on desktop, stay in document flow on mobile, and do not trap page scrolling', async ({ page }) => {
+test('shared sidebars stick as a whole only when they fit the viewport', async ({ page }) => {
     await page.route('https://zenodo.org/**', (route) => route.abort());
     for (const detail of detailPages) {
         await page.goto(detail.path, { waitUntil: 'domcontentloaded' });
@@ -130,110 +138,95 @@ test('detail TOCs stick on desktop, stay in document flow on mobile, and do not 
         });
         for (const viewport of viewports) {
             await page.setViewportSize({ width: viewport.width, height: viewport.height });
-            await page.evaluate(() => window.scrollTo(0, 0));
+            await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
 
-            const rail = page.locator('.detail-layout__rail, .experience-rail').first();
+            const rail = page.locator('.article-context-rail').first();
+            const railContainer = page.locator('.detail-layout__rail, .experience-rail').first();
             const railToc = page.locator('.article-toc--rail');
             const mobileToc = page.locator('.article-toc--mobile');
-            const shouldBeSticky = viewport.width >= 1024 && detail.hasToc;
+            const shouldUseRail = viewport.width >= 1024 && detail.hasToc;
 
-            if (shouldBeSticky) {
+            if (shouldUseRail) {
                 await expect(railToc).toBeVisible();
                 await expect(mobileToc).toBeHidden();
-                await expect(railToc).toHaveCSS('position', 'sticky');
-                await expect(rail).not.toHaveCSS('position', 'sticky');
-                await expect(rail).not.toHaveCSS('overflow-y', 'auto');
-                const railAndArticleHeights = await page.evaluate(() => ({
-                    rail: document.querySelector('.detail-layout__rail, .experience-rail').getBoundingClientRect().height,
-                    article: document.querySelector('.detail-layout__main, .experience-content > .detail-layout__main').getBoundingClientRect().height,
-                }));
-                expect(railAndArticleHeights.rail).toBeGreaterThanOrEqual(railAndArticleHeights.article - 1);
+            } else if (detail.hasToc) {
+                await expect(railToc).toBeHidden();
+                await expect(mobileToc).toBeVisible();
+                await expect(mobileToc).toHaveCSS('position', 'static');
+            } else {
+                await expect(railToc).toBeHidden();
+            }
 
-                if (detail.name === 'blog' && viewport.name === '1440') {
-                    const firstTocLink = railToc.locator('a').first();
+            if (detail.hasToc) {
+                const toc = shouldUseRail ? railToc : mobileToc;
+                await expect(rail).toHaveAttribute('data-context-rail', '');
+                await expect(rail.locator('.article-context-rail__line [data-context-line]')).toHaveCount(1);
+                const railMetrics = await rail.evaluate((element) => {
+                    const rootFontSize = Number.parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+                    const stickyTopRem = Number.parseFloat(getComputedStyle(element).getPropertyValue('--context-rail-sticky-top')) || 0;
+                    return {
+                        height: element.getBoundingClientRect().height,
+                        availableHeight: window.innerHeight - stickyTopRem * rootFontSize,
+                    };
+                });
+                const shouldStick = shouldUseRail && railMetrics.height <= railMetrics.availableHeight;
+                await expect.poll(() => rail.evaluate((element) => element.classList.contains('article-context-rail--sticky'))).toBe(shouldStick);
+                expect(await rail.evaluate((element) => getComputedStyle(element).position === 'sticky')).toBe(shouldStick);
+                await expect(rail).not.toHaveCSS('overflow-y', 'auto');
+                await expect(rail.locator('.article-context-rail__content')).not.toHaveCSS('overflow-y', 'auto');
+                await expect(toc.locator('.article-toc__list')).not.toHaveCSS('overflow-y', 'auto');
+
+                const firstSemanticLink = rail.locator('.semantic-link').first();
+                if (await firstSemanticLink.count()) {
+                    const colors = await firstSemanticLink.evaluate((link) => {
+                        const arrow = link.closest('[data-related-reference]')?.querySelector('.related-reference__arrow');
+                        return {
+                            underline: getComputedStyle(link).textDecorationColor,
+                            arrow: arrow ? getComputedStyle(arrow).color : null,
+                            line: getComputedStyle(link.closest('.article-context-rail').querySelector('[data-context-line]')).stroke,
+                        };
+                    });
+                    expect(colors.underline).toBe(colors.line);
+                    if (colors.arrow) expect(colors.arrow).toBe(colors.line);
+                }
+
+                if (detail.name === 'publication' && viewport.name === '1440') {
+                    await expect(rail.locator('.article-context-rail__line [data-context-line]')).toHaveAttribute('d', /C/);
+                }
+
+                if (detail.name === 'blog' && shouldUseRail && viewport.name === '1440') {
+                    const firstTocLink = toc.locator('a').first();
+                    const stickyPosition = await rail.evaluate((element) => {
+                        const documentTop = element.getBoundingClientRect().top + window.scrollY;
+                        const target = documentTop + 120;
+                        window.scrollTo({ top: target, behavior: 'instant' });
+                        return element.getBoundingClientRect().top;
+                    });
+                    expect(stickyPosition).toBeCloseTo(96, 0);
+                    await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+
                     await firstTocLink.focus();
                     await expect(firstTocLink).toHaveCSS('outline-width', '3px');
                     const targetHeading = page.locator(await firstTocLink.getAttribute('href'));
                     expect(await targetHeading.evaluate((heading) => getComputedStyle(heading).scrollMarginTop)).toBe('112px');
 
                     await page.emulateMedia({ reducedMotion: 'reduce' });
-                    await firstTocLink.click();
+                    await firstTocLink.evaluate((link) => link.click());
                     await expect(page).toHaveURL(/#.+/);
                     expect(await targetHeading.evaluate((heading) => heading.getBoundingClientRect().top)).toBeGreaterThanOrEqual(110);
 
-                    await railToc.locator('a').last().focus();
+                    await toc.locator('a').last().focus();
                     await page.keyboard.press('Tab');
                     expect(await page.locator('.article-toc a:focus').count()).toBe(0);
                     await page.emulateMedia({ reducedMotion: 'no-preference' });
                     await page.evaluate(() => document.activeElement instanceof HTMLElement && document.activeElement.blur());
-                    await page.evaluate(() => window.scrollTo(0, 0));
                 }
-
-                const normalList = railToc.locator('.article-toc__list');
-                const normalListMetrics = await normalList.evaluate((list) => ({
-                    scrollHeight: list.scrollHeight,
-                    clientHeight: list.clientHeight,
-                    overflowY: getComputedStyle(list).overflowY,
-                }));
-                expect(normalListMetrics.overflowY).toBe('auto');
-                expect(normalListMetrics.scrollHeight).toBeLessThanOrEqual(normalListMetrics.clientHeight + 1);
-
-                await page.screenshot({ path: `/tmp/detail-rail-${detail.name}-${viewport.name}.png` });
-
-                const overlap = await page.evaluate(() => {
-                    const toc = document.querySelector('.article-toc--rail');
-                    const parent = toc.parentElement;
-                    const metadata = [...parent.children].find((child) => child !== toc && child.getBoundingClientRect().height > 0);
-                    if (!metadata) return { found: false };
-
-                    const tocDocumentTop = toc.getBoundingClientRect().top + window.scrollY;
-                    const metadataDocumentTop = metadata.getBoundingClientRect().top + window.scrollY;
-                    const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-                    const canReachStickyOffset = maxScroll >= tocDocumentTop - 96;
-                    window.scrollTo(0, Math.min(maxScroll, Math.max(0, metadataDocumentTop - 96)));
-                    const tocRect = toc.getBoundingClientRect();
-                    const metadataRect = metadata.getBoundingClientRect();
-                    const intersects = metadataRect.top < tocRect.bottom && metadataRect.bottom > tocRect.top;
-                    const sampleX = tocRect.left + tocRect.width / 2;
-                    const sampleY = Math.max(tocRect.top + 2, metadataRect.top + 2);
-                    const hit = document.elementFromPoint(sampleX, sampleY);
-                    return {
-                        found: true,
-                        stickyTop: tocRect.top,
-                        canReachStickyOffset,
-                        intersects,
-                        hitIsToc: hit === toc || toc.contains(hit),
-                        background: getComputedStyle(toc).backgroundColor,
-                        documentScrolled: document.scrollingElement === document.documentElement,
-                        pageCanScroll: document.documentElement.scrollHeight > window.innerHeight,
-                        railOverflow: getComputedStyle(document.querySelector('.detail-layout__rail, .experience-rail')).overflowY,
-                        tocDocumentTop,
-                    };
-                });
-                expect(overlap.found).toBe(true);
-                if (overlap.canReachStickyOffset) {
-                    expect(overlap.stickyTop).toBeCloseTo(96, 0);
-                    if (!overlap.intersects) expect(detail.name).toBe('education');
-                } else {
-                    expect(detail.name).toBe('education');
-                }
-                if (overlap.intersects) expect(overlap.hitIsToc).toBe(true);
-                expect(overlap.background).not.toBe('rgba(0, 0, 0, 0)');
-                expect(overlap.documentScrolled).toBe(true);
-                expect(overlap.pageCanScroll).toBe(true);
-                expect(overlap.railOverflow).not.toBe('auto');
-                await page.screenshot({ path: `/tmp/detail-rail-${detail.name}-${viewport.name}-scrolled.png` });
-
-            } else {
-                await expect(railToc).toBeHidden();
-                if (detail.hasToc) {
-                    await expect(mobileToc).toBeVisible();
-                    await expect(mobileToc).toHaveCSS('position', 'static');
-                }
-                await expect(rail).not.toHaveCSS('position', 'sticky');
-                await expect(rail).not.toHaveCSS('overflow-y', 'auto');
-                await page.screenshot({ path: `/tmp/detail-rail-${detail.name}-${viewport.name}.png` });
             }
+
+            await expect(railContainer).not.toHaveCSS('position', 'sticky');
+            await expect(railContainer).not.toHaveCSS('overflow-y', 'auto');
+            expect(await page.evaluate(() => document.scrollingElement === document.documentElement)).toBe(true);
+            await page.screenshot({ path: `/tmp/detail-rail-${detail.name}-${viewport.name}.png` });
         }
     }
 
@@ -241,6 +234,7 @@ test('detail TOCs stick on desktop, stay in document flow on mobile, and do not 
     await page.goto('/blog/warum-ich-projekte-zu-codeberg-verschiebe', { waitUntil: 'domcontentloaded' });
     const longRailToc = page.locator('.article-toc--rail');
     await expect(longRailToc).toBeVisible();
+    const longRail = page.locator('.article-context-rail').first();
     await longRailToc.locator('.article-toc__list').evaluate((list) => {
         for (let index = 0; index < 60; index += 1) {
             const item = document.createElement('li');
@@ -258,9 +252,11 @@ test('detail TOCs stick on desktop, stay in document flow on mobile, and do not 
             listMaxHeight: getComputedStyle(list).maxHeight,
         };
     });
-    expect(longToc.tocOverflow).toBe('visible');
-    expect(longToc.listOverflow).toBe('auto');
-    expect(longToc.listScrollHeight).toBeGreaterThan(longToc.listClientHeight);
-    expect(Number.parseFloat(longToc.listMaxHeight)).toBeLessThanOrEqual(1000 - 159);
-    expect(Number.parseFloat(longToc.listMaxHeight)).toBeGreaterThan(0);
+    await expect.poll(() => longRail.evaluate((rail) => rail.classList.contains('article-context-rail--sticky'))).toBe(false);
+    expect(await longRail).not.toHaveCSS('position', 'sticky');
+    expect(longToc.tocOverflow).not.toBe('auto');
+    expect(longToc.listOverflow).not.toBe('auto');
+    expect(longToc.listScrollHeight).toBeLessThanOrEqual(longToc.listClientHeight + 1);
+    expect(longToc.listMaxHeight).toBe('none');
+    expect(await page.evaluate(() => document.scrollingElement === document.documentElement)).toBe(true);
 });

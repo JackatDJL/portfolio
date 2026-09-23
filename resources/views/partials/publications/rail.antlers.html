@@ -1,5 +1,5 @@
 {{# Veröffentlichungs-Kontext: nur Gruppen mit echten bibliografischen Angaben. #}}
-<div class="publication-context-rail">
+{{ partial:components/context-rail }}
     {{ partial:components/table-of-contents variant="rail" }}
     <dl class="project-meta">
         {{ if authors }}
@@ -87,4 +87,4 @@
             {{ /partial:detail/meta-group }}
         {{ /if }}
     </dl>
-</div>
+{{ /partial:components/context-rail }}

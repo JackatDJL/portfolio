@@ -118,6 +118,15 @@ const initContextRailLine = () => {
 
         const state = { activeY: 0, activeDepth: 0, hoverY: 0, hoverDepth: 0, height: 1 };
         const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const wideRail = window.matchMedia('(min-width: 64rem)');
+
+        const updateStickyState = () => {
+            const rootFontSize = Number.parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+            const stickyTopRem = Number.parseFloat(getComputedStyle(rail).getPropertyValue('--context-rail-sticky-top')) || 0;
+            const availableHeight = window.innerHeight - stickyTopRem * rootFontSize;
+            const fitsViewport = rail.getBoundingClientRect().height <= availableHeight;
+            rail.classList.toggle('article-context-rail--sticky', wideRail.matches && fitsViewport);
+        };
 
         const render = () => {
             const bumps = [
@@ -186,8 +195,11 @@ const initContextRailLine = () => {
             onUpdate: render,
         });
 
-        const draw = () => {
-            state.height = Math.max(1, rail.clientHeight);
+        const draw = (force = false) => {
+            updateStickyState();
+            const nextHeight = Math.max(1, rail.clientHeight);
+            if (!force && svg.hasAttribute('viewBox') && Math.abs(nextHeight - state.height) < 1) return;
+            state.height = nextHeight;
             svg.setAttribute('viewBox', `0 0 20 ${state.height}`);
             svg.setAttribute('preserveAspectRatio', 'none');
 
@@ -202,9 +214,13 @@ const initContextRailLine = () => {
             settleAt(linkY(activeLink));
         };
 
-        draw();
-        if ('ResizeObserver' in window) new ResizeObserver(draw).observe(rail);
-        else window.addEventListener('resize', draw);
+        draw(true);
+        const railContent = rail.querySelector('.article-context-rail__content') || rail;
+        if ('ResizeObserver' in window) new ResizeObserver(() => requestAnimationFrame(() => draw())).observe(railContent);
+        else window.addEventListener('resize', () => draw(true));
+        document.fonts?.ready.then(() => draw(true));
+        window.addEventListener('resize', updateStickyState);
+        wideRail.addEventListener('change', updateStickyState);
         document.addEventListener('article:toc-change', () => {
             const activeLink = rail.querySelector('.article-toc a[aria-current="true"]');
             if (activeLink instanceof HTMLElement) settleAt(linkY(activeLink));
@@ -219,7 +235,7 @@ const initContextRailLine = () => {
             const link = event.target.closest('.article-toc a');
             if (link instanceof HTMLElement && rail.contains(link) && !link.contains(event.relatedTarget)) clearHoverIntent();
         });
-        window.addEventListener('load', draw, { once: true });
+        window.addEventListener('load', () => draw(true), { once: true });
     }
 };
 
