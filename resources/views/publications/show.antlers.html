@@ -1,6 +1,7 @@
 {{# Veröffentlichungs-Detailseite: Dokumentkontext, Lesespalte und Bibliografie. #}}
 <article>
     {{ partial:detail/layout intro="publications/header" aside="publications/rail" aside_label="Bibliografische Angaben" }}
+        {{ partial:components/table-of-contents variant="mobile" }}
         {{ if document_url }}
             {{ partial:publications/document }}
         {{ elseif cover && publication_url }}

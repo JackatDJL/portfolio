@@ -10,8 +10,12 @@
         </div>
     </header>
     <div class="detail-layout detail-container">
-        <div class="detail-layout__main">{{ partial:bard/prose :content="content" }}</div>
+        <div class="detail-layout__main">
+            {{ partial:components/table-of-contents variant="mobile" single_section="true" }}
+            {{ partial:bard/prose :content="content" }}
+        </div>
         <aside class="detail-layout__rail" aria-label="Kontext">
+            {{ partial:components/table-of-contents variant="rail" single_section="true" }}
             {{ if related_projects }}
                 {{ partial:detail/meta-group label="Projekte aus dieser Zeit" }}
                     {{ related_projects }}{{ partial:components/related-reference inline="true" }}{{ /related_projects }}

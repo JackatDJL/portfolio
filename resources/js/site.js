@@ -5,13 +5,10 @@ if (document.querySelector('[data-cv-private-panel]')) import('./cv-private.js')
 if (document.querySelector('[data-cv-explore]')) import('./cv-explore.js').then(({ initCvExplore }) => initCvExplore());
 import { initThemeSwitcher } from './theme.js';
 import { gsap } from 'gsap';
-import { ScrollToPlugin } from 'gsap/ScrollToPlugin';
 import { buildThreadPath } from './thread-bump.js';
 
 if (document.querySelector('[data-pdf-viewer]')) import('./pdf-viewer.js');
 if (document.querySelector('[data-citation-dialog]')) import('./citation-dialog.js');
-
-gsap.registerPlugin(ScrollToPlugin);
 
 initThemeSwitcher();
 
@@ -33,8 +30,8 @@ const initArticleToc = () => {
     const allHeadings = [...article.querySelectorAll('h2, h3')]
         .filter((heading) => !heading.closest('[data-toc-exclude]'));
     const h2Count = allHeadings.filter((heading) => heading.tagName === 'H2').length;
-    const isLongEnough = article.textContent.trim().length >= 1200;
-    if (h2Count < 2 || (allHeadings.length < 3 && !isLongEnough)) return;
+    const allowsSingleSection = tocTargets.some((toc) => toc.hasAttribute('data-article-toc-single'));
+    if (h2Count < 2 && !(h2Count === 1 && allowsSingleSection)) return;
 
     const usedIds = new Set([...document.querySelectorAll('[id]')].map(({ id }) => id));
     const headings = allHeadings.filter((heading) => heading.tagName === 'H2' || h2Count >= 2);
@@ -87,12 +84,10 @@ const initArticleToc = () => {
         setCurrent(id);
         history.pushState(null, '', `#${id}`);
 
-        const target = Math.max(0, window.scrollY + heading.getBoundingClientRect().top - 104);
-        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-            window.scrollTo({ top: target });
-            return;
-        }
-        gsap.to(window, { duration: 0.7, ease: 'power2.inOut', scrollTo: { y: target, autoKill: true } });
+        heading.scrollIntoView({
+            behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth',
+            block: 'start',
+        });
     }));
 
     const intersectionStates = new Map();
@@ -109,7 +104,7 @@ const initArticleToc = () => {
         let hashId;
         try { hashId = decodeURIComponent(window.location.hash.slice(1)); } catch { hashId = window.location.hash.slice(1); }
         const target = document.getElementById(hashId);
-        if (target) window.requestAnimationFrame(() => target.scrollIntoView());
+        if (target) window.requestAnimationFrame(() => target.scrollIntoView({ behavior: 'instant', block: 'start' }));
     }
 };
 

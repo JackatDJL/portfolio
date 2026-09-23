@@ -117,7 +117,7 @@
     .experience-header__meta .cv-period { margin: 0; }
     .experience-summary { font-size: 1.1rem; line-height: 1.55; max-width: 58ch; margin-top: 1.4rem; }
     .experience-content { padding-top: 2.5rem; }
-    .experience-rail { position: relative; grid-column: 2; align-self: start; }
+    .experience-rail { position: relative; grid-column: 2; }
     .experience-content > .detail-layout__main { grid-column: 1; grid-row: 1; }
     .experience-rail .article-context-rail__content > * + * { margin-top: 2rem; }
     .experience-rail .article-context-rail__line { left: -.9rem; }
