@@ -84,37 +84,190 @@ test('gallery buttons, keyboard, horizontal wheel, boundaries and reduced motion
 });
 test('interactive CV is opt-in, keyboard accessible, closeable and excluded from print', async ({ page }) => {
     await page.goto('/cv');
+    const root = page.locator('[data-cv-explore]');
     const open = page.locator('[data-cv-explore-open]');
     const content = page.locator('[data-cv-explore-content]');
+    const documentFlow = await page.evaluate(() => {
+        const header = document.querySelector('.cv-document__header').getBoundingClientRect();
+        const explore = document.querySelector('[data-cv-explore]');
+        const body = document.querySelector('.cv-document__body');
+        return {
+            compactHeight: explore.getBoundingClientRect().height,
+            headerGap: explore.getBoundingClientRect().top - header.bottom,
+            bodyFollows: explore.nextElementSibling === body,
+        };
+    });
+    expect(documentFlow.compactHeight).toBeLessThan(60);
+    expect(documentFlow.headerGap).toBeLessThan(24);
+    expect(documentFlow.bodyFollows).toBe(true);
     await expect(open).toHaveAttribute('aria-expanded', 'false');
     await expect(content).toBeHidden();
+    await expect(root.locator('template[data-cv-milestone]')).toHaveCount(8);
     await open.focus();
     await page.keyboard.press('Enter');
     await expect(content).toBeVisible();
     await expect(open).toHaveAttribute('aria-expanded', 'true');
-    await expect(page.locator('.cv-milestone')).toHaveCount(8);
+    await expect(page.locator('[data-cv-timeline-event]')).toHaveCount(8);
+    await expect(page.locator('[data-cv-active-detail] .cv-milestone')).toHaveCount(1);
+    await expect(page.locator('[data-cv-active-detail] h3')).toBeVisible();
     await page.keyboard.press('Escape');
     await expect(content).toBeHidden();
+    await expect(open).toHaveAttribute('aria-expanded', 'false');
     await page.emulateMedia({ media: 'print' });
     await expect(page.locator('.cv-explore')).toBeHidden();
 });
-test('desktop timeline pins, advances, reverses and releases into Experience', async ({ page }) => {
+test('desktop timeline stays in document flow and hands the wheel back at both edges', async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/cv');
     await page.locator('[data-cv-explore-open]').click();
+    const root = page.locator('[data-cv-explore]');
     const content = page.locator('[data-cv-explore-content]');
-    const track = page.locator('[data-cv-timeline-track]');
+    const stage = page.locator('[data-cv-timeline-stage]');
     await expect(content).toBeVisible();
-    await content.scrollIntoViewIfNeeded();
-    const start = await track.evaluate(el => getComputedStyle(el).transform);
-    await page.mouse.wheel(0, 900);
-    await expect.poll(() => track.evaluate(el => getComputedStyle(el).transform)).not.toBe(start);
-    const forward = await track.evaluate(el => getComputedStyle(el).transform);
-    await page.mouse.wheel(0, -450);
-    await expect.poll(() => track.evaluate(el => getComputedStyle(el).transform)).not.toBe(forward);
-    for (let index = 0; index < 6; index++) await page.mouse.wheel(0, 1200);
-    await expect.poll(() => page.locator('#cv-experience-title').evaluate(el => el.getBoundingClientRect().top)).toBeLessThan(900);
+    await expect.poll(() => stage.evaluate(el => el.scrollWidth > el.clientWidth)).toBe(true);
+    await expect.poll(() => page.locator('[data-cv-active-detail] h3').textContent()).not.toBe('');
+    const flow = await page.evaluate(() => {
+        const header = document.querySelector('.cv-document__header').getBoundingClientRect();
+        const explore = document.querySelector('[data-cv-explore]').getBoundingClientRect();
+        const body = document.querySelector('.cv-document__body').getBoundingClientRect();
+        return {
+            headerGap: explore.top - header.bottom,
+            bodyGap: body.top - explore.bottom,
+            expandedHeight: explore.height,
+            hasPinSpacer: Boolean(document.querySelector('.pin-spacer')),
+            experienceBelow: body.top < document.querySelector('#cv-experience-title').getBoundingClientRect().top,
+        };
+    });
+    expect(flow.headerGap).toBeGreaterThanOrEqual(0);
+    expect(flow.headerGap).toBeLessThan(24);
+    expect(flow.bodyGap).toBeLessThan(2);
+    expect(flow.expandedHeight).toBeLessThan(360);
+    expect(flow.hasPinSpacer).toBe(false);
+    expect(flow.experienceBelow).toBe(true);
+
+    await stage.scrollIntoViewIfNeeded();
+    const wheelResult = async deltaY => stage.evaluate((el, delta) => {
+        const wheel = new WheelEvent('wheel', { bubbles: true, cancelable: true, deltaY: delta });
+        el.dispatchEvent(wheel);
+        return { prevented: wheel.defaultPrevented, scrollLeft: el.scrollLeft };
+    }, deltaY);
+    const beforeAtStart = await wheelResult(-120);
+    expect(beforeAtStart.prevented).toBe(false);
+    const forward = await wheelResult(240);
+    expect(forward.prevented).toBe(true);
+    expect(forward.scrollLeft).toBeGreaterThan(0);
+
+    const maxScroll = await stage.evaluate(el => el.scrollWidth - el.clientWidth);
+    await stage.evaluate((el, max) => { el.scrollLeft = max; }, maxScroll);
+    await expect.poll(() => page.locator('[data-cv-timeline-event][aria-pressed="true"]').getAttribute('data-cv-timeline-event')).toBe('7');
+    const backFromEnd = await wheelResult(-120);
+    expect(backFromEnd.prevented).toBe(true);
+    await stage.evaluate((el, max) => { el.scrollLeft = max; }, maxScroll);
+    const releaseAtEnd = await wheelResult(120);
+    expect(releaseAtEnd.prevented).toBe(false);
+
+    await stage.focus();
+    await page.keyboard.press('ArrowLeft');
+    await expect(page.locator('[data-cv-timeline-event][aria-pressed="true"]')).toHaveAttribute('data-cv-timeline-event', '6');
+    await page.keyboard.press('Home');
+    await expect(page.locator('[data-cv-timeline-event][aria-pressed="true"]')).toHaveAttribute('data-cv-timeline-event', '0');
+    await page.keyboard.press('End');
+    await expect(page.locator('[data-cv-timeline-event][aria-pressed="true"]')).toHaveAttribute('data-cv-timeline-event', '7');
+    await expect(page.locator('[data-cv-active-detail] h3')).toHaveText('Beitritt zum DRK');
+
+    await stage.evaluate(el => { el.scrollLeft = 0; });
+    await page.evaluate(() => window.scrollTo(0, 200));
+    const yBeforeHandoff = await page.evaluate(() => window.scrollY);
+    const stageBox = await stage.boundingBox();
+    await page.mouse.move(stageBox.x + stageBox.width / 2, stageBox.y + stageBox.height / 2);
+    await page.mouse.wheel(0, -180);
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBeLessThan(yBeforeHandoff);
+    const yAfterReverseHandoff = await page.evaluate(() => window.scrollY);
+    await stage.evaluate(el => { el.scrollLeft = el.scrollWidth - el.clientWidth; });
+    await page.mouse.wheel(0, 180);
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(yAfterReverseHandoff);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+});
+test('desktop trackpad horizontal wheel scrolls the native timeline stage', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto('/cv');
+    await page.locator('[data-cv-explore-open]').click();
+    const stage = page.locator('[data-cv-timeline-stage]');
+    await stage.scrollIntoViewIfNeeded();
+    const box = await stage.boundingBox();
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.wheel(240, 0);
+    await expect.poll(() => stage.evaluate(el => el.scrollLeft)).toBeGreaterThan(0);
+});
+test('timeline remains compact and inside the CV at desktop, tablet and mobile widths', async ({ page }, testInfo) => {
+    for (const width of [1440, 1024, 768, 390]) {
+        await page.setViewportSize({ width, height: 900 });
+        await page.goto('/cv');
+        await page.locator('[data-cv-explore-open]').click();
+        await expect(page.locator('[data-cv-timeline-stage]')).toBeVisible();
+        const layout = await page.evaluate(() => {
+            const header = document.querySelector('.cv-document__header').getBoundingClientRect();
+            const root = document.querySelector('[data-cv-explore]').getBoundingClientRect();
+            const body = document.querySelector('.cv-document__body').getBoundingClientRect();
+            const stage = document.querySelector('[data-cv-timeline-stage]');
+            return {
+                headerGap: root.top - header.bottom,
+                bodyGap: body.top - root.bottom,
+                openHeight: root.height,
+                pageOverflow: document.documentElement.scrollWidth > innerWidth,
+                stageOverflow: stage.scrollWidth > stage.clientWidth,
+                markerCount: stage.querySelectorAll('[data-cv-timeline-event]').length,
+                yearLabels: [...stage.querySelectorAll('[data-year]')].map(node => node.dataset.year),
+                hasPinSpacer: Boolean(document.querySelector('.pin-spacer')),
+                detailOverflow: getComputedStyle(document.querySelector('.cv-explore__detail')).overflowY,
+            };
+        });
+        expect(layout.headerGap).toBeLessThan(24);
+        expect(layout.bodyGap).toBeLessThan(2);
+        expect(layout.openHeight).toBeLessThan(width >= 768 ? 360 : 440);
+        expect(layout.pageOverflow).toBe(false);
+        expect(layout.stageOverflow).toBe(true);
+        expect(layout.markerCount).toBe(8);
+        expect(layout.yearLabels).toEqual(['2014', '2015', '2016', '2017', '2018', '2019', '2020', '2021', '2022', '2023', '2024', '2025']);
+        expect(layout.hasPinSpacer).toBe(false);
+        expect(layout.detailOverflow).toBe('visible');
+        await page.screenshot({ path: testInfo.outputPath('timeline-open-' + width + '.png'), fullPage: true });
+        if (width === 390) await page.screenshot({ path: testInfo.outputPath('timeline-mobile-open.png'), fullPage: false });
+    }
+});
+test('timeline uses native horizontal scrolling on touch and disables wheel capture with reduced motion', async ({ browser }) => {
+    const context = await browser.newContext({
+        viewport: { width: 390, height: 844 },
+        isMobile: true,
+        hasTouch: true,
+        reducedMotion: 'reduce',
+    });
+    const page = await context.newPage();
+    await page.goto(cvBaseURL + '/cv');
+    await page.locator('[data-cv-explore-open]').click();
+    const stage = page.locator('[data-cv-timeline-stage]');
+    await stage.scrollIntoViewIfNeeded();
+    const box = await stage.boundingBox();
+    const client = await context.newCDPSession(page);
+    const y = box.y + box.height / 2;
+    await client.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: box.x + box.width - 24, y }] });
+    for (const x of [box.x + box.width - 80, box.x + box.width - 145, box.x + box.width - 210]) {
+        await client.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x, y }] });
+        await page.waitForTimeout(25);
+    }
+    await client.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+    await expect.poll(() => stage.evaluate(el => el.scrollLeft)).toBeGreaterThan(100);
+    const reducedWheel = await stage.evaluate(el => {
+        const wheel = new WheelEvent('wheel', { bubbles: true, cancelable: true, deltaY: 120 });
+        el.dispatchEvent(wheel);
+        return wheel.defaultPrevented;
+    });
+    expect(reducedWheel).toBe(false);
+    await stage.focus();
+    await page.keyboard.press('End');
+    await expect(page.locator('[data-cv-timeline-event][aria-pressed="true"]')).toHaveAttribute('data-cv-timeline-event', '7');
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await context.close();
 });
 test('CV detail navigation and sidebar composition use the parent route correctly', async ({ page }) => {
     await page.goto('/cv/exp/atheblues-robotik-und-teamarbeit');

@@ -12,18 +12,27 @@
     {{ if _profile_milestones && interactive_timeline != "hide" && (interactive_timeline == "show" || cv:interactive_timeline !== false) }}
     <section class="cv-explore" aria-label="Interaktiver Zeitstrahl" data-cv-explore>
         <div class="cv-explore__teaser">
-            <div class="cv-explore__preview" aria-hidden="true"><span></span><i></i><span></span><i></i><span></span></div>
+            <div class="cv-explore__preview" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
             <button class="btn btn-secondary cv-explore__reveal" type="button" aria-expanded="false" aria-controls="cv-explore-content" data-cv-explore-open><span>Zeitstrahl öffnen</span></button>
         </div>
         <div class="cv-explore__content" id="cv-explore-content" role="region" aria-label="Stationen" hidden data-cv-explore-content>
-            <button class="cv-explore__close" type="button" aria-label="Zeitstrahl schließen" data-cv-explore-close>{{ partial:components/close-icon }}</button>
-            <div class="cv-timeline" data-cv-timeline><div class="cv-timeline__stage">
-                <div class="cv-timeline__playhead" aria-hidden="true"><span></span></div>
-                <div class="cv-timeline__track" data-cv-timeline-track>
-                    <svg aria-hidden="true" focusable="false" preserveAspectRatio="none"><path d="M0 42 H1000" /></svg>
+            <div class="cv-timeline" data-cv-timeline>
+                <div class="cv-timeline__toolbar">
+                    <p class="cv-timeline__instructions" id="cv-timeline-help">Mit Pfeiltasten wechseln, scrollen oder wischen.</p>
+                    <button class="cv-explore__close" type="button" aria-label="Zeitstrahl schließen" data-cv-explore-close>{{ partial:components/close-icon }}</button>
+                </div>
+                <div class="cv-timeline__stage" data-cv-timeline-stage tabindex="0" role="group" aria-label="Zeitstrahl der Stationen" aria-describedby="cv-timeline-help">
+                    <div class="cv-timeline__track" data-cv-timeline-track>
+                        <div class="cv-timeline__ticks" data-cv-timeline-ticks aria-hidden="true"></div>
+                        <div class="cv-timeline__years" data-cv-timeline-years aria-hidden="true"></div>
+                        <div class="cv-timeline__events" data-cv-timeline-events></div>
+                    </div>
+                </div>
+                <div class="cv-explore__detail" data-cv-active-detail aria-live="polite" aria-atomic="true"></div>
+                <div class="cv-timeline__sources" hidden>
                     {{ _profile_milestones }}{{ partial:cv/milestone }}{{ /_profile_milestones }}
                 </div>
-            </div></div>
+            </div>
         </div>
     </section>
     {{ /if }}

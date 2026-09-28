@@ -59,8 +59,17 @@ class CvSessionAccessTest extends TestCase
             $global->set('interactive_timeline', false);
             $profile->set('interactive_timeline', 'inherit');
             $this->get('/cv/jobmesse-26')->assertDontSee('data-cv-explore');
+            $global->set('interactive_timeline', true);
+            $shown = $this->get('/cv/jobmesse-26')
+                ->assertSee('data-cv-explore')
+                ->assertSee('Erster RoboCup')
+                ->assertSee('Deutsche Meisterschaft mit AtheBlues')
+                ->assertDontSee('Grundschule Stade-Hagen');
+            $this->assertSame(2, substr_count($shown->getContent(), '<template data-cv-milestone'));
+            $global->set('interactive_timeline', false);
             $profile->set('interactive_timeline', 'show');
             $this->get('/cv/jobmesse-26')->assertSee('data-cv-explore');
+            $global->set('interactive_timeline', true);
             $profile->set('interactive_timeline', 'hide');
             $this->get('/cv/jobmesse-26')->assertDontSee('data-cv-explore');
         } finally { $global->data($original); $profile->set('interactive_timeline', $previous); }
