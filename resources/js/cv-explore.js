@@ -2,28 +2,46 @@ import { gsap } from 'gsap';
 
 const reduceMotionQuery = '(prefers-reduced-motion: reduce)';
 const desktopPointerQuery = '(min-width: 48rem) and (pointer: fine)';
-const waveformPattern = [3, 2, 7, 2, 13, 3, 5, 2, 9, 2, 4, 15, 3, 6, 2, 11, 3, 2, 8, 3, 5, 2, 16, 4, 7, 2, 10, 3, 2, 6, 13, 2];
 const wheelThreshold = 72;
-const wheelCooldown = 380;
+const wheelIdleDelay = 220;
 const swipeThreshold = 48;
+const clusterDistance = 18;
+const clusterSpread = 6;
 
-const parseChronology = value => {
-    const match = /^(\d{4})(?:-(\d{1,2}))?$/.exec((value || '').trim());
+const utcTimestamp = (year, monthIndex, day) => {
+    const date = new Date(0);
+    date.setUTCHours(12, 0, 0, 0);
+    date.setUTCFullYear(year, monthIndex, day);
+    return date.getTime();
+};
+
+export const parseChronology = value => {
+    const match = /^(\d{4})(?:-(\d{2})(?:-(\d{2}))?)?$/.exec((value || '').trim());
     if (!match) return null;
+
     const year = Number(match[1]);
     const month = match[2] ? Number(match[2]) : null;
+    const day = match[3] ? Number(match[3]) : null;
     if (month !== null && (month < 1 || month > 12)) return null;
 
-    // Place year- and month-precision dates in the middle of their known period.
-    const timestamp = month === null
-        ? Date.UTC(year, 6, 1, 12)
-        : Date.UTC(year, month - 1, 15, 12);
-    return { year, month, timestamp };
+    if (day !== null) {
+        const check = new Date(utcTimestamp(year, month - 1, day));
+        if (check.getUTCFullYear() !== year || check.getUTCMonth() !== month - 1 || check.getUTCDate() !== day) return null;
+    }
+
+    // Year and month precision use the middle of the known period for geometry.
+    const timestamp = day !== null
+        ? utcTimestamp(year, month - 1, day)
+        : month !== null
+            ? utcTimestamp(year, month - 1, 15)
+            : utcTimestamp(year, 6, 1);
+
+    return { year, month, day, timestamp };
 };
 
 const todayTimestamp = () => {
     const today = new Date();
-    return Date.UTC(today.getFullYear(), today.getMonth(), today.getDate(), 12);
+    return utcTimestamp(today.getFullYear(), today.getMonth(), today.getDate());
 };
 
 export const initCvExplore = () => {
@@ -35,7 +53,6 @@ export const initCvExplore = () => {
     const teaser = root.querySelector('.cv-explore__teaser');
     const content = root.querySelector('[data-cv-explore-content]');
     const stage = root.querySelector('[data-cv-timeline-stage]');
-    const track = root.querySelector('[data-cv-timeline-track]');
     const ticks = root.querySelector('[data-cv-timeline-ticks]');
     const years = root.querySelector('[data-cv-timeline-years]');
     const events = root.querySelector('[data-cv-timeline-events]');
@@ -50,26 +67,29 @@ export const initCvExplore = () => {
         .filter(item => item.date)
         .sort((a, b) => a.date.timestamp - b.date.timestamp || a.order - b.order);
 
-    if (!open || !close || !content || !stage || !track || !ticks || !years || !events || !present || !detail || !sources.length) return;
+    if (!open || !close || !content || !stage || !ticks || !years || !events || !present || !detail || !sources.length) return;
 
     const eventMarkers = [];
     const eventsController = new AbortController();
     const resizeObserver = new ResizeObserver(() => scheduleBuild());
     const earliestYear = sources[0].date.year;
     const configuredStartYear = Number.parseInt(root.dataset.startYear || '', 10);
-    const startYear = Number.isInteger(configuredStartYear) && configuredStartYear <= new Date().getFullYear()
+    const currentYear = new Date().getFullYear();
+    const startYear = Number.isInteger(configuredStartYear)
+        && configuredStartYear <= currentYear
+        && configuredStartYear <= earliestYear
         ? configuredStartYear
         : earliestYear;
-    const startTimestamp = Date.UTC(startYear, 0, 1, 12);
+    const startTimestamp = utcTimestamp(startYear, 0, 1);
     let activeIndex = -1;
-    let positions = [];
     let endTimestamp = todayTimestamp();
-    let endYear = new Date().getFullYear();
+    let endYear = currentYear;
     let resizeFrame = 0;
+    let lastBuildKey = '';
     let disposed = false;
     let wheelDirection = 0;
     let wheelAccumulator = 0;
-    let wheelLockedUntil = 0;
+    let wheelLatched = false;
     let wheelResetTimer = 0;
     let touchStart = null;
     let suppressClickUntil = 0;
@@ -81,7 +101,10 @@ export const initCvExplore = () => {
     };
 
     const setActive = (index, { animate = true, focus = false } = {}) => {
-        if (index < 0 || index >= sources.length || index === activeIndex) return;
+        if (index < 0 || index >= sources.length) return;
+        if (focus) eventMarkers[index]?.focus({ preventScroll: true });
+        if (index === activeIndex) return;
+
         activeIndex = index;
         eventMarkers.forEach((marker, markerIndex) => {
             const selected = markerIndex === index;
@@ -91,35 +114,36 @@ export const initCvExplore = () => {
         });
         detail.replaceChildren(sources[index].template.content.cloneNode(true));
 
-        if (focus) eventMarkers[index]?.focus({ preventScroll: true });
         if (motionReduced() || !animate) {
             gsap.set(detail, { clearProps: 'opacity,transform,visibility' });
             return;
         }
         gsap.killTweensOf(detail);
-        gsap.fromTo(detail, { autoAlpha: 0, x: 6 }, {
+        gsap.fromTo(detail, { autoAlpha: 0, x: 5 }, {
             autoAlpha: 1,
             x: 0,
-            duration: .18,
+            duration: .16,
             ease: 'power2.out',
             clearProps: 'opacity,transform,visibility',
         });
     };
 
-    const labelsForWidth = width => {
+    const labelYearsForWidth = width => {
         const yearSpan = Math.max(1, endYear - startYear);
-        const pixelsPerYear = width / yearSpan;
-        const yearStep = Math.max(1, Math.ceil(48 / pixelsPerYear));
-        const selected = new Set();
-        for (let year = startYear; year < endYear; year += yearStep) selected.add(year);
+        const minimumGap = width < 420 ? 76 : width < 800 ? 66 : 50;
+        const step = Math.max(1, Math.ceil(minimumGap * yearSpan / width));
+        const labels = new Set([startYear]);
+        let lastX = 0;
 
-        const currentYearX = normalizedPosition(Date.UTC(endYear, 0, 1, 12)) * width;
-        const previousYear = [...selected].at(-1);
-        const previousYearX = previousYear === undefined
-            ? -Infinity
-            : normalizedPosition(Date.UTC(previousYear, 0, 1, 12)) * width;
-        if (width - currentYearX >= 42 && currentYearX - previousYearX >= 48) selected.add(endYear);
-        return selected;
+        for (let year = startYear + 1; year <= endYear; year += 1) {
+            if ((year - startYear) % step !== 0) continue;
+            const x = normalizedPosition(utcTimestamp(year, 0, 1)) * width;
+            if (x - lastX < minimumGap || width - x < 48) continue;
+            labels.add(year);
+            lastX = x;
+        }
+
+        return labels;
     };
 
     const createYearMarker = (year, position, showLabel, isStart) => {
@@ -141,84 +165,133 @@ export const initCvExplore = () => {
         return marker;
     };
 
-    const laneForPosition = (position, width, placed) => {
-        const x = position * width;
-        const nearbyLanes = placed
-            .filter(item => Math.abs(item.x - x) < 38)
-            .map(item => item.lane);
-        const laneOrder = [1, 0, 2];
-        return laneOrder.find(lane => !nearbyLanes.includes(lane)) ?? laneOrder[placed.length % laneOrder.length];
+    const pruneOverlappingYearLabels = trackWidth => {
+        const labels = [...years.querySelectorAll('[data-cv-year-label]')];
+        const startLabel = labels.find(label => label.dataset.align === 'start');
+        const presentLabel = present.querySelector('span');
+        if (!startLabel || !presentLabel) return;
+
+        const trackBox = root.querySelector('[data-cv-timeline-track]').getBoundingClientRect();
+        let previous = startLabel.getBoundingClientRect();
+        const presentBox = presentLabel.getBoundingClientRect();
+        for (const label of labels.filter(candidate => candidate !== startLabel)) {
+            const box = label.getBoundingClientRect();
+            if (box.left < previous.right + 8 || box.right + 8 > presentBox.left || box.left < trackBox.left || box.right > trackBox.left + trackWidth) {
+                label.remove();
+                continue;
+            }
+            previous = box;
+        }
+    };
+
+    const clusterEvents = (positions, width) => {
+        const groups = [];
+        for (let index = 0; index < positions.length; index += 1) {
+            const x = positions[index] * width;
+            const previous = groups.at(-1);
+            const previousX = previous ? positions[previous.end] * width : null;
+            if (previous && x - previousX < clusterDistance) previous.end = index;
+            else groups.push({ start: index, end: index });
+        }
+
+        return groups.map(group => {
+            const previousX = group.start === 0 ? 0 : positions[group.start - 1] * width;
+            const nextX = group.end === positions.length - 1 ? width : positions[group.end + 1] * width;
+            const firstX = positions[group.start] * width;
+            const lastX = positions[group.end] * width;
+            const left = group.start === 0 ? 0 : (previousX + firstX) / 2;
+            const right = group.end === positions.length - 1 ? width : (lastX + nextX) / 2;
+            const count = group.end - group.start + 1;
+            const anchorIndex = group.start + Math.floor((count - 1) / 2);
+
+            return { ...group, left, right, count, anchorIndex };
+        });
     };
 
     const buildTimeline = () => {
         if (disposed || content.hidden || stage.clientWidth === 0) return;
         const width = stage.clientWidth;
-        const height = stage.clientHeight;
-        const today = new Date();
-        endYear = today.getFullYear();
-        endTimestamp = todayTimestamp();
-        root.dataset.timelineEndYear = String(endYear);
-        positions = sources.map(source => normalizedPosition(source.date.timestamp));
+        const day = todayTimestamp();
+        const year = new Date().getFullYear();
+        const buildKey = `${width}:${day}`;
+        if (buildKey === lastBuildKey) return;
 
-        track.dataset.startYear = String(startYear);
-        track.dataset.endYear = String(endYear);
+        const restoreFocus = events.contains(document.activeElement);
+        endYear = year;
+        endTimestamp = day;
+        const track = root.querySelector('[data-cv-timeline-track]');
         track.dataset.startTimestamp = String(startTimestamp);
         track.dataset.endTimestamp = String(endTimestamp);
-        track.style.width = `${width}px`;
+        track.dataset.startYear = String(startYear);
+        track.dataset.endYear = String(endYear);
+        root.dataset.timelineEndYear = String(endYear);
+        stage.setAttribute('aria-label', `Lebenszeitachse von ${startYear} bis heute`);
 
+        const positions = sources.map(source => normalizedPosition(source.date.timestamp));
         ticks.replaceChildren();
         years.replaceChildren();
         events.replaceChildren();
         eventMarkers.length = 0;
 
         const tickFragment = document.createDocumentFragment();
-        const tickCount = Math.max(24, Math.floor(width / 7.4));
+        const spacing = 12;
+        const tickCount = Math.max(12, Math.floor(width / spacing));
         for (let index = 0; index < tickCount; index += 1) {
             const tick = document.createElement('i');
-            const position = (index + .5) / tickCount;
             tick.className = 'cv-timeline__tick';
-            tick.style.left = `${position * 100}%`;
-            tick.style.setProperty('--tick-height', `${waveformPattern[index % waveformPattern.length]}px`);
+            tick.style.left = `${((index + .5) / tickCount) * 100}%`;
             tickFragment.append(tick);
         }
         ticks.append(tickFragment);
 
-        const yearLabels = labelsForWidth(width);
+        const yearLabels = labelYearsForWidth(width);
         const yearFragment = document.createDocumentFragment();
-        for (let year = startYear; year <= endYear; year += 1) {
-            const boundary = Date.UTC(year, 0, 1, 12);
-            const position = normalizedPosition(boundary);
-            yearFragment.append(createYearMarker(year, position, yearLabels.has(year), year === startYear));
+        for (let calendarYear = startYear; calendarYear <= endYear; calendarYear += 1) {
+            const position = normalizedPosition(utcTimestamp(calendarYear, 0, 1));
+            yearFragment.append(createYearMarker(calendarYear, position, yearLabels.has(calendarYear), calendarYear === startYear));
         }
         years.append(yearFragment);
+        pruneOverlappingYearLabels(width);
 
         present.dataset.timestamp = String(endTimestamp);
+        present.setAttribute('aria-label', 'Heute');
+
+        const clusters = clusterEvents(positions, width);
         const eventFragment = document.createDocumentFragment();
-        const placed = [];
-        sources.forEach((source, index) => {
-            const article = source.template.content.querySelector('.cv-milestone');
-            const dateLabel = article.querySelector('.cv-milestone__date')?.textContent.trim();
-            const title = article.querySelector('h3')?.textContent.trim();
-            const position = positions[index];
-            const lane = laneForPosition(position, width, placed);
-            const marker = document.createElement('button');
-            marker.type = 'button';
-            marker.className = 'cv-timeline__event';
-            marker.dataset.cvTimelineEvent = String(index);
-            marker.dataset.position = position.toFixed(6);
-            marker.dataset.timestamp = String(source.date.timestamp);
-            marker.dataset.lane = String(lane);
-            marker.style.left = `${position * 100}%`;
-            marker.style.top = `${Math.round(height / 2 - 12 + (lane - 1) * 24)}px`;
-            marker.setAttribute('aria-label', [dateLabel, title].filter(Boolean).join(': '));
-            marker.setAttribute('aria-pressed', String(index === activeIndex));
-            marker.tabIndex = index === activeIndex ? 0 : -1;
-            if (source.template.dataset.featured === 'true') marker.dataset.featured = '';
-            if (index === activeIndex) marker.dataset.active = '';
-            marker.append(document.createElement('span'));
-            eventFragment.append(marker);
-            eventMarkers.push(marker);
-            placed.push({ x: position * width, lane });
+        clusters.forEach(cluster => {
+            const clusterWidth = Math.max(0, cluster.right - cluster.left);
+            for (let index = cluster.start; index <= cluster.end; index += 1) {
+                const source = sources[index];
+                const article = source.template.content.querySelector('.cv-milestone');
+                const dateLabel = article.querySelector('.cv-milestone__date')?.textContent.trim();
+                const title = article.querySelector('h3')?.textContent.trim();
+                const localIndex = index - cluster.start;
+                const cellLeft = cluster.left + (clusterWidth * localIndex / cluster.count);
+                const cellRight = cluster.left + (clusterWidth * (localIndex + 1) / cluster.count);
+                const anchorX = positions[cluster.anchorIndex] * width;
+                const spreadIndex = index - cluster.anchorIndex;
+                const spreadSteps = Math.max(1, cluster.count - 1);
+                const visualOffset = cluster.count === 1 ? 0 : spreadIndex * (clusterSpread / spreadSteps);
+                const visualX = Math.max(0, Math.min(width, anchorX + visualOffset));
+                const marker = document.createElement('button');
+                marker.type = 'button';
+                marker.className = 'cv-timeline__event';
+                marker.dataset.cvTimelineEvent = String(index);
+                marker.dataset.position = positions[index].toFixed(8);
+                marker.dataset.timestamp = String(source.date.timestamp);
+                marker.dataset.date = source.template.dataset.date;
+                marker.dataset.clusterAnchor = positions[cluster.anchorIndex].toFixed(8);
+                marker.style.left = `${cellLeft}px`;
+                marker.style.width = `${cellRight - cellLeft}px`;
+                marker.style.setProperty('--event-x', `${visualX - cellLeft}px`);
+                marker.setAttribute('aria-label', [dateLabel, title].filter(Boolean).join(': '));
+                marker.setAttribute('aria-pressed', String(index === activeIndex));
+                marker.tabIndex = index === activeIndex ? 0 : -1;
+                marker.setAttribute('aria-controls', 'cv-active-milestone');
+                marker.append(document.createElement('span'));
+                eventFragment.append(marker);
+                eventMarkers.push(marker);
+            }
         });
         events.append(eventFragment);
 
@@ -230,9 +303,13 @@ export const initCvExplore = () => {
                 marker.tabIndex = index === activeIndex ? 0 : -1;
             });
         }
+
+        lastBuildKey = buildKey;
+        if (restoreFocus) eventMarkers[activeIndex]?.focus({ preventScroll: true });
     };
 
     const scheduleBuild = () => {
+        if (content.hidden) return;
         cancelAnimationFrame(resizeFrame);
         resizeFrame = requestAnimationFrame(buildTimeline);
     };
@@ -252,8 +329,17 @@ export const initCvExplore = () => {
         activate(next, true);
     };
 
+    const resetWheelGesture = () => {
+        clearTimeout(wheelResetTimer);
+        wheelResetTimer = window.setTimeout(() => {
+            wheelAccumulator = 0;
+            wheelDirection = 0;
+            wheelLatched = false;
+        }, wheelIdleDelay);
+    };
+
     const handleWheel = event => {
-        if (motionReduced() || !matchMedia(desktopPointerQuery).matches || event.ctrlKey) return;
+        if (!matchMedia(desktopPointerQuery).matches || event.ctrlKey) return;
         const delta = Math.abs(event.deltaX) > Math.abs(event.deltaY) ? event.deltaX : event.deltaY;
         if (!delta) return;
         const direction = delta > 0 ? 1 : -1;
@@ -261,22 +347,22 @@ export const initCvExplore = () => {
         if (next < 0 || next >= sources.length) {
             wheelAccumulator = 0;
             wheelDirection = 0;
+            wheelLatched = false;
             return;
         }
 
         event.preventDefault();
-        if (wheelDirection !== direction) wheelAccumulator = 0;
+        resetWheelGesture();
+        if (wheelLatched) return;
+        if (wheelDirection !== direction) {
+            wheelAccumulator = 0;
+        }
         wheelDirection = direction;
-        if (performance.now() >= wheelLockedUntil) wheelAccumulator += Math.min(Math.abs(delta), wheelThreshold);
-        clearTimeout(wheelResetTimer);
-        wheelResetTimer = window.setTimeout(() => {
-            wheelAccumulator = 0;
-            wheelDirection = 0;
-        }, 240);
 
-        if (wheelAccumulator >= wheelThreshold && performance.now() >= wheelLockedUntil) {
+        wheelAccumulator += Math.min(Math.abs(delta), wheelThreshold);
+        if (wheelAccumulator >= wheelThreshold) {
             wheelAccumulator = 0;
-            wheelLockedUntil = performance.now() + wheelCooldown;
+            wheelLatched = true;
             activate(next);
         }
     };
@@ -308,6 +394,7 @@ export const initCvExplore = () => {
         const closedHeight = root.getBoundingClientRect().height;
         teaser.hidden = true;
         content.hidden = false;
+        lastBuildKey = '';
         buildTimeline();
         const expandedHeight = root.scrollHeight;
         root.style.height = `${closedHeight}px`;
@@ -320,7 +407,7 @@ export const initCvExplore = () => {
         }
         requestAnimationFrame(() => gsap.to(root, {
             height: expandedHeight,
-            duration: .24,
+            duration: .22,
             ease: 'power2.out',
             onComplete: clearRootSize,
         }));
@@ -349,7 +436,7 @@ export const initCvExplore = () => {
             finish();
             return;
         }
-        gsap.to(content, { opacity: 0, duration: .16, ease: 'power1.out' });
+        gsap.to(content, { opacity: 0, duration: .14, ease: 'power1.out' });
         gsap.to(root, {
             height: closedHeight,
             duration: .2,

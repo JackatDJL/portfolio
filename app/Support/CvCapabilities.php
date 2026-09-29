@@ -65,6 +65,25 @@ final class CvCapabilities
         return hash_equals($record->profile_path, $path);
     }
 
+    public static function privatePdfToken(Request $request, string $path): ?string
+    {
+        $hash = $request->session()->get('cv_grants.'.hash('sha256', $path));
+        if (! is_string($hash)) return null;
+
+        $record = DB::table('cv_access_tokens')
+            ->where('profile_path', $path)
+            ->where('token_hash', $hash)
+            ->whereNull('revoked_at')
+            ->first();
+        if (! $record || ($record->expires_at && now()->isAfter($record->expires_at))) return null;
+
+        try {
+            return Crypt::decryptString($record->encrypted_token);
+        } catch (\Illuminate\Contracts\Encryption\DecryptException) {
+            return null;
+        }
+    }
+
     private static function store(string $token, string $path, string $kind, $expiresAt = null): array
     {
         $identifier = Str::lower(Str::random(12));

@@ -9,12 +9,12 @@ class CvPdfRenderer
 {
     public function __construct(private readonly CvViewModel $viewModel) {}
 
-    public function render(?string $profileSlug = null, bool $authorized = false): string
+    public function render(?string $profileSlug = null, bool $authorized = false, ?string $capabilityToken = null): string
     {
         $root = storage_path('app/private/cv-latex/'.bin2hex(random_bytes(12)));
         if (! mkdir($root, 0700, true) && ! is_dir($root)) throw new RuntimeException('Could not create the private CV build directory.');
         try {
-            $cv = $this->viewModel->make($profileSlug, $authorized);
+            $cv = $this->viewModel->make($profileSlug, $authorized, $capabilityToken);
             $tex = $root.'/cv.tex';
             file_put_contents($tex, view('latex.cv', compact('cv'))->render(), LOCK_EX);
             chmod($tex, 0600);

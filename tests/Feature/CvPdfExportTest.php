@@ -16,7 +16,7 @@ class CvPdfExportTest extends TestCase
     {
         $pdf = $this->fakePdf();
         $renderer = Mockery::mock(CvPdfRenderer::class);
-        $renderer->shouldReceive('render')->once()->with(null, false)->andReturn($pdf);
+        $renderer->shouldReceive('render')->once()->with(null, false, null)->andReturn($pdf);
         $this->app->instance(CvPdfRenderer::class, $renderer);
 
         $response = $this->get('/cv/pdf');
@@ -32,7 +32,7 @@ class CvPdfExportTest extends TestCase
         $token = CvCapabilities::issueTemporary('/cv/jobmesse-26')['token'];
         $pdf = $this->fakePdf();
         $renderer = Mockery::mock(CvPdfRenderer::class);
-        $renderer->shouldReceive('render')->once()->with('jobmesse-26', true)->andReturn($pdf);
+        $renderer->shouldReceive('render')->once()->with('jobmesse-26', true, $token)->andReturn($pdf);
         $this->app->instance(CvPdfRenderer::class, $renderer);
 
         $this->get('/cv/jobmesse-26/pdf?token='.$token)->assertNotFound();
