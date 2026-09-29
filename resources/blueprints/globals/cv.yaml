@@ -137,6 +137,12 @@ tabs:
             field: { type: entries, collections: [publications], display: Veröffentlichungen }
           - handle: interactive_timeline
             field: { type: toggle, display: Interaktiver Zeitstrahl, default: true }
+          - handle: timeline_start_year
+            field:
+              type: integer
+              display: Öffentlicher Start des Zeitstrahls
+              instructions: 'Jahr am linken Rand der öffentlichen Zeitachse. Kein Geburtsdatum.'
+              width: 33
           - handle: milestones
             field: { type: entries, collections: [cv_milestones], display: 'Interaktive Meilensteine' }
   print:
