@@ -1,29 +1,36 @@
-<article class="cv-document" aria-label="Lebenslauf von {{ cv:full_name }}"{{ if accent_color }} style="--cv-accent: {{ accent_color }}"{{ /if }}>
+<article class="cv-document" aria-label="Lebenslauf von {{ cv_resolved:public_identity:name }}"{{ if accent_color }} style="--cv-accent: {{ accent_color }}"{{ /if }}>
     <header class="cv-document__header">
         <svg class="cv-header-geometry" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path d="M0 0H100V38L70 72 38 49 0 64Z" /><path d="M100 38V100H56L70 72Z" /></svg>
         <div class="cv-document__identity">
-            <h1>{{ cv:full_name }}</h1>
-            {{ if cv:public_location }}<p class="cv-document__subtitle">{{ cv:public_location }}</p>{{ /if }}
+            <h1>{{ cv_resolved:public_identity:name }}</h1>
+            {{ if cv_resolved:public_identity:location }}<p class="cv-document__subtitle">{{ cv_resolved:public_identity:location }}</p>{{ /if }}
         </div>
         {{ if profile_title || optional_context }}<div class="cv-document__profile-slot">{{ if profile_title }}<p class="cv-document__recipient">{{ profile_title }}</p>{{ /if }}{{ if optional_context }}<p class="cv-document__context">{{ optional_context }}</p>{{ /if }}</div>{{ /if }}
-        {{ if cv:profile_image }}<div class="cv-portrait">{{ partial:media/image :asset="cv:profile_image" mode="content" figure_class="cv-portrait__figure" image_class="cv-portrait__image" width="480" sizes="11rem" loading="eager" fetchpriority="high" }}</div>{{ /if }}
+        {{ if cv_resolved:public_identity:profile_image }}<div class="cv-portrait">{{ partial:media/image :asset="cv_resolved:public_identity:profile_image" mode="content" figure_class="cv-portrait__figure" image_class="cv-portrait__image" width="480" sizes="(max-width: 47.99rem) 6.7rem, 10.5rem" loading="eager" fetchpriority="high" }}</div>{{ /if }}
     </header>
-    {{ _profile_milestones = milestones ?? cv:milestones }}
-    {{ if _profile_milestones && interactive_timeline != "hide" && (interactive_timeline == "show" || cv:interactive_timeline !== false) }}
-    <section class="cv-explore" aria-label="Interaktiver Zeitstrahl" data-cv-explore>
+    {{ if cv_resolved:interactive_timeline && cv_resolved:sections:milestones:display }}
+    <section class="cv-explore" aria-label="Interaktiver Zeitstrahl" data-cv-explore data-start-year="{{ cv_resolved:timeline_start_year }}">
         <div class="cv-explore__teaser">
-            <div class="cv-explore__preview" aria-hidden="true"><span></span><i></i><span></span><i></i><span></span></div>
-            <button class="btn btn-secondary cv-explore__reveal" type="button" aria-expanded="false" aria-controls="cv-explore-content" data-cv-explore-open><span>Zeitstrahl öffnen</span></button>
+            <button class="btn btn-secondary cv-explore__reveal" type="button" aria-expanded="false" aria-controls="cv-explore-content" data-cv-explore-open><span>Interaktiven Zeitstrahl öffnen</span></button>
         </div>
         <div class="cv-explore__content" id="cv-explore-content" role="region" aria-label="Stationen" hidden data-cv-explore-content>
-            <button class="cv-explore__close" type="button" aria-label="Zeitstrahl schließen" data-cv-explore-close>{{ partial:components/close-icon }}</button>
-            <div class="cv-timeline" data-cv-timeline><div class="cv-timeline__stage">
-                <div class="cv-timeline__playhead" aria-hidden="true"><span></span></div>
-                <div class="cv-timeline__track" data-cv-timeline-track>
-                    <svg aria-hidden="true" focusable="false" preserveAspectRatio="none"><path d="M0 42 H1000" /></svg>
-                    {{ _profile_milestones }}{{ partial:cv/milestone }}{{ /_profile_milestones }}
+            <div class="cv-timeline" data-cv-timeline>
+                <div class="cv-timeline__toolbar">
+                    <button class="cv-explore__close" type="button" aria-label="Zeitstrahl schließen" data-cv-explore-close>{{ partial:components/close-icon }}</button>
                 </div>
-            </div></div>
+                <div class="cv-timeline__stage" data-cv-timeline-stage role="group" aria-label="Lebenszeitachse von {{ cv_resolved:timeline_start_year }} bis heute">
+                    <div class="cv-timeline__track" data-cv-timeline-track>
+                        <div class="cv-timeline__ticks" data-cv-timeline-ticks aria-hidden="true"></div>
+                        <div class="cv-timeline__years" data-cv-timeline-years aria-hidden="true"></div>
+                        <div class="cv-timeline__events" data-cv-timeline-events></div>
+                        <span class="cv-timeline__present" aria-hidden="true" data-cv-timeline-present><span>Heute</span></span>
+                    </div>
+                </div>
+                <div class="cv-explore__detail" id="cv-active-milestone" data-cv-active-detail aria-live="polite" aria-atomic="true"></div>
+                <div class="cv-timeline__sources" hidden>
+                    {{ cv_resolved:sections:milestones:display }}{{ partial:cv/milestone }}{{ /cv_resolved:sections:milestones:display }}
+                </div>
+            </div>
         </div>
     </section>
     {{ /if }}
@@ -32,40 +39,41 @@
             <section class="cv-support__section" aria-labelledby="cv-contact-title">
                 <h2 id="cv-contact-title">Kontakt</h2>
                 <address class="cv-contact">
-                    <p><span class="cv-contact__label">E-Mail</span><span data-cv-private="email">{{ partial:cv/mask width="long" }}</span></p>
+                    {{ if cv_resolved:public_identity:email }}<p><span class="cv-contact__label">Öffentliche E-Mail</span><a class="semantic-link" href="mailto:{{ cv_resolved:public_identity:email }}">{{ cv_resolved:public_identity:email }}</a></p>{{ /if }}
+                    <p><span class="cv-contact__label">Private E-Mail</span><span data-cv-private="email">{{ partial:cv/mask width="long" }}</span></p>
                     <p><span class="cv-contact__label">Telefon</span><span data-cv-private="phone">{{ partial:cv/mask width="medium" }}</span></p>
                     <p><span class="cv-contact__label">Anschrift</span><span data-cv-private="address">{{ partial:cv/mask width="long" lines="2" }}</span></p>
-                    {{ if cv:public_location }}<p><span class="cv-contact__label">Standort</span>{{ cv:public_location }}</p>{{ /if }}
+                    {{ if cv_resolved:public_identity:location }}<p><span class="cv-contact__label">Standort</span>{{ cv_resolved:public_identity:location }}</p>{{ /if }}
                 </address>
             </section>
-            {{ if cv:about }}
+            {{ if cv_resolved:sections:about:display }}
             <section class="cv-support__section cv-support__about" aria-labelledby="cv-about-title">
                 <h2 id="cv-about-title">Über mich</h2>
-                <div class="prose-site cv-about">{{ cv:about }}</div>
+                <div class="prose-site cv-about">{{ cv_resolved:sections:about:display }}</div>
             </section>
             {{ /if }}
-            {{ if cv:knowledge }}
+            {{ if cv_resolved:sections:knowledge:display }}
             <section class="cv-support__section cv-support__knowledge" aria-labelledby="cv-knowledge-title">
                 <h2 id="cv-knowledge-title">Kenntnisse</h2>
                 <div class="cv-knowledge-groups">
-                    {{ cv:knowledge }}
+                    {{ cv_resolved:sections:knowledge:display }}
                     <div class="cv-knowledge-group"><h3>{{ category }}</h3><ul>{{ items }}<li><span>{{ label }}</span>{{ if context }}<small>{{ context }}</small>{{ /if }}</li>{{ /items }}</ul></div>
-                    {{ /cv:knowledge }}
+                    {{ /cv_resolved:sections:knowledge:display }}
                 </div>
             </section>
             {{ /if }}
-            {{ if cv:soft_skills }}
+            {{ if cv_resolved:sections:soft_skills:display }}
             <section class="cv-support__section cv-support__soft-skills" aria-labelledby="cv-soft-skills-title">
                 <h2 id="cv-soft-skills-title">Soft Skills</h2>
-                <ul>{{ cv:soft_skills }}<li><strong>{{ label }}</strong>{{ if context }}<small>{{ context }}</small>{{ /if }}</li>{{ /cv:soft_skills }}</ul>
+                <ul>{{ cv_resolved:sections:soft_skills:display }}<li><strong>{{ label }}</strong>{{ if context }}<small>{{ context }}</small>{{ /if }}</li>{{ /cv_resolved:sections:soft_skills:display }}</ul>
             </section>
             {{ /if }}
             <section class="cv-support__section" aria-labelledby="cv-online-title">
                 <h2 id="cv-online-title">Online</h2>
                 <nav class="cv-contact__links" aria-label="Profile">
-                    {{ if cv:website }}{{ partial:components/outlink :href="cv:website" label="Website" classes="related-reference--text" }}{{ /if }}
-                    {{ if cv:github_url }}{{ partial:components/outlink :href="cv:github_url" label="GitHub" classes="related-reference--text" }}{{ /if }}
-                    {{ if cv:codeberg_url }}{{ partial:components/outlink :href="cv:codeberg_url" label="Codeberg" classes="related-reference--text" }}{{ /if }}
+                    {{ if cv_resolved:public_identity:website }}{{ partial:components/outlink :href="cv_resolved:public_identity:website" label="Website" classes="related-reference--text" }}{{ /if }}
+                    {{ if cv_resolved:public_identity:github_url }}{{ partial:components/outlink :href="cv_resolved:public_identity:github_url" label="GitHub" classes="related-reference--text" }}{{ /if }}
+                    {{ if cv_resolved:public_identity:codeberg_url }}{{ partial:components/outlink :href="cv_resolved:public_identity:codeberg_url" label="Codeberg" classes="related-reference--text" }}{{ /if }}
                 </nav>
             </section>
         </aside>
@@ -86,17 +94,15 @@
                     {{ /collection:education }}
                 </div>
             </section>
-            <section class="cv-section cv-section--projects" aria-labelledby="cv-projects-title"><div class="cv-section__heading"><h2 id="cv-projects-title">Projekte</h2></div><div class="cv-records">
-                {{ if projects }}{{ projects }}{{ if published && project_status != 'confidential' }}{{ partial:cv/reference }}{{ /if }}{{ /projects }}
-                {{ else }}{{ cv:projects }}{{ if published && project_status != 'confidential' }}{{ partial:cv/reference }}{{ /if }}{{ /cv:projects }}{{ /if }}
-            </div></section>
-            <section class="cv-section" aria-labelledby="cv-publications-title"><div class="cv-section__heading"><h2 id="cv-publications-title">Veröffentlichungen</h2></div><div class="cv-records">
-                {{ if publications }}{{ publications }}{{ partial:cv/reference }}{{ /publications }}
-                {{ else }}{{ cv:publications }}{{ partial:cv/reference }}{{ /cv:publications }}{{ /if }}
-            </div></section>
+            {{ if cv_resolved:sections:projects:display }}<section class="cv-section cv-section--projects" aria-labelledby="cv-projects-title"><div class="cv-section__heading"><h2 id="cv-projects-title">Projekte</h2></div><div class="cv-records">
+                {{ cv_resolved:sections:projects:display }}{{ partial:cv/reference }}{{ /cv_resolved:sections:projects:display }}
+            </div></section>{{ /if }}
+            {{ if cv_resolved:sections:publications:display }}<section class="cv-section" aria-labelledby="cv-publications-title"><div class="cv-section__heading"><h2 id="cv-publications-title">Veröffentlichungen</h2></div><div class="cv-records">
+                {{ cv_resolved:sections:publications:display }}{{ partial:cv/reference }}{{ /cv_resolved:sections:publications:display }}
+            </div></section>{{ /if }}
         </div>
     </div>
     {{ if cv:print_date || cv:signature }}
-        <footer class="cv-document__print-footer" aria-label="Ort, Datum und Unterschrift">{{ if cv:print_place || cv:print_date }}<p>{{ cv:print_place }}{{ if cv:print_place && cv:print_date }}, {{ /if }}{{ cv:print_date }}</p>{{ /if }}{{ if cv:signature }}<img src="{{ cv:signature:url }}" alt="Unterschrift von {{ cv:full_name }}">{{ /if }}</footer>
+        <footer class="cv-document__print-footer" aria-label="Ort, Datum und Unterschrift">{{ if cv:print_place || cv:print_date }}<p>{{ cv:print_place }}{{ if cv:print_place && cv:print_date }}, {{ /if }}{{ cv:print_date }}</p>{{ /if }}{{ if cv:signature }}<img src="{{ cv:signature:url }}" alt="Unterschrift von {{ cv_resolved:public_identity:name }}">{{ /if }}</footer>
     {{ /if }}
 </article>

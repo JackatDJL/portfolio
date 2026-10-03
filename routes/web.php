@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CvPageController;
 use App\Http\Controllers\CvPdfController;
 use App\Http\Controllers\CvPrivateDataController;
 use App\Http\Controllers\CvPrivateLinkController;
@@ -51,8 +52,10 @@ Route::delete('/cp/cv/private-link/permanent', [CvPrivateLinkController::class, 
 Route::statamic('/projekte', 'projects/index', ['title' => 'Projekte']);
 Route::statamic('/blog', 'posts/index', ['title' => 'Blog']);
 Route::statamic('/publikationen', 'publications/index', ['title' => 'Publikationen']);
-Route::statamic('/cv', 'cv/show', ['title' => 'Lebenslauf']);
-Route::statamic('/cv/{profile}', 'cv/profile');
+Route::get('/cv', [CvPageController::class, 'show'])->name('cv.show');
+Route::get('/cv/{profile}', [CvPageController::class, 'profile'])
+    ->where('profile', '[a-z0-9-]+')
+    ->name('cv.profile');
 
 Route::get('/cp/cv/private-link/status', [CvPrivateLinkController::class, 'status'])->middleware(['statamic.cp', 'statamic.cp.authenticated']);
 Route::get('/cp/cv/private-link/qr', [CvPrivateLinkController::class, 'qr'])->middleware(['statamic.cp', 'statamic.cp.authenticated']);

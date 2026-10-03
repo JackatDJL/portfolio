@@ -1,0 +1,72 @@
+title: CV-Vorlage
+tabs:
+  main:
+    display: Inhalte
+    sections:
+      -
+        display: Über mich
+        fields:
+          - handle: about
+            field:
+              type: bard
+              display: Über mich
+              buttons: [bold, italic, removeformat, anchor]
+              smart_typography: true
+              link_collections: [pages, projects, publications]
+              select_across_sites: true
+              remove_empty_nodes: true
+              sets: {}
+      -
+        display: Kenntnisse
+        fields:
+          - handle: knowledge
+            field:
+              type: grid
+              display: Kenntnisse
+              add_row: Bereich hinzufügen
+              fields:
+                - handle: category
+                  field: { type: text, display: Bereich, validate: [required], width: 33 }
+                - handle: items
+                  field:
+                    type: grid
+                    display: Einträge
+                    add_row: Eintrag hinzufügen
+                    width: 67
+                    fields:
+                      - handle: label
+                        field: { type: text, display: Bezeichnung, validate: [required], width: 50 }
+                      - handle: context
+                        field: { type: text, display: 'Niveau oder Kontext (optional)', width: 50 }
+      -
+        display: Soft Skills
+        fields:
+          - handle: soft_skills
+            field:
+              type: grid
+              display: Soft Skills
+              add_row: Soft Skill hinzufügen
+              fields:
+                - handle: label
+                  field: { type: text, display: Bezeichnung, validate: [required], width: 40 }
+                - handle: context
+                  field: { type: text, display: 'Kurzer Kontext (optional)', width: 60 }
+      -
+        display: Auswahl
+        instructions: 'Wähle die Inhalte, die zu diesem Schwerpunkt passen.'
+        fields:
+          - handle: projects
+            field: { type: entries, collections: [projects], display: Projekte }
+          - handle: publications
+            field: { type: entries, collections: [publications], display: Veröffentlichungen }
+          - handle: milestones
+            field: { type: entries, collections: [cv_milestones], display: Meilensteine }
+          - handle: interactive_timeline
+            field: { type: toggle, display: Interaktiven Zeitstrahl standardmäßig anzeigen, default: true }
+  sidebar:
+    display: Vorlage
+    sections:
+      -
+        fields:
+          - handle: slug
+            field: { type: slug, validate: ['max:200'] }

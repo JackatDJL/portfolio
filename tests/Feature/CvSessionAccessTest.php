@@ -3,7 +3,11 @@ namespace Tests\Feature;
 
 use App\Support\CvCapabilities;
 use App\Support\CvPdfRenderer;
+use App\Support\CvViewModel;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Crypt;
+use Statamic\Facades\GlobalSet;
+use Symfony\Component\Process\Process;
 use Tests\TestCase;
 
 class CvSessionAccessTest extends TestCase
@@ -18,7 +22,7 @@ class CvSessionAccessTest extends TestCase
         $this->postJson('/cv/private-data', ['path'=>'/cv/jobmesse-26'])->assertOk();
         $this->postJson('/cv/private-data', ['path'=>'/cv'])->assertNotFound();
         $pdf = tempnam(sys_get_temp_dir(), 'cv-test'); file_put_contents($pdf, '%PDF-1.4');
-        $this->mock(CvPdfRenderer::class)->shouldReceive('render')->once()->with('jobmesse-26', true)->andReturn($pdf);
+        $this->mock(CvPdfRenderer::class)->shouldReceive('render')->once()->with('jobmesse-26', true, $token)->andReturn($pdf);
         $this->get('/cv/jobmesse-26/pdf')->assertOk()->assertHeader('Referrer-Policy', 'no-referrer');
         @unlink($pdf);
     }
@@ -35,6 +39,90 @@ class CvSessionAccessTest extends TestCase
         CvCapabilities::revokePermanent('/cv/jobmesse-26');
         $this->postJson('/cv/private-data', ['path'=>'/cv/jobmesse-26'])->assertNotFound();
         $this->postJson('/cv/token-exchange', ['path'=>'/cv/jobmesse-26', 'token'=>$permanent])->assertNotFound();
+    }
+
+    public function test_private_pdf_keeps_the_capability_in_its_interactive_fragment_and_public_pdf_does_not(): void
+    {
+        $variables = GlobalSet::find('cv')->inDefaultSite();
+        $original = $variables->data()->all();
+        $email = 'PRIVATE-CV-PDF-SENTINEL@example.invalid';
+        $variables->set('private_email', Crypt::encryptString($email));
+        $token = CvCapabilities::issueTemporary('/cv/jobmesse-26')['token'];
+
+        try {
+            $this->postJson('/cv/token-exchange', ['path' => '/cv/jobmesse-26', 'token' => $token])->assertOk();
+            $private = $this->get('/cv/jobmesse-26/pdf')->assertOk();
+            [$privateText, $privateUrls] = $this->inspectPdf($private->streamedContent());
+            $this->assertStringContainsString($email, $privateText);
+            $this->assertStringContainsString('#cv='.$token, $privateUrls);
+            $this->assertStringNotContainsString('?cv=', $privateUrls);
+            $this->assertStringNotContainsString('?token=', $privateUrls);
+
+            $public = $this->get('/cv/jobmesse-26/pdf?public=1')->assertOk();
+            [$publicText, $publicUrls] = $this->inspectPdf($public->streamedContent());
+            $this->assertStringNotContainsString($email, $publicText);
+            $this->assertStringNotContainsString($token, $publicText.$publicUrls);
+        } finally {
+            $variables->data($original);
+        }
+    }
+
+    public function test_latex_template_escapes_special_characters_in_milestone_urls(): void
+    {
+        $cv = app(CvViewModel::class)->make();
+        $url = 'https://example.invalid/curly/{part}/back\\slash?code=%7B#section~extra';
+        $cv['milestones'][] = [
+            'title' => 'URL escaping check',
+            'date' => '2026',
+            'organisation' => '',
+            'summary' => '',
+            'relations' => [['title' => 'URL escaping check', 'url' => $url]],
+        ];
+
+        $latex = view('latex.cv', compact('cv'))->render();
+
+        $this->assertStringContainsString('https://example.invalid/curly/\\%7Bpart\\%7D/back\\%5Cslash?code=\\%7B\\#section\\%7Eextra', $latex);
+    }
+
+    public function test_revoking_a_permanent_capability_removes_private_pdf_access(): void
+    {
+        $variables = GlobalSet::find('cv')->inDefaultSite();
+        $original = $variables->data()->all();
+        $email = 'PRIVATE-CV-REVOKED-SENTINEL@example.invalid';
+        $variables->set('private_email', Crypt::encryptString($email));
+        $token = CvCapabilities::permanent('/cv/jobmesse-26')['token'];
+
+        try {
+            $this->postJson('/cv/token-exchange', ['path' => '/cv/jobmesse-26', 'token' => $token])->assertOk();
+            [$privateText, $privateUrls] = $this->inspectPdf($this->get('/cv/jobmesse-26/pdf')->assertOk()->streamedContent());
+            $this->assertStringContainsString($email, $privateText);
+            $this->assertStringContainsString('#cv='.$token, $privateUrls);
+
+            CvCapabilities::revokePermanent('/cv/jobmesse-26');
+            $this->postJson('/cv/token-exchange', ['path' => '/cv/jobmesse-26', 'token' => $token])->assertNotFound();
+            $this->postJson('/cv/private-data', ['path' => '/cv/jobmesse-26'])->assertNotFound();
+            [$publicText, $publicUrls] = $this->inspectPdf($this->get('/cv/jobmesse-26/pdf')->assertOk()->streamedContent());
+            $this->assertStringNotContainsString($email, $publicText);
+            $this->assertStringNotContainsString($token, $publicText.$publicUrls);
+        } finally {
+            $variables->data($original);
+        }
+    }
+
+    private function inspectPdf(string $bytes): array
+    {
+        $path = tempnam(sys_get_temp_dir(), 'cv-pdf-test-');
+        file_put_contents($path, $bytes);
+        try {
+            $text = new Process(['pdftotext', $path, '-']);
+            $text->mustRun();
+            $urls = new Process(['pdfinfo', '-url', $path]);
+            $urls->mustRun();
+
+            return [$text->getOutput(), $urls->getOutput()];
+        } finally {
+            @unlink($path);
+        }
     }
 
     public function test_invalid_and_wrong_scope_tokens_do_not_authorize(): void
@@ -59,8 +147,17 @@ class CvSessionAccessTest extends TestCase
             $global->set('interactive_timeline', false);
             $profile->set('interactive_timeline', 'inherit');
             $this->get('/cv/jobmesse-26')->assertDontSee('data-cv-explore');
+            $global->set('interactive_timeline', true);
+            $shown = $this->get('/cv/jobmesse-26')
+                ->assertSee('data-cv-explore')
+                ->assertSee('Erster RoboCup')
+                ->assertSee('Deutsche Meisterschaft mit AtheBlues')
+                ->assertDontSee('Grundschule Stade-Hagen');
+            $this->assertSame(2, substr_count($shown->getContent(), '<template data-cv-milestone'));
+            $global->set('interactive_timeline', false);
             $profile->set('interactive_timeline', 'show');
             $this->get('/cv/jobmesse-26')->assertSee('data-cv-explore');
+            $global->set('interactive_timeline', true);
             $profile->set('interactive_timeline', 'hide');
             $this->get('/cv/jobmesse-26')->assertDontSee('data-cv-explore');
         } finally { $global->data($original); $profile->set('interactive_timeline', $previous); }

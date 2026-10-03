@@ -1,37 +1,5 @@
 title: Lebenslauf
 tabs:
-  general:
-    display: Allgemein
-    sections:
-      -
-        display: Identität
-        fields:
-          - handle: full_name
-            field:
-              type: text
-              display: Vollständiger Name
-              validate: [required]
-              width: 50
-          - handle: public_location
-            field:
-              type: text
-              display: Öffentlicher Standort
-              instructions: 'Ungefährer Standort, nicht die private Anschrift.'
-              width: 50
-          - handle: profile_image
-            field:
-              type: assets
-              container: assets
-              folder: profile_pictures
-              restrict: true
-              max_files: 1
-              display: Profilbild
-          - handle: website
-            field: { type: text, input_type: url, display: Website, width: 33 }
-          - handle: github_url
-            field: { type: text, input_type: url, display: GitHub, width: 33 }
-          - handle: codeberg_url
-            field: { type: text, input_type: url, display: Codeberg, width: 33 }
   personal:
     display: Persönliche Daten
     sections:
@@ -137,6 +105,12 @@ tabs:
             field: { type: entries, collections: [publications], display: Veröffentlichungen }
           - handle: interactive_timeline
             field: { type: toggle, display: Interaktiver Zeitstrahl, default: true }
+          - handle: timeline_start_year
+            field:
+              type: integer
+              display: Öffentlicher Start des Zeitstrahls
+              instructions: 'Jahr am linken Rand der öffentlichen Zeitachse. Kein Geburtsdatum.'
+              width: 33
           - handle: milestones
             field: { type: entries, collections: [cv_milestones], display: 'Interaktive Meilensteine' }
   print:

@@ -1,7 +1,13 @@
 (function () {
+    const runtimeMessage = 'Zugriffslinks brauchen eine aktive Laravel-Anwendung mit Datenbank und Sitzungsspeicher.';
     const request = async (method, endpoint, body) => {
-        const response = await fetch(endpoint, { method, headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '', Accept: 'application/json' }, ...(method === 'GET' ? {} : { body: JSON.stringify(body) }) });
-        if (!response.ok) throw new Error('Zugriffslink konnte nicht verwaltet werden.');
+        let response;
+        try {
+            response = await fetch(endpoint, { method, headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '', Accept: 'application/json' }, ...(method === 'GET' ? {} : { body: JSON.stringify(body) }) });
+        } catch {
+            throw new Error(runtimeMessage);
+        }
+        if (!response.ok) throw new Error([404, 405, 501].includes(response.status) || response.status >= 500 ? runtimeMessage : 'Zugriffslink konnte nicht verwaltet werden.');
         return response.json();
     };
     const bind = async root => {
@@ -24,8 +30,15 @@
         const status = root.querySelector('[data-cv-access-status]');
         const qrSelect = root.querySelector('[data-qr-source]');
         qrSelect.className = nativeButton;
+        const markRuntimeUnavailable = () => {
+            root.dataset.backendAvailable = 'false';
+            root.querySelectorAll('[data-action], [data-copy], [data-pdf], [data-qr]').forEach(button => { button.disabled = true; });
+            qrSelect.disabled = true;
+            status.textContent = runtimeMessage;
+        };
         const qrUrl = source => source === 'public' ? location.origin + path : links[source]?.url;
         const updateQr = () => {
+            if (root.dataset.backendAvailable === 'false') return;
             for (const kind of ['temporary', 'permanent']) qrSelect.querySelector(`[value="${kind}"]`).disabled = !links[kind]?.url;
             if (qrSelect.selectedOptions[0]?.disabled) qrSelect.value = 'public';
             root.querySelector('[data-qr-warning]').hidden = qrSelect.value === 'public';
@@ -39,6 +52,9 @@
         }, { signal: root.cvEvents.signal });
         const refresh = async () => {
             const result = await request('GET', '/cp/cv/private-link/status?path=' + encodeURIComponent(path));
+            root.dataset.backendAvailable = 'true';
+            qrSelect.disabled = false;
+            root.querySelectorAll('[data-pdf], [data-qr]').forEach(button => { button.disabled = false; });
             path = result.path; links = result.links;
             for (const kind of ['temporary', 'permanent']) {
                 root.querySelector(`[data-copy="${kind}"]`).disabled = !links[kind]?.url;
@@ -89,10 +105,10 @@
                     const link = document.createElement('a'); link.href = qrObjectUrl; link.download = 'Jack-Ruder-CV-' + path.split('/').at(-1) + '-' + qrSource + '.svg'; link.click();
                 }
                 if (button.dataset.qr === 'copy') { await navigator.clipboard.writeText(qrUrl(qrSelect.value)); status.textContent = 'QR-Zieladresse kopiert.'; }
-            } catch (error) { status.textContent = error.message; }
-            finally { button.disabled = false; try { await refresh(); } catch (error) { status.textContent = error.message; } }
+            } catch (error) { if (error.message === runtimeMessage) markRuntimeUnavailable(); else status.textContent = error.message; }
+            finally { button.disabled = root.dataset.backendAvailable === 'false'; try { await refresh(); } catch (error) { if (error.message === runtimeMessage) markRuntimeUnavailable(); else status.textContent = error.message; } }
         }, { signal: root.cvEvents.signal });
-        try { await refresh(); } catch(error) { status.textContent = error.message; }
+        try { await refresh(); } catch(error) { if (error.message === runtimeMessage) markRuntimeUnavailable(); else status.textContent = error.message; }
     };
     const scan = () => document.querySelectorAll('[data-cv-profile-access]').forEach(bind);
     new MutationObserver(scan).observe(document.documentElement, {childList:true,subtree:true}); scan();

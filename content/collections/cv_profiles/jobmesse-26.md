@@ -5,6 +5,13 @@ title: 'Jobmesse 2026'
 accent_color: '#5adbbd'
 recipient_name: 'An die Firmen der Jobmesse 2026'
 application_year: 2026
+source_mode: custom
+about_source: inherit
+knowledge_source: inherit
+soft_skills_source: inherit
+projects_source: override
+publications_source: override
+milestones_source: override
 projects:
   - 1b4ba371-c0b4-4fae-8a93-1f2fabf11477
   - 5807f242-6c88-4a60-aea5-a529ffa75110

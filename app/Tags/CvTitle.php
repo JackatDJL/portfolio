@@ -10,7 +10,8 @@ class CvTitle extends Tags
     {
         $request = request();
         if (!$request->is('cv', 'cv/*')) return (string) ($this->context->get('title') ?? $this->context->get('site:name') ?? 'Jack Ruder');
-        $title = 'Jack Ruder · Lebenslauf';
+        $name = (string) ($this->context->get('site:name') ?? 'Lebenslauf');
+        $title = $name.' · Lebenslauf';
         if (in_array($request->segment(2), ['exp', 'edu'], true)) return $title.' · '.$this->context->get('title');
         if ($slug = $request->segment(2)) {
             $profile = Entry::query()->where('collection', 'cv_profiles')->where('slug', $slug)->first();
