@@ -1,7 +1,7 @@
 @php
 use App\Support\Latex;
 $e = fn ($value) => new \Illuminate\Support\HtmlString(Latex::escape((string) $value));
-$u = fn ($value) => new \Illuminate\Support\HtmlString(str_replace('#', '\#', (string) $value));
+$u = fn ($value) => new \Illuminate\Support\HtmlString(strtr((string) $value, ['\\' => '\%5C', '{' => '\%7B', '}' => '\%7D', '%' => '\%', '#' => '\#', '~' => '\%7E']));
 $compact = count($cv['projects']) <= 3;
 @endphp
 % !TeX program = lualatex

@@ -3,6 +3,7 @@ namespace Tests\Feature;
 
 use App\Support\CvCapabilities;
 use App\Support\CvPdfRenderer;
+use App\Support\CvViewModel;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Crypt;
 use Statamic\Facades\GlobalSet;
@@ -64,6 +65,23 @@ class CvSessionAccessTest extends TestCase
         } finally {
             $variables->data($original);
         }
+    }
+
+    public function test_latex_template_escapes_special_characters_in_milestone_urls(): void
+    {
+        $cv = app(CvViewModel::class)->make();
+        $url = 'https://example.invalid/curly/{part}/back\\slash?code=%7B#section~extra';
+        $cv['milestones'][] = [
+            'title' => 'URL escaping check',
+            'date' => '2026',
+            'organisation' => '',
+            'summary' => '',
+            'relations' => [['title' => 'URL escaping check', 'url' => $url]],
+        ];
+
+        $latex = view('latex.cv', compact('cv'))->render();
+
+        $this->assertStringContainsString('https://example.invalid/curly/\\%7Bpart\\%7D/back\\%5Cslash?code=\\%7B\\#section\\%7Eextra', $latex);
     }
 
     public function test_revoking_a_permanent_capability_removes_private_pdf_access(): void
