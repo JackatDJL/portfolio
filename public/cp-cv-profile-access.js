@@ -52,6 +52,9 @@
         }, { signal: root.cvEvents.signal });
         const refresh = async () => {
             const result = await request('GET', '/cp/cv/private-link/status?path=' + encodeURIComponent(path));
+            root.dataset.backendAvailable = 'true';
+            qrSelect.disabled = false;
+            root.querySelectorAll('[data-pdf], [data-qr]').forEach(button => { button.disabled = false; });
             path = result.path; links = result.links;
             for (const kind of ['temporary', 'permanent']) {
                 root.querySelector(`[data-copy="${kind}"]`).disabled = !links[kind]?.url;
