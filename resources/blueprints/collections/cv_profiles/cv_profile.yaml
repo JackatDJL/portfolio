@@ -43,7 +43,7 @@ tabs:
               collections: [cv_profile_templates]
               max_items: 1
               display: CV-Vorlage
-              validate: [required]
+              validate: ['required_if:source_mode,template_override,template_only']
               instructions: 'Wird für „Vorlage + Anpassungen“ und „Nur Vorlage“ benötigt.'
               if:
                 source_mode: 'contains_any template_override,template_only'
