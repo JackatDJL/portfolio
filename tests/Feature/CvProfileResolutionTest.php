@@ -30,6 +30,37 @@ class CvProfileResolutionTest extends TestCase
         }
     }
 
+    public function test_published_profiles_do_not_use_unpublished_templates(): void
+    {
+        $suffix = bin2hex(random_bytes(5));
+        $templateSlug = 'resolver-unpublished-template-'.$suffix;
+        $profileSlug = 'resolver-template-profile-'.$suffix;
+        $template = Entry::make()->collection('cv_profile_templates')->slug($templateSlug)->published(false)->data([
+            'title' => 'Draft template '.$suffix,
+            'about' => [['type' => 'paragraph', 'content' => [['type' => 'text', 'text' => 'Draft template biography '.$suffix]]]],
+        ]);
+        $template->save();
+        $profile = Entry::make()->collection('cv_profiles')->slug($profileSlug)->published(true)->data([
+            'title' => 'Published profile '.$suffix,
+            'source_mode' => 'template_only',
+            'content_template' => $template->id(),
+        ]);
+        $profile->save();
+
+        try {
+            $resolved = app(CvProfileContentResolver::class)->resolve($profileSlug);
+            $pdf = app(CvViewModel::class)->make($profileSlug);
+
+            $this->assertNull($resolved['template']);
+            $this->assertSame([], $resolved['sections']['about']['value']);
+            $this->assertSame('', $pdf['about']);
+            $this->get('/cv/'.$profileSlug)->assertOk()->assertDontSee('Draft template biography '.$suffix);
+        } finally {
+            Entry::delete($profile);
+            Entry::delete($template);
+        }
+    }
+
     public function test_custom_profiles_inherit_defaults_and_public_identity_comes_from_site(): void
     {
         $resolver = app(CvProfileContentResolver::class);

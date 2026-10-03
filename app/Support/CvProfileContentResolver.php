@@ -31,7 +31,7 @@ final class CvProfileContentResolver
             $sourceMode = 'custom';
         }
         $template = $this->referencedEntry($profile?->value('content_template'));
-        if ($template && $template->collectionHandle() !== 'cv_profile_templates') {
+        if ($template && ($template->collectionHandle() !== 'cv_profile_templates' || ! $template->published())) {
             $template = null;
         }
 
