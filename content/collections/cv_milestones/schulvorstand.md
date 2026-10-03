@@ -5,7 +5,7 @@ title: 'Schulvorstand'
 date_label: 'September 2024'
 chronology: '2024-09'
 category: organisation
-summary: 'Wahl in den Schulvorstand.'
+summary: 'Wahl in den Schulvorstand des Gymnasiums Athenaeum Stade.'
 published: true
 related_education:
   - 70f603ff-a8e6-4c8b-a901-1304d7ff7113

@@ -1,0 +1,46 @@
+<div class="site-container now-page">
+    <header class="now-page__header" aria-labelledby="now-title">
+        <div class="now-page__heading">
+            <h1 id="now-title">Aktuell</h1>
+            <p><time datetime="{{ now:updated_at format="Y-m-d" }}">Zuletzt aktualisiert: {{ now:updated_at format="d.m.Y" }}</time></p>
+        </div>
+        <div class="now-page__intro prose">{{ now:intro | bard_html }}</div>
+        <svg class="now-page__bump" viewBox="0 0 320 40" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+            <path d="M1 29h118c22 0 18-19 43-19h157" />
+        </svg>
+    </header>
+
+    <div class="now-page__layout">
+        {{ if now:items }}
+            <section class="now-page__snapshot" aria-labelledby="now-snapshot-title">
+                <h2 id="now-snapshot-title">Woran ich gerade arbeite</h2>
+                <ul class="now-page__items">
+                    {{ now:items }}
+                        {{ if published }}
+                            <li class="now-page__item">
+                                {{ partial:components/related-reference inline="true" }}
+                                {{ if summary }}<p>{{ summary }}</p>{{ elseif abstract }}<p>{{ abstract }}</p>{{ /if }}
+                            </li>
+                        {{ /if }}
+                    {{ /now:items }}
+                </ul>
+            </section>
+        {{ /if }}
+
+        {{ if now:homepage_links || now:homepage_button_label && now:homepage_button_link }}
+            <aside class="now-page__elsewhere" aria-labelledby="now-elsewhere-title">
+                <h2 id="now-elsewhere-title">Woanders</h2>
+                {{ if now:homepage_links }}
+                    <ul class="now-page__links">
+                        {{ now:homepage_links }}
+                            {{ if label && link }}<li>{{ partial:components/outlink :href="link" :label="label" }}</li>{{ /if }}
+                        {{ /now:homepage_links }}
+                    </ul>
+                {{ /if }}
+                {{ if now:homepage_button_label && now:homepage_button_link }}
+                    <div class="now-page__cta">{{ partial:components/button :href="now:homepage_button_link" :label="now:homepage_button_label" }}</div>
+                {{ /if }}
+            </aside>
+        {{ /if }}
+    </div>
+</div>
