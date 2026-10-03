@@ -13,101 +13,47 @@ about:
     content:
       -
         type: text
-        text: 'Ich entwickle Software, organisiere Projekte und arbeite gern dort, wo Technik mit echten Aufgaben zusammenkommt. Besonders beschäftige ich mich mit Webentwicklung, Open Source, Datenschutz und digitalen Werkzeugen. Neben eigenen Softwareprojekten engagiere ich mich in Robotik, politischer Bildung und Kommunikation. Dabei übernehme ich sowohl technische Arbeit als auch Organisation und Verantwortung im Team.'
+        text: 'Ich entwickle Software und organisiere Projekte. Neben Webentwicklung und Open Source beschäftige ich mich mit Robotik, politischer Bildung, Kommunikation und Musik. In Teams übernehme ich technische Arbeit und Planung – von Softwareprojekten und Veranstaltungen bis zu Pressearbeit und Ensembles.'
 knowledge:
   -
-    id: VUoio8kGj0ZsgIfHSwxzg
-    category: Webentwicklung
+    category: Technik und Entwicklung
     items:
-      -
-        id: xeZIXE9U9bj6ILHqx3WLO
-        label: Typescript
-        context: 'sehr sicher im täglichen Einsatz'
-      -
-        id: tCKQGp5_G44AFZQ--XzMi
-        label: React
-        context: 'regelmäßiger Einsatz in eigenen Projekten'
-      -
-        id: u12CqZXnN7yInED7MCZsm
-        label: 'Tanstack Start'
-        context: 'derzeit bevorzugtes Framework'
-      -
-        id: LH1WzYneliXr1eOeXGjAJ
-        label: Next.js
-        context: 'umfangreiche Projekterfahrung'
-      -
-        id: 8QNxCQbgA7wUo3wqsVcTS
-        label: 'Laravel & Statamic'
-        context: 'praktische Erfahrung durch diese Website und CMS-Projekte'
+      - label: TypeScript
+      - label: React
+      - label: Rust
+      - label: 'Laravel und Statamic'
   -
-    id: 2VwTNnh6ZBdphMLI2ds_6
-    category: 'Backend & Systeme'
+    category: Organisation und Kommunikation
     items:
-      -
-        id: yAeSvycSl4Z9eMnqyfpAY
-        label: Rust
-        context: 'praktische Projekterfahrung'
-      -
-        id: HuUNfMemCKPhcOvom8F8Z
-        label: Tokio
-        context: 'asynchrone Rust-Anwendungen'
-      -
-        id: POiM4chPFziSW58kePtrc
-        label: Node.js
-        context: 'Webanwendungen und Tooling'
-      -
-        id: 474-CBkqyVKDGlVHMZ2-X
-        label: Effect
-        context: 'lieblings Typescript libary'
-      -
-        id: myGVeIkuXwBMB_IjTNwqS
-        label: PostgreSQL
-        context: 'relationale Datenmodelle'
-      -
-        id: _Oy6k0o24zlQq0czzSsNL
-        label: Linux
-        context: 'tägliche Entwicklungsumgebung und Serverbetrieb'
+      - label: Projektorganisation
+      - label: Presse- und Webtexte
+      - label: Veranstaltungsplanung
+      - label: Politische Bildung
   -
-    id: 2m0zKQTqEsAL9xGA0ottO
-    category: 'Werkzeuge & Open Source'
+    category: Robotik
     items:
-      -
-        id: Wt8qXuNxQxdLiIBdi_aL9
-        label: Git
-        context: 'täglicher Entwicklungsworkflow'
-      -
-        id: QChyhtywaz3SX8-u_eV6k
-        label: 'GitHub / Codeberg / GitLab'
-        context: 'Repository- und Review-Workflows'
-      -
-        id: 27_t5fR8DwpdPxE9l2Afo
-        label: Docker
-        context: 'Entwicklungs- und Testumgebungen'
-      -
-        id: p2R9yPAMWnHNV8o3jDSm3
-        label: 'LaTeX / LuaLaTeX'
-        context: 'Dokumente und technische Veröffentlichungen'
+      - label: RoboCup
+      - label: Arduino
+      - label: 'Computer Vision im RoboCup-Kontext'
+  -
+    category: Musik und Bühne
+    items:
+      - label: 'Saxophon seit Klasse 5'
+      - label: 'Chor und Gesang, Bass'
+      - label: 'Ton- und Veranstaltungstechnik'
 soft_skills:
   -
-    id: bPPG6zmODHeUgyeGwHoQG
-    label: 'Eigenständiges Arbeiten'
-    context: 'Ich entwickle Projekte von der ersten Idee bis zur technischen Umsetzung und kann mich selbstständig in neue Themen einarbeiten.'
-  -
-    id: GS3an7WK3OcF-mr1uW9Mh
     label: Teamarbeit
-    context: 'Erfahrung aus Robotik, Veranstaltungsorganisation, schulischen Projekten und politischer Arbeit mit sehr unterschiedlichen Teams.'
+    context: 'Robotik, politische Arbeit und Chor'
   -
-    id: viqG1vBDxiFAH7WeHzxaX
     label: Kommunikation
-    context: 'Ich schreibe Presse- und Webtexte, erkläre technische Themen und arbeite regelmäßig mit Menschen außerhalb der Softwareentwicklung zusammen.'
+    context: 'Pressearbeit, Webtexte und öffentliche Kommunikation bei Volt Stade'
   -
-    id: '-oE8GfsSC4ZZLLnTr9AwY'
     label: Organisation
-    context: 'Ich plane Projekte, Veranstaltungen und technische Arbeit parallel und übernehme Verantwortung für konkrete Ergebnisse.'
+    context: 'Schulische Projekte, Veranstaltungen und politische Bildung'
   -
-    id: y7f5PTRegK-LC3Sx1Qs1T
-    label: 'Analytisches Arbeiten'
-    context: 'Ich zerlege technische Probleme gern in kleinere Teile und arbeite mich auch in unbekannte Systeme und Codebasen ein.'
+    label: 'Eigenständige Projektarbeit'
+    context: 'Software- und Robotikprojekte von der Idee bis zur Umsetzung'
 projects:
   - 4739fabf-5726-4d17-ad72-5a5f574e33cd
   - 1b4ba371-c0b4-4fae-8a93-1f2fabf11477
@@ -123,9 +69,23 @@ milestones:
   - 8a69338b-dca0-436e-b6f5-e0c96ace327a
   - ff83e089-6578-4f8a-9a4f-22ad780452c8
   - ad79c3f3-ac9f-4fe8-ba6b-fca12fdb7ae3
+  - a6475ffb-ca22-40fe-8b77-b0b938f81457
   - e02fdc80-3a4a-4417-aa7f-a554cf7eccb2
   - 54b21346-ada2-4110-a005-88fad17d61c9
   - 432a2d8b-1efd-442b-929b-a4286026cf7f
+  - 6e05f54a-f5a5-4bf4-8693-2eabdc4dd75f
   - 39248867-2c4a-4d7f-82ab-22758b8d97e3
+  - 14c158d2-8a79-411c-8d62-a413e6ae5c16
   - 18cd3b40-f6d5-4919-8b0c-be941c133659
+  - 2d3d1aac-6805-4fa4-b2f6-57972e8528b5
+  - 8c08c19f-a5fa-4ab4-8817-37a9e0982a06
+  - 287d9793-7c64-4c48-8fa5-b0a55998d81e
+  - acce6194-8e2c-4982-b98b-d04a3a1e2437
+  - 1e4786a6-e406-4047-b501-c8acd118a2a2
+  - 71db2acf-f8b5-425f-8b8d-4e4cfea34b2f
+  - e825ba07-77cf-4c83-ab0d-173c9352f7f7
+  - d6b27bae-23b9-42c6-9b80-87040ef9ffe3
+  - 8dc916fd-bf8d-4a9e-9634-786f499b0db0
+  - 7bcfd2bd-b279-4ace-8486-08d79b677fc5
+  - bfd0c297-7667-46a1-834f-383b01a27d54
 print_place: Stade

@@ -3,9 +3,6 @@ profile_image: jack/profile_pictures/jack-20251020.jpg
 email: jack@djl.foundation
 location: 'Stade, Niedersachsen, Deutschland'
 website_url: 'https://jack.djl.foundation'
-short_bio: |-
-  Ich bin Jack,
-  alles Wichtige muss ich hier noch schreiben
-  Also [PLACEHOLDER]
+short_bio: 'Schüler aus Stade mit Projekten in Softwareentwicklung, Robotik, politischer Bildung und Musik. Ich entwickle Open-Source-Software, organisiere Veranstaltungen und arbeite an technischen und kommunikativen Projekten.'
 github_url: 'https://github.com/JackatDJL'
 codeberg_url: 'https://codeberg.org/jkxrx'

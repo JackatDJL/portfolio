@@ -8,7 +8,7 @@ topics:
   - education
   - robotics
   - political-education
-started_at: '2018-07-31 22:00'
+started_at: '2018-08-01'
 updated_by: 7098a585-4701-4963-95aa-52c0d85d3e7d
 updated_at: 1789304228
 seo_title: 'Gymnasium Athenaeum Stade | Jack Ruder'

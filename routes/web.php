@@ -52,6 +52,7 @@ Route::delete('/cp/cv/private-link/permanent', [CvPrivateLinkController::class, 
 Route::statamic('/projekte', 'projects/index', ['title' => 'Projekte']);
 Route::statamic('/blog', 'posts/index', ['title' => 'Blog']);
 Route::statamic('/publikationen', 'publications/index', ['title' => 'Publikationen']);
+Route::statamic('/aktuell', 'now/index', ['title' => 'Aktuell']);
 Route::get('/cv', [CvPageController::class, 'show'])->name('cv.show');
 Route::get('/cv/{profile}', [CvPageController::class, 'profile'])
     ->where('profile', '[a-z0-9-]+')
