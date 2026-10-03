@@ -7,7 +7,7 @@ if (document.querySelector('[data-cv-private-panel]')) import('./cv-private.js')
 if (document.querySelector('[data-cv-explore]')) initCvExplore();
 import { initThemeSwitcher } from './theme.js';
 import { gsap } from 'gsap';
-import { buildThreadPath } from './thread-bump.js';
+import { buildThreadPath, TOC_BUMP } from './thread-bump.js';
 
 if (document.querySelector('[data-pdf-viewer]')) import('./pdf-viewer.js');
 if (document.querySelector('[data-citation-dialog]')) import('./citation-dialog.js');
@@ -242,6 +242,31 @@ const initContextRailLine = () => {
 };
 
 initContextRailLine();
+
+const initThreadBumps = () => {
+    for (const svg of document.querySelectorAll('[data-thread-bump]')) {
+        if (!(svg instanceof SVGSVGElement)) continue;
+        const path = svg.querySelector('path');
+        if (!(path instanceof SVGPathElement)) continue;
+
+        const render = () => {
+            const width = svg.getBoundingClientRect().width;
+            if (width < TOC_BUMP.halfHeight * 2) return;
+
+            svg.setAttribute('viewBox', `0 0 ${width} 40`);
+            path.setAttribute('d', buildThreadPath({
+                height: width,
+                marks: [{ y: width / 2 }],
+            }));
+        };
+
+        render();
+        if ('ResizeObserver' in window) new ResizeObserver(render).observe(svg);
+        else window.addEventListener('resize', render);
+    }
+};
+
+initThreadBumps();
 
 const initRelatedReferenceMotion = () => {
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;

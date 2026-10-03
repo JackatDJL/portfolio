@@ -5,8 +5,8 @@
             <p><time datetime="{{ now:updated_at format="Y-m-d" }}">Zuletzt aktualisiert: {{ now:updated_at format="d.m.Y" }}</time></p>
         </div>
         <div class="now-page__intro prose">{{ now:intro | bard_html }}</div>
-        <svg class="now-page__bump" viewBox="0 0 320 40" preserveAspectRatio="none" aria-hidden="true" focusable="false">
-            <path d="M1 29h118c22 0 18-19 43-19h157" />
+        <svg class="now-page__bump" data-thread-bump preserveAspectRatio="none" aria-hidden="true" focusable="false">
+            <path transform="translate(0 32) rotate(-90)" />
         </svg>
     </header>
 
