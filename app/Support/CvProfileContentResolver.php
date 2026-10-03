@@ -22,7 +22,7 @@ final class CvProfileContentResolver
         $profile = $profileSlug === null
             ? null
             : Entries::query()->where('collection', 'cv_profiles')->where('slug', $profileSlug)->first();
-        if ($profileSlug !== null && ! $profile instanceof Entry) {
+        if ($profileSlug !== null && (! $profile instanceof Entry || ! $profile->published())) {
             abort(404);
         }
 

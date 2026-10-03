@@ -12,6 +12,24 @@ class CvProfileResolutionTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_unpublished_profiles_are_not_resolvable_or_publicly_renderable(): void
+    {
+        $slug = 'resolver-unpublished-'.bin2hex(random_bytes(5));
+        $profile = Entry::make()->collection('cv_profiles')->slug($slug)->published(false)->data([
+            'title' => 'Unpublished profile',
+            'source_mode' => 'custom',
+        ]);
+        $profile->save();
+
+        try {
+            $this->get('/cv/'.$slug)->assertNotFound();
+            $this->expectException(\Symfony\Component\HttpKernel\Exception\HttpException::class);
+            app(CvProfileContentResolver::class)->resolve($slug);
+        } finally {
+            Entry::delete($profile);
+        }
+    }
+
     public function test_custom_profiles_inherit_defaults_and_public_identity_comes_from_site(): void
     {
         $resolver = app(CvProfileContentResolver::class);
