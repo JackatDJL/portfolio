@@ -1,0 +1,84 @@
+name: Daily content sync squash
+
+on:
+  schedule:
+    - cron: '0 12 * * *'
+      timezone: Europe/Berlin
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: portfolio-content-sync-squash
+  cancel-in-progress: false
+
+jobs:
+  squash:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out main and its full history
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Fetch both content branches
+        run: git fetch --no-tags origin main content-sync
+
+      - name: Create a single content-only squash commit
+        id: squash
+        run: bash scripts/squash-content-sync.sh
+
+      - name: Push to main or open a protected-branch pull request
+        if: steps.squash.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BASE_SHA: ${{ steps.squash.outputs.base_sha }}
+          CONTENT_SHA: ${{ steps.squash.outputs.content_sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if git push origin HEAD:refs/heads/main; then
+            echo "Integrated editorial content into main with one squash commit."
+            exit 0
+          fi
+
+          latest_main="$(git ls-remote --heads origin refs/heads/main | awk 'NR == 1 { print $1 }')"
+          if [[ "$latest_main" != "$BASE_SHA" ]]; then
+            echo "main advanced while this workflow ran; refusing a stale direct push or pull request." >&2
+            exit 1
+          fi
+
+          branch="automation/content-sync-${CONTENT_SHA:0:12}"
+          git push origin "HEAD:refs/heads/$branch"
+
+          latest_main_after_branch_push="$(git ls-remote --heads origin refs/heads/main | awk 'NR == 1 { print $1 }')"
+          if [[ "$latest_main_after_branch_push" != "$BASE_SHA" ]]; then
+            echo "main advanced while preparing the protected-branch pull request; the automation branch is preserved, but no stale pull request was opened." >&2
+            exit 1
+          fi
+
+          existing_pr="$(gh pr list --base main --head "$branch" --state open --json url --jq '.[0].url // empty')"
+          if [[ -n "$existing_pr" ]]; then
+            echo "An open content sync pull request already exists: $existing_pr"
+            exit 0
+          fi
+
+          body_file="$RUNNER_TEMP/portfolio-content-sync-pr.md"
+          cat > "$body_file" <<'EOF'
+          This pull request contains one squash commit for editorial differences in `content/**`, `public/assets/**`, and `public/documents/**` from `content-sync`.
+
+          The production server remains the only automated writer of editorial changes to `content-sync`. If a production edit arrives during this workflow, it remains on that branch and will be picked up by the next server reconciliation.
+
+          Review any content overlap before merging. This workflow does not force-push, reset either branch, or bypass branch protection.
+          EOF
+
+          gh pr create \
+            --base main \
+            --head "$branch" \
+            --title "content: sync production editorial changes" \
+            --body-file "$body_file"

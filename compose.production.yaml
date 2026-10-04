@@ -1,0 +1,80 @@
+services:
+  portfolio:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    init: true
+    restart: unless-stopped
+    expose:
+      - "8080"
+    environment:
+      APP_NAME: Jack Portfolio
+      APP_ENV: production
+      APP_DEBUG: "false"
+      APP_KEY: ${APP_KEY:?Set APP_KEY in Dokploy}
+      APP_URL: https://jack.djl.foundation
+      TRUSTED_PROXIES: "*"
+      LOG_CHANNEL: stderr
+      LOG_LEVEL: info
+      DB_CONNECTION: sqlite
+      DB_DATABASE: /var/www/html/storage/app/portfolio.sqlite
+      SESSION_DRIVER: file
+      SESSION_LIFETIME: "120"
+      SESSION_SECURE_COOKIE: "true"
+      SESSION_HTTP_ONLY: "true"
+      SESSION_SAME_SITE: lax
+      CACHE_STORE: file
+      QUEUE_CONNECTION: sync
+      FILESYSTEM_DISK: local
+      CONTENT_SYNC_REPOSITORY: /sync
+      CONTENT_SYNC_BRANCH: content-sync
+      CONTENT_SYNC_LOCK_PATH: /var/www/html/storage/framework/locks/content-sync.lock
+      CONTENT_SYNC_CANDIDATE_PATH: /var/www/html/storage/app/content-sync-candidate
+      CONTENT_SYNC_SSH_KEY: /run/secrets/portfolio_content_sync_deploy_key
+      CONTENT_SYNC_KNOWN_HOSTS: /run/configs/portfolio_github_known_hosts
+      CV_LUALATEX_BINARY: lualatex
+      STATAMIC_STACHE_WATCHER: auto
+      STATAMIC_TWO_FACTOR_ENABLED: "true"
+      STATAMIC_PRO_ENABLED: "false"
+      STATAMIC_GIT_ENABLED: "false"
+    volumes:
+      - /srv/jack-portfolio/content-repo:/sync:rw
+      - /srv/jack-portfolio/content-repo/content:/var/www/html/content:rw
+      - /srv/jack-portfolio/content-repo/public/assets:/var/www/html/public/assets:rw
+      - /srv/jack-portfolio/content-repo/public/documents:/var/www/html/public/documents:rw
+      - /srv/jack-portfolio/state/storage:/var/www/html/storage:rw
+      - /srv/jack-portfolio/state/users:/var/www/html/users:rw
+    secrets:
+      - source: content-sync-deploy-key
+        target: portfolio_content_sync_deploy_key
+        uid: "33"
+        gid: "33"
+        mode: 0400
+    configs:
+      - source: github-known-hosts
+        target: /run/configs/portfolio_github_known_hosts
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "http://127.0.0.1:8080/up"]
+      interval: 30s
+      timeout: 5s
+      start_period: 90s
+      retries: 3
+    deploy:
+      replicas: 1
+      update_config:
+        parallelism: 1
+        order: stop-first
+    networks:
+      - dokploy-network
+
+networks:
+  dokploy-network:
+    external: true
+
+secrets:
+  content-sync-deploy-key:
+    external: true
+
+configs:
+  github-known-hosts:
+    external: true
