@@ -9,6 +9,8 @@ tabs:
             field: { type: text, display: Titel, validate: [required] }
           - handle: chronology
             field: { type: text, display: Chronologie, instructions: "Belegtes Jahr oder Jahr-Monat, keine erfundenen Tagesdaten." }
+          - handle: chronology_end
+            field: { type: text, display: Ende der Chronologie, instructions: "Optionales belegtes Enddatum für Zeiträume, als Jahr, Jahr-Monat oder Jahr-Monat-Tag." }
           - handle: date_label
             field: { type: text, display: Zeitraum, validate: [required], width: 40 }
           - handle: category

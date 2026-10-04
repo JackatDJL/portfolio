@@ -94,316 +94,152 @@ test('gallery buttons, keyboard, horizontal wheel, boundaries and reduced motion
     await page.mouse.wheel(500, 0);
     await expect.poll(() => track.evaluate(el => el.scrollLeft)).toBeGreaterThan(100);
 });
-test('closed timeline shows only its centered button; opening creates the static base and overlays', async ({ page }, testInfo) => {
+
+test('closed preview stays compact, shows the waveform, and expands between identity and CV content', async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/cv');
     const root = page.locator('[data-cv-explore]');
     const open = page.locator('[data-cv-explore-open]');
     const content = page.locator('[data-cv-explore-content]');
+    await expect(content).toBeHidden();
+    await expect(root.locator('[data-cv-explore-preview-wave] i')).toHaveCount(36);
+    await expect(root.locator('template[data-cv-milestone]')).toHaveCount(8);
+    await expect(root.locator('template[data-cv-milestone][data-date-end="2018-07-31"]')).toHaveCount(1);
+
     const closed = await page.evaluate(() => {
         const header = document.querySelector('.cv-document__header').getBoundingClientRect();
         const root = document.querySelector('[data-cv-explore]');
-        const teaser = root.querySelector('.cv-explore__teaser').getBoundingClientRect();
-        const button = root.querySelector('[data-cv-explore-open]').getBoundingClientRect();
         return {
             height: root.getBoundingClientRect().height,
             headerGap: root.getBoundingClientRect().top - header.bottom,
-            centered: Math.abs((button.left + button.right) / 2 - (teaser.left + teaser.right) / 2) < 1,
             bodyFollows: root.nextElementSibling === document.querySelector('.cv-document__body'),
-            teaserChildren: root.querySelector('.cv-explore__teaser').children.length,
-            closedLayers: [...root.querySelectorAll('[data-cv-timeline-ticks], [data-cv-timeline-years], [data-cv-timeline-events]')].map(layer => layer.children.length),
-            detailChildren: root.querySelector('[data-cv-active-detail]').children.length,
+            widthOverflow: document.documentElement.scrollWidth > innerWidth,
         };
     });
-    expect(closed.height).toBeLessThan(70);
+    expect(closed.height).toBeGreaterThanOrEqual(85);
+    expect(closed.height).toBeLessThan(100);
     expect(closed.headerGap).toBeLessThan(24);
-    expect(closed.centered).toBe(true);
     expect(closed.bodyFollows).toBe(true);
-    expect(closed.teaserChildren).toBe(1);
-    expect(closed.closedLayers).toEqual([0, 0, 0]);
-    expect(closed.detailChildren).toBe(0);
-    await expect(open).toHaveAttribute('aria-expanded', 'false');
-    await expect(open).toHaveText('Interaktiven Zeitstrahl öffnen');
-    await expect(content).toBeHidden();
-    await expect(root.locator('[data-cv-timeline-stage]')).toBeHidden();
-    await expect(root.locator('template[data-cv-milestone]')).toHaveCount(8);
-    await page.screenshot({ path: testInfo.outputPath('timeline-closed.png'), fullPage: false });
+    expect(closed.widthOverflow).toBe(false);
 
     await open.click();
-    await expect(content).toBeVisible();
     await expect(open).toHaveAttribute('aria-expanded', 'true');
-    await expect(page.locator('[data-cv-timeline-event]')).toHaveCount(8);
-    await expect(page.locator('[data-cv-timeline-ticks] .cv-timeline__tick')).not.toHaveCount(0);
+    await expect(content).toBeVisible();
+    const stage = page.locator('[data-cv-timeline-stage]');
+    await expect(stage).toBeFocused();
+    await expect(stage).toHaveAttribute('role', 'slider');
+    await expect(stage).toHaveAttribute('aria-valuemax', '8');
+    await expect(stage).toHaveAttribute('aria-valuenow', '5');
+    await expect(stage).toHaveAttribute('aria-valuetext', /Deutsche Meisterschaft mit AtheBlues/);
+    await expect(page.locator('[data-cv-timeline-bars] > i')).toHaveCount(96);
     await expect(page.locator('[data-cv-timeline-years] .cv-timeline__year')).not.toHaveCount(0);
-    await expect(page.locator('[data-cv-timeline-events] .cv-timeline__event')).toHaveCount(8);
-    expect(await page.locator('.cv-timeline__tick').evaluateAll(ticks => ticks.every(tick => {
-        const style = getComputedStyle(tick);
-        return style.width === '2px' && style.height === '2px';
-    }))).toBe(true);
-    expect(await page.locator('[data-cv-timeline-events] .cv-timeline__event').evaluateAll(markers => markers.every(marker => marker.textContent.trim() === '' && marker.getAttribute('aria-label')))).toBe(true);
     await expect(page.locator('[data-cv-active-detail] .cv-milestone')).toHaveCount(1);
-    await expect(page.locator('[data-cv-active-detail] h3')).toBeVisible();
-    await page.waitForTimeout(280);
-    await page.screenshot({ path: testInfo.outputPath('timeline-first.png'), fullPage: false });
-    await page.locator('[data-cv-timeline-event][aria-pressed="true"]').focus();
-    await page.keyboard.press('Escape');
+    await expect(page.locator('[data-cv-active-detail]')).toContainText('Deutsche Meisterschaft mit AtheBlues');
+    await expect(page.locator('[data-cv-active-detail] .related-reference')).not.toHaveCount(0);
+    await expect(page.locator('.cv-timeline__event, .cv-timeline__tick')).toHaveCount(0);
+    await page.locator('[data-cv-explore-close]').click();
     await expect(content).toBeHidden();
     await expect(open).toHaveAttribute('aria-expanded', 'false');
-    await page.emulateMedia({ media: 'print' });
-    await expect(page.locator('.cv-explore')).toBeHidden();
+    await expect(open).toBeFocused();
 });
 
-test('fixed timeline maps the public start year to today at responsive widths without overflow', async ({ page }, testInfo) => {
-    const tickCounts = [];
-    const yearLabelCounts = [];
-    for (const [width, height] of [[1440, 900], [1024, 768], [768, 900], [390, 844]]) {
-        await page.setViewportSize({ width, height });
-        await page.emulateMedia({ media: 'screen', reducedMotion: 'reduce' });
+for (const [width, theme] of [[1440, 'light'], [1440, 'dark'], [1024, 'light'], [768, 'light'], [390, 'light']]) {
+    test(width + 'px ' + theme + ': waveform geometry and CV layout remain stable', async ({ page }, testInfo) => {
+        await page.setViewportSize({ width, height: width === 390 ? 844 : 900 });
+        await page.addInitScript(theme => localStorage.setItem('jack-theme', theme), theme);
+        const errors = [];
+        page.on('pageerror', error => errors.push(error.message));
         await page.goto('/cv');
+        await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
         await page.locator('[data-cv-explore-open]').click();
-        const layout = await page.evaluate(() => {
-            const header = document.querySelector('.cv-document__header').getBoundingClientRect();
-            const root = document.querySelector('[data-cv-explore]').getBoundingClientRect();
-            const body = document.querySelector('.cv-document__body').getBoundingClientRect();
-            const stage = document.querySelector('[data-cv-timeline-stage]');
-            const track = document.querySelector('[data-cv-timeline-track]');
-            const end = Number(track.dataset.endTimestamp);
-            const start = Number(track.dataset.startTimestamp);
-            const events = [...stage.querySelectorAll('[data-cv-timeline-event]')];
-            const present = stage.querySelector('[data-cv-timeline-present]');
-            const presentBox = present.getBoundingClientRect();
-            const trackBox = track.getBoundingClientRect();
-            const labels = [...stage.querySelectorAll('[data-cv-year-label]'), stage.querySelector('[data-cv-timeline-present] span')];
-            const labelBoxes = labels.map(label => label.getBoundingClientRect());
-            return {
-                headerGap: root.top - header.bottom,
-                bodyGap: body.top - root.bottom,
-                openHeight: root.height,
-                pageOverflow: document.documentElement.scrollWidth > innerWidth,
-                trackWidth: track.getBoundingClientRect().width,
-                stageWidth: stage.clientWidth,
-                stageScrollWidth: stage.scrollWidth,
-                trackTransform: getComputedStyle(track).transform,
-                markerCount: events.length,
-                positions: events.map(event => Number(event.dataset.position)),
-                timestamps: events.map(event => Number(event.dataset.timestamp)),
-                startYear: Number(track.dataset.startYear),
-                endYear: Number(track.dataset.endYear),
-                start,
-                end,
-                present: Number(document.querySelector('[data-cv-timeline-present]').dataset.timestamp),
-                presentAtTrackEnd: Math.abs(presentBox.right - trackBox.right) <= 1,
-                years: [...stage.querySelectorAll('[data-year]')].map(node => Number(node.dataset.year)),
-                yearLabelCount: stage.querySelectorAll('[data-cv-year-label]').length,
-                labels: labels.map(node => node.textContent.trim()),
-                labelsOverlap: labelBoxes.some((box, index) => labelBoxes.slice(index + 1).some(other => box.right > other.left + 1 && other.right > box.left + 1)),
-                dots: [...stage.querySelectorAll('.cv-timeline__tick')].map(dot => {
-                    const box = dot.getBoundingClientRect();
-                    return [box.width, box.height, box.left + box.width / 2];
-                }),
-                yearLayerCount: stage.querySelector('[data-cv-timeline-years]').children.length,
-                eventLayer: stage.querySelector('[data-cv-timeline-events]').parentElement === track,
-                hasPinSpacer: Boolean(document.querySelector('.pin-spacer')),
-                detailOverflow: getComputedStyle(document.querySelector('.cv-explore__detail')).overflowY,
-            };
-        });
-        expect(layout.headerGap).toBeGreaterThanOrEqual(0);
-        expect(layout.headerGap).toBeLessThan(24);
-        expect(layout.bodyGap).toBeLessThan(2);
-        expect(layout.openHeight).toBeLessThan(360);
-        expect(layout.pageOverflow).toBe(false);
-        expect(layout.trackWidth).toBeLessThanOrEqual(layout.stageWidth + 1);
-        expect(layout.stageScrollWidth).toBeLessThanOrEqual(layout.stageWidth + 1);
-        expect(layout.trackTransform).toBe('none');
-        expect(layout.markerCount).toBe(8);
-        const configuredStartYear = Number(await page.locator('[data-cv-explore]').getAttribute('data-start-year'));
-        expect(layout.startYear).toBe(configuredStartYear);
-        expect(layout.endYear).toBe(new Date().getFullYear());
-        expect(layout.end).toBe(layout.present);
-        expect(layout.presentAtTrackEnd).toBe(true);
-        expect(layout.present).toBeGreaterThan(Math.max(...layout.timestamps));
-        expect(layout.positions).toEqual([...layout.positions].sort((a, b) => a - b));
-        expect(layout.positions.every(position => position >= 0 && position <= 1)).toBe(true);
-        expect(layout.positions.every((position, index) => Math.abs(position - (layout.timestamps[index] - layout.start) / (layout.end - layout.start)) < 0.000001)).toBe(true);
-        expect(layout.years[0]).toBe(configuredStartYear);
-        expect(layout.yearLayerCount).toBe(layout.endYear - layout.startYear + 1);
-        expect(layout.eventLayer).toBe(true);
-        expect(new Set(layout.years).size).toBe(layout.years.length);
-        expect(layout.labelsOverlap).toBe(false);
-        expect(layout.yearLabelCount).toBeGreaterThan(0);
-        expect(layout.dots.every(([dotWidth, dotHeight]) => dotWidth === 2 && dotHeight === 2)).toBe(true);
-        expect(layout.dots.slice(1).every((dot, index) => dot[2] > layout.dots[index][2])).toBe(true);
-        expect(layout.hasPinSpacer).toBe(false);
-        expect(layout.detailOverflow).toBe('visible');
-        tickCounts.push(await page.locator('.cv-timeline__tick').count());
-        yearLabelCounts.push(layout.yearLabelCount);
-        await page.screenshot({ path: testInfo.outputPath(`timeline-open-${width}.png`), fullPage: width === 390 });
-        if (width === 390) await page.screenshot({ path: testInfo.outputPath('timeline-mobile-open.png'), fullPage: false });
-        if (width === 1440) {
-            const dotGeometry = await page.locator('.cv-timeline__tick').evaluateAll(ticks => ticks.map(tick => {
-                const rect = tick.getBoundingClientRect();
-                return [rect.width, rect.height, rect.left];
-            }));
-            const initialTitle = await page.locator('[data-cv-active-detail] h3').textContent();
-            await page.locator('[data-cv-timeline-event="4"]').click();
-            await expect(page.locator('[data-cv-timeline-event="4"]')).toHaveAttribute('aria-pressed', 'true');
-            await expect(page.locator('[data-cv-active-detail] h3')).not.toHaveText(initialTitle);
-            expect(await page.locator('.cv-timeline__tick').evaluateAll(ticks => ticks.map(tick => {
-                const rect = tick.getBoundingClientRect();
-                return [rect.width, rect.height, rect.left];
-            }))).toEqual(dotGeometry);
-            await page.waitForTimeout(240);
-            await page.screenshot({ path: testInfo.outputPath('timeline-middle.png'), fullPage: false });
-            await page.locator('[data-cv-timeline-event="7"]').click();
-            await expect(page.locator('[data-cv-timeline-event="7"]')).toHaveAttribute('aria-pressed', 'true');
-            await page.waitForTimeout(240);
-            await page.screenshot({ path: testInfo.outputPath('timeline-final.png'), fullPage: false });
-            await page.locator('[data-cv-timeline-event="0"]').click();
-            await expect(page.locator('[data-cv-timeline-event="0"]')).toHaveAttribute('aria-pressed', 'true');
-            await page.keyboard.press('ArrowRight');
-            await expect(page.locator('[data-cv-timeline-event="1"]')).toHaveAttribute('aria-pressed', 'true');
-            await page.keyboard.press('ArrowLeft');
-            await expect(page.locator('[data-cv-timeline-event="0"]')).toHaveAttribute('aria-pressed', 'true');
-            await page.keyboard.press('End');
-            await expect(page.locator('[data-cv-timeline-event="7"]')).toHaveAttribute('aria-pressed', 'true');
-            await page.keyboard.press('Home');
-            await expect(page.locator('[data-cv-timeline-event="0"]')).toHaveAttribute('aria-pressed', 'true');
-            await page.locator('[data-cv-explore-close]').click();
-            await expect(page.locator('[data-cv-explore-content]')).toBeHidden();
-        }
-    }
-    expect(tickCounts[0]).toBeGreaterThan(tickCounts[3]);
-    expect(tickCounts[1]).toBeGreaterThan(tickCounts[2]);
-    expect(tickCounts[2]).toBeGreaterThan(tickCounts[3]);
-    expect(yearLabelCounts[0]).toBeGreaterThan(yearLabelCounts[3]);
-});
+        const stage = page.locator('[data-cv-timeline-stage]');
+        await expect(stage).toBeFocused();
+        await expect(page.locator('[data-cv-timeline-bars] > i')).toHaveCount(96);
+        await expect(page.locator('[data-cv-active-detail] h3')).toHaveText('Deutsche Meisterschaft mit AtheBlues');
+        await page.evaluate(() => document.fonts.ready);
 
-test('milestone click, keyboard and wheel thresholds change one stable detail; wheel hands off at both ends', async ({ page }, testInfo) => {
+        const initial = await page.evaluate(() => ({
+            scrollWidth: document.documentElement.scrollWidth,
+            clientWidth: document.documentElement.clientWidth,
+            timeline: document.querySelector('[data-cv-timeline]').getBoundingClientRect().height,
+            centers: [...document.querySelectorAll('[data-cv-timeline-bars] > i')].map(bar => {
+                const rect = bar.getBoundingClientRect();
+                return rect.left + rect.width / 2;
+            }),
+            heights: [...document.querySelectorAll('[data-cv-timeline-bars] > i')].map(bar => bar.getBoundingClientRect().height),
+            track: document.querySelector('[data-cv-timeline-track]').getBoundingClientRect().toJSON(),
+        }));
+        expect(initial.scrollWidth).toBe(initial.clientWidth);
+        expect(initial.timeline).toBeGreaterThanOrEqual(380);
+        await expect(page.locator('[data-cv-timeline-years]')).toBeVisible();
+        await page.screenshot({ path: testInfo.outputPath('timeline-open-' + width + '-' + theme + '.png'), fullPage: false });
+        await page.keyboard.press('Home');
+        await expect(stage).toHaveAttribute('aria-valuenow', '1');
+        await page.waitForTimeout(360);
+        const after = await page.evaluate(() => [...document.querySelectorAll('[data-cv-timeline-bars] > i')].map(bar => {
+            const rect = bar.getBoundingClientRect();
+            return { center: rect.left + rect.width / 2, height: rect.height };
+        }));
+        expect(after.map(bar => bar.center)).toEqual(initial.centers);
+        expect(after.some((bar, index) => Math.abs(bar.height - initial.heights[index]) > 5)).toBe(true);
+        await expect(page.locator('[data-cv-active-detail] h3')).toHaveText('Grundschule Stade-Hagen');
+        expect(errors).toEqual([]);
+    });
+}
+
+test('timeline click selects the nearest dated milestone and keyboard reaches both ends', async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/cv');
     await page.locator('[data-cv-explore-open]').click();
     const stage = page.locator('[data-cv-timeline-stage]');
-    const wheel = async delta => stage.evaluate((element, amount) => {
-        const event = new WheelEvent('wheel', { bubbles: true, cancelable: true, deltaY: amount });
-        element.dispatchEvent(event);
-        return event.defaultPrevented;
-    }, delta);
-    const active = () => page.locator('[data-cv-timeline-event][aria-pressed="true"]').getAttribute('data-cv-timeline-event');
-
-    await page.locator('[data-cv-timeline-event="0"]').click();
-    expect(await active()).toBe('0');
-    const firstTitle = await page.locator('[data-cv-active-detail] h3').textContent();
-    expect(firstTitle).toBeTruthy();
-    await page.locator('[data-cv-timeline-event="0"]').hover();
-    await page.screenshot({ path: testInfo.outputPath('portrait-timeline-interaction.png'), fullPage: false });
-
-    expect(await wheel(-120)).toBe(false);
-    expect(await active()).toBe('0');
-    expect(await wheel(36)).toBe(true);
-    expect(await active()).toBe('0');
-    expect(await wheel(36)).toBe(true);
-    await expect.poll(active).toBe('1');
-    await expect(page.locator('[data-cv-active-detail] h3')).not.toHaveText(firstTitle);
-    await page.waitForTimeout(400);
-    expect(await wheel(160)).toBe(true);
-    await expect.poll(active).toBe('2');
-    await page.locator('[data-cv-timeline-event="7"]').click();
-    await expect.poll(active).toBe('7');
-    expect(await wheel(120)).toBe(false);
-    expect(await active()).toBe('7');
-
-    await page.locator('[data-cv-timeline-event="0"]').click();
-    for (let index = 0; index < 12; index += 1) await wheel(240);
-    await expect.poll(active).toBe('1');
-    await wheel(-240);
-    await expect.poll(active).toBe('1');
-    await page.waitForTimeout(240);
-    await wheel(240);
-    await expect.poll(active).toBe('2');
-
-    await page.locator('[data-cv-timeline-event="0"]').click();
-    await page.evaluate(() => window.scrollTo(0, 300));
-    await stage.hover();
-    const yBeforeStartHandoff = await page.evaluate(() => window.scrollY);
-    await page.mouse.wheel(0, -120);
-    await expect.poll(() => page.evaluate(() => window.scrollY)).toBeLessThan(yBeforeStartHandoff);
-    await page.locator('[data-cv-timeline-event="7"]').click();
-    await page.evaluate(() => window.scrollTo(0, 300));
-    await stage.hover();
-    const yBeforeEndHandoff = await page.evaluate(() => window.scrollY);
-    await page.mouse.wheel(0, 120);
-    await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(yBeforeEndHandoff);
-    await page.screenshot({ path: testInfo.outputPath('timeline-after-interaction.png'), fullPage: false });
-});
-
-test('resize rebuilding preserves keyboard focus on the selected event', async ({ page }) => {
-    await page.setViewportSize({ width: 1440, height: 900 });
-    await page.goto('/cv');
-    await page.locator('[data-cv-explore-open]').click();
+    const date = await page.locator('template[data-cv-milestone]').nth(2).getAttribute('data-date');
+    const startYear = Number(await page.locator('[data-cv-explore]').getAttribute('data-start-year'));
+    const targetTime = parseChronology(date).timestamp;
+    const endTime = await page.evaluate(() => {
+        const today = new Date();
+        return Date.UTC(today.getFullYear(), today.getMonth(), today.getDate(), 12);
+    });
+    const box = await page.locator('[data-cv-timeline-track]').boundingBox();
+    const progress = (targetTime - Date.UTC(startYear, 0, 1, 12)) / (endTime - Date.UTC(startYear, 0, 1, 12));
+    await page.mouse.click(box.x + box.width * progress, box.y + box.height / 2);
+    await expect(stage).toHaveAttribute('aria-valuenow', '3');
+    await expect(page.locator('[data-cv-active-detail] h3')).toHaveText('Schülervertretung');
     await page.keyboard.press('ArrowRight');
-    await expect(page.locator('[data-cv-timeline-event="1"]')).toBeFocused();
-    await page.setViewportSize({ width: 768, height: 900 });
-    await expect(page.locator('[data-cv-timeline-event="1"]')).toBeFocused();
-    await expect(page.locator('[data-cv-timeline-event="1"]')).toHaveAttribute('aria-pressed', 'true');
-});
-
-test('near-date milestones form compact anchored clusters with separate pointer and keyboard targets', async ({ page }) => {
-    const dates = ['2024-04-10', '2024-04-10', '2024-04-29', '2024-05', '2024-09', '2025-01', '2025-01-05', '2025-06'];
-    await page.addInitScript(values => {
-        let index = 0;
-        const override = node => {
-            if (!(node instanceof Element)) return;
-            if (node.matches('template[data-cv-milestone]') && node.dataset.qaDateOverride !== 'true') {
-                node.dataset.qaDateOverride = 'true';
-                node.dataset.date = values[index++] ?? values.at(-1);
-            }
-            node.querySelectorAll('template[data-cv-milestone]').forEach(override);
-        };
-        new MutationObserver(records => records.forEach(record => record.addedNodes.forEach(override)))
-            .observe(document, { childList: true, subtree: true });
-    }, dates);
-    await page.setViewportSize({ width: 1440, height: 900 });
-    await page.goto('/cv');
-    expect(await page.locator('template[data-cv-milestone]').evaluateAll(nodes => nodes.map(node => node.dataset.date))).toEqual(dates);
-    await page.locator('[data-cv-explore-open]').click();
-    await expect(page.locator('[data-cv-explore-open]')).toHaveAttribute('aria-expanded', 'true');
-    await expect(page.locator('[data-cv-explore-content]')).toBeVisible();
-
-    const markers = page.locator('[data-cv-timeline-event]');
-    const positions = await markers.evaluateAll(nodes => nodes.map(node => ({
-        position: Number(node.dataset.position),
-        anchor: Number(node.dataset.clusterAnchor),
-        date: node.dataset.date,
-        hitWidth: node.getBoundingClientRect().width,
-    })));
-    expect(positions).toHaveLength(8);
-    expect(positions.map(item => item.position)).toEqual([...positions.map(item => item.position)].sort((a, b) => a - b));
-    expect(new Set(positions.slice(0, 4).map(item => item.anchor)).size).toBe(1);
-    expect(positions[0].position).toBe(positions[1].position);
-    expect(new Set(positions.slice(0, 4).map(item => item.position)).size).toBeGreaterThan(1);
-    expect(positions.every(item => item.hitWidth > 0)).toBe(true);
-    expect(await page.locator('[data-cv-timeline-events]').innerText()).toBe('');
-
-    await markers.nth(3).click();
-    await expect(markers.nth(3)).toHaveAttribute('aria-pressed', 'true');
-    await page.keyboard.press('ArrowRight');
-    await expect(markers.nth(4)).toHaveAttribute('aria-pressed', 'true');
+    await expect(stage).toHaveAttribute('aria-valuenow', '4');
+    await page.keyboard.press('ArrowLeft');
+    await expect(stage).toHaveAttribute('aria-valuenow', '3');
     await page.keyboard.press('Home');
-    for (let index = 1; index < dates.length; index += 1) {
-        await page.keyboard.press('ArrowRight');
-        await expect(markers.nth(index)).toHaveAttribute('aria-pressed', 'true');
-    }
+    await expect(stage).toHaveAttribute('aria-valuenow', '1');
     await page.keyboard.press('End');
-    await expect(markers.nth(7)).toHaveAttribute('aria-pressed', 'true');
-    await markers.nth(0).click();
-    for (let index = 1; index < dates.length; index += 1) {
-        await page.locator('[data-cv-timeline-stage]').evaluate(element => element.dispatchEvent(new WheelEvent('wheel', { bubbles: true, cancelable: true, deltaY: 72 })));
-        await expect(markers.nth(index)).toHaveAttribute('aria-pressed', 'true');
-        await page.waitForTimeout(230);
-    }
+    await expect(stage).toHaveAttribute('aria-valuenow', '8');
+    await expect(page.locator('[data-cv-active-detail] h3')).toHaveText('Beitritt zum DRK');
 });
 
-test('touch horizontal swipe selects milestones while vertical gestures remain page scrolling', async ({ browser }, testInfo) => {
+test('vertical and horizontal wheel input select one milestone and hand scrolling back at both ends', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto('/cv');
+    await page.locator('[data-cv-explore-open]').click();
+    const stage = page.locator('[data-cv-timeline-stage]');
+    const box = await stage.boundingBox();
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.wheel(0, 100);
+    await expect(stage).toHaveAttribute('aria-valuenow', '6');
+    await page.waitForTimeout(240);
+    await page.mouse.wheel(100, 0);
+    await expect(stage).toHaveAttribute('aria-valuenow', '7');
+
+    await page.evaluate(() => window.scrollTo(0, 320));
+    await stage.press('Home');
+    const beforeTop = await page.evaluate(() => window.scrollY);
+    await page.mouse.wheel(0, -120);
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBeLessThan(beforeTop);
+    await stage.press('End');
+    const beforeBottom = await page.evaluate(() => window.scrollY);
+    await page.mouse.wheel(0, 120);
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(beforeBottom);
+});
+
+test('touch swipe changes milestones while vertical touch remains page scrolling', async ({ browser }) => {
     const context = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
     const page = await context.newPage();
     await page.goto(cvBaseURL + '/cv');
@@ -417,37 +253,36 @@ test('touch horizontal swipe selects milestones while vertical gestures remain p
     await client.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: x + 75, y }] });
     await client.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: x - 10, y }] });
     await client.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
-    await expect(page.locator('[data-cv-timeline-event="1"]')).toHaveAttribute('aria-pressed', 'true');
+    await expect(stage).toHaveAttribute('aria-valuenow', '6');
 
-    const beforeScroll = await page.evaluate(() => window.scrollY);
+    await page.evaluate(() => window.scrollTo(0, 0));
+    const before = await page.evaluate(() => window.scrollY);
     await client.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x, y: y + 12 }] });
     await client.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: x + 6, y: y - 80 }] });
     await client.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
-    await page.waitForTimeout(100);
-    await expect(page.locator('[data-cv-timeline-event="1"]')).toHaveAttribute('aria-pressed', 'true');
-    expect(await page.evaluate(() => window.scrollY)).toBeGreaterThanOrEqual(beforeScroll);
-    await page.screenshot({ path: testInfo.outputPath('timeline-mobile-open.png'), fullPage: false });
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(before);
     await context.close();
 });
 
-test('reduced motion keeps click, keyboard and wheel navigation available without animating the detail', async ({ page }) => {
+test('reduced motion keeps keyboard use immediate and lets the page own wheel scrolling', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/cv');
     await page.locator('[data-cv-explore-open]').click();
     const stage = page.locator('[data-cv-timeline-stage]');
-    const wheelPrevented = await stage.evaluate(element => {
-        const event = new WheelEvent('wheel', { bubbles: true, cancelable: true, deltaY: 72 });
-        element.dispatchEvent(event);
-        return event.defaultPrevented;
-    });
-    expect(wheelPrevented).toBe(true);
-    await expect(page.locator('[data-cv-timeline-event="1"]')).toHaveAttribute('aria-pressed', 'true');
-    await page.locator('[data-cv-timeline-event="3"]').click();
-    await expect(page.locator('[data-cv-timeline-event="3"]')).toHaveAttribute('aria-pressed', 'true');
-    await page.locator('[data-cv-timeline-event="3"]').focus();
+    await expect(stage).toBeFocused();
+    const duration = await page.locator('[data-cv-timeline-bars] > i').first().evaluate(bar => getComputedStyle(bar).transitionDuration);
+    expect(Number.parseFloat(duration)).toBeLessThanOrEqual(0.00001);
     await page.keyboard.press('ArrowRight');
-    await expect(page.locator('[data-cv-timeline-event="4"]')).toHaveAttribute('aria-pressed', 'true');
+    await expect(stage).toHaveAttribute('aria-valuenow', '6');
+    await page.evaluate(() => window.scrollTo(0, 240));
+    await stage.scrollIntoViewIfNeeded();
+    const box = await stage.boundingBox();
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    const before = await page.evaluate(() => window.scrollY);
+    await page.mouse.wheel(0, 120);
+    await expect(stage).toHaveAttribute('aria-valuenow', '6');
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(before);
 });
 
 test('portrait is not counter-rotated or transformed and selects responsive source sizes cleanly', async ({ page, browser }, testInfo) => {
@@ -480,9 +315,9 @@ test('portrait is not counter-rotated or transformed and selects responsive sour
     expect(portrait.sourceWidth).toBeGreaterThanOrEqual(portrait.width);
     await page.screenshot({ path: testInfo.outputPath('portrait-before.png'), fullPage: false });
     await page.locator('[data-cv-explore-open]').click();
-    await page.locator('[data-cv-timeline-event="0"]').click();
+    await page.locator('[data-cv-timeline-stage]').click({ position: { x: 8, y: 45 } });
     await page.keyboard.press('ArrowRight');
-    await page.locator('[data-cv-timeline-event="1"]').hover();
+    await page.locator('[data-cv-timeline-stage]').hover();
     await page.screenshot({ path: testInfo.outputPath('portrait-after-repeated-interaction.png'), fullPage: false });
 
     const retinaContext = await browser.newContext({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 3 });
