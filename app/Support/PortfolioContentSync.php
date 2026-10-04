@@ -4,7 +4,6 @@ namespace App\Support;
 
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
-use RuntimeException;
 use Symfony\Component\Process\Process;
 
 final class PortfolioContentSync
@@ -51,6 +50,7 @@ final class PortfolioContentSync
         if (! flock($this->lockHandle, LOCK_EX | LOCK_NB)) {
             fclose($this->lockHandle);
             $this->lockHandle = null;
+
             return ['status' => 'busy'];
         }
 
@@ -99,7 +99,7 @@ final class PortfolioContentSync
         }
 
         $this->refreshStacheIfPending();
-        $this->assertCandidateCanBeResumed();
+        $candidateBranch = $this->assertCandidateCanBeResumed();
         $this->git(['fetch', '--no-tags', (string) config('content-sync.remote'),
             'refs/heads/main:refs/remotes/'.config('content-sync.remote').'/main',
             'refs/heads/'.config('content-sync.branch').':refs/remotes/'.config('content-sync.remote').'/'.config('content-sync.branch'),
@@ -109,11 +109,7 @@ final class PortfolioContentSync
         $remoteContent = $this->revParse('refs/remotes/'.config('content-sync.remote').'/'.config('content-sync.branch'));
         $rootHead = $this->revParse('HEAD');
 
-        $candidateExists = is_dir($this->candidatePath);
-        $candidateBranch = $candidateExists ? $this->candidateBranch() : null;
-        if ($candidateExists && $candidateBranch === null) {
-            throw new ContentSyncFailure('A content synchronization recovery path exists but is not a recognized Git worktree. Inspect it before removing or reusing it.');
-        }
+        $candidateExists = $candidateBranch !== null;
 
         $needsIntegration = ! $this->isAncestor($root, $remoteMain, $rootHead)
             || ! $this->isAncestor($root, $remoteContent, $rootHead);
@@ -164,6 +160,7 @@ final class PortfolioContentSync
 
         if (! $localChangesCommitted && ! $pushed && ! $integratedContent) {
             Log::info('Portfolio content synchronization found no changes.');
+
             return ['status' => 'noop'];
         }
 
@@ -237,10 +234,10 @@ final class PortfolioContentSync
         return $branch;
     }
 
-    private function assertCandidateCanBeResumed(): void
+    private function assertCandidateCanBeResumed(): ?string
     {
         if (! is_dir($this->candidatePath)) {
-            return;
+            return null;
         }
 
         $top = $this->gitResult(['rev-parse', '--show-toplevel'], $this->candidatePath);
@@ -261,6 +258,8 @@ final class PortfolioContentSync
         if (! str_starts_with($branch, $this->candidateBranchPrefix)) {
             throw new ContentSyncFailure('The persistent synchronization candidate branch is not recognized. Inspect it before reuse.');
         }
+
+        return $branch;
     }
 
     private function mergeTarget(string $cwd, string $target): void
@@ -300,6 +299,7 @@ final class PortfolioContentSync
     private function conflictFailure(string $cwd, string $message): ContentSyncFailure
     {
         $paths = $this->unmergedPaths($cwd);
+
         return new ContentSyncFailure(
             $paths === [] ? $message : $message.' Conflicting paths: '.implode(', ', $paths),
             $paths,
@@ -310,6 +310,7 @@ final class PortfolioContentSync
     private function unmergedPaths(string $cwd): array
     {
         $result = $this->gitResult(['diff', '--name-only', '--diff-filter=U'], $cwd);
+
         return array_values(array_filter(preg_split('/\R/', trim($result->getOutput())) ?: []));
     }
 
@@ -332,6 +333,7 @@ final class PortfolioContentSync
             $entry = $entries[$index];
             if (strlen($entry) < 4 || $entry[2] !== ' ') {
                 $paths[] = $entry;
+
                 continue;
             }
 
@@ -358,6 +360,7 @@ final class PortfolioContentSync
         if ($from === $to) {
             return false;
         }
+
         return $this->gitResult(['diff', '--quiet', $from, $to, '--', ...self::EDITORIAL_PATHS], $cwd)->getExitCode() !== 0;
     }
 
@@ -425,7 +428,7 @@ final class PortfolioContentSync
     {
         $process = $this->gitResult($arguments, $cwd);
         if ($process->getExitCode() !== 0) {
-            $operation = implode(' ', array_map(static fn (string $arg): string => preg_match('/^[A-Za-z0-9._:/-]+$/', $arg) ? $arg : '[argument]', $arguments));
+            $operation = implode(' ', array_map(static fn (string $arg): string => preg_match('#^[A-Za-z0-9._:/-]+$#', $arg) ? $arg : '[argument]', $arguments));
             throw new ContentSyncFailure(sprintf('Git operation "%s" failed (exit code %d). No force push or reset was attempted.', $operation, $process->getExitCode()));
         }
 

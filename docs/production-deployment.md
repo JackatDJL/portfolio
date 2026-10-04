@@ -5,7 +5,7 @@ This guide deploys the dynamic Laravel/Statamic app as an independent Dokploy Co
 ## Runtime shape
 
 - Dokploy builds the repository's `Dockerfile` from `main`. The image contains PHP-FPM, Nginx, the Vite build, and LuaLaTeX. It excludes editorial content, uploaded assets, publication PDFs, and the Statamic user file.
-- Nginx listens on container port `8080`; PHP-FPM handles Laravel requests. Supervisor runs Nginx, PHP-FPM, and cron. Cron invokes `php artisan portfolio:content-sync` every five minutes.
+- Nginx listens on container port `8080`; only the image-backed `/index.php` is sent to PHP-FPM. Other `.php` paths return 404, and Nginx does not follow symlinks in the served tree. Supervisor runs Nginx, PHP-FPM, and cron. Cron invokes `php artisan portfolio:content-sync` every five minutes.
 - The existing Laravel health route `/up` is the container health check. It only reports that the app booted.
 - One replica is required because this deployment uses a local SQLite database and host bind mounts.
 - `build.sh` and the existing Vercel/static SSG path remain available for static QA and deployments.

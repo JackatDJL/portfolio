@@ -64,14 +64,14 @@ RUN mkdir -p /var/www/html/storage/app /var/www/html/storage/framework/cache/dat
     && chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/users
 
 COPY --from=frontend /var/www/html/public/build /var/www/html/public/build
-COPY docker/nginx.conf /etc/nginx/sites-available/default
-COPY docker/supervisord.conf /etc/supervisor/conf.d/portfolio.conf
-COPY docker/php.ini /usr/local/etc/php/conf.d/zz-portfolio.ini
-COPY docker/php-fpm-pool.conf /usr/local/etc/php-fpm.d/zz-portfolio.conf
-COPY docker/entrypoint.sh /usr/local/bin/portfolio-entrypoint
-COPY docker/cron.d/content-sync /etc/cron.d/portfolio-content-sync
-RUN chmod 0755 /usr/local/bin/portfolio-entrypoint \
-    && chmod 0644 /etc/cron.d/portfolio-content-sync \
+COPY docker /tmp/portfolio-docker
+RUN install -m 0644 /tmp/portfolio-docker/nginx.conf /etc/nginx/sites-available/default \
+    && install -m 0644 /tmp/portfolio-docker/supervisord.conf /etc/supervisor/conf.d/portfolio.conf \
+    && install -m 0644 /tmp/portfolio-docker/php.ini /usr/local/etc/php/conf.d/zz-portfolio.ini \
+    && install -m 0644 /tmp/portfolio-docker/php-fpm-pool.conf /usr/local/etc/php-fpm.d/zz-portfolio.conf \
+    && install -m 0755 /tmp/portfolio-docker/entrypoint.sh /usr/local/bin/portfolio-entrypoint \
+    && install -m 0644 /tmp/portfolio-docker/cron.d/content-sync /etc/cron.d/portfolio-content-sync \
+    && rm -rf /tmp/portfolio-docker \
     && php -r 'exit(extension_loaded("pdo_sqlite") && extension_loaded("gd") && extension_loaded("intl") && extension_loaded("sockets") ? 0 : 1);' \
     && command -v lualatex >/dev/null \
     && kpsewhich paracol.sty >/dev/null \

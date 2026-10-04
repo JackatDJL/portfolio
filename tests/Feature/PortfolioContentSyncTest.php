@@ -87,6 +87,47 @@ class PortfolioContentSyncTest extends TestCase
         $this->assertDirectoryDoesNotExist($this->candidate);
     }
 
+    public function test_a_valid_existing_candidate_worktree_is_resumed_and_removed_after_integration(): void
+    {
+        $this->git($this->seed, ['switch', 'main']);
+        file_put_contents($this->seed.'/content/collections/resumed-main.md', "---\ntitle: Main change\n---\n");
+        $this->git($this->seed, ['add', '--all']);
+        $this->git($this->seed, ['commit', '-m', 'content: change while candidate is pending']);
+        $this->git($this->seed, ['push', 'origin', 'main']);
+
+        $candidateBranch = 'portfolio-content-sync-candidate-existing';
+        $this->git($this->production, ['worktree', 'add', '-b', $candidateBranch, $this->candidate, 'HEAD']);
+
+        Artisan::shouldReceive('call')->once()->with('statamic:stache:clear', ['--no-interaction' => true])->andReturn(0);
+        Artisan::shouldReceive('call')->once()->with('statamic:stache:warm', ['--no-interaction' => true])->andReturn(0);
+
+        $result = app(PortfolioContentSync::class)->run();
+
+        $this->assertSame('synced', $result['status']);
+        $this->assertTrue($result['remote_content_integrated']);
+        $this->assertTrue($result['content_branch_pushed']);
+        $this->assertFileExists($this->production.'/content/collections/resumed-main.md');
+        $this->assertDirectoryDoesNotExist($this->candidate);
+        $this->assertSame(
+            $this->git($this->production, ['rev-parse', 'HEAD']),
+            $this->git($this->remote, ['rev-parse', 'refs/heads/content-sync'], true),
+        );
+    }
+
+    public function test_a_failed_git_operation_is_reported_with_sanitized_arguments(): void
+    {
+        config()->set('content-sync.remote', 'invalid remote name');
+
+        try {
+            app(PortfolioContentSync::class)->run();
+            $this->fail('The missing remote should make fetch fail.');
+        } catch (ContentSyncFailure $failure) {
+            $this->assertStringContainsString('Git operation "fetch --no-tags [argument] [argument] [argument]" failed (exit code ', $failure->getMessage());
+            $this->assertStringNotContainsString('invalid remote name', $failure->getMessage());
+            $this->assertSame([], $failure->conflictingPaths);
+        }
+    }
+
     public function test_local_statamic_edits_are_committed_before_main_is_integrated_and_pushed(): void
     {
         file_put_contents($this->production.'/content/collections/cp-edit.md', "---\ntitle: Control Panel edit\n---\n");

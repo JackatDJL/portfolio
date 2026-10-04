@@ -43,6 +43,15 @@ class ProductionDeploymentTest extends TestCase
         $this->assertStringNotContainsString('cv_access_tokens', $response->getContent());
     }
 
+    public function test_writable_public_content_cannot_run_php_or_follow_symlinks(): void
+    {
+        $nginx = file_get_contents(base_path('docker/nginx.conf'));
+
+        $this->assertStringContainsString('disable_symlinks on;', $nginx);
+        $this->assertStringContainsString('location = /index.php {', $nginx);
+        $this->assertStringContainsString("location ~ \\.php$ {\n        return 404;", $nginx);
+    }
+
     public function test_permanent_cv_grants_and_sessions_survive_reopening_persistent_storage(): void
     {
         $directory = storage_path('framework/testing/deployment-state-'.bin2hex(random_bytes(6)));
