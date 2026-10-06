@@ -44,15 +44,18 @@ services:
       - /srv/jack-portfolio/content-repo/public/documents:/var/www/html/public/documents:rw
       - /srv/jack-portfolio/state/storage:/var/www/html/storage:rw
       - /srv/jack-portfolio/state/users:/var/www/html/users:rw
-    secrets:
-      - source: content-sync-deploy-key
-        target: portfolio_content_sync_deploy_key
-        uid: "33"
-        gid: "33"
-        mode: 0400
-    configs:
-      - source: github-known-hosts
+      - type: bind
+        source: /etc/jack-portfolio/content-sync-deploy-key
+        target: /run/secrets/portfolio_content_sync_deploy_key
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: /etc/jack-portfolio/github-known-hosts
         target: /run/configs/portfolio_github_known_hosts
+        read_only: true
+        bind:
+          create_host_path: false
     healthcheck:
       test: ["CMD", "curl", "--fail", "--silent", "http://127.0.0.1:8080/up"]
       interval: 30s
@@ -69,12 +72,4 @@ services:
 
 networks:
   dokploy-network:
-    external: true
-
-secrets:
-  content-sync-deploy-key:
-    external: true
-
-configs:
-  github-known-hosts:
     external: true
