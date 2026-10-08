@@ -31,23 +31,11 @@ git fetch origin main
 git push origin origin/main:refs/heads/content-sync
 ```
 
-Create a dedicated Ed25519 deploy key for this repository. Add its public key under **JackatDJL/portfolio → Settings → Deploy keys** with write access enabled. This key is repository-scoped; the server command only pushes `content-sync`. Do not use a personal SSH key. Keep the private key out of Git and Dokploy environment text fields.
+Create a dedicated Ed25519 deploy key for this repository. Add its public key under **JackatDJL/portfolio → Settings → Deploy keys** with write access enabled. This key is repository-scoped; the server command only pushes `content-sync`. Do not use a personal SSH key.
 
-Create a `known_hosts` file for `github.com`, then compare its fingerprints with GitHub's published SSH host-key fingerprints before trusting it:
+Keep the private key in 1Password and pass it to the infrastructure bootstrap as `PORTFOLIO_CONTENT_SYNC_DEPLOY_KEY`. Supply one reviewed `github.com ssh-ed25519` `known_hosts` line through `PORTFOLIO_GITHUB_KNOWN_HOSTS`. The bootstrap checks it against GitHub's published fingerprint, writes both files under `/etc/jack-portfolio`, and refuses to replace an existing key or host-key file. Do not put the private key in Git or Dokploy environment fields, and do not trust unverified `ssh-keyscan` output. See the [infrastructure bootstrap guide](https://github.com/JackatDJL/rosenfold-infra/blob/main/docs/portfolio-production-bootstrap.md) for the controller command.
 
-```sh
-ssh-keyscan github.com > github_known_hosts
-ssh-keygen -lf github_known_hosts
-```
-
-On the Swarm manager, create the immutable Docker secret and config from those files:
-
-```sh
-docker secret create content-sync-deploy-key /secure/path/portfolio-content-sync
-docker config create github-known-hosts /secure/path/github_known_hosts
-```
-
-The Compose file references these as external Swarm objects. For key rotation, create a new versioned secret, update the Compose reference, deploy, then remove the old secret after confirming the new service is healthy. Do not replace secrets automatically.
+Earlier deployments may have Swarm objects named `content-sync-deploy-key` and `github-known-hosts`. The Compose app no longer consumes them, and the bootstrap leaves them alone. Remove them manually only after the Compose app is healthy, content sync has completed successfully, and no Swarm service references either object.
 
 ## Prepare persistent host paths
 
@@ -61,47 +49,10 @@ The paths below are the host-side contract in `compose.production.yaml`:
 | `/srv/jack-portfolio/content-repo/public/documents` | `/var/www/html/public/documents` | Editorial publication PDFs |
 | `/srv/jack-portfolio/state/storage` | `/var/www/html/storage` | SQLite, sessions, Stache, cache, logs, LuaLaTeX home/cache, and private CV PDF files |
 | `/srv/jack-portfolio/state/users` | `/var/www/html/users` | Statamic's file-backed user, password hash, preferences, and 2FA state |
+| `/etc/jack-portfolio/content-sync-deploy-key` | `/run/secrets/portfolio_content_sync_deploy_key` | Read-only deploy key, owned by UID/GID `33`, mode `0600` |
+| `/etc/jack-portfolio/github-known-hosts` | `/run/configs/portfolio_github_known_hosts` | Read-only, fingerprint-checked GitHub host key |
 
-Create the directories and keep the writable bind mounts owned by UID/GID `33` (`www-data` in the image):
-
-```sh
-sudo install -d -o 33 -g 33 -m 0750 \
-  /srv/jack-portfolio/content-repo \
-  /srv/jack-portfolio/state/storage \
-  /srv/jack-portfolio/state/users
-```
-
-Clone the full repository at `content-sync` using the dedicated deploy key. For the initial clone, temporarily make the key available to the `git` command on the host, use strict host checking and the verified `known_hosts` file, then remove that temporary key copy after Docker has stored the Swarm secret:
-
-```sh
-sudo -u '#33' env GIT_SSH_COMMAND='ssh -i /secure/path/portfolio-content-sync -o IdentitiesOnly=yes -o BatchMode=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile=/secure/path/github_known_hosts' \
-  git clone --branch content-sync git@github.com:JackatDJL/portfolio.git \
-  /srv/jack-portfolio/content-repo
-```
-
-Set the repository-local author identity used for Git merge commits and manual conflict recovery:
-
-```sh
-sudo -u '#33' git -C /srv/jack-portfolio/content-repo config user.name 'Portfolio Content Sync'
-sudo -u '#33' git -C /srv/jack-portfolio/content-repo config user.email 'portfolio-content-sync@users.noreply.github.com'
-```
-
-Seed the separate user volume once from the existing Statamic account file. This file is not included in the image or content-sync commits after the mount is active:
-
-```sh
-sudo sh -c 'umask 077; git -C /srv/jack-portfolio/content-repo show origin/main:users/jack@djl.foundation.yaml > /srv/jack-portfolio/state/users/jack@djl.foundation.yaml'
-sudo chown 33:33 /srv/jack-portfolio/state/users/jack@djl.foundation.yaml
-sudo chmod 0600 /srv/jack-portfolio/state/users/jack@djl.foundation.yaml
-```
-
-On Fedora, Swarm service bind mounts do not apply Docker's `:z`, `:Z`, or `:ro` options. Apply a persistent SELinux file-context rule to the application data tree and restore labels; do not disable SELinux:
-
-```sh
-sudo semanage fcontext -a -t container_file_t '/srv/jack-portfolio(/.*)?'
-sudo restorecon -Rv /srv/jack-portfolio
-```
-
-If that exact rule already exists, use `semanage fcontext -m` instead of `-a`. Confirm UID/GID permissions and labels before deployment. The Git key itself is delivered as a Swarm secret owned by UID 33 with mode `0400`; the public host-key list is a readable Swarm config. Neither is a writable host bind mount. Verify the deployed task sees the deploy key as readable by `www-data` and rejected by OpenSSH as too broadly accessible before enabling cron.
+Run the infrastructure bootstrap before deploying. It creates the writable paths, clones `content-sync` when needed, sets the repository identity, seeds the existing Statamic account file only when absent, and applies persistent SELinux `container_file_t` rules to both `/srv/jack-portfolio` and `/etc/jack-portfolio`. The deploy key is owned by UID/GID `33` with mode `0600`, which lets `www-data` read it while satisfying OpenSSH's private-key permission check. Both credential mounts are read-only in Compose.
 
 ## Dokploy application
 
@@ -111,10 +62,10 @@ Create a new **Docker Compose** application for `JackatDJL/portfolio`:
 2. Let Dokploy build the image from the repository's `Dockerfile`. Do not set a host-published port. The service joins the existing `dokploy-network` and listens internally on `8080`.
 3. Set the Dokploy Git **Watch Paths** from [`docker/dokploy-watch-paths.json`](../docker/dokploy-watch-paths.json). This is a positive allow-list of application/build paths; it intentionally omits `content/**`, `public/assets/**`, and `public/documents/**`.
 4. Keep the Compose health check enabled at `http://127.0.0.1:8080/up`. Keep replicas at one and the stop-first update order.
-5. Add the external Docker secret `content-sync-deploy-key` and external config `github-known-hosts` exactly as named in the Compose file.
-6. Add the environment values below in Dokploy. Do not add a production `.env` file to the repository or build context.
+5. Run the infrastructure bootstrap so both read-only bind-mount source files exist before deploying. The Compose mounts disable automatic host-path creation.
+6. Store the stable `APP_KEY` in Dokploy's secret environment storage. The Compose file sets the other values below. Do not add a production `.env` file to the repository or build context, or put the deploy-key contents or `known_hosts` line in Dokploy.
 
-Required values (the Compose file sets the non-secret defaults):
+Runtime values:
 
 | Variable | Value |
 | --- | --- |
@@ -153,6 +104,13 @@ Do not open Hetzner public ports 80 or 443. The current server design sends Clou
 
 ```sh
 php artisan portfolio:content-sync --dry-run
+```
+
+After the first redeploy, run it as UID `33` to verify that both read-only file mounts are readable by the application process:
+
+```sh
+docker exec --user 33 <portfolio-container> sh -ec \
+  'cd /var/www/html && test -r /run/secrets/portfolio_content_sync_deploy_key && test -r /run/configs/portfolio_github_known_hosts && php artisan portfolio:content-sync --dry-run'
 ```
 
 The sync command:
