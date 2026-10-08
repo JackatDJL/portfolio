@@ -68,13 +68,11 @@ export const initCvExplore = () => {
         .map((template, order) => ({
             template,
             date: parseChronology(template.dataset.date),
-            endDate: parseChronology(template.dataset.dateEnd),
             order,
         }))
         .filter(item => item.date)
         .map(item => ({
             ...item,
-            endDate: item.endDate && item.endDate.timestamp >= item.date.timestamp ? item.endDate : null,
             dateLabel: item.template.content.querySelector('.cv-milestone__date')?.textContent.trim() || '',
             title: item.template.content.querySelector('h3')?.textContent.trim() || '',
         }))
@@ -106,13 +104,16 @@ export const initCvExplore = () => {
     let touchStart = null;
     let suppressClickUntil = 0;
     let hoveredMilestone = null;
+    const waveEnvelope = { center: 0 };
 
     const motionReduced = () => matchMedia(reduceMotionQuery).matches;
     const normalizedPosition = timestamp => {
         const range = Math.max(1, endTimestamp - startTimestamp);
         return Math.max(0, Math.min(1, (timestamp - startTimestamp) / range));
     };
+    const positionFor = timestamp => normalizedPosition(timestamp) * 100;
     const selectedText = index => `${sources[index].dateLabel}: ${sources[index].title}`;
+    waveEnvelope.center = positionFor(sources[activeIndex].date.timestamp);
 
     const buildPreview = () => {
         const fragment = document.createDocumentFragment();
@@ -125,39 +126,51 @@ export const initCvExplore = () => {
     };
 
     const drawWaveform = () => {
-        const selected = sources[activeIndex];
-        const activePosition = normalizedPosition(selected.date.timestamp) * 100;
         bars.querySelectorAll('i').forEach((bar, index) => {
             const position = (index / (strokeCount - 1)) * 100;
             const base = 2
                 + ((Math.sin(index * 2.31) + 1) / 2) * 5
                 + ((Math.sin(index * .63 + 1.5) + 1) / 2) * 3;
-            const activeEnvelope = Math.max(0, 1 - Math.abs(position - activePosition) / (motionReduced() ? 6.5 : 8.5));
+            const activeEnvelope = Math.max(0, 1 - Math.abs(position - waveEnvelope.center) / (motionReduced() ? 6.5 : 8.5));
             const pointEnvelope = sources.reduce((amount, milestone, milestoneIndex) => {
-                if (milestoneIndex === activeIndex || milestone.endDate) return amount;
-                const pointDistance = Math.abs(position - normalizedPosition(milestone.date.timestamp) * 100);
-                const hoveredLift = milestoneIndex === hoveredMilestone ? 5 : 0;
-                return amount + Math.max(0, 1 - pointDistance / .95) * 17 + hoveredLift;
-            }, 0);
-            const rangeLift = sources.reduce((amount, milestone) => {
-                if (!milestone.endDate) return amount;
-                const start = normalizedPosition(milestone.date.timestamp) * 100;
-                const end = normalizedPosition(milestone.endDate.timestamp) * 100;
-                return amount + (position >= start && position <= end ? 2.5 : 0);
+                if (milestoneIndex === activeIndex) return amount;
+                const pointDistance = Math.abs(position - positionFor(milestone.date.timestamp));
+                const eventLift = Math.max(0, 1 - pointDistance / 1.15) * 23;
+                const hoveredLift = milestoneIndex === hoveredMilestone
+                    ? Math.max(0, 1 - pointDistance / 1.7) * 8
+                    : 0;
+                return amount + eventLift + hoveredLift;
             }, 0);
             const isPoint = sources.some((milestone, milestoneIndex) => milestoneIndex !== activeIndex
-                && !milestone.endDate
-                && Math.abs(position - normalizedPosition(milestone.date.timestamp) * 100) < 1.25);
+                && Math.abs(position - positionFor(milestone.date.timestamp)) < 1.25);
             const isHovered = hoveredMilestone !== null
-                && Math.abs(position - normalizedPosition(sources[hoveredMilestone].date.timestamp) * 100) < 1.8;
-            const height = Math.max(3, base + activeEnvelope * 42 + pointEnvelope + rangeLift);
-            bar.style.left = `${position}%`;
+                && Math.abs(position - positionFor(sources[hoveredMilestone].date.timestamp)) < 1.8;
+            const height = Math.max(3, base + activeEnvelope * 42 + pointEnvelope);
             bar.classList.toggle('is-milestone', isPoint);
             bar.classList.toggle('is-hovered', isHovered);
             bar.style.height = `${height}px`;
-            bar.style.opacity = String(.52 + activeEnvelope * .48 + (pointEnvelope + rangeLift) / 30);
+            bar.style.opacity = String(Math.min(1, .48 + activeEnvelope * .52 + pointEnvelope / 48));
         });
-        needle.style.left = `${activePosition}%`;
+        needle.style.left = `${waveEnvelope.center}%`;
+    };
+
+    const moveWaveTo = (timestamp, animate) => {
+        const target = positionFor(timestamp);
+        gsap.killTweensOf(waveEnvelope);
+        if (motionReduced() || !animate) {
+            waveEnvelope.center = target;
+            drawWaveform();
+            return;
+        }
+
+        const distance = Math.abs(target - waveEnvelope.center);
+        gsap.to(waveEnvelope, {
+            center: target,
+            duration: Math.min(.58, .16 + distance * .0055),
+            ease: 'power2.inOut',
+            onUpdate: drawWaveform,
+        });
+        drawWaveform();
     };
 
     const updateSelection = (index, { animate = true, focus = false, force = false } = {}) => {
@@ -172,7 +185,7 @@ export const initCvExplore = () => {
         stage.setAttribute('aria-valuetext', selectedText(index));
         currentIndexLabel.textContent = padIndex(index + 1);
         totalIndexLabel.textContent = padIndex(sources.length);
-        drawWaveform();
+        moveWaveTo(selected.date.timestamp, animate);
         detail.replaceChildren(selected.template.content.cloneNode(true));
 
         if (motionReduced() || !animate) {
@@ -235,6 +248,7 @@ export const initCvExplore = () => {
         for (let index = 0; index < strokeCount; index += 1) {
             const bar = document.createElement('i');
             bar.dataset.waveIndex = String(index);
+            bar.style.left = `${(index / (strokeCount - 1)) * 100}%`;
             fragment.append(bar);
         }
         bars.replaceChildren(fragment);

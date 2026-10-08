@@ -45,57 +45,84 @@ class CvSessionAccessTest extends TestCase
     {
         $variables = GlobalSet::find('cv')->inDefaultSite();
         $original = $variables->data()->all();
-        $email = 'PRIVATE-CV-PDF-SENTINEL@example.invalid';
-        $variables->set('private_email', Crypt::encryptString($email));
+        $email = 'privateCVPdfSentinel@example.invalid';
+        $privateValues = [
+            'private_email' => $email,
+            'phone' => 'PRIVATE-CV-PHONE-SENTINEL',
+            'street' => 'PRIVATE-CV-STREET-SENTINEL',
+            'house_number' => 'PRIVATE-CV-HOUSE-SENTINEL',
+            'postal_code' => 'PRIVATE-CV-POSTAL-SENTINEL',
+            'city' => 'PRIVATE-CV-CITY-SENTINEL',
+            'country' => 'PRIVATE-CV-COUNTRY-SENTINEL',
+            'date_of_birth' => 'PRIVATE-CV-BIRTH-DATE-SENTINEL',
+            'place_of_birth' => 'PRIVATE-CV-BIRTH-PLACE-SENTINEL',
+        ];
+        foreach ($privateValues as $handle => $value) {
+            $variables->set($handle, Crypt::encryptString($value));
+        }
         $token = CvCapabilities::issueTemporary('/cv/jobmesse-26')['token'];
 
         try {
             $this->postJson('/cv/token-exchange', ['path' => '/cv/jobmesse-26', 'token' => $token])->assertOk();
             $private = $this->get('/cv/jobmesse-26/pdf')->assertOk();
-            [$privateText, $privateUrls] = $this->inspectPdf($private->streamedContent());
-            $this->assertStringContainsString($email, $privateText);
+            $privateBytes = $private->streamedContent();
+            [$privateText, $privateUrls] = $this->inspectPdf($privateBytes);
+            $privateVisibleText = preg_replace('/\s+/u', '', $privateText);
+            $this->assertStringContainsString($email, $privateVisibleText);
+            $this->assertStringContainsString('PRIVATE-CV-PHONE-SENTINEL', $privateVisibleText);
+            $this->assertStringContainsString('PRIVATE-CV-STREET-SENTINEL', $privateVisibleText);
+            $this->assertStringContainsString('PRIVATE-CV-HOUSE-SENTINEL', $privateVisibleText);
+            $authorizedUrl = 'jack.djl.foundation/cv/jobmesse-26#cv='.$token;
+            $this->assertStringContainsString($authorizedUrl, $privateVisibleText);
+            $this->assertGreaterThanOrEqual(3, substr_count($privateVisibleText, $authorizedUrl));
+            $this->assertStringNotContainsString('https://jack.djl.foundation/cv/jobmesse-26', $privateVisibleText);
             $this->assertStringContainsString('#cv='.$token, $privateUrls);
             $this->assertStringNotContainsString('?cv=', $privateUrls);
             $this->assertStringNotContainsString('?token=', $privateUrls);
 
             $public = $this->get('/cv/jobmesse-26/pdf?public=1')->assertOk();
             [$publicText, $publicUrls] = $this->inspectPdf($public->streamedContent());
-            $this->assertStringNotContainsString($email, $publicText);
+            $publicVisibleText = preg_replace('/\s+/u', '', $publicText);
+            $this->assertStringContainsString('jack.djl.foundation/cv/jobmesse-26', $publicVisibleText);
+            $this->assertStringNotContainsString('https://jack.djl.foundation/cv/jobmesse-26', $publicVisibleText);
+            foreach ($privateValues as $value) {
+                $this->assertStringNotContainsString($value, $publicText.$publicUrls);
+            }
             $this->assertStringNotContainsString($token, $publicText.$publicUrls);
         } finally {
             $variables->data($original);
         }
     }
 
-    public function test_latex_template_escapes_special_characters_in_milestone_urls(): void
+    public function test_latex_template_keeps_interactive_chronology_out_of_the_printable_cv(): void
     {
         $cv = app(CvViewModel::class)->make();
-        $url = 'https://example.invalid/curly/{part}/back\\slash?code=%7B#section~extra';
         $cv['milestones'][] = [
-            'title' => 'URL escaping check',
+            'title' => 'TIMELINE-ONLY-ENTRY-MUST-NOT-PRINT',
             'date' => '2026',
             'organisation' => '',
             'summary' => '',
-            'relations' => [['title' => 'URL escaping check', 'url' => $url]],
+            'relations' => [],
         ];
 
         $latex = view('latex.cv', compact('cv'))->render();
 
-        $this->assertStringContainsString('https://example.invalid/curly/\\%7Bpart\\%7D/back\\%5Cslash?code=\\%7B\\#section\\%7Eextra', $latex);
+        $this->assertStringNotContainsString('TIMELINE-ONLY-ENTRY-MUST-NOT-PRINT', $latex);
+        $this->assertStringNotContainsString('Stationen', $latex);
     }
 
     public function test_revoking_a_permanent_capability_removes_private_pdf_access(): void
     {
         $variables = GlobalSet::find('cv')->inDefaultSite();
         $original = $variables->data()->all();
-        $email = 'PRIVATE-CV-REVOKED-SENTINEL@example.invalid';
+        $email = 'privateCVRevokedSentinel@example.invalid';
         $variables->set('private_email', Crypt::encryptString($email));
         $token = CvCapabilities::permanent('/cv/jobmesse-26')['token'];
 
         try {
             $this->postJson('/cv/token-exchange', ['path' => '/cv/jobmesse-26', 'token' => $token])->assertOk();
             [$privateText, $privateUrls] = $this->inspectPdf($this->get('/cv/jobmesse-26/pdf')->assertOk()->streamedContent());
-            $this->assertStringContainsString($email, $privateText);
+            $this->assertStringContainsString($email, preg_replace('/\s+/u', '', $privateText));
             $this->assertStringContainsString('#cv='.$token, $privateUrls);
 
             CvCapabilities::revokePermanent('/cv/jobmesse-26');

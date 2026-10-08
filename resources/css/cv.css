@@ -135,7 +135,8 @@
     .cv-explore__preview-label .related-reference__arrow-mask { margin-left: -.35rem; font-size: .85rem; }
     .cv-explore__content { position: relative; }
     .cv-explore__content[hidden] { display: none; }
-    .cv-timeline { position: relative; min-height: 24.375rem; padding: 3.375rem 0 1.625rem; }
+    .cv-timeline { position: relative; min-height: 24.375rem; padding: 3.375rem 0 1.625rem; transform-origin: center top; transition: transform .18s ease-out; }
+    @media (hover: hover) { .cv-timeline:hover { transform: translateY(-1px) scale(1.004); } }
     .cv-explore__close { position: absolute; top: .25rem; right: -.5rem; z-index: 2; display: grid; width: 2.75rem; height: 2.75rem; place-items: center; padding: 0; border: 0; border-radius: 50%; background: transparent; color: var(--site-text); cursor: pointer; }
     .cv-explore__close::before { position: absolute; z-index: 0; inset: .5rem; border: 1px solid var(--site-border-strong); border-radius: 50%; background: var(--site-surface); content: ''; transition: background-color 160ms ease; }
     .cv-explore__close:hover::before { background: var(--site-text); }
@@ -148,12 +149,12 @@
     .cv-timeline__year[data-align='start'] { padding-left: 0; }
     .cv-timeline__stage { position: relative; min-width: 0; margin-top: 2.625rem; outline: none; touch-action: pan-y; user-select: none; }
     .cv-timeline__stage:focus-visible { outline: 2px solid var(--site-focus); outline-offset: 4px; }
-    .cv-timeline__waveform { position: relative; display: flex; height: 5.75rem; align-items: center; justify-content: space-between; border-block: 1px dotted color-mix(in srgb, var(--site-text-muted) 58%, transparent); cursor: crosshair; }
+    .cv-timeline__waveform { position: relative; display: flex; height: 5.75rem; align-items: center; justify-content: space-between; border-block: 1px dotted color-mix(in srgb, var(--site-text-muted) 58%, transparent); cursor: pointer; }
     .cv-timeline__bars { position: absolute; inset: 0; pointer-events: none; }
-    .cv-timeline__bars > i { position: absolute; top: 50%; display: block; width: 2px; min-height: 3px; border-radius: 3px; background: color-mix(in srgb, var(--cv-accent) 68%, var(--site-text-muted)); transform: translate(-50%, -50%); transition: width .2s ease, height .32s cubic-bezier(.2,.75,.2,1), opacity .32s ease, background-color .2s ease, filter .2s ease, transform .2s ease; }
-    .cv-timeline__bars > i.is-milestone { width: 2.5px; background: var(--cv-accent); }
-    .cv-timeline__bars > i.is-hovered { width: 3px; background: color-mix(in srgb, var(--cv-accent) 72%, var(--site-text)); filter: saturate(1.18); transform: translate(-50%, -50%) scaleY(1.16); }
-    .cv-timeline__needle { position: absolute; top: -1.125rem; bottom: -1.125rem; width: 1px; background: var(--site-text); pointer-events: none; transition: left .5s cubic-bezier(.2,.75,.2,1); }
+    .cv-timeline__bars > i { position: absolute; top: 50%; display: block; width: 2px; min-height: 3px; border-radius: 3px; background: var(--cv-accent); transform: translate(-50%, -50%); transition: width .18s ease, opacity .18s ease, filter .18s ease, transform .18s ease; }
+    .cv-timeline__bars > i.is-milestone { width: 3px; }
+    .cv-timeline__bars > i.is-hovered { width: 4px; filter: saturate(1.18); transform: translate(-50%, -50%) scaleY(1.16); }
+    .cv-timeline__needle { position: absolute; top: -1.125rem; bottom: -1.125rem; z-index: 2; width: 1px; background: var(--site-text); pointer-events: none; }
     .cv-timeline__needle em { position: absolute; top: -.3125rem; left: -.25rem; width: .5625rem; height: .5625rem; background: var(--cv-accent); transform: rotate(45deg); }
     .cv-explore__detail { margin-top: 2.625rem; }
     .cv-milestone { display: grid; grid-template-columns: minmax(8.125rem, 1fr) 2.2fr; gap: 2rem; margin: 0; }
@@ -234,9 +235,11 @@
     .cv-explore__reveal.btn,
     .cv-explore__preview-wave i,
     .cv-explore__close::before,
+    .cv-timeline,
     .cv-timeline__bars > i,
     .cv-timeline__needle,
     .cv-explore__detail { transition: none !important; animation: none !important; }
+    .cv-timeline { transform: none !important; }
     .cv-timeline__bars > i.is-hovered { transform: translate(-50%, -50%); }
 }
 html[data-theme='dark'] .cv-document::before { opacity: .035; mix-blend-mode: screen; }

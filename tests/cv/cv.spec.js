@@ -162,10 +162,7 @@ for (const [width, theme] of [[1440, 'light'], [1440, 'dark'], [1024, 'light'], 
             scrollWidth: document.documentElement.scrollWidth,
             clientWidth: document.documentElement.clientWidth,
             timeline: document.querySelector('[data-cv-timeline]').getBoundingClientRect().height,
-            centers: [...document.querySelectorAll('[data-cv-timeline-bars] > i')].map(bar => {
-                const rect = bar.getBoundingClientRect();
-                return rect.left + rect.width / 2;
-            }),
+            centers: [...document.querySelectorAll('[data-cv-timeline-bars] > i')].map(bar => bar.style.left),
             heights: [...document.querySelectorAll('[data-cv-timeline-bars] > i')].map(bar => bar.getBoundingClientRect().height),
             track: document.querySelector('[data-cv-timeline-track]').getBoundingClientRect().toJSON(),
         }));
@@ -177,8 +174,7 @@ for (const [width, theme] of [[1440, 'light'], [1440, 'dark'], [1024, 'light'], 
         await expect(stage).toHaveAttribute('aria-valuenow', '1');
         await page.waitForTimeout(360);
         const after = await page.evaluate(() => [...document.querySelectorAll('[data-cv-timeline-bars] > i')].map(bar => {
-            const rect = bar.getBoundingClientRect();
-            return { center: rect.left + rect.width / 2, height: rect.height };
+            return { center: bar.style.left, height: bar.getBoundingClientRect().height };
         }));
         expect(after.map(bar => bar.center)).toEqual(initial.centers);
         expect(after.some((bar, index) => Math.abs(bar.height - initial.heights[index]) > 5)).toBe(true);
@@ -213,6 +209,152 @@ test('timeline click selects the nearest dated milestone and keyboard reaches bo
     await page.keyboard.press('End');
     await expect(stage).toHaveAttribute('aria-valuenow', '8');
     await expect(page.locator('[data-cv-active-detail] h3')).toHaveText('Beitritt zum DRK');
+
+    const track = page.locator('[data-cv-timeline-track]');
+    const trackBox = await track.boundingBox();
+    const timestamps = await page.locator('template[data-cv-milestone]').evaluateAll(nodes => nodes.map(node => node.dataset.date));
+    for (const index of [4, 5, 6, 7]) {
+        const progressForDate = (Date.parse(timestamps[index] + (timestamps[index].length === 7 ? '-15' : 'T12:00:00Z')) - Date.UTC(startYear, 0, 1, 12))
+            / (endTime - Date.UTC(startYear, 0, 1, 12));
+        await page.mouse.click(trackBox.x + trackBox.width * progressForDate, trackBox.y + trackBox.height / 2);
+        await expect(stage).toHaveAttribute('aria-valuenow', String(index + 1));
+    }
+});
+
+test('ranged milestones plot at their start date and all event bars use the canonical accent', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto('/cv');
+    await page.locator('[data-cv-explore-open]').click();
+
+    await expect(page.locator('[data-cv-timeline-range], [data-cv-timeline-ranges], .cv-timeline__range')).toHaveCount(0);
+    await page.keyboard.press('Home');
+    await expect(page.locator('[data-cv-active-detail]')).toContainText('01.08.2014–31.07.2018');
+    const stage = page.locator('[data-cv-timeline-stage]');
+    await expect.poll(() => stage.evaluate(element => getComputedStyle(element).outlineStyle)).toBe('solid');
+    const startDate = await page.locator('template[data-cv-milestone]').first().getAttribute('data-date');
+    const startYear = Number(await page.locator('[data-cv-explore]').getAttribute('data-start-year'));
+    const endTime = await page.evaluate(() => {
+        const today = new Date();
+        return Date.UTC(today.getFullYear(), today.getMonth(), today.getDate(), 12);
+    });
+    const startProgress = (parseChronology(startDate).timestamp - Date.UTC(startYear, 0, 1, 12)) / (endTime - Date.UTC(startYear, 0, 1, 12));
+    await page.waitForTimeout(650);
+    expect(await page.locator('[data-cv-timeline-needle]').evaluate(needle => Number.parseFloat(needle.style.left))).toBeCloseTo(startProgress * 100, 1);
+
+    await page.keyboard.press('ArrowRight');
+    await expect(stage).toHaveAttribute('aria-valuenow', '2');
+    const contrast = await page.evaluate(() => {
+        const root = document.querySelector('.cv-document');
+        const accent = getComputedStyle(root).getPropertyValue('--cv-accent').trim();
+        const probe = document.createElement('span');
+        probe.style.backgroundColor = accent;
+        document.body.append(probe);
+        const canonicalAccent = getComputedStyle(probe).backgroundColor;
+        probe.remove();
+        const event = document.querySelector('[data-cv-timeline-bars] > i.is-milestone');
+        const bars = [...document.querySelectorAll('[data-cv-timeline-bars] > i')];
+        const passive = bars.find(bar => !bar.classList.contains('is-milestone'));
+        const needle = document.querySelector('[data-cv-timeline-needle]').getBoundingClientRect().left;
+        const selected = bars.reduce((nearest, bar) =>
+            Math.abs(bar.getBoundingClientRect().left - needle) < Math.abs(nearest.getBoundingClientRect().left - needle) ? bar : nearest, bars[0]);
+        return {
+            canonicalAccent,
+            eventColor: getComputedStyle(event).backgroundColor,
+            passiveColor: getComputedStyle(passive).backgroundColor,
+            eventWidth: event.getBoundingClientRect().width,
+            passiveWidth: passive.getBoundingClientRect().width,
+            eventHeight: event.getBoundingClientRect().height,
+            passiveHeight: passive.getBoundingClientRect().height,
+            eventOpacity: Number(getComputedStyle(event).opacity),
+            passiveOpacity: Number(getComputedStyle(passive).opacity),
+            selectedHeight: selected.getBoundingClientRect().height,
+        };
+    });
+    expect(contrast.eventColor).toBe(contrast.canonicalAccent);
+    expect(contrast.passiveColor).toBe(contrast.canonicalAccent);
+    expect(contrast.eventWidth).toBeGreaterThan(contrast.passiveWidth);
+    expect(contrast.eventHeight).toBeGreaterThan(contrast.passiveHeight + 8);
+    expect(contrast.eventOpacity).toBeGreaterThan(contrast.passiveOpacity + 0.2);
+    expect(contrast.selectedHeight).toBeGreaterThan(contrast.eventHeight);
+
+    const eventBar = page.locator('[data-cv-timeline-bars] > i.is-milestone').first();
+    const eventBox = await eventBar.boundingBox();
+    await page.mouse.move(eventBox.x + eventBox.width / 2, eventBox.y + eventBox.height / 2);
+    await expect(eventBar).toHaveClass(/is-hovered/);
+    await page.waitForTimeout(220);
+    expect(await eventBar.evaluate(element => element.getBoundingClientRect().width)).toBeGreaterThan(contrast.eventWidth);
+});
+
+test('the whole timeline responds to container hover and respects reduced motion', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto('/cv');
+    await page.locator('[data-cv-explore-open]').click();
+    const timeline = page.locator('[data-cv-timeline]');
+    await page.mouse.move(10, 10);
+    await expect.poll(() => timeline.evaluate(element => getComputedStyle(element).transform)).toBe('none');
+    await page.locator('.cv-timeline__extent').hover();
+    await expect.poll(() => timeline.evaluate(element => new DOMMatrix(getComputedStyle(element).transform).a)).toBeGreaterThan(1.001);
+    const hoverTransform = await timeline.evaluate(element => {
+        const matrix = new DOMMatrix(getComputedStyle(element).transform);
+        return { scale: matrix.a, y: matrix.m42 };
+    });
+    expect(hoverTransform.scale).toBeGreaterThan(1);
+    expect(hoverTransform.y).toBeLessThan(0);
+
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await expect.poll(() => timeline.evaluate(element => getComputedStyle(element).transform)).toBe('none');
+    const transitionProperty = await timeline.evaluate(element => getComputedStyle(element).transitionProperty);
+    expect(transitionProperty).toBe('none');
+});
+
+test('the long waveform transition moves one amplitude envelope across fixed bar positions', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto('/cv');
+    await page.locator('[data-cv-explore-open]').click();
+    const stage = page.locator('[data-cv-timeline-stage]');
+    await stage.press('Home');
+    await expect(stage).toHaveAttribute('aria-valuenow', '1');
+    await page.waitForTimeout(700);
+    const baseline = await page.locator('[data-cv-timeline-bars] > i').evaluateAll(bars => bars.map(bar => ({
+        center: Number.parseFloat(bar.style.left) / 100,
+        height: bar.getBoundingClientRect().height,
+    })));
+    await stage.press('End');
+    const samplesPromise = page.evaluate(async () => {
+        const bars = [...document.querySelectorAll('[data-cv-timeline-bars] > i')];
+        const track = document.querySelector('[data-cv-timeline-track]');
+        const needle = document.querySelector('[data-cv-timeline-needle]');
+        const sample = () => {
+            const trackRect = track.getBoundingClientRect();
+            const needleX = needle.getBoundingClientRect().left + needle.getBoundingClientRect().width / 2;
+            const needleProgress = (needleX - trackRect.left) / trackRect.width;
+            const positions = bars.map(bar => Number.parseFloat(bar.style.left) / 100);
+            const heights = bars.map(bar => bar.getBoundingClientRect().height);
+            const nearestIndex = positions.reduce((nearest, position, index) =>
+                Math.abs(position - needleProgress) < Math.abs(positions[nearest] - needleProgress) ? index : nearest, 0);
+            return {
+                positions,
+                needleProgress,
+                needleIndex: nearestIndex,
+                needleBarHeight: heights[nearestIndex],
+            };
+        };
+        const frames = [];
+        for (let frame = 0; frame < 40; frame += 1) {
+            await new Promise(requestAnimationFrame);
+            frames.push(sample());
+        }
+        return frames;
+    });
+    await page.waitForTimeout(220);
+    await page.screenshot({ path: testInfo.outputPath('long-waveform-transition-midpoint.png'), fullPage: false });
+    const samples = await samplesPromise;
+    await expect(stage).toHaveAttribute('aria-valuenow', '8');
+
+    const travelingSamples = samples.filter(sample => sample.needleProgress > 0.46 && sample.needleProgress < 0.74);
+    expect(travelingSamples.length).toBeGreaterThan(0);
+    expect(travelingSamples.some(sample => sample.needleBarHeight > baseline[sample.needleIndex].height + 20)).toBe(true);
+    expect(samples.every(sample => sample.positions.every((position, index) => position === baseline[index].center))).toBe(true);
 });
 
 test('vertical and horizontal wheel input select one milestone and hand scrolling back at both ends', async ({ page }) => {

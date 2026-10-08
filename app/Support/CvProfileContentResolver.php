@@ -67,7 +67,7 @@ final class CvProfileContentResolver
                 'recipient' => (string) $profile->value('recipient_name', ''),
                 'year' => (string) $profile->value('application_year', ''),
                 'context' => (string) $profile->value('optional_context', ''),
-                'accent' => (string) $profile->value('accent_color', '#9ee9cf'),
+                'accent' => (string) $profile->value('accent_color', '#5adbbd'),
             ] : null,
             'template' => $template ? ['id' => $template->id(), 'title' => (string) $template->value('title', '')] : null,
             'public_identity' => [
