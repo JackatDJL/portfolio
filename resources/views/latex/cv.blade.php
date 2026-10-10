@@ -34,7 +34,7 @@ $v = function ($value) use ($u) {
 \pagecolor{white}\color{cvtext}
 \hypersetup{colorlinks=true,urlcolor=linkaccent,linkcolor=linkaccent,pdfauthor={ {{ $e($cv['name']) }} },pdftitle={ {{ $e($cv['name']) }} · Lebenslauf @if($cv['profile']) · {{ $e($cv['profile']['title']) }}@endif }}
 \setlength{\parindent}{0pt}\setlength{\parskip}{0pt}\setlength{\columnsep}{7mm}\emergencystretch=1em
-\newcommand{\cvoutlinkicon}{\textcolor{linkaccent}{{\cvarrowfont 🡕}}}
+@php echo '\newcommand{\cvoutlinkicon}{\textcolor{linkaccent}{{\cvarrowfont \char"1F855\relax}}}'; @endphp
 \newcommand{\cvlink}[2]{\href{#1}{\textcolor{linkaccent}{#2}}}
 \newcommand{\cvoutlink}[2]{\href{#1}{\textcolor{linkaccent}{#2\mbox{\hspace{.13em}\cvoutlinkicon}}}}
 \newcommand{\cvurl}[2]{\href{#1}{\textcolor{linkaccent}{\textbf{#2\mbox{\hspace{.13em}\cvoutlinkicon}}}}}
