@@ -811,10 +811,6 @@
     .pdf-viewer__pages[data-pdf-crop="bottom"] { place-items: start center; }
     .pdf-viewer__pages[data-pdf-crop="bottom"] .pdf-viewer__page { max-height: none; }
     .pdf-viewer__page canvas { display: block; background: #fff; }
-    .pdf-viewer__open { position: absolute; inset: 0; display: grid; place-items: center; opacity: 0; pointer-events: none; transition: opacity 160ms var(--ease-standard); }
-    .pdf-viewer__open .btn { pointer-events: auto; }
-    .pdf-viewer__preview-stage:hover .pdf-viewer__page, .pdf-viewer__preview-stage:focus-within .pdf-viewer__page { filter: blur(6px); }
-    .pdf-viewer__preview-stage:hover .pdf-viewer__open, .pdf-viewer__preview-stage:focus-within .pdf-viewer__open { opacity: 1; }
     .pdf-viewer__fallback { margin: 0.75rem 0 0; color: var(--site-text-muted); font-size: 0.875rem; }
 
     .citation-dialog { position: fixed; inset: 0; width: min(calc(100% - 2rem), 38rem); max-width: none; max-height: calc(100dvh - 2rem); margin: auto; overflow: visible; border: 1px solid var(--site-border-strong); border-radius: var(--radius-md); padding: 0; color: var(--site-text); background: var(--site-background); box-shadow: var(--shadow-neo); }
