@@ -32,7 +32,7 @@
     .home-project__meta { display: flex; align-items: center; gap: .75rem; font: .8rem var(--font-mono); }
     .home-project h3 { margin: 1rem 0 1.5rem; font-size: clamp(2.6rem, 4.7vw, 5.5rem); line-height: 1.05; letter-spacing: -.055em; overflow-wrap: normal; word-break: normal; hyphens: none; }
     .home-project h3 .semantic-link, .home-post h3 .semantic-link { text-decoration: none; }
-    .home-project h3 .related-reference__arrow-mask, .home-post h3 .related-reference__arrow-mask { display: inline-grid; vertical-align: middle; margin-left: .25em; }
+    .home-project h3 .related-reference__arrow-mask, .home-post h3 .related-reference__arrow-mask { display: inline-grid; vertical-align: middle; }
     .home-project__copy > p { max-width: 34rem; margin: 0; color: var(--site-text-muted); line-height: 1.65; }
     .home-project__technology, .home-post__topics { display: flex; flex-wrap: wrap; gap: .5rem; padding: 0; margin: 1.5rem 0 0; list-style: none; }
     .home-project__artifact { margin: 0; transform-origin: center; }
