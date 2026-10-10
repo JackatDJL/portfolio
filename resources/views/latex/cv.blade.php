@@ -24,16 +24,17 @@ $v = function ($value) use ($u) {
 % !TeX program = lualatex
 \documentclass[9pt,a4paper]{article}
 \usepackage[a4paper,top=17mm,bottom=18mm,left=17mm,right=17mm,footskip=9mm,includefoot]{geometry}
-\usepackage{fontspec,xcolor,graphicx,hyperref,tikz,array,tabularx,paracol,needspace,amssymb}
-\usetikzlibrary{calc}
+\usepackage{fontspec,xcolor,graphicx,hyperref,array,tabularx,paracol,needspace,amssymb}
 \setmainfont{Fira Sans}[Path=resources/fonts/,Extension=.ttf,UprightFont=FiraSans-Regular,BoldFont=FiraSans-Bold]
+% Fira Sans has no NE sans-serif arrow glyph (U+1F855), so the outbound-link icon is pulled from the bundled Noto Sans Symbols 2 Regular subset.
+\newfontfamily\cvarrowfont{Noto Sans Symbols 2}[Path=resources/fonts/,Extension=.ttf,UprightFont=NotoSansSymbols2-Regular]
 \definecolor{accent}{HTML}{@php echo strtoupper(ltrim($cv['accent'], '#')); @endphp}
 \definecolor{linkaccent}{HTML}{@php echo $linkAccent; @endphp}
 \definecolor{cvtext}{HTML}{111A16}\definecolor{muted}{HTML}{52605A}\definecolor{rule}{HTML}{CCD8D2}\definecolor{paper}{HTML}{FFFFFF}
 \pagecolor{white}\color{cvtext}
 \hypersetup{colorlinks=true,urlcolor=linkaccent,linkcolor=linkaccent,pdfauthor={ {{ $e($cv['name']) }} },pdftitle={ {{ $e($cv['name']) }} · Lebenslauf @if($cv['profile']) · {{ $e($cv['profile']['title']) }}@endif }}
 \setlength{\parindent}{0pt}\setlength{\parskip}{0pt}\setlength{\columnsep}{7mm}\emergencystretch=1em
-\newcommand{\cvoutlinkicon}{\textcolor{linkaccent}{$\nearrow$}}
+\newcommand{\cvoutlinkicon}{\textcolor{linkaccent}{{\cvarrowfont 🡕}}}
 \newcommand{\cvlink}[2]{\href{#1}{\textcolor{linkaccent}{#2}}}
 \newcommand{\cvoutlink}[2]{\href{#1}{\textcolor{linkaccent}{#2\mbox{\hspace{.13em}\cvoutlinkicon}}}}
 \newcommand{\cvurl}[2]{\href{#1}{\textcolor{linkaccent}{\textbf{#2\mbox{\hspace{.13em}\cvoutlinkicon}}}}}
