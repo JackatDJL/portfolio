@@ -6,16 +6,10 @@ $linkAccent = Latex::accessibleAccent((string) $cv['accent']);
 $v = function ($value) use ($u) {
     $visible = preg_replace('/^https?:\/\//i', '', (string) $value);
 
+    // The interactive URL carries a #cv=TOKEN fragment that authorizes a private PDF. Render only the prefix as text so the capability stays in the link target, not on the page.
     if (preg_match('/#cv=([A-Za-z0-9]+)$/', $visible, $match, PREG_OFFSET_CAPTURE)) {
-        $token = $match[1][0];
-        $prefix = substr($visible, 0, $match[1][1]);
-        $chunks = str_split($token, 12);
-        $parts = ['\\nolinkurl{'.(string) $u($prefix.array_shift($chunks)).'}'];
-        foreach ($chunks as $chunk) {
-            $parts[] = '\\nolinkurl{'.(string) $u($chunk).'}';
-        }
-
-        return new \Illuminate\Support\HtmlString(implode('\\allowbreak{}', $parts));
+        $prefix = substr($visible, 0, $match[0][1]);
+        $visible = $prefix;
     }
 
     return new \Illuminate\Support\HtmlString('\\nolinkurl{'.(string) $u($visible).'}');
