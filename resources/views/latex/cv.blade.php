@@ -24,7 +24,7 @@ $v = function ($value) use ($u) {
 % !TeX program = lualatex
 \documentclass[9pt,a4paper]{article}
 \usepackage[a4paper,top=17mm,bottom=18mm,left=17mm,right=17mm,footskip=9mm,includefoot]{geometry}
-\usepackage{fontspec,xcolor,graphicx,hyperref,tikz,array,tabularx,paracol,needspace}
+\usepackage{fontspec,xcolor,graphicx,hyperref,tikz,array,tabularx,paracol,needspace,amssymb}
 \usetikzlibrary{calc}
 \setmainfont{Fira Sans}[Path=resources/fonts/,Extension=.ttf,UprightFont=FiraSans-Regular,BoldFont=FiraSans-Bold]
 \definecolor{accent}{HTML}{@php echo strtoupper(ltrim($cv['accent'], '#')); @endphp}
@@ -33,7 +33,7 @@ $v = function ($value) use ($u) {
 \pagecolor{white}\color{cvtext}
 \hypersetup{colorlinks=true,urlcolor=linkaccent,linkcolor=linkaccent,pdfauthor={ {{ $e($cv['name']) }} },pdftitle={ {{ $e($cv['name']) }} · Lebenslauf @if($cv['profile']) · {{ $e($cv['profile']['title']) }}@endif }}
 \setlength{\parindent}{0pt}\setlength{\parskip}{0pt}\setlength{\columnsep}{7mm}\emergencystretch=1em
-\newcommand{\cvoutlinkicon}{\textcolor{linkaccent}{↗}}
+\newcommand{\cvoutlinkicon}{\textcolor{linkaccent}{$\nearrow$}}
 \newcommand{\cvlink}[2]{\href{#1}{\textcolor{linkaccent}{#2}}}
 \newcommand{\cvoutlink}[2]{\href{#1}{\textcolor{linkaccent}{#2\mbox{\hspace{.13em}\cvoutlinkicon}}}}
 \newcommand{\cvurl}[2]{\href{#1}{\textcolor{linkaccent}{\textbf{#2\mbox{\hspace{.13em}\cvoutlinkicon}}}}}
