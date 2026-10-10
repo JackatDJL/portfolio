@@ -33,7 +33,7 @@ $v = function ($value) use ($u) {
 \pagecolor{white}\color{cvtext}
 \hypersetup{colorlinks=true,urlcolor=linkaccent,linkcolor=linkaccent,pdfauthor={ {{ $e($cv['name']) }} },pdftitle={ {{ $e($cv['name']) }} · Lebenslauf @if($cv['profile']) · {{ $e($cv['profile']['title']) }}@endif }}
 \setlength{\parindent}{0pt}\setlength{\parskip}{0pt}\setlength{\columnsep}{7mm}\emergencystretch=1em
-\newcommand{\cvoutlinkicon}{\tikz[baseline=-.18em,x=.58em,y=.58em]\draw[linkaccent,line width=.075em,line cap=round,line join=round] (0,0)--(1,1)--(.56,1) (1,1)--(1,.56);}
+\newcommand{\cvoutlinkicon}{\textcolor{linkaccent}{↗}}
 \newcommand{\cvlink}[2]{\href{#1}{\textcolor{linkaccent}{#2}}}
 \newcommand{\cvoutlink}[2]{\href{#1}{\textcolor{linkaccent}{#2\mbox{\hspace{.13em}\cvoutlinkicon}}}}
 \newcommand{\cvurl}[2]{\href{#1}{\textcolor{linkaccent}{\textbf{#2\mbox{\hspace{.13em}\cvoutlinkicon}}}}}
