@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Support\CvCapabilities;
 use App\Support\CvPdfRenderer;
 use App\Support\CvViewModel;
+use App\Support\Latex;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Mockery;
 use Symfony\Component\Process\Process;
@@ -93,7 +94,7 @@ class CvPdfExportTest extends TestCase
                 }
             }
         } finally {
-            @unlink($pdf);
+            // Public renders are retained in the server-side cache.
         }
     }
 
@@ -103,7 +104,10 @@ class CvPdfExportTest extends TestCase
         $this->assertSame('#5adbbd', $cv['accent']);
         $latex = view('latex.cv', compact('cv'))->render();
         $this->assertStringContainsString('\definecolor{accent}{HTML}{5ADBBD}', $latex);
-        $this->assertStringContainsString('\colorlet{linkaccent}{accent}', $latex);
+        $linkAccent = Latex::accessibleAccent($cv['accent']);
+        $this->assertStringContainsString('\\definecolor{linkaccent}{HTML}{'.$linkAccent.'}', $latex);
+        $this->assertGreaterThanOrEqual(4.5, Latex::contrastAgainstWhite($linkAccent));
+        $this->assertNotSame(strtoupper(ltrim($cv['accent'], '#')), $linkAccent);
 
         $pdf = app(CvPdfRenderer::class)->render('jobmesse-26');
 
@@ -117,7 +121,7 @@ class CvPdfExportTest extends TestCase
             $this->assertStringContainsString($cv['canonical_url'], $urls);
             $this->assertStringNotContainsString('#cv=', $urls);
         } finally {
-            @unlink($pdf);
+            // Public renders are retained in the server-side cache.
         }
     }
 
