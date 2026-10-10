@@ -4,16 +4,11 @@
     <div class="pdf-viewer__preview-stage">
         <div class="pdf-viewer__loading" data-pdf-loading role="status">Dokument wird geladen …</div>
         <div class="pdf-viewer__pages" data-pdf-pages aria-label="Erste Seite der PDF-Vorschau"></div>
-        <div class="pdf-viewer__open">
-            <a class="btn btn-primary" href="{{ fallback_url ?? url }}" target="_blank" rel="noreferrer">PDF lesen ↗</a>
-        </div>
     </div>
 
     <div class="pdf-viewer__error" data-pdf-error hidden role="status">
         <p>Die Vorschau konnte nicht geladen werden.</p>
-        <a class="semantic-link" href="{{ fallback_url ?? url }}" target="_blank" rel="noreferrer">PDF direkt öffnen ↗</a>
-        <a class="semantic-link ml-3" href="{{ fallback_url ?? url }}" target="_blank" rel="noreferrer">PDF herunterladen ↗</a>
     </div>
 
-    <noscript><p class="pdf-viewer__fallback">PDF direkt <a class="semantic-link" href="{{ fallback_url ?? url }}" target="_blank" rel="noreferrer">lesen ↗</a></p></noscript>
+    <p class="pdf-viewer__fallback"><a class="btn btn-primary" href="{{ fallback_url ?? url }}" target="_blank" rel="noreferrer">PDF direkt öffnen ↗</a></p>
 </section>

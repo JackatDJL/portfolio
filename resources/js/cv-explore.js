@@ -68,6 +68,7 @@ export const initCvExplore = () => {
         .map((template, order) => ({
             template,
             date: parseChronology(template.dataset.date),
+            dateEnd: parseChronology(template.dataset.dateEnd),
             order,
         }))
         .filter(item => item.date)
@@ -112,6 +113,18 @@ export const initCvExplore = () => {
         return Math.max(0, Math.min(1, (timestamp - startTimestamp) / range));
     };
     const positionFor = timestamp => normalizedPosition(timestamp) * 100;
+    const distanceToMilestoneRange = (milestone, progress) => {
+        const start = normalizedPosition(milestone.date.timestamp);
+        const end = milestone.dateEnd
+            ? normalizedPosition(milestone.dateEnd.timestamp)
+            : start;
+        const rangeStart = Math.min(start, end);
+        const rangeEnd = Math.max(start, end);
+
+        if (progress < rangeStart) return rangeStart - progress;
+        if (progress > rangeEnd) return progress - rangeEnd;
+        return 0;
+    };
     const selectedText = index => `${sources[index].dateLabel}: ${sources[index].title}`;
     waveEnvelope.center = positionFor(sources[activeIndex].date.timestamp);
 
@@ -125,6 +138,17 @@ export const initCvExplore = () => {
         previewWave.replaceChildren(fragment);
     };
 
+    // Smooth compression function for the complete height
+    // Compresses the total height using a smooth ease-out curve
+    // Values below threshold pass through unchanged, values above are smoothly capped
+    const compressHeight = (height, threshold, maxValue) => {
+        if (height <= threshold) return height;
+        if (height >= maxValue) return maxValue;
+        // Smooth Hermite interpolation: ease-out curve
+        const t = (height - threshold) / (maxValue - threshold);
+        return threshold + (maxValue - threshold) * (1 - Math.pow(1 - t, 3));
+    };
+
     const drawWaveform = () => {
         bars.querySelectorAll('i').forEach((bar, index) => {
             const position = (index / (strokeCount - 1)) * 100;
@@ -132,7 +156,10 @@ export const initCvExplore = () => {
                 + ((Math.sin(index * 2.31) + 1) / 2) * 5
                 + ((Math.sin(index * .63 + 1.5) + 1) / 2) * 3;
             const activeEnvelope = Math.max(0, 1 - Math.abs(position - waveEnvelope.center) / (motionReduced() ? 6.5 : 8.5));
-            const pointEnvelope = sources.reduce((amount, milestone, milestoneIndex) => {
+            
+            // Calculate point envelope from all milestones
+            // Each milestone contributes based on distance, creating peaks at event positions
+            const rawPointEnvelope = sources.reduce((amount, milestone, milestoneIndex) => {
                 if (milestoneIndex === activeIndex) return amount;
                 const pointDistance = Math.abs(position - positionFor(milestone.date.timestamp));
                 const eventLift = Math.max(0, 1 - pointDistance / 1.15) * 23;
@@ -141,15 +168,29 @@ export const initCvExplore = () => {
                     : 0;
                 return amount + eventLift + hoveredLift;
             }, 0);
+            
             const isPoint = sources.some((milestone, milestoneIndex) => milestoneIndex !== activeIndex
                 && Math.abs(position - positionFor(milestone.date.timestamp)) < 1.25);
             const isHovered = hoveredMilestone !== null
                 && Math.abs(position - positionFor(sources[hoveredMilestone].date.timestamp)) < 1.8;
-            const height = Math.max(3, base + activeEnvelope * 42 + pointEnvelope);
+            
+            // Combine all contributions
+            let height = base + activeEnvelope * 42 + rawPointEnvelope;
+            
+            // Apply smooth compression to the total height to account for CSS scaling
+            // The waveform container is 5.75rem = 92px with 1px dotted borders = ~90px inner
+            // With worst-case hover scaleY(1.34), need: height * 1.34 <= 85 (leaving margin)
+            // So max uncompressed height = 85 / 1.34 ≈ 63px
+            // Threshold at 55px: below this, no compression
+            // Max at 63px: hard cap
+            height = compressHeight(height, 55, 63);
+            
+            height = Math.max(3, height);
+            
             bar.classList.toggle('is-milestone', isPoint);
             bar.classList.toggle('is-hovered', isHovered);
             bar.style.height = `${height}px`;
-            bar.style.opacity = String(Math.min(1, .48 + activeEnvelope * .52 + pointEnvelope / 48));
+            bar.style.opacity = String(Math.min(1, .48 + activeEnvelope * .52 + rawPointEnvelope / 48));
         });
         needle.style.left = `${waveEnvelope.center}%`;
     };
@@ -268,7 +309,7 @@ export const initCvExplore = () => {
         let nearest = 0;
         let distance = Infinity;
         sources.forEach((milestone, index) => {
-            const nextDistance = Math.abs(normalizedPosition(milestone.date.timestamp) - progress);
+            const nextDistance = distanceToMilestoneRange(milestone, progress);
             if (nextDistance < distance) {
                 distance = nextDistance;
                 nearest = index;
@@ -344,11 +385,11 @@ export const initCvExplore = () => {
 
     const handlePointerMove = event => {
         const rect = waveform.getBoundingClientRect();
-        const progress = (event.clientX - rect.left) / Math.max(1, rect.width);
+        const progress = Math.max(0, Math.min(1, (event.clientX - rect.left) / Math.max(1, rect.width)));
         let nearest = 0;
         let distance = Infinity;
         sources.forEach((milestone, index) => {
-            const nextDistance = Math.abs(normalizedPosition(milestone.date.timestamp) - progress);
+            const nextDistance = distanceToMilestoneRange(milestone, progress);
             if (nextDistance < distance) {
                 distance = nextDistance;
                 nearest = index;

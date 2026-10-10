@@ -135,8 +135,7 @@
     .cv-explore__preview-label .related-reference__arrow-mask { margin-left: -.35rem; font-size: .85rem; }
     .cv-explore__content { position: relative; }
     .cv-explore__content[hidden] { display: none; }
-    .cv-timeline { position: relative; min-height: 24.375rem; padding: 3.375rem 0 1.625rem; transform-origin: center top; transition: transform .18s ease-out; }
-    @media (hover: hover) { .cv-timeline:hover { transform: translateY(-1px) scale(1.004); } }
+    .cv-timeline { position: relative; min-height: 24.375rem; padding: 3.375rem 0 1.625rem; }
     .cv-explore__close { position: absolute; top: .25rem; right: -.5rem; z-index: 2; display: grid; width: 2.75rem; height: 2.75rem; place-items: center; padding: 0; border: 0; border-radius: 50%; background: transparent; color: var(--site-text); cursor: pointer; }
     .cv-explore__close::before { position: absolute; z-index: 0; inset: .5rem; border: 1px solid var(--site-border-strong); border-radius: 50%; background: var(--site-surface); content: ''; transition: background-color 160ms ease; }
     .cv-explore__close:hover::before { background: var(--site-text); }
@@ -154,6 +153,8 @@
     .cv-timeline__bars > i { position: absolute; top: 50%; display: block; width: 2px; min-height: 3px; border-radius: 3px; background: var(--cv-accent); transform: translate(-50%, -50%); transition: width .18s ease, opacity .18s ease, filter .18s ease, transform .18s ease; }
     .cv-timeline__bars > i.is-milestone { width: 3px; }
     .cv-timeline__bars > i.is-hovered { width: 4px; filter: saturate(1.18); transform: translate(-50%, -50%) scaleY(1.16); }
+    .cv-timeline__waveform:hover .cv-timeline__bars > i { filter: saturate(1.12); transform: translate(-50%, -50%) scaleY(1.12); }
+    .cv-timeline__waveform:hover .cv-timeline__bars > i.is-hovered { width: 4px; filter: saturate(1.28); transform: translate(-50%, -50%) scaleY(1.34); }
     .cv-timeline__needle { position: absolute; top: -1.125rem; bottom: -1.125rem; z-index: 2; width: 1px; background: var(--site-text); pointer-events: none; }
     .cv-timeline__needle em { position: absolute; top: -.3125rem; left: -.25rem; width: .5625rem; height: .5625rem; background: var(--cv-accent); transform: rotate(45deg); }
     .cv-explore__detail { margin-top: 2.625rem; }
@@ -164,10 +165,10 @@
     .cv-milestone__meta { margin: .625rem 0 0; color: var(--site-text-muted); font-size: .6875rem; line-height: 1.35; }
     .cv-milestone__summary { max-width: 27.5rem; margin: 1.125rem 0 0; color: var(--site-text); font-size: .8125rem; line-height: 1.45; }
     .cv-milestone__relations { display: flex; flex-wrap: wrap; gap: .25rem .85rem; margin-top: .55rem; font-size: .7rem; line-height: 1.4; }
-    .cv-milestone__relations .related-reference--inline { display: inline; border-top: 0; padding: 0; }
-    .cv-milestone__relations .related-reference--inline .related-reference__meta { display: inline; margin: 0 0 0 .25em; font-size: .66rem; line-height: 1.3; }
-    .cv-timeline__index { position: absolute; right: 0; bottom: 1.625rem; display: flex; gap: .35rem; color: var(--site-text); font-size: .625rem; letter-spacing: .1em; line-height: 1.2; text-transform: uppercase; font-variant-numeric: tabular-nums; }
+    .cv-timeline__index { display: flex; justify-content: flex-end; gap: .35rem; margin-top: 1rem; color: var(--site-text); font-size: .625rem; letter-spacing: .1em; line-height: 1.2; text-transform: uppercase; font-variant-numeric: tabular-nums; }
     .cv-timeline__index-total { color: var(--site-text-muted); }
+    .cv-milestone__relations .semantic-link { font-weight: inherit; transition: background-size 260ms var(--ease-emphasized); }
+    .cv-milestone__relations .semantic-link:active { font-weight: inherit; }
     .cv-timeline__sources { display: none; }
     .education-hero { position: relative; display: flex; align-items: end; isolation: isolate; min-height: 30rem; padding-block: 4rem; }
     .education-hero--image { min-height: calc(100svh - 5rem); color: #f5faf6; padding-block: 5rem 6.5rem; }
@@ -206,7 +207,7 @@
         .experience-organisation { font-size: 1.35rem; }
         .experience-content aside { order: 2; }
         .experience-rail, .experience-content > .detail-layout__main { grid-column: auto; grid-row: auto; }
-        .cv-timeline { min-height: 23.75rem; padding-bottom: 3.25rem; }
+        .cv-timeline { min-height: 23.75rem; padding-bottom: 1.625rem; }
         .cv-timeline__stage { margin-top: 2.375rem; }
         .cv-explore__detail { margin-top: 2.375rem; }
         .cv-milestone { grid-template-columns: minmax(0, 1fr); gap: .75rem; }

@@ -18,12 +18,18 @@ final class CvPdfController extends Controller
         abort_if($authorized && $capabilityToken === null, 404);
         $pdf = $renderer->render($profile, $authorized, $capabilityToken);
 
-        return response()->download($pdf, 'Jack-Ruder-Lebenslauf'.($profile ? '-'.$profile : '').'.pdf', [
+        $response = response()->file($pdf, [
             'Content-Type' => 'application/pdf',
             'Cache-Control' => 'private, no-store',
-            'Content-Disposition' => 'inline; filename="Jack-Ruder-Lebenslauf.pdf"',
+            'Content-Disposition' => 'inline; filename="Jack-Ruder-Lebenslauf'.($profile ? '-'.$profile : '').'.pdf"',
             'Referrer-Policy' => 'no-referrer',
             'X-Robots-Tag' => 'noindex, nofollow, noarchive',
-        ], 'inline')->deleteFileAfterSend();
+        ]);
+
+        if ($authorized) {
+            $response->deleteFileAfterSend();
+        }
+
+        return $response;
     }
 }

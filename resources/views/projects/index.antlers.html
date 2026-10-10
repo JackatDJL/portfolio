@@ -6,7 +6,7 @@
                     <div class="project-record__time"><time datetime="{{ started_at format="Y-m-d" }}">{{ started_at format="Y" }}</time>{{ if ended_at }}<span>bis {{ ended_at format="Y" }}</span>{{ /if }}</div>
                     <a href="{{ url }}" class="project-record__link collection-link" data-project-link data-related-reference>
                         <div class="collection-meta">{{ if project_status }}<span class="chip">{{ project_status:label }}</span>{{ /if }}{{ if featured }}<span class="eyebrow">Im Fokus</span>{{ /if }}</div>
-                        <h2>{{ title }} <span class="related-reference__arrow-mask collection-arrow-mask" aria-hidden="true"><span class="related-reference__arrow">↗</span></span></h2>
+                        <h2>{{ title }}&nbsp;<span class="related-reference__arrow-mask collection-arrow-mask" aria-hidden="true"><span class="related-reference__arrow">↗</span></span></h2>
                         {{ if summary }}<p>{{ summary }}</p>{{ /if }}
                         {{ if featured_technology }}<ul class="project-technologies" aria-label="Technologien">{{ featured_technology }}<li><span class="chip chip-topic">{{ label ?? value }}</span></li>{{ /featured_technology }}</ul>{{ /if }}
                     </a>
