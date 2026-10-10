@@ -68,6 +68,7 @@ export const initCvExplore = () => {
         .map((template, order) => ({
             template,
             date: parseChronology(template.dataset.date),
+            dateEnd: parseChronology(template.dataset.dateEnd),
             order,
         }))
         .filter(item => item.date)
@@ -112,6 +113,18 @@ export const initCvExplore = () => {
         return Math.max(0, Math.min(1, (timestamp - startTimestamp) / range));
     };
     const positionFor = timestamp => normalizedPosition(timestamp) * 100;
+    const distanceToMilestoneRange = (milestone, progress) => {
+        const start = normalizedPosition(milestone.date.timestamp);
+        const end = milestone.dateEnd
+            ? normalizedPosition(milestone.dateEnd.timestamp)
+            : start;
+        const rangeStart = Math.min(start, end);
+        const rangeEnd = Math.max(start, end);
+
+        if (progress < rangeStart) return rangeStart - progress;
+        if (progress > rangeEnd) return progress - rangeEnd;
+        return 0;
+    };
     const selectedText = index => `${sources[index].dateLabel}: ${sources[index].title}`;
     waveEnvelope.center = positionFor(sources[activeIndex].date.timestamp);
 
@@ -268,7 +281,7 @@ export const initCvExplore = () => {
         let nearest = 0;
         let distance = Infinity;
         sources.forEach((milestone, index) => {
-            const nextDistance = Math.abs(normalizedPosition(milestone.date.timestamp) - progress);
+            const nextDistance = distanceToMilestoneRange(milestone, progress);
             if (nextDistance < distance) {
                 distance = nextDistance;
                 nearest = index;
@@ -344,11 +357,11 @@ export const initCvExplore = () => {
 
     const handlePointerMove = event => {
         const rect = waveform.getBoundingClientRect();
-        const progress = (event.clientX - rect.left) / Math.max(1, rect.width);
+        const progress = Math.max(0, Math.min(1, (event.clientX - rect.left) / Math.max(1, rect.width)));
         let nearest = 0;
         let distance = Infinity;
         sources.forEach((milestone, index) => {
-            const nextDistance = Math.abs(normalizedPosition(milestone.date.timestamp) - progress);
+            const nextDistance = distanceToMilestoneRange(milestone, progress);
             if (nextDistance < distance) {
                 distance = nextDistance;
                 nearest = index;
