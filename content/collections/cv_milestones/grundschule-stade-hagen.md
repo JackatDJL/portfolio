@@ -4,6 +4,7 @@ blueprint: cv_milestone
 title: 'Grundschule Stade-Hagen'
 date_label: '01.08.2014–31.07.2018'
 chronology: '2014-08'
+chronology_end: '2018-07-31'
 category: organisation
 summary: 'Besuch der Grundschule in Stade-Hagen.'
 published: true
