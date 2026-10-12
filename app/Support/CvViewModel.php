@@ -26,7 +26,7 @@ final class CvViewModel
             'location' => $identity['location'],
             'profile' => $profile,
             'template' => $resolved['template'],
-            'accent' => $profile['accent'] ?? '#9ee9cf',
+            'accent' => $profile['accent'] ?? '#5adbbd',
             'canonical_url' => $canonicalUrl,
             'interactive_url' => $interactiveUrl,
             'photo' => $this->assetPath($identity['profile_image_path']),
