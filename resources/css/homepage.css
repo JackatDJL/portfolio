@@ -65,7 +65,7 @@
     .home-now__summary { font-size: 1.1rem; line-height: 1.65; }
     .home-now__summary p { margin: 0 0 1rem; }
     .home-now__links { grid-column: 3; list-style: none; padding: 0; margin: 0; }
-    .home-now__links .related-reference { width: 100%; padding-block: 1rem; border-bottom: 1px solid var(--site-border); }
+    .home-now__links .related-reference { width: 100%; justify-content: flex-start; gap: .35em; padding-block: 1rem; border-bottom: 1px solid var(--site-border); }
     .home-now__cta { margin-top: auto; }
     .home-name > span { position: relative; }
     @media (min-width: 64rem) and (min-height: 42rem) and (prefers-reduced-motion: no-preference) {

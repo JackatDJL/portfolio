@@ -3,8 +3,8 @@ id: 8e9f1f56-1feb-46a8-9ae5-a79ec9444c81
 published: true
 blueprint: project
 title: AtheBlues
-summary: 'AtheBlues ist ein RoboCup-Robotikteam am Athenaeum Stade. Für mich verband das Projekt Robotik, Teamarbeit und Softwareentwicklung: vom Wettbewerb selbst bis zur Team-Website und einer eigenen technischen Infrastruktur im Monorepo.'
-project_status: paused
+summary: 'Ich war 2024 Teil des OnStage-Teams AtheBlues am Athenaeum Stade. Heute arbeitet das Team aktiv in der RoboCup-Junior-Liga Rescue Line weiter.'
+project_status: active
 featured: true
 started_at: '2024-03-08 16:01'
 website_url: 'https://atheblues.de'
@@ -24,9 +24,8 @@ used_technologies:
   - easyEDA
   - 'Fusion 360'
 seo_title: 'AtheBlues: RoboCup, Robotik und Teamarbeit'
-seo_description: 'AtheBlues ist ein RoboCup-Robotikteam am Athenaeum Stade. Ich war dort in Robotik, Teamarbeit und der technischen Web-Infrastruktur aktiv.'
+seo_description: 'AtheBlues nahm 2024 in RoboCup Junior OnStage teil und setzt die Teamarbeit heute in Rescue Line fort. Ich arbeitete an Robotik und technischer Web-Infrastruktur mit.'
 noindex: false
-cover: projects/atheblues/rcj_em2024_02.jpg
 topics:
   - robotics
   - robocup
@@ -44,13 +43,13 @@ content:
     content:
       -
         type: text
-        text: 'Robotik war hier nur ein Teil des Projekts'
+        text: 'OnStage 2024'
   -
     type: paragraph
     content:
       -
         type: text
-        text: 'AtheBlues war für mich eines der ersten Projekte, bei denen Software, Hardware und Teamorganisation wirklich zusammenkamen. Neben der Arbeit am RoboCup-Team entstand auch eine eigene Website und später ein Monorepo für verschiedene technische Teile des Teams.'
+        text: '2024 war ich Teil des AtheBlues-Teams in der RoboCup-Junior-Liga OnStage. Bei der Deutschen Meisterschaft in Kassel erreichten wir den zweiten Platz und qualifizierten uns für die Europameisterschaft in Hannover.'
   -
     type: heading
     attrs:
@@ -58,39 +57,11 @@ content:
     content:
       -
         type: text
-        text: 'RoboCup 2024'
+        text: 'Code und Projektphasen'
   -
     type: paragraph
     content:
       -
         type: text
-        text: '2024 gewann unser Team die Hamburger RoboCup-Qualifikation, erreichte bei der Deutschen Meisterschaft in Kassel den zweiten Platz und qualifizierte sich für die Europameisterschaft. Ich habe dabei nicht nur an Technik gearbeitet, sondern auch Verantwortung im Team übernommen.'
-  -
-    type: heading
-    attrs:
-      level: 2
-    content:
-      -
-        type: text
-        text: 'Die Software dahinter'
-  -
-    type: paragraph
-    content:
-      -
-        type: text
-        text: 'Das heute noch vorhandene Monorepo verbindet unter anderem die Team-Website mit weiterer technischer Arbeit. Die Webanwendung wurde mit Next.js, React und TypeScript gebaut; im Repository existieren außerdem Rust-basierte Komponenten für Robotik-Tooling.'
-  -
-    type: heading
-    attrs:
-      level: 2
-    content:
-      -
-        type: text
-        text: Rückblick
-  -
-    type: paragraph
-    content:
-      -
-        type: text
-        text: 'AtheBlues ist für mich weniger ein einzelnes Softwareprodukt als eine wichtige Projektphase. Hier habe ich gelernt, dass gute technische Arbeit nicht nur aus Code besteht, sondern genauso aus Zusammenarbeit, Wettbewerbsvorbereitung und dem Umgang mit einem echten Team.'
+        text: 'Ich habe im Team an der Robotik und an technischer Web-Infrastruktur mitgearbeitet. Heute arbeitet das Team aktiv in Rescue Line weiter.'
 ---

@@ -3,38 +3,37 @@ id: 082ff40e-7e45-4787-ae71-3080258d343d
 published: true
 blueprint: project
 title: 'Foundation Drive'
-summary: 'Foundation Drive war ein früher Versuch für einen eigenen webbasierten Dateidienst im DJL-Umfeld.'
+summary: 'Foundation Drive war ein früher Versuch im DJL-Umfeld, eine Drive-ähnliche Webanwendung aufzubauen. Der Quellstand zeigt eine einfache Next.js-Seite und ein Drizzle-Beispielschema; Dateispeicherung wurde nicht umgesetzt.'
 project_status: archived
 featured: false
 repository_url: 'https://github.com/DJL-Foundation/foundation-drive'
-website_url: 'https://foundation-drive.vercel.app'
 started_at: '2025-02-12'
-used_technologies: [TypeScript, Next.js, tRPC, Drizzle]
-topics: [web-development, infrastructure]
+used_technologies: [TypeScript, Next.js, Drizzle]
+topics: [web-development]
 seo_title: 'Foundation Drive | Jack Ruder'
-seo_description: 'Foundation Drive war ein früher Prototyp für einen webbasierten Dateidienst im DJL-Umfeld.'
+seo_description: 'Foundation Drive blieb ein früher Next.js-Prototyp für einen geplanten Dateidienst. Der Quellstand enthält eine einfache Startseite und ein Drizzle-Beispielschema.'
 noindex: true
 content:
   - type: paragraph
     content:
       - type: text
-        text: 'Foundation Drive war ein früher Versuch, einen eigenen Dateidienst als Webanwendung aufzubauen.'
+        text: 'Foundation Drive sollte eine webbasierte, Drive-ähnliche Dateiablage werden. Der untersuchte Quellstand ist ein früher Next.js- und TypeScript-Prototyp.'
   - type: heading
     attrs: { level: 2 }
     content:
       - type: text
-        text: 'Ein Start mit dem T3-Stack'
+        text: 'Der Stand im Repository'
   - type: paragraph
     content:
       - type: text
-        text: 'Der Code basiert auf Next.js, TypeScript, tRPC und Drizzle. Er enthält den Rahmen einer Webanwendung mit Datenbankschicht, aber noch keinen ausgebauten Dateidienst.'
+        text: 'Die Startseite zeigt den Namen drive.djl.foundation. Drizzle ist mit einem Beispielschema für Beiträge eingebunden. Datei-Upload, Ablage und Freigabe sind im Quellstand nicht umgesetzt.'
   - type: heading
     attrs: { level: 2 }
     content:
       - type: text
-        text: Status
+        text: 'Archivierter Stand'
   - type: paragraph
     content:
       - type: text
-        text: 'Das Vorhaben endete nach einem frühen Prototyp. Es wurde nicht als fertiges Speicherprodukt veröffentlicht.'
+        text: 'Das DJL-Projektarchiv führt Foundation Drive als archiviert. Das Vorhaben endete nach diesem frühen Stand; ein fertiger Dateidienst entstand nicht.'
 ---

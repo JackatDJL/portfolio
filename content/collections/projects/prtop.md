@@ -3,7 +3,7 @@ id: 4739fabf-5726-4d17-ad72-5a5f574e33cd
 published: true
 blueprint: project
 title: prtop
-summary: 'prtop ist eine keyboard-first Terminal-Oberfläche für Pull Requests und Merge Requests über mehrere Git-Plattformen hinweg. Das Ziel ist ein gemeinsamer Workflow für GitHub, GitLab und Forgejo beziehungsweise Codeberg, ohne für jeden Anbieter ein anderes Tool zu brauchen.'
+summary: 'prtop bündelt Pull Requests und Merge Requests aus GitHub, GitLab und Forgejo/Codeberg in einer Rust-TUI. Je nach Anbieter gibt es darin Kommentar-, Review-, CI- und Merge-Abläufe.'
 project_status: active
 featured: true
 started_at: '2026-08-29 23:11'
@@ -21,14 +21,14 @@ used_technologies:
   - Serde
   - TOML
 repository_url: 'https://github.com/JackatDJL/prtop'
-seo_title: 'prtop: Multi-Forge PR/MR Terminal UI'
-seo_description: 'prtop ist mein Rust-basiertes Terminal-Tool für Pull Requests und Merge Requests auf GitHub, GitLab und Forgejo/Codeberg.'
+seo_title: 'prtop: Pull Requests im Terminal | Jack Ruder'
+seo_description: 'Rust-TUI für Pull Requests und Merge Requests in GitHub, GitLab und Forgejo/Codeberg. Mit Detailansichten, Kommentaren, Reviews und CI-Abläufen je nach Anbieter.'
 noindex: false
-cover: projects/prtop/prtop-tokio-main-run.png
+cover: projects/prtop/prtop-live-dashboard.png
 gallery:
   - projects/prtop/prtop-tokio-main-run.png
 updated_by: 7098a585-4701-4963-95aa-52c0d85d3e7d
-updated_at: 1788816002
+updated_at: 1791814912
 topics:
   - cli
   - devtools
@@ -45,13 +45,13 @@ content:
     content:
       -
         type: text
-        text: 'Warum ich prtop angefangen habe'
+        text: 'Warum prtop im Terminal läuft'
   -
     type: paragraph
     content:
       -
         type: text
-        text: 'Ich wollte Pull Requests nicht in mehreren Browser-Tabs und mit unterschiedlichen Oberflächen verwalten. Gerade sobald neben GitHub auch GitLab, Forgejo oder Codeberg im eigenen Workflow auftauchen, fehlt ein gemeinsames Werkzeug, das sich im Terminal zu Hause fühlt.'
+        text: 'Ich wollte Pull Requests nicht in mehreren Browser-Tabs und mit unterschiedlichen Oberflächen verwalten. prtop fasst offene Pull Requests und Merge Requests in einer gemeinsamen Terminalansicht zusammen, die sich per Tastatur bedienen lässt. Beim Start erkennt die App das Git-Repository im aktuellen Verzeichnis und öffnet es, wenn die Forge konfiguriert ist.'
   -
     type: heading
     attrs:
@@ -59,19 +59,19 @@ content:
     content:
       -
         type: text
-        text: 'Der Ansatz'
+        text: 'Welche Abläufe vorhanden sind'
   -
     type: paragraph
     content:
       -
         type: text
-        text: 'prtop ist deshalb als keyboard-first TUI für ein dauerhaftes tmux-Pane gedacht. Die Oberfläche basiert auf Ratatui. Die Forge-spezifische Logik wird hinter gemeinsamen Modellen und Provider-Grenzen versteckt, damit GitHub, GitLab und Forgejo möglichst gleich behandelt werden können.'
+        text: 'Der Quellstand enthält ein Dashboard sowie Detailansichten für Pull Requests, Pipelines und Jobs. Die Detailansicht lädt Kommentare und Reviews. Je nach Anbieter und Berechtigung kann man Kommentare posten, Reviews abgeben und Anfragen erstellen, bearbeiten, schließen, wieder öffnen oder mergen. prtop blendet nicht unterstützte Schreibaktionen aus. Die Adapter enthalten auch Endpunkte zum Bearbeiten und Löschen von Kommentaren; die App bindet diese Aktionen noch nicht in die Oberfläche ein.'
   -
     type: paragraph
     content:
       -
         type: text
-        text: 'Zur aktuellen Basis gehören ein asynchrones Dashboard, lokale Konfiguration und Cache, Keyboard- und Mausnavigation sowie Adapter für mehrere Forge-Anbieter. Kommentare, Reviews, CI-Informationen und weitere Schreibaktionen sollen innerhalb desselben Workflows stattfinden, statt wieder in die jeweilige Weboberfläche zu zwingen.'
+        text: 'Im CI-Bereich lassen sich Pipelines und Jobs öffnen. Logs können in unterstützten Adaptern durchsucht und bei laufenden Jobs verfolgt werden. Retry, Abbruch und manuelle Jobstarts erscheinen nur, wenn die Forge sie unterstützt. GitHub, GitLab und Forgejo haben eigene Adapter; ihre verfügbaren Details und Aktionen unterscheiden sich.'
   -
     type: heading
     attrs:
@@ -79,11 +79,11 @@ content:
     content:
       -
         type: text
-        text: Status
+        text: 'Startmodi und Stand'
   -
     type: paragraph
     content:
       -
         type: text
-        text: 'Das Projekt ist aktiv in Entwicklung. Mir geht es dabei nicht darum, die Weboberflächen der Git-Anbieter vollständig nachzubauen, sondern die Dinge, die ich bei Pull Requests ständig brauche, schnell und forge-übergreifend ins Terminal zu holen.'
+        text: 'Ohne Argument öffnet prtop das erkannte Projekt; mit . oder einem Repository-Pfad lässt sich die Auswahl ausdrücklich setzen. --global zeigt alle konfigurierten Projekte. --demo startet mit festen Beispieldaten und ohne Forge-Verbindung, getrennt vom Livebetrieb. Ein GitHub-Release ist bislang nicht veröffentlicht.'
 ---

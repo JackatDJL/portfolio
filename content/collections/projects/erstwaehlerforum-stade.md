@@ -2,13 +2,13 @@
 id: 1b4ba371-c0b4-4fae-8a93-1f2fabf11477
 blueprint: project
 title: 'Erstwählerforum Stade'
-summary: 'Das Erstwählerforum Stade war ein schulübergreifendes Projekt politischer Bildung für junge Menschen, besonders für Erstwählende. Ich habe es gegründet und an Organisation, Kommunikation und öffentlich sichtbarer Technik mitgearbeitet.'
+summary: 'Das Erstwählerforum brachte am 2. Juni 2026 Schülerinnen und Schüler verschiedener Stader Schulen im Stadeum mit politischen Akteurinnen und Akteuren zusammen. Ich habe das Forum gegründet und mitorganisiert sowie an Kommunikation und Website gearbeitet.'
 project_status: active
 featured: false
-website_url: 'https://ewf-stade.de'
 used_technologies:
   - TypeScript
-  - Webentwicklung
+  - React
+  - TanStack Start
 topics:
   - political-education
   - civic-technology
@@ -17,44 +17,15 @@ topics:
 related_experience:
   - 7f821bf2-4f62-433c-87e1-8d821d053170
 seo_title: 'Erstwählerforum Stade'
-seo_description: 'Ein schulübergreifendes Forum für politische Bildung und Gespräche zwischen jungen Menschen und politischen Akteurinnen und Akteuren in Stade.'
+seo_description: 'Am 2. Juni 2026 trafen Schülerinnen und Schüler aus Stade im Stadeum auf politische Vertreterinnen und Vertreter. Im Mittelpunkt standen Parteigespräche und Debatten zu kommunalen Themen.'
 noindex: true
-started_at: '2025-10-29 23:00'
-cover: projects/erstwaehlerforum-stade/img-20260602-wa0084.jpg
+started_at: '2025-10-25'
+cover: projects/erstwaehlerforum-stade/img-20260602-wa0030.jpg
 gallery:
-  - projects/erstwaehlerforum-stade/img-20260602-wa0136.jpg
-  - projects/erstwaehlerforum-stade/img-20260602-wa0128.jpg
-  - projects/erstwaehlerforum-stade/img-20260602-wa0119.jpg
-  - projects/erstwaehlerforum-stade/img-20260602-wa0124.jpg
-  - projects/erstwaehlerforum-stade/img-20260602-wa0086.jpg
-  - projects/erstwaehlerforum-stade/img-20260602-wa0085.jpg
-  - projects/erstwaehlerforum-stade/img-20260602-wa0084.jpg
-  - projects/erstwaehlerforum-stade/img-20260602-wa0088.jpg
-  - projects/erstwaehlerforum-stade/img-20260602-wa0082.jpg
-  - projects/erstwaehlerforum-stade/img-20260602-wa0067.jpg
-  - projects/erstwaehlerforum-stade/img-20260602-wa0062.jpg
-  - projects/erstwaehlerforum-stade/img-20260602-wa0059.jpg
-  - projects/erstwaehlerforum-stade/img-20260602-wa0057.jpg
-  - projects/erstwaehlerforum-stade/img-20260602-wa0041.jpg
-  - projects/erstwaehlerforum-stade/img-20260602-wa0035.jpg
   - projects/erstwaehlerforum-stade/img-20260602-wa0037.jpg
-  - projects/erstwaehlerforum-stade/img-20260602-wa0036.jpg
-  - projects/erstwaehlerforum-stade/img-20260602-wa0038.jpg
-  - projects/erstwaehlerforum-stade/img-20260602-wa0030.jpg
-  - projects/erstwaehlerforum-stade/img-20260602-wa0031.jpg
-  - projects/erstwaehlerforum-stade/img-20260602-wa0033.jpg
-  - projects/erstwaehlerforum-stade/img-20260603-wa0036.jpg
-  - projects/erstwaehlerforum-stade/img-20260607-wa0017.jpg
-  - projects/erstwaehlerforum-stade/20260602_120551(1).jpg
-  - projects/erstwaehlerforum-stade/20260602_115925.jpg
-  - projects/erstwaehlerforum-stade/20260602_115921.jpg
-  - projects/erstwaehlerforum-stade/20260602_120551.jpg
-  - projects/erstwaehlerforum-stade/20260602_115808.jpg
-  - projects/erstwaehlerforum-stade/20260602_115720.jpg
-  - projects/erstwaehlerforum-stade/20260602_115715.jpg
-  - projects/erstwaehlerforum-stade/20260602_080337.jpg
-  - projects/erstwaehlerforum-stade/20260602_080330.jpg
-  - projects/erstwaehlerforum-stade/img-20260528-wa0007.jpg
+  - projects/erstwaehlerforum-stade/img-20260602-wa0085.jpg
+  - projects/erstwaehlerforum-stade/img-20260602-wa0136.jpg
+  - projects/erstwaehlerforum-stade/img-20260602-wa0059.jpg
 updated_by: 7098a585-4701-4963-95aa-52c0d85d3e7d
 updated_at: 1789303568
 content:
@@ -63,7 +34,13 @@ content:
     content:
       -
         type: text
-        text: 'Das Erstwählerforum brachte Schülerinnen und Schüler verschiedener Schulen in Stade mit politischen Akteurinnen und Akteuren zusammen. Moderierte Gespräche, ein politischer Marktplatz und kurze Impulsformate machten Fragen junger Menschen zum Ausgangspunkt.'
+        text: 'Das Forum sollte jungen Erstwählenden einen direkten Austausch mit politischen Akteurinnen und Akteuren ermöglichen.'
+  -
+    type: paragraph
+    content:
+      -
+        type: text
+        text: 'Nach einer Einführung zu Kommunalwahlen konnten die Teilnehmenden an Ständen verschiedener Parteien mit Vertreterinnen und Vertretern sprechen. In thematischen Debatten ging es um Bildung, Klima, Infrastruktur, Wirtschaft, Soziales und öffentliche Sicherheit.'
   -
     type: heading
     attrs:
@@ -71,11 +48,17 @@ content:
     content:
       -
         type: text
-        text: 'Von der Idee zur Veranstaltung'
+        text: 'Organisation und Website'
   -
     type: paragraph
     content:
       -
         type: text
-        text: 'Ich habe das Forum gegründet und im Organisationsteam an Kommunikation, Ablauf und den öffentlich sichtbaren technischen Bausteinen gearbeitet. Die Veranstaltung sollte politische Fragen nicht nur erklären, sondern Raum geben, sie direkt zu stellen.'
+        text: 'Ich habe das Forum gegründet und im Team mitorganisiert. Dabei arbeitete ich an Kommunikation und Website.'
+  -
+    type: paragraph
+    content:
+      -
+        type: text
+        text: 'Für die öffentliche Information habe ich an der Website mit den Bereichen Konzept, Zeitplan, Team, Presse und Kontakt gearbeitet.'
 ---

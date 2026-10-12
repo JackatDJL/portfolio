@@ -3,29 +3,30 @@ id: 3f25d03a-33b5-478f-9375-f01ed2207d7e
 published: true
 blueprint: project
 title: 'DJL Foundation Archiv'
-summary: 'Eine eigene Website und ein Archiv, das Projekte aus dem DJL-Umfeld chronologisch dokumentiert und öffentliche Projektinformationen zusammenführt.'
+summary: 'Ich habe eine Website gebaut, die öffentliche Projekte aus dem DJL-Umfeld zeitlich ordnet und in einem eigenen Archiv festhält.'
 project_status: active
 featured: false
 started_at: '2026-09-04'
-used_technologies: [TypeScript, React]
-repository_url: 'https://github.com/JackatDJL/foundation-homepage'
+used_technologies: [TanStack Start, React, TypeScript, Tailwind CSS]
+repository_url: 'https://github.com/DJL-Foundation/homepage'
 website_url: 'https://djl.foundation'
+cover: projects/djl-foundation-archive/djl-archive.png
 topics: [web-development, oss]
 seo_title: 'DJL Foundation Archiv | Jack Ruder'
-seo_description: 'Das DJL Foundation Archiv ordnet öffentliche Projekte, Texte und Repositories aus dem DJL-Umfeld zeitlich ein.'
+seo_description: 'Ich ordne öffentliche Projekte aus dem DJL-Umfeld auf einer Website mit datierter Projektgeschichte und eigenem Archiv.'
 noindex: true
 content:
   - type: paragraph
     content:
       - type: text
-        text: 'Das DJL Foundation Archiv ordnet Projekte aus dem DJL-Umfeld zeitlich ein und bringt öffentliche Repositories, Texte und Projektseiten zusammen.'
+        text: 'Ich habe die Website als öffentliche Dokumentation für Projekte aus dem DJL-Umfeld gebaut. Projektgeschichte und Archiv sind getrennte Bereiche, ihre Einträge nutzen dieselbe Darstellung.'
   - type: heading
     attrs: { level: 2 }
     content:
       - type: text
-        text: 'Eine lesbare Projektgeschichte'
+        text: 'So sind die Einträge aufgebaut'
   - type: paragraph
     content:
       - type: text
-        text: 'Die Website legt den Schwerpunkt auf Reihenfolge und Zusammenhang. Statt Projekte als lose Kacheln zu zeigen, macht sie sichtbar, welche Arbeit vorher da war und welche Ideen später wieder auftauchten.'
+        text: 'Im Code liegen die Einträge als typisierte TypeScript-Daten. Jeder kann Zeitraum, Status, Beschreibung und weiterführende Links zeigen; bei ausgewählten Projekten kommt ein Bild hinzu.'
 ---

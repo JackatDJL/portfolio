@@ -1,7 +1,10 @@
 data:
-  alt: 'Main function of prtop'
+  alt: 'Rust-Ausschnitt aus dem Ereignisloop von prtop mit Tastatur- und Mauseingaben sowie Antworten aus Hintergrundaufgaben'
+  caption: 'Der Hauptloop zeichnet das Dashboard und verarbeitet Eingaben sowie Ergebnisse der Hintergrundaufgaben.'
+  rights: cc
+  cc: 'Mitwirkende am Projekt prtop; vom Team zur Portfolioveröffentlichung freigegeben'
 size: 79748
-last_modified: 1788611237
+last_modified: 1791814899
 width: 946
 height: 524
 mime_type: image/png
