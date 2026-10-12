@@ -7,6 +7,21 @@ const execFileAsync = promisify(execFile);
 const cvBaseURL = process.env.CV_BASE_URL || 'http://127.0.0.1:8091';
 const routes = ['/cv', '/cv/jobmesse-26', '/cv/exp/volt-stade-kommunikation', '/cv/exp/erstwaehlerforum-stade-organisation', '/cv/exp/hackclub-stade-organisation', '/cv/exp/atheblues-robotik-und-teamarbeit', '/cv/exp/volt-europa-technische-mitarbeit', '/cv/exp/volt-deutschland-technische-mitarbeit', '/cv/edu/gymnasium-athenaeum-stade', '/projekte/erstwaehlerforum-stade'];
 
+async function milestoneRecords(page) {
+    const records = await page.locator('template[data-cv-milestone]').evaluateAll(nodes => nodes.map((node, order) => ({
+        date: node.dataset.date,
+        dateEnd: node.dataset.dateEnd,
+        dateLabel: node.content.querySelector('.cv-milestone__date')?.textContent.trim() || '',
+        title: node.content.querySelector('h3')?.textContent.trim() || '',
+        hasRelations: !!node.content.querySelector('.cv-milestone__relations a'),
+        order,
+    })));
+
+    return records
+        .filter(item => parseChronology(item.date))
+        .sort((left, right) => parseChronology(left.date).timestamp - parseChronology(right.date).timestamp || left.order - right.order);
+}
+
 test('chronology parsing preserves year, month and exact day precision', () => {
     expect(parseChronology('2024')).toMatchObject({ year: 2024, month: null, day: null });
     expect(parseChronology('2024-04')).toMatchObject({ year: 2024, month: 4, day: null });
@@ -103,7 +118,9 @@ test('closed preview stays compact, shows the waveform, and expands between iden
     const content = page.locator('[data-cv-explore-content]');
     await expect(content).toBeHidden();
     await expect(root.locator('[data-cv-explore-preview-wave] i')).toHaveCount(36);
-    await expect(root.locator('template[data-cv-milestone]')).toHaveCount(8);
+    const milestones = await milestoneRecords(page);
+    const initialIndex = Math.min(4, milestones.length - 1);
+    await expect(root.locator('template[data-cv-milestone]')).toHaveCount(milestones.length);
     await expect(root.locator('template[data-cv-milestone][data-date-end="2018-07-31"]')).toHaveCount(1);
 
     const closed = await page.evaluate(() => {
@@ -128,14 +145,14 @@ test('closed preview stays compact, shows the waveform, and expands between iden
     const stage = page.locator('[data-cv-timeline-stage]');
     await expect(stage).toBeFocused();
     await expect(stage).toHaveAttribute('role', 'slider');
-    await expect(stage).toHaveAttribute('aria-valuemax', '8');
-    await expect(stage).toHaveAttribute('aria-valuenow', '5');
-    await expect(stage).toHaveAttribute('aria-valuetext', /Deutsche Meisterschaft mit AtheBlues/);
+    await expect(stage).toHaveAttribute('aria-valuemax', String(milestones.length));
+    await expect(stage).toHaveAttribute('aria-valuenow', String(initialIndex + 1));
+    await expect(stage).toHaveAttribute('aria-valuetext', `${milestones[initialIndex].dateLabel}: ${milestones[initialIndex].title}`);
     await expect(page.locator('[data-cv-timeline-bars] > i')).toHaveCount(96);
     await expect(page.locator('[data-cv-timeline-years] .cv-timeline__year')).not.toHaveCount(0);
     await expect(page.locator('[data-cv-active-detail] .cv-milestone')).toHaveCount(1);
-    await expect(page.locator('[data-cv-active-detail]')).toContainText('Deutsche Meisterschaft mit AtheBlues');
-    await expect(page.locator('[data-cv-active-detail] .related-reference')).not.toHaveCount(0);
+    await expect(page.locator('[data-cv-active-detail] h3')).toHaveText(milestones[initialIndex].title);
+    if (milestones[initialIndex].hasRelations) await expect(page.locator('[data-cv-active-detail] .related-reference')).not.toHaveCount(0);
     await expect(page.locator('.cv-timeline__event, .cv-timeline__tick')).toHaveCount(0);
     await page.locator('[data-cv-explore-close]').click();
     await expect(content).toBeHidden();
@@ -150,12 +167,14 @@ for (const [width, theme] of [[1440, 'light'], [1440, 'dark'], [1024, 'light'], 
         const errors = [];
         page.on('pageerror', error => errors.push(error.message));
         await page.goto('/cv');
+        const milestones = await milestoneRecords(page);
+        const initialIndex = Math.min(4, milestones.length - 1);
         await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
         await page.locator('[data-cv-explore-open]').click();
         const stage = page.locator('[data-cv-timeline-stage]');
         await expect(stage).toBeFocused();
         await expect(page.locator('[data-cv-timeline-bars] > i')).toHaveCount(96);
-        await expect(page.locator('[data-cv-active-detail] h3')).toHaveText('Deutsche Meisterschaft mit AtheBlues');
+        await expect(page.locator('[data-cv-active-detail] h3')).toHaveText(milestones[initialIndex].title);
         await page.evaluate(() => document.fonts.ready);
 
         const initial = await page.evaluate(() => ({
@@ -172,13 +191,21 @@ for (const [width, theme] of [[1440, 'light'], [1440, 'dark'], [1024, 'light'], 
         await page.screenshot({ path: testInfo.outputPath('timeline-open-' + width + '-' + theme + '.png'), fullPage: false });
         await page.keyboard.press('Home');
         await expect(stage).toHaveAttribute('aria-valuenow', '1');
-        await page.waitForTimeout(360);
+        const startYear = Number(await page.locator('[data-cv-explore]').getAttribute('data-start-year'));
+        const today = await page.evaluate(() => {
+            const now = new Date();
+            return Date.UTC(now.getFullYear(), now.getMonth(), now.getDate(), 12);
+        });
+        const firstProgress = (parseChronology(milestones[0].date).timestamp - Date.UTC(startYear, 0, 1, 12))
+            / (today - Date.UTC(startYear, 0, 1, 12));
+        await expect.poll(() => page.locator('[data-cv-timeline-needle]').evaluate(needle => Number.parseFloat(needle.style.left)))
+            .toBeCloseTo(firstProgress * 100, 1);
         const after = await page.evaluate(() => [...document.querySelectorAll('[data-cv-timeline-bars] > i')].map(bar => {
             return { center: bar.style.left, height: bar.getBoundingClientRect().height };
         }));
         expect(after.map(bar => bar.center)).toEqual(initial.centers);
         expect(after.some((bar, index) => Math.abs(bar.height - initial.heights[index]) > 5)).toBe(true);
-        await expect(page.locator('[data-cv-active-detail] h3')).toHaveText('Grundschule Stade-Hagen');
+        await expect(page.locator('[data-cv-active-detail] h3')).toHaveText(milestones[0].title);
         expect(errors).toEqual([]);
     });
 }
@@ -188,7 +215,10 @@ test('timeline click selects the nearest dated milestone and keyboard reaches bo
     await page.goto('/cv');
     await page.locator('[data-cv-explore-open]').click();
     const stage = page.locator('[data-cv-timeline-stage]');
-    const date = await page.locator('template[data-cv-milestone]').nth(2).getAttribute('data-date');
+    const milestones = await milestoneRecords(page);
+    const target = milestones[2];
+    const targetIndex = 2;
+    const date = target.date;
     const startYear = Number(await page.locator('[data-cv-explore]').getAttribute('data-start-year'));
     const targetTime = parseChronology(date).timestamp;
     const endTime = await page.evaluate(() => {
@@ -198,30 +228,30 @@ test('timeline click selects the nearest dated milestone and keyboard reaches bo
     const box = await page.locator('[data-cv-timeline-track]').boundingBox();
     const progress = (targetTime - Date.UTC(startYear, 0, 1, 12)) / (endTime - Date.UTC(startYear, 0, 1, 12));
     await page.mouse.click(box.x + box.width * progress, box.y + box.height / 2);
-    await expect(stage).toHaveAttribute('aria-valuenow', '3');
-    await expect(page.locator('[data-cv-active-detail] h3')).toHaveText('Schülervertretung');
+    await expect(stage).toHaveAttribute('aria-valuenow', String(targetIndex + 1));
+    await expect(page.locator('[data-cv-active-detail] h3')).toHaveText(target.title);
     await page.keyboard.press('ArrowRight');
     await expect(stage).toHaveAttribute('aria-valuenow', '4');
     await page.keyboard.press('ArrowLeft');
-    await expect(stage).toHaveAttribute('aria-valuenow', '3');
+    await expect(stage).toHaveAttribute('aria-valuenow', String(targetIndex + 1));
     await page.keyboard.press('Home');
     await expect(stage).toHaveAttribute('aria-valuenow', '1');
     await page.keyboard.press('End');
-    await expect(stage).toHaveAttribute('aria-valuenow', '8');
-    await expect(page.locator('[data-cv-active-detail] h3')).toHaveText('Beitritt zum DRK');
+    await expect(stage).toHaveAttribute('aria-valuenow', String(milestones.length));
+    await expect(page.locator('[data-cv-active-detail] h3')).toHaveText(milestones.at(-1).title);
 
     const track = page.locator('[data-cv-timeline-track]');
     const trackBox = await track.boundingBox();
-    const timestamps = await page.locator('template[data-cv-milestone]').evaluateAll(nodes => nodes.map(node => node.dataset.date));
     for (const index of [4, 5, 6, 7]) {
-        const progressForDate = (Date.parse(timestamps[index] + (timestamps[index].length === 7 ? '-15' : 'T12:00:00Z')) - Date.UTC(startYear, 0, 1, 12))
+        const progressForDate = (parseChronology(milestones[index].date).timestamp - Date.UTC(startYear, 0, 1, 12))
             / (endTime - Date.UTC(startYear, 0, 1, 12));
         await page.mouse.click(trackBox.x + trackBox.width * progressForDate, trackBox.y + trackBox.height / 2);
         await expect(stage).toHaveAttribute('aria-valuenow', String(index + 1));
+        await expect(page.locator('[data-cv-active-detail] h3')).toHaveText(milestones[index].title);
     }
 });
 
-test('ranged milestones plot at their start date and all event bars use the canonical accent', async ({ page }) => {
+test('ranged milestones remain selectable across their full date range and use the canonical accent', async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/cv');
     await page.locator('[data-cv-explore-open]').click();
@@ -231,15 +261,39 @@ test('ranged milestones plot at their start date and all event bars use the cano
     await expect(page.locator('[data-cv-active-detail]')).toContainText('01.08.2014–31.07.2018');
     const stage = page.locator('[data-cv-timeline-stage]');
     await expect.poll(() => stage.evaluate(element => getComputedStyle(element).outlineStyle)).toBe('solid');
-    const startDate = await page.locator('template[data-cv-milestone]').first().getAttribute('data-date');
+    const milestones = await milestoneRecords(page);
+    const startDate = milestones[0].date;
     const startYear = Number(await page.locator('[data-cv-explore]').getAttribute('data-start-year'));
     const endTime = await page.evaluate(() => {
         const today = new Date();
         return Date.UTC(today.getFullYear(), today.getMonth(), today.getDate(), 12);
     });
     const startProgress = (parseChronology(startDate).timestamp - Date.UTC(startYear, 0, 1, 12)) / (endTime - Date.UTC(startYear, 0, 1, 12));
-    await page.waitForTimeout(650);
-    expect(await page.locator('[data-cv-timeline-needle]').evaluate(needle => Number.parseFloat(needle.style.left))).toBeCloseTo(startProgress * 100, 1);
+    const lastProgress = (parseChronology(milestones.at(-1).date).timestamp - Date.UTC(startYear, 0, 1, 12))
+        / (endTime - Date.UTC(startYear, 0, 1, 12));
+    await expect.poll(() => page.locator('[data-cv-timeline-needle]').evaluate(needle => Number.parseFloat(needle.style.left)))
+        .toBeCloseTo(startProgress * 100, 1);
+
+    const firstRangeEnd = parseChronology(milestones[0].dateEnd).timestamp;
+    const rangeMidpoint = (parseChronology(startDate).timestamp + firstRangeEnd) / 2;
+    const rangeProgress = (rangeMidpoint - Date.UTC(startYear, 0, 1, 12)) / (endTime - Date.UTC(startYear, 0, 1, 12));
+    await page.keyboard.press('End');
+    await expect(stage).toHaveAttribute('aria-valuenow', String(milestones.length));
+    await expect.poll(() => page.locator('[data-cv-timeline-needle]').evaluate(needle => Number.parseFloat(needle.style.left)))
+        .toBeCloseTo(lastProgress * 100, 1);
+    const trackBox = await page.locator('[data-cv-timeline-track]').boundingBox();
+    await page.mouse.click(trackBox.x + trackBox.width * rangeProgress, trackBox.y + trackBox.height / 2);
+    await expect(stage).toHaveAttribute('aria-valuenow', '1');
+    await expect(page.locator('[data-cv-active-detail] h3')).toHaveText(milestones[0].title);
+    await expect(page.locator('[data-cv-active-detail]')).toContainText(milestones[0].dateLabel);
+    const immediateSelection = await page.evaluate(() => ({
+        current: document.querySelector('[data-cv-timeline-current]').textContent,
+        title: document.querySelector('[data-cv-active-detail] h3').textContent,
+    }));
+    expect(immediateSelection.current).toBe('01');
+    expect(immediateSelection.title).toBe(milestones[0].title);
+    await expect.poll(() => page.locator('[data-cv-timeline-needle]').evaluate(needle => Number.parseFloat(needle.style.left)))
+        .toBeCloseTo(startProgress * 100, 1);
 
     await page.keyboard.press('ArrowRight');
     await expect(stage).toHaveAttribute('aria-valuenow', '2');
@@ -278,33 +332,43 @@ test('ranged milestones plot at their start date and all event bars use the cano
     expect(contrast.selectedHeight).toBeGreaterThan(contrast.eventHeight);
 
     const eventBar = page.locator('[data-cv-timeline-bars] > i.is-milestone').first();
+    await page.mouse.move(10, 10);
+    await expect(eventBar).not.toHaveClass(/is-hovered/);
+    await expect.poll(() => eventBar.evaluate(element => getComputedStyle(element).width)).toBe('3px');
     const eventBox = await eventBar.boundingBox();
     await page.mouse.move(eventBox.x + eventBox.width / 2, eventBox.y + eventBox.height / 2);
     await expect(eventBar).toHaveClass(/is-hovered/);
-    await page.waitForTimeout(220);
-    expect(await eventBar.evaluate(element => element.getBoundingClientRect().width)).toBeGreaterThan(contrast.eventWidth);
+    await expect.poll(() => eventBar.evaluate(element => getComputedStyle(element).width)).toBe('4px');
 });
 
-test('the whole timeline responds to container hover and respects reduced motion', async ({ page }) => {
+test('waveform bars respond to hover while the outer timeline stays still', async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/cv');
     await page.locator('[data-cv-explore-open]').click();
     const timeline = page.locator('[data-cv-timeline]');
+    const root = page.locator('[data-cv-explore]');
+    await expect.poll(() => root.evaluate(element => element.style.height)).toBe('');
+    const waveform = page.locator('[data-cv-timeline-track]');
+    const sampleBar = page.locator('[data-cv-timeline-bars] > i').nth(20);
     await page.mouse.move(10, 10);
     await expect.poll(() => timeline.evaluate(element => getComputedStyle(element).transform)).toBe('none');
-    await page.locator('.cv-timeline__extent').hover();
-    await expect.poll(() => timeline.evaluate(element => new DOMMatrix(getComputedStyle(element).transform).a)).toBeGreaterThan(1.001);
-    const hoverTransform = await timeline.evaluate(element => {
-        const matrix = new DOMMatrix(getComputedStyle(element).transform);
-        return { scale: matrix.a, y: matrix.m42 };
-    });
-    expect(hoverTransform.scale).toBeGreaterThan(1);
-    expect(hoverTransform.y).toBeLessThan(0);
+    const before = await timeline.boundingBox();
+    const barBefore = await sampleBar.evaluate(element => getComputedStyle(element).transform);
+    await waveform.hover();
+    await expect.poll(() => sampleBar.evaluate(element => getComputedStyle(element).transform)).not.toBe(barBefore);
+    const after = await timeline.boundingBox();
+    expect(after).toEqual(before);
+    await expect.poll(() => timeline.evaluate(element => getComputedStyle(element).transform)).toBe('none');
+    const eventBar = page.locator('[data-cv-timeline-bars] > i.is-milestone').first();
+    const eventBox = await eventBar.boundingBox();
+    await page.mouse.move(eventBox.x + eventBox.width / 2, eventBox.y + eventBox.height / 2);
+    await expect(eventBar).toHaveClass(/is-hovered/);
+    await expect.poll(() => eventBar.evaluate(element => getComputedStyle(element).transform)).toContain('matrix');
 
     await page.emulateMedia({ reducedMotion: 'reduce' });
-    await expect.poll(() => timeline.evaluate(element => getComputedStyle(element).transform)).toBe('none');
-    const transitionProperty = await timeline.evaluate(element => getComputedStyle(element).transitionProperty);
+    const transitionProperty = await sampleBar.evaluate(element => getComputedStyle(element).transitionProperty);
     expect(transitionProperty).toBe('none');
+    expect(await timeline.evaluate(element => getComputedStyle(element).transform)).toBe('none');
 });
 
 test('the long waveform transition moves one amplitude envelope across fixed bar positions', async ({ page }, testInfo) => {
@@ -314,7 +378,16 @@ test('the long waveform transition moves one amplitude envelope across fixed bar
     const stage = page.locator('[data-cv-timeline-stage]');
     await stage.press('Home');
     await expect(stage).toHaveAttribute('aria-valuenow', '1');
-    await page.waitForTimeout(700);
+    const firstDate = await page.locator('template[data-cv-milestone]').first().getAttribute('data-date');
+    const startYear = Number(await page.locator('[data-cv-explore]').getAttribute('data-start-year'));
+    const endTime = await page.evaluate(() => {
+        const today = new Date();
+        return Date.UTC(today.getFullYear(), today.getMonth(), today.getDate(), 12);
+    });
+    const firstProgress = (parseChronology(firstDate).timestamp - Date.UTC(startYear, 0, 1, 12))
+        / (endTime - Date.UTC(startYear, 0, 1, 12));
+    await expect.poll(() => page.locator('[data-cv-timeline-needle]').evaluate(needle => Number.parseFloat(needle.style.left)))
+        .toBeCloseTo(firstProgress * 100, 1);
     const baseline = await page.locator('[data-cv-timeline-bars] > i').evaluateAll(bars => bars.map(bar => ({
         center: Number.parseFloat(bar.style.left) / 100,
         height: bar.getBoundingClientRect().height,
@@ -346,10 +419,10 @@ test('the long waveform transition moves one amplitude envelope across fixed bar
         }
         return frames;
     });
-    await page.waitForTimeout(220);
     await page.screenshot({ path: testInfo.outputPath('long-waveform-transition-midpoint.png'), fullPage: false });
     const samples = await samplesPromise;
-    await expect(stage).toHaveAttribute('aria-valuenow', '8');
+    const milestoneCount = await page.locator('template[data-cv-milestone]').count();
+    await expect(stage).toHaveAttribute('aria-valuenow', String(milestoneCount));
 
     const travelingSamples = samples.filter(sample => sample.needleProgress > 0.46 && sample.needleProgress < 0.74);
     expect(travelingSamples.length).toBeGreaterThan(0);
@@ -357,7 +430,7 @@ test('the long waveform transition moves one amplitude envelope across fixed bar
     expect(samples.every(sample => sample.positions.every((position, index) => position === baseline[index].center))).toBe(true);
 });
 
-test('vertical and horizontal wheel input select one milestone and hand scrolling back at both ends', async ({ page }) => {
+test('vertical and horizontal wheel input select adjacent milestones and hand scrolling back at both ends', async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/cv');
     await page.locator('[data-cv-explore-open]').click();
@@ -366,9 +439,6 @@ test('vertical and horizontal wheel input select one milestone and hand scrollin
     await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
     await page.mouse.wheel(0, 100);
     await expect(stage).toHaveAttribute('aria-valuenow', '6');
-    await page.waitForTimeout(240);
-    await page.mouse.wheel(100, 0);
-    await expect(stage).toHaveAttribute('aria-valuenow', '7');
 
     await page.evaluate(() => window.scrollTo(0, 320));
     await stage.press('Home');
@@ -379,6 +449,14 @@ test('vertical and horizontal wheel input select one milestone and hand scrollin
     const beforeBottom = await page.evaluate(() => window.scrollY);
     await page.mouse.wheel(0, 120);
     await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(beforeBottom);
+
+    await page.goto('/cv');
+    await page.locator('[data-cv-explore-open]').click();
+    const horizontalStage = page.locator('[data-cv-timeline-stage]');
+    const horizontalBox = await horizontalStage.boundingBox();
+    await page.mouse.move(horizontalBox.x + horizontalBox.width / 2, horizontalBox.y + horizontalBox.height / 2);
+    await page.mouse.wheel(100, 0);
+    await expect(horizontalStage).toHaveAttribute('aria-valuenow', '6');
 });
 
 test('touch swipe changes milestones while vertical touch remains page scrolling', async ({ browser }) => {
@@ -425,6 +503,52 @@ test('reduced motion keeps keyboard use immediate and lets the page own wheel sc
     await page.mouse.wheel(0, 120);
     await expect(stage).toHaveAttribute('aria-valuenow', '6');
     await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(before);
+});
+
+test('milestone links keep stable geometry through hover, focus, and active states', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/cv');
+    await page.locator('[data-cv-explore-open]').click();
+    const stage = page.locator('[data-cv-timeline-stage]');
+    const milestones = await milestoneRecords(page);
+    const linkedIndex = milestones.findIndex(milestone => milestone.hasRelations);
+    expect(linkedIndex).toBeGreaterThanOrEqual(0);
+    await stage.press('Home');
+    for (let index = 0; index < linkedIndex; index += 1) await stage.press('ArrowRight');
+    const detail = page.locator('[data-cv-active-detail]');
+    await expect(detail.locator('h3')).toHaveText(milestones[linkedIndex].title);
+    await expect.poll(() => detail.evaluate(element => getComputedStyle(element).transform)).toBe('none');
+    const dateBox = await detail.locator('.cv-milestone__date').boundingBox();
+    const counterBox = await page.locator('.cv-timeline__index').boundingBox();
+    expect(dateBox.y + dateBox.height).toBeLessThanOrEqual(counterBox.y);
+
+    const links = detail.locator('.cv-milestone__relations a');
+    await expect(links).not.toHaveCount(0);
+    const link = links.first();
+    const original = await link.boundingBox();
+    await link.hover();
+    const hovered = await link.boundingBox();
+    await link.focus();
+    const focused = await link.boundingBox();
+    expect(hovered.x).toBe(original.x);
+    expect(hovered.y).toBe(original.y);
+    expect(hovered.width).toBe(original.width);
+    expect(hovered.height).toBe(original.height);
+    expect(focused.x).toBe(original.x);
+    expect(focused.y).toBe(original.y);
+    expect(focused.width).toBe(original.width);
+    expect(focused.height).toBe(original.height);
+    await expect(detail.locator('.cv-milestone__relations .related-reference__meta')).toHaveCount(0);
+
+    const box = await link.boundingBox();
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.down();
+    const active = await link.boundingBox();
+    await page.mouse.up();
+    expect(active.x).toBe(original.x);
+    expect(active.y).toBe(original.y);
+    expect(active.width).toBe(original.width);
+    expect(active.height).toBe(original.height);
 });
 
 test('portrait is not counter-rotated or transformed and selects responsive source sizes cleanly', async ({ page, browser }, testInfo) => {
@@ -477,6 +601,62 @@ test('portrait is not counter-rotated or transformed and selects responsive sour
     expect(source).not.toMatch(/ScrollTrigger|scrollLeft|scrollTo\s*\(/);
     expect(source).not.toContain('date_of_birth');
     expect(await page.locator('.pin-spacer').count()).toBe(0);
+});
+
+test('both publication previews render and direct PDF access survives a PDF.js worker failure', async ({ page, browser }) => {
+    const publications = [
+        ['/publikationen/breaking-free-from-big-tech', '/documents/breaking-free-from-big-tech.pdf'],
+        ['/publikationen/zinsen-und-finanzen', '/documents/zinsen-und-finanzen.pdf'],
+    ];
+
+    for (const [route, documentUrl] of publications) {
+        const response = await page.goto(route);
+        expect(response.status()).toBe(200);
+        const viewer = page.locator('[data-pdf-viewer]');
+        await expect(viewer).toHaveAttribute('data-pdf-url', documentUrl);
+        await expect(viewer.locator('.pdf-viewer__page')).toHaveAttribute('data-pdf-rendered', 'true');
+        const direct = viewer.locator('.pdf-viewer__fallback a');
+        await expect(direct).toBeVisible();
+        await expect(direct).toHaveAttribute('href', documentUrl);
+        const pdf = await page.request.get(documentUrl);
+        expect(pdf.status()).toBe(200);
+        expect(pdf.headers()['content-type']).toMatch(/^application\/pdf/);
+        expect((await pdf.body()).subarray(0, 5).toString()).toBe('%PDF-');
+    }
+
+    const failingContext = await browser.newContext({ baseURL: cvBaseURL });
+    const failingPage = await failingContext.newPage();
+    await failingPage.route('**/build/assets/pdf.worker-*', route => route.abort());
+    await failingPage.goto(publications[0][0]);
+    await expect(failingPage.locator('[data-pdf-error]')).toBeVisible();
+    await expect(failingPage.locator('.pdf-viewer__fallback a')).toBeVisible();
+    const failureFallback = failingPage.locator('.pdf-viewer__fallback a');
+    await expect(failureFallback).toHaveAttribute('href', publications[0][1]);
+    await failingContext.close();
+
+    const noScriptContext = await browser.newContext({ javaScriptEnabled: false });
+    const noScriptPage = await noScriptContext.newPage();
+    await noScriptPage.goto(cvBaseURL + publications[1][0]);
+    await expect(noScriptPage.locator('.pdf-viewer__fallback a')).toBeVisible();
+    await expect(noScriptPage.locator('.pdf-viewer__fallback a')).toHaveAttribute('href', publications[1][1]);
+    await noScriptContext.close();
+});
+
+test('the existing Now page keeps its CMS content readable in dark mode and on mobile', async ({ page }) => {
+    for (const [width, theme] of [[1440, 'light'], [390, 'dark']]) {
+        await page.setViewportSize({ width, height: width === 390 ? 844 : 1000 });
+        await page.addInitScript(theme => localStorage.setItem('jack-theme', theme), theme);
+        await page.goto('/aktuell');
+        await expect(page.locator('h1')).toHaveText('Aktuell');
+        await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
+        await expect(page.locator('.now-page__intro')).toContainText('prtop');
+        await expect(page.locator('.now-page__intro')).toContainText('Volt Stade');
+        await expect(page.locator('.now-page__intro')).toContainText('Jugendchor Neukloster');
+        await expect(page.locator('.now-page__intro')).toContainText('Klangwerk');
+        await expect(page.locator('.now-page__link-list .semantic-link')).not.toHaveCount(0);
+        await expect(page.locator('.now-page__cta .btn')).toBeVisible();
+        expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+    }
 });
 test('CV detail navigation and sidebar composition use the parent route correctly', async ({ page }) => {
     await page.goto('/cv/exp/atheblues-robotik-und-teamarbeit');
@@ -557,7 +737,7 @@ test('Jobmesse release renders at all target widths with its timeline off', asyn
         await page.evaluate(() => document.fonts.ready);
         await page.locator('.cv-portrait img').evaluate(image => image.decode());
         await expect(page.locator('[data-cv-explore]')).toHaveCount(0);
-        await expect(page.locator('main')).toContainText('Eigenständiges Arbeiten');
+        await expect(page.locator('main')).toContainText('Eigenständige Projektarbeit');
         expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
         await page.screenshot({ path: testInfo.outputPath(`jobmesse-${width}.png`), fullPage: true });
         for (const [kind, route] of [

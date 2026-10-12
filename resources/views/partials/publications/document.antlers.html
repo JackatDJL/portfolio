@@ -4,7 +4,9 @@
     <div class="publication-document__header">
         <div>
             <h2 id="publication-document-title" class="eyebrow">Originaldokument</h2>
-            {{ if document_url | contains('.pdf') }}
+            {{ if document_file }}
+                <p>PDF</p>
+            {{ elseif document_url | contains('.pdf') }}
                 <p>PDF</p>
             {{ else }}
                 <p>Dokument</p>
@@ -20,7 +22,9 @@
         </div>
     </div>
 
-    {{ if document_url | contains('.pdf') }}
-        {{ partial:components/pdf-viewer id="publication-pdf" url="/documents/{slug}.pdf" fallback_url="{document_url}" }}
+    {{ if document_file }}
+        {{ partial:components/pdf-viewer id="publication-pdf" :url="document_file" :fallback_url="document_file" }}
+    {{ elseif document_url | contains('.pdf') }}
+        {{ partial:components/pdf-viewer id="publication-pdf" :url="document_url" :fallback_url="document_url" }}
     {{ /if }}
 </section>

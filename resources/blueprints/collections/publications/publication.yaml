@@ -157,6 +157,16 @@ tabs:
               type: link
               display: Download-Link
               width: 50
+          -
+            handle: document_file
+            field:
+              type: text
+              display: Lokale PDF-Datei
+              instructions: 'Optionaler Webpfad zu einer bereits veröffentlichten Datei unter public/documents. Die Datei wird nicht in das Asset-Repository kopiert.'
+              width: 50
+              validate:
+                - nullable
+                - 'regex:/^\/documents\/[A-Za-z0-9][A-Za-z0-9._-]*\.pdf$/'
   relations_media:
     display: 'Beziehungen & Medien'
     sections:

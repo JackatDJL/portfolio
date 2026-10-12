@@ -52,6 +52,34 @@ class ProductionDeploymentTest extends TestCase
         $this->assertStringContainsString("location ~ \\.php$ {\n        return 404;", $nginx);
     }
 
+    public function test_statamic_control_panel_assets_are_published_and_narrowly_served_by_nginx(): void
+    {
+        $composer = json_decode(file_get_contents(base_path('composer.json')), true, flags: JSON_THROW_ON_ERROR);
+        $installScripts = implode("\n", $composer['scripts']['post-autoload-dump'] ?? []);
+        $this->assertStringContainsString('statamic:install', $installScripts);
+
+        $assets = public_path('vendor/statamic/cp/build/assets');
+        $this->assertDirectoryExists($assets);
+        $this->assertNotEmpty(glob($assets.'/*.css') ?: []);
+        $this->assertNotEmpty(glob($assets.'/*.js') ?: []);
+        foreach (array_merge(glob($assets.'/*.css') ?: [], glob($assets.'/*.js') ?: []) as $asset) {
+            $this->assertFalse(is_link($asset), $asset.' must be copied into public/vendor during image build.');
+            $this->assertGreaterThan(0, filesize($asset));
+        }
+
+        $nginx = file_get_contents(base_path('docker/nginx.conf'));
+        $this->assertStringContainsString('location ~ ^/build/assets/[^/]+\.mjs$ {', $nginx);
+        $this->assertStringContainsString('default_type application/javascript;', $nginx);
+        $this->assertStringContainsString('^/vendor/statamic/cp/build/assets/', $nginx);
+        $this->assertStringContainsString('try_files $uri =404;', $nginx);
+        $this->assertStringContainsString('Cache-Control "public, max-age=31536000, immutable"', $nginx);
+        $this->assertStringContainsString('storage|vendor)(?:/|$)', $nginx);
+
+        $compose = file_get_contents(base_path('compose.production.yaml'));
+        $this->assertStringNotContainsString(':/var/www/html/public/vendor', $compose);
+        $this->assertStringNotContainsString('public/vendor/**', file_get_contents(base_path('.dockerignore')));
+    }
+
     public function test_permanent_cv_grants_and_sessions_survive_reopening_persistent_storage(): void
     {
         $directory = storage_path('framework/testing/deployment-state-'.bin2hex(random_bytes(6)));

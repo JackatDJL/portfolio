@@ -2,41 +2,36 @@
 use App\Support\Latex;
 $e = fn ($value) => new \Illuminate\Support\HtmlString(Latex::escape((string) $value));
 $u = fn ($value) => new \Illuminate\Support\HtmlString(strtr((string) $value, ['\\' => '\%5C', '{' => '\%7B', '}' => '\%7D', '%' => '\%', '#' => '\#', '~' => '\%7E']));
+$linkAccent = Latex::accessibleAccent((string) $cv['accent']);
 $v = function ($value) use ($u) {
     $visible = preg_replace('/^https?:\/\//i', '', (string) $value);
 
+    // The interactive URL carries a #cv=TOKEN fragment that authorizes a private PDF. Render only the prefix as text so the capability stays in the link target, not on the page.
     if (preg_match('/#cv=([A-Za-z0-9]+)$/', $visible, $match, PREG_OFFSET_CAPTURE)) {
-        $token = $match[1][0];
-        $prefix = substr($visible, 0, $match[1][1]);
-        $chunks = str_split($token, 12);
-        $parts = ['\\nolinkurl{'.(string) $u($prefix.array_shift($chunks)).'}'];
-        foreach ($chunks as $chunk) {
-            $parts[] = '\\nolinkurl{'.(string) $u($chunk).'}';
-        }
-
-        return new \Illuminate\Support\HtmlString(implode('\\allowbreak{}', $parts));
+        $prefix = substr($visible, 0, $match[0][1]);
+        $visible = $prefix;
     }
 
     return new \Illuminate\Support\HtmlString('\\nolinkurl{'.(string) $u($visible).'}');
 };
-$compact = count($cv['projects']) <= 3;
 @endphp
 % !TeX program = lualatex
 \documentclass[9pt,a4paper]{article}
 \usepackage[a4paper,top=17mm,bottom=18mm,left=17mm,right=17mm,footskip=9mm,includefoot]{geometry}
-\usepackage{fontspec,xcolor,graphicx,hyperref,tikz,array,tabularx,paracol,needspace}
-\usetikzlibrary{calc}
+\usepackage{fontspec,xcolor,graphicx,hyperref,tikz,array,tabularx,paracol,needspace,amssymb}
 \setmainfont{Fira Sans}[Path=resources/fonts/,Extension=.ttf,UprightFont=FiraSans-Regular,BoldFont=FiraSans-Bold]
+% Fira Sans has no NE sans-serif arrow glyph (U+1F855), so the outbound-link icon is pulled from the bundled Noto Sans Symbols 2 Regular subset.
+\newfontfamily\cvarrowfont{Noto Sans Symbols 2}[Path=resources/fonts/,Extension=.ttf,UprightFont=NotoSansSymbols2-Regular]
 \definecolor{accent}{HTML}{@php echo strtoupper(ltrim($cv['accent'], '#')); @endphp}
+\definecolor{linkaccent}{HTML}{@php echo $linkAccent; @endphp}
 \definecolor{cvtext}{HTML}{111A16}\definecolor{muted}{HTML}{52605A}\definecolor{rule}{HTML}{CCD8D2}\definecolor{paper}{HTML}{FFFFFF}
-\colorlet{linkaccent}{accent}
 \pagecolor{white}\color{cvtext}
 \hypersetup{colorlinks=true,urlcolor=linkaccent,linkcolor=linkaccent,pdfauthor={ {{ $e($cv['name']) }} },pdftitle={ {{ $e($cv['name']) }} · Lebenslauf @if($cv['profile']) · {{ $e($cv['profile']['title']) }}@endif }}
 \setlength{\parindent}{0pt}\setlength{\parskip}{0pt}\setlength{\columnsep}{7mm}\emergencystretch=1em
-\newcommand{\cvoutlinkicon}{\tikz[baseline=-.25em,x=.55em,y=.55em]\draw[accent,line width=.08em,line cap=round,line join=round] (0,0)--(1,1)--(.55,1) (1,1)--(1,.55);}
-\newcommand{\cvlink}[2]{\href{#1}{\textcolor{linkaccent}{\underline{#2}}}}
-\newcommand{\cvoutlink}[2]{\href{#1}{\textcolor{linkaccent}{\underline{#2}\hspace{.16em}\cvoutlinkicon}}}
-\newcommand{\cvurl}[2]{\href{#1}{\textcolor{linkaccent}{\ignorespaces#2\unskip\nobreak\mbox{\hspace{.16em}\cvoutlinkicon}}}}
+@php echo '\newcommand{\cvoutlinkicon}{\textcolor{linkaccent}{{\cvarrowfont \char"1F855\relax}}}'; @endphp
+\newcommand{\cvlink}[2]{\href{#1}{\textcolor{linkaccent}{#2}}}
+\newcommand{\cvoutlink}[2]{\href{#1}{\textcolor{linkaccent}{#2\mbox{\hspace{.13em}\cvoutlinkicon}}}}
+\newcommand{\cvurl}[2]{\href{#1}{\textcolor{linkaccent}{\textbf{#2\mbox{\hspace{.13em}\cvoutlinkicon}}}}}
 \makeatletter
 \def\ps@cv{%
   \def\@oddhead{}\let\@evenhead\@oddhead
@@ -44,19 +39,16 @@ $compact = count($cv['projects']) <= 3;
     \hbox to \textwidth{%
       \parbox[b]{.22\textwidth}{\fontsize{6}{7}\selectfont\color{muted}{{ $e($cv['name']) }} · Lebenslauf}%
       \hfil
-      \parbox[b]{.68\textwidth}{\raggedleft\fontsize{6}{7}\selectfont\color{muted}Interaktive Version: \cvurl{ {{ $u($cv['interactive_url']) }} }{ {{ $v($cv['interactive_url']) }} }\hfil{\fontsize{6}{7}\selectfont\color{muted}\thepage}}%
+      \parbox[b]{.68\textwidth}{\raggedleft\fontsize{7.1}{8.5}\selectfont\color{muted}\textbf{Interaktive Version:} \cvurl{ {{ $u($cv['interactive_url']) }} }{ {{ $v($cv['interactive_url']) }} }\hspace{.7em}{\fontsize{6.5}{7.5}\selectfont\color{muted}\thepage}}%
     }%
   }%
   \let\@evenfoot\@oddfoot
 }
 \makeatother\pagestyle{cv}
 \newcommand{\sectiontitle}[1]{\Needspace{30mm}\vspace{2.2mm}{\fontsize{15}{16}\selectfont\bfseries #1}\par\nopagebreak\vspace{1mm}{\color{rule}\rule{\linewidth}{.45pt}}\par\nopagebreak\vspace{.4mm}}
-\newcommand{\entry}[5]{\noindent\begin{minipage}{\linewidth}\fontsize{11}{13}\selectfont\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}X>{\raggedleft\arraybackslash}p{30mm}@{}}\strut\textbf{\cvoutlink{#4}{#1}}&\strut{\fontsize{8.2}{13}\selectfont\color{muted}#2}\\[-.8mm]\end{tabularx}\par{\fontsize{9}{11}\selectfont\bfseries #3}\par\vspace{.8mm}{\fontsize{9.5}{12.2}\selectfont\color{muted}\raggedright #5\par}\end{minipage}\par\vspace{4mm}}
+\newcommand{\entry}[5]{\noindent\begin{minipage}{\linewidth}\fontsize{11}{13}\selectfont\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}X>{\raggedleft\arraybackslash}p{30mm}@{}}\strut\textbf{\cvoutlink{#4}{#1}}&\strut{\fontsize{8.2}{13}\selectfont\color{muted}\mbox{#2}}\\[-.8mm]\end{tabularx}\par{\fontsize{9}{11}\selectfont\bfseries #3}\par\vspace{.8mm}{\fontsize{9.5}{12.2}\selectfont\color{muted}\raggedright #5\par}\end{minipage}\par\vspace{4mm}}
 \newcommand{\sidebarhead}[1]{\vspace{1mm}{\fontsize{7}{8}\selectfont\bfseries\MakeUppercase{#1}}\par\vspace{1.2mm}}
 \newcommand{\sidevalue}[1]{\begingroup\fontsize{8.4}{10.5}\selectfont\color{muted}\raggedright #1\par\endgroup\vspace{1.2mm}}
-@if($compact)
-\renewcommand{\entry}[5]{\noindent\begin{minipage}{\linewidth}\fontsize{8.3}{10}\selectfont\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}X>{\raggedleft\arraybackslash}p{28mm}@{}}\strut\textbf{\cvoutlink{#4}{#1}}&\strut{\fontsize{6.8}{10}\selectfont\color{muted}#2}\\[-1mm]\end{tabularx}\par{\fontsize{7}{8.5}\selectfont\bfseries #3}\par\vspace{.5mm}{\fontsize{7.2}{9}\selectfont\color{muted}\raggedright #5\par}\end{minipage}\par\vspace{1.8mm}}
-@endif
 \begin{document}\thispagestyle{cv}
 \begin{tikzpicture}[x=1mm,y=1mm]
   \def\W{176}\def\H{46}
@@ -67,7 +59,7 @@ $compact = count($cv['projects']) <= 3;
   @if($cv['profile'])\node[anchor=west,inner sep=0pt,text=cvtext] at (11,37) {\fontsize{7.5}{8}\selectfont\bfseries {{ $e($cv['profile']['title']) }}};@endif
   \node[anchor=west,inner sep=0pt] at (11,19) {\fontsize{32}{32}\selectfont\bfseries {{ $e($cv['name']) }}};
   \node[anchor=west,inner sep=0pt] at (11,8) {\fontsize{7}{8}\selectfont\bfseries {{ $e($cv['location']) }}};
-  @if($cv['profile'])\node[anchor=west,inner sep=0pt] at (73,8) {\fontsize{7}{8}\selectfont\cvlink{ {{ $u($cv['interactive_url']) }} }{Interaktive Version}};@endif
+  \node[anchor=west,inner sep=0pt] at (73,8) {\fontsize{7.6}{9}\selectfont\cvurl{ {{ $u($cv['interactive_url']) }} }{ {{ $v($cv['interactive_url']) }} }};
   @if($cv['photo'])\begin{scope}\clip (151,23) circle (15mm);\node[inner sep=0pt] at (151,23){\includegraphics[height=34mm]{ {{ $e($cv['photo']) }} }};\end{scope}\draw[cvtext,line width=.6pt] (151,23) circle (15mm);@endif
 \end{tikzpicture}
 \vspace{4mm}
@@ -79,7 +71,7 @@ $compact = count($cv['projects']) <= 3;
 @if($cv['contact']['address'])\sidevalue{ {{ $e($cv['contact']['address']) }} }@else\sidevalue{Geschützte Angabe}@endif
 \sidevalue{ {{ $e($cv['location']) }} }
 \sidebarhead{Interaktiver Lebenslauf}
-\sidevalue{\begingroup\fontsize{7}{8.5}\selectfont\cvurl{ {{ $u($cv['interactive_url']) }} }{ {{ $v($cv['interactive_url']) }} }\endgroup}
+\sidevalue{\begingroup\fontsize{8.6}{11}\selectfont\bfseries\cvurl{ {{ $u($cv['interactive_url']) }} }{ {{ $v($cv['interactive_url']) }} }\endgroup}
 @if($cv['about'])\vspace{2mm}{\color{rule}\rule{\linewidth}{.4pt}}\par\sidebarhead{Über mich}\sidevalue{ {{ $e($cv['about']) }} }@endif
 @foreach($cv['knowledge'] as $group)\vspace{1.2mm}\sidebarhead{ {{ $e(mb_strtoupper($group['category'] ?? '')) }} }@foreach(($group['items'] ?? []) as $item)\sidevalue{\textbf{ {{ $e($item['label'] ?? '') }} }@if(!empty($item['context']))\\{\scriptsize {{ $e($item['context']) }} }@endif}@endforeach @endforeach
 @if($cv['soft_skills'])\sidebarhead{Soft Skills}

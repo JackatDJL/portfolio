@@ -126,6 +126,23 @@ test('CV document links keep the shared semantic-link and arrow treatment', asyn
     expect(wrappedProjectArrow.arrowCenterY).toBeLessThanOrEqual(wrappedProjectArrow.lastLineBottom + 2);
 });
 
+test('project, blog, publication and CV detail routes remain available', async ({ page }) => {
+    const routes = [
+        { path: '/projekte', heading: 'Projekte' },
+        { path: '/projekte/prtop', heading: 'prtop' },
+        { path: '/blog/warum-ich-projekte-zu-codeberg-verschiebe', heading: 'Codeberg' },
+        { path: '/publikationen', heading: 'Publikationen' },
+        { path: '/publikationen/breaking-free-from-big-tech', heading: 'Breaking Free from Big Tech' },
+        { path: '/cv/exp/atheblues-robotik-und-teamarbeit', heading: 'Robotik und Teamarbeit' },
+    ];
+
+    for (const route of routes) {
+        const response = await page.goto(route.path, { waitUntil: 'domcontentloaded' });
+        expect(response?.status(), route.path).toBe(200);
+        await expect(page.locator('main h1').first(), route.path).toContainText(route.heading);
+    }
+});
+
 test('shared sidebars stick as a whole only when they fit the viewport', async ({ page }) => {
     await page.route('https://zenodo.org/**', (route) => route.abort());
     for (const detail of detailPages) {
