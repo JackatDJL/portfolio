@@ -3,7 +3,7 @@ id: 037c7fec-9f45-4ac2-8c5f-3d3f6cf5c251
 published: true
 blueprint: project
 title: 'Wahlen Foundation'
-summary: 'Ein archivierter Webversuch für digitale Abstimmungen. Der Code enthält Backend-Bausteine für Wahlentwürfe und Fragen; die Stimmabgabe wurde nicht umgesetzt.'
+summary: 'Ich probierte eine Webanwendung für digitale Abstimmungen aus. Erste Backend-Bausteine für Wahlentwürfe und Fragen entstanden, die Stimmabgabe selbst setzte ich nicht um.'
 project_status: archived
 featured: false
 started_at: '2025-03-15'
@@ -17,16 +17,16 @@ content:
   - type: paragraph
     content:
       - type: text
-        text: 'Wahlen Foundation war ein Versuch, eine Webanwendung für digitale Abstimmungen zu bauen. Das README beschreibt eine Trennung zwischen einem Verwaltungsbereich unter der Hauptdomain und öffentlichen Wahlseiten auf Organisations-Subdomains.'
+        text: 'Der Entwurf trennte Verwaltungsaufgaben und öffentliche Abstimmungsseiten innerhalb einer Webanwendung. Ich skizzierte dafür eine zentrale Verwaltung und eigene Wahlseiten für Organisationen.'
   - type: heading
     attrs: { level: 2 }
     content:
       - type: text
-        text: 'Im Code umgesetzt'
+        text: 'Der Teil, den ich gebaut habe'
   - type: paragraph
     content:
       - type: text
-        text: 'Im tRPC-Backend gibt es Funktionen, um Wahlentwürfe anzulegen, zu bearbeiten, zu veröffentlichen und zeitlich zu planen. Fragen lassen sich über eigene Endpunkte anlegen, ändern und löschen.'
+        text: 'Ich implementierte erste Backend-Abläufe für Wahlentwürfe: Sie ließen sich anlegen, bearbeiten, veröffentlichen und planen. Auch Fragen konnten über eigene Funktionen verwaltet werden. Damit stand ein Teil der Verwaltung, aber noch keine vollständige Anwendung.'
   - type: heading
     attrs: { level: 2 }
     content:
@@ -35,5 +35,5 @@ content:
   - type: paragraph
     content:
       - type: text
-        text: 'Das Repository enthält keine App-Routen für die im README beschriebenen Verwaltungs- und Wahlseiten. Die öffentliche Startseite zeigt ein einfaches Next.js-Beispiel mit „Hello World“ und meldet, dass die Funktion noch nicht verfügbar ist. Die Ergebnisfunktionen und das Löschen einer Wahl sind im API-Router Platzhalter. Eine Funktion zur Stimmabgabe ist nicht implementiert.'
+        text: 'Vor einer echten Wahl hätte ich noch die Verwaltungsoberfläche, die öffentliche Stimmabgabe und die Ergebnisansicht entwickeln müssen. Dazu kam es nicht: Wahlen Foundation blieb ein Prototyp und wurde nie bei einer realen Wahl eingesetzt.'
 ---

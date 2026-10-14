@@ -3,7 +3,7 @@ id: 55e60c04-3c05-46dd-81ef-c9487aa27dac
 published: true
 blueprint: project
 title: 'DJL UI'
-summary: 'DJL UI bündelte React-Komponenten und Effekte in einem TypeScript-Paket mit Storybook. Die angekündigte Next.js-Dokumentation blieb offen.'
+summary: 'Ich bündelte wiederverwendbare React-Bausteine und Oberflächeneffekte in einem TypeScript-Paket. Das archivierte Paket wurde mit einer kleinen Storybook-App dokumentiert.'
 project_status: archived
 featured: false
 repository_url: 'https://github.com/JackatDJL/djl-ui'
@@ -18,23 +18,23 @@ content:
   - type: paragraph
     content:
       - type: text
-        text: 'Ich wollte wiederkehrende Oberflächenbausteine im DJL-Umfeld an einem Ort pflegen, statt sie in jedem Projekt neu zu schreiben. Dafür legte ich ein TypeScript-Monorepo mit einem React-Paket an, das Tailwind CSS voraussetzt.'
+        text: 'Ähnliche Eingaben, Dialoge und Karten tauchten in mehreren Webprojekten wieder auf. Ich bündelte solche Bausteine, damit sie in React-Projekten wiederverwendbar waren und nicht jedes Mal neu entstehen mussten.'
   - type: heading
     attrs: { level: 2 }
     content:
       - type: text
-        text: 'Das Paket'
+        text: 'Komponenten und Spielwiese'
   - type: paragraph
     content:
       - type: text
-        text: 'Im Paket liegen Komponenten für Eingaben, Dialoge und Drawer, Karten, Tabs, Schalter, Tooltips sowie Lade- und Fortschrittsanzeigen. Dazu kommen Textanimationen und Effekte für Karten und Hintergründe. Die separate Storybook-App enthält eine Story mit verschiedenen Varianten der Button-Komponente.'
+        text: 'Ich legte ein TypeScript-Monorepo mit einem React-Paket auf Basis von Tailwind CSS an. Es umfasst unter anderem Eingaben, Dialoge, Drawer, Karten, Tabs, Schalter und Ladeanzeigen sowie kleinere Text- und Hintergrundeffekte. Mit Storybook probierte ich Komponenten unabhängig von einer vollständigen Website aus; dokumentiert sind dort verschiedene Button-Varianten.'
   - type: heading
     attrs: { level: 2 }
     content:
       - type: text
-        text: 'Umsetzung und Ende'
+        text: 'Was aus dem Paket wurde'
   - type: paragraph
     content:
       - type: text
-        text: 'Das README kündigt eine eigene Next.js-Dokumentation als späteren Ausbau an. Im Repository ist dieser Teil nicht umgesetzt; der Doku-Bereich startet Storybook. Die Projektchronik im DJL-Foundation-Archiv ordnet das Ende dem März 2025 zu.'
+        text: 'Ich habe das Paket nicht weitergeführt. Eine separate Next.js-Dokumentation blieb offen; die vorhandene Storybook-App ist der letzte dokumentierte Arbeitsstand. Das Projektarchiv ordnet das Ende dem März 2025 zu.'
 ---

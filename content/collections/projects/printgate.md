@@ -3,7 +3,7 @@ id: 840804f5-d413-4824-a847-769393170ed4
 published: true
 blueprint: project
 title: Printgate
-summary: 'Printgate ist ein frühes Laravel-Projekt mit PDF-Upload und CUPS-Anbindung. Anmeldung und Fernzugriff sind noch nicht umgesetzt.'
+summary: 'Ich entwickle Printgate als Weboberfläche für PDF-Druckaufträge über CUPS. Upload, Druckersuche und Warteschlange sind angelegt; Anmeldung und Fernzugriff fehlen noch.'
 project_status: experiment
 featured: false
 started_at: '2026-08-31'
@@ -17,9 +17,9 @@ content:
   - type: paragraph
     content:
       - type: text
-        text: 'Printgate ist ein frühes Experiment für eine Weboberfläche zu CUPS-Druckaufträgen. Im Repository gibt es bereits einen PDF-Upload, wartende Aufträge, eine Suche nach verfügbaren Druckern und einen Codepfad, der einen ausgewählten Auftrag an CUPS übergibt. Eine einfache Auftragsliste und ein Abbruchpfad sind ebenfalls vorhanden.'
+        text: 'Printgate verwaltet Druckaufträge über eine kleine Weboberfläche und überlässt CUPS die Druckersteuerung. Ich konzentrierte mich auf den Ablauf vom PDF bis zur Warteschlange.'
   - type: paragraph
     content:
       - type: text
-        text: 'Eine produktive Druckfunktion für den Fernzugriff gibt es noch nicht. Anmeldung und Fernzugriff sind laut Roadmap offen. Auch eine Dokumentvorschau und Druckoptionen für einzelne Geräte fehlen noch.'
+        text: 'Im aktuellen Stand kann ich PDFs hochladen, verfügbare Drucker suchen, wartende Aufträge ansehen und einen ausgewählten Auftrag an CUPS übergeben oder abbrechen. Eine Anmeldung und ein abgesicherter Fernzugriff sind noch nicht gebaut. Printgate bleibt damit ein frühes Experiment und ist kein produktiver Druckdienst.'
 ---

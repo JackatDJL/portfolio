@@ -3,7 +3,7 @@ id: 592ac462-1e09-4f35-be25-8308b982fb2b
 published: true
 blueprint: project
 title: ai-ctx
-summary: 'ai-ctx war mein TypeScript-CLI-Prototyp für Codekontext in Browser-Chats. Umgesetzt wurden das CLI-Grundgerüst und Befehle für globale und projektbezogene Konfiguration. Datei- und Workspace-Verarbeitung blieb unvollständig.'
+summary: 'Ich baute ai-ctx, um lokalen Codekontext in Browser-Chats zu übernehmen. Das CLI konnte globale und projektbezogene Einstellungen verwalten; Datei- und Workspace-Übergabe blieb offen.'
 project_status: archived
 featured: false
 started_at: '2025-04-18'
@@ -23,7 +23,7 @@ used_technologies:
   - pnpm
 repository_url: 'https://github.com/JackatDJL/ai-ctx'
 seo_title: 'ai-ctx: CLI-Prototyp für Browser-KI'
-seo_description: 'Mein TypeScript-CLI-Prototyp sollte Dateien für Browser-Chats bündeln. Umgesetzt wurden das CLI-Grundgerüst sowie das Anlegen und Zurücksetzen globaler und projektbezogener Konfiguration.'
+seo_description: 'Mein TypeScript-CLI-Prototyp bündelte Konfiguration für Code in Browser-Chats. Datei- und Workspace-Verarbeitung blieb unvollständig.'
 noindex: false
 updated_by: 7098a585-4701-4963-95aa-52c0d85d3e7d
 updated_at: 1788815940
@@ -62,7 +62,7 @@ content:
     content:
       -
         type: text
-        text: 'Das CLI-Grundgerüst nutzt TypeScript, Effect und @effect/cli. ai-ctx init legte globale und projektbezogene Konfigurationsdateien an; mit ai-ctx init reset ließen sie sich auf Standardwerte zurücksetzen. Die Befehle file und workspace waren registriert, verarbeiteten im veröffentlichten Stand aber noch keine Dateien.'
+        text: 'Ich baute das Befehlsgerüst mit TypeScript, Effect und @effect/cli. „ai-ctx init“ richtete globale und projektbezogene Einstellungen ein; „ai-ctx init reset“ stellte die Standardwerte wieder her. Die Datei- und Workspace-Befehle waren noch nicht bis zur tatsächlichen Verarbeitung umgesetzt.'
   -
     type: heading
     attrs:
@@ -76,5 +76,5 @@ content:
     content:
       -
         type: text
-        text: 'Später nutzte ich Coding-Agenten direkt im lokalen Repository und brauchte den Umweg nicht mehr. ai-ctx blieb ein Prototyp; die Datei- und Workspace-Verarbeitung habe ich nicht fertiggestellt.'
+        text: 'Später arbeitete ich häufiger mit Coding-Agenten direkt in meinen Projekten. Den manuellen Kontext-Export brauchte ich dadurch immer seltener. Ich archivierte ai-ctx, bevor ich die Datei- und Workspace-Verarbeitung fertiggestellt hatte.'
 ---

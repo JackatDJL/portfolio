@@ -3,7 +3,7 @@ id: 3f25d03a-33b5-478f-9375-f01ed2207d7e
 published: true
 blueprint: project
 title: 'DJL Foundation Archiv'
-summary: 'Ich habe eine Website gebaut, die öffentliche Projekte aus dem DJL-Umfeld zeitlich ordnet und in einem eigenen Archiv festhält.'
+summary: 'Ich baue das DJL Foundation Archiv als zeitliche Dokumentation öffentlicher Projekte, damit ihre Entstehung und Verbindung zueinander nachvollziehbar bleiben.'
 project_status: active
 featured: false
 started_at: '2026-09-04'
@@ -19,14 +19,14 @@ content:
   - type: paragraph
     content:
       - type: text
-        text: 'Ich habe die Website als öffentliche Dokumentation für Projekte aus dem DJL-Umfeld gebaut. Projektgeschichte und Archiv sind getrennte Bereiche, ihre Einträge nutzen dieselbe Darstellung.'
+        text: 'Bei mehreren kleinen Web- und Softwareprojekten geht schnell verloren, in welcher Reihenfolge sie entstanden sind und welche Ideen später wieder auftauchen. Ich habe das Archiv gebaut, um diese Arbeiten nicht nur nebeneinander zu zeigen, sondern in ihrer zeitlichen Entwicklung lesbar zu machen.'
   - type: heading
     attrs: { level: 2 }
     content:
       - type: text
-        text: 'So sind die Einträge aufgebaut'
+        text: 'Eine gemeinsame Form für viele Projekte'
   - type: paragraph
     content:
       - type: text
-        text: 'Im Code liegen die Einträge als typisierte TypeScript-Daten. Jeder kann Zeitraum, Status, Beschreibung und weiterführende Links zeigen; bei ausgewählten Projekten kommt ein Bild hinzu.'
+        text: 'Die Projektchronik und das Archiv verwenden dieselbe Karten- und Detailstruktur. So bleiben Zeitraum, Status, kurze Einordnung und weiterführende Links auch dann vergleichbar, wenn die Projekte sehr unterschiedlich groß sind. Bei ausgewählten Arbeiten ergänze ich Bilder.'
 ---

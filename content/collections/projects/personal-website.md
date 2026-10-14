@@ -3,7 +3,7 @@ id: 925533d0-e494-4366-857f-18431878a91d
 published: true
 blueprint: project
 title: 'Persönliche Website'
-summary: 'Aus einem TanStack-Start-Prototyp wurde eine persönliche Website mit Laravel und Statamic. Sie bündelt heute Projekte, Blog, Veröffentlichungen und aktuelle Arbeit.'
+summary: 'Ich baue meine Website als öffentliches Arbeitsarchiv für Projekte, Texte und Veröffentlichungen. Aus einem TanStack-Start-Prototyp wurde dafür eine mit Laravel und Statamic gepflegte Seite.'
 project_status: active
 featured: false
 used_technologies: [PHP, Laravel, Statamic]
@@ -17,32 +17,23 @@ content:
   - type: paragraph
     content:
       - type: text
-        text: 'Meine persönliche Website begann als React- und TanStack-Start-Prototyp mit typisierten TypeScript-Daten. Der erste Stand hatte eigene Seiten für Projekte, Writing, CV, About, Contact und Now.'
+        text: 'Kurze Projektkarten reichten mir nicht, um festzuhalten, was ich an einer Arbeit gemacht habe und wie sie mit anderen Projekten zusammenhängt. Mein erster Entwurf war eine React- und TanStack-Start-Anwendung mit typisierten Projektdaten.'
   - type: heading
     attrs: { level: 2 }
     content:
       - type: text
-        text: 'Vom Prototyp zur Statamic-Seite'
+        text: 'Ein System, das ich redaktionell pflegen kann'
   - type: paragraph
     content:
       - type: text
-        text: 'Die heutige Website läuft mit Laravel und Statamic. Projekt-, Blog- und Veröffentlichungseinträge liegen in Statamic-Collections; auch Erfahrungs- und CV-Inhalte werden dort gepflegt. Ein Projekteitrag kann Bard-Text, Technologien, Themen, Relationen und Medien enthalten.'
+        text: 'Mit der Zeit ersetzte ich den Prototyp durch Laravel und Statamic. Dort kann ich Projektberichte, Blogbeiträge und Veröffentlichungen als redaktionelle Einträge pflegen. Für Projekte gehören längere Texte, Technologien, Themen, Beziehungen zu anderen Arbeiten und Bilder zusammen.'
   - type: heading
     attrs: { level: 2 }
     content:
       - type: text
-        text: 'Was heute live ist'
+        text: 'Was daraus geworden ist'
   - type: paragraph
     content:
       - type: text
-        text: 'Die Startseite bündelt Projekte, Blog, Veröffentlichungen und Aktuelles. Projekte, Artikel und Veröffentlichungen haben eigene Übersichts- und Detailseiten. Veröffentlichungen bieten Dokumentvorschau und Zitierformate. Die CV-Seiten bieten mehrere Profile, einen interaktiven Zeitstrahl und eine PDF-Ausgabe.'
-  - type: heading
-    attrs: { level: 2 }
-    content:
-      - type: text
-        text: 'Was aus dem ersten Entwurf blieb'
-  - type: paragraph
-    content:
-      - type: text
-        text: 'Die erste Version enthielt außerdem About- und Contact-Routen. In der heutigen Laravel-Anwendung gibt es diese Seiten nicht; sie gehören deshalb nicht zum aktuellen Funktionsumfang.'
+        text: 'Heute führt die Website Projekte, Blog, Veröffentlichungen und Aktuelles an einem Ort zusammen. Die Übersichtsseiten verlinken auf einzelne Einträge, in denen ich Arbeitsschritte und verwendete Medien genauer einordnen kann. Ich entwickle die Seite weiterhin zusammen mit dem Portfolio, das sie dokumentiert.'
 ---

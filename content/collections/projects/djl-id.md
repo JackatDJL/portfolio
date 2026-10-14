@@ -18,16 +18,16 @@ content:
   - type: paragraph
     content:
       - type: text
-        text: 'Mehrere Anwendungen im DJL-Umfeld sollten einen gemeinsamen Zugang nutzen können. Mit DJL ID erprobte ich, wie sich diese Idee in einem eigenen Webprojekt abbilden lässt.'
+        text: 'Mehrere Anwendungen im DJL-Umfeld sollten einen gemeinsamen Zugang nutzen können. Mit DJL ID baute ich einen kleinen Webprototyp, um diese Idee zu prüfen.'
   - type: heading
     attrs: { level: 2 }
     content:
       - type: text
-        text: 'Ein erster Prototyp'
+        text: 'Was ich ausprobiert habe'
   - type: paragraph
     content:
       - type: text
-        text: 'Im März 2026 entstand eine einfache Weboberfläche mit einer Startseite und einer Anmeldemaske. Weitergehende Funktionen waren für den Ausbau vorgesehen.'
+        text: 'Im März 2026 setzte ich dafür eine kleine Weboberfläche mit Startseite und Anmeldemaske auf. Eine Verbindung zu mehreren produktiven Anwendungen entstand daraus nicht; dafür hätte es eine weitergehende Integration gebraucht.'
   - type: heading
     attrs: { level: 2 }
     content:
@@ -36,5 +36,5 @@ content:
   - type: paragraph
     content:
       - type: text
-        text: 'DJL ID blieb ein Experiment. Ein fertiger Dienst entstand daraus nicht.'
+        text: 'DJL ID blieb ein technischer Versuch. Ich habe den Prototyp nicht zu einem gemeinsamen Anmeldedienst ausgebaut.'
 ---

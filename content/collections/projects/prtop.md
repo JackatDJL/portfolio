@@ -3,7 +3,7 @@ id: 4739fabf-5726-4d17-ad72-5a5f574e33cd
 published: true
 blueprint: project
 title: prtop
-summary: 'prtop bündelt Pull Requests und Merge Requests aus GitHub, GitLab und Forgejo/Codeberg in einer Rust-TUI. Je nach Anbieter gibt es darin Kommentar-, Review-, CI- und Merge-Abläufe.'
+summary: 'Ich entwickle prtop, um Pull Requests aus mehreren Git-Forges in einer tastaturbedienbaren Terminaloberfläche zu prüfen und zu verwalten.'
 project_status: active
 featured: true
 started_at: '2026-08-29 23:11'
@@ -22,7 +22,7 @@ used_technologies:
   - TOML
 repository_url: 'https://github.com/JackatDJL/prtop'
 seo_title: 'prtop: Pull Requests im Terminal | Jack Ruder'
-seo_description: 'Rust-TUI für Pull Requests und Merge Requests in GitHub, GitLab und Forgejo/Codeberg. Mit Detailansichten, Kommentaren, Reviews und CI-Abläufen je nach Anbieter.'
+seo_description: 'prtop bündelt Pull Requests aus GitHub, GitLab und Codeberg in einer Rust-Terminaloberfläche. Ich entwickle das Werkzeug weiter.'
 noindex: false
 cover: projects/prtop/prtop-live-dashboard.png
 gallery:
@@ -38,52 +38,35 @@ topics:
 related_projects:
   - 592ac462-1e09-4f35-be25-8308b982fb2b
 content:
-  -
-    type: heading
-    attrs:
-      level: 2
+  - type: heading
+    attrs: { level: 2 }
     content:
-      -
-        type: text
-        text: 'Warum prtop im Terminal läuft'
-  -
-    type: paragraph
+      - type: text
+        text: 'Pull Requests an einem Ort'
+  - type: paragraph
     content:
-      -
-        type: text
-        text: 'Ich wollte Pull Requests nicht in mehreren Browser-Tabs und mit unterschiedlichen Oberflächen verwalten. prtop fasst offene Pull Requests und Merge Requests in einer gemeinsamen Terminalansicht zusammen, die sich per Tastatur bedienen lässt. Beim Start erkennt die App das Git-Repository im aktuellen Verzeichnis und öffnet es, wenn die Forge konfiguriert ist.'
-  -
-    type: heading
-    attrs:
-      level: 2
+      - type: text
+        text: 'Ich arbeite gern im Terminal und habe durch eigene Software- und Organisationsprojekte Konten auf mehreren Git-Forges, darunter GitHub und Codeberg. Pull Requests dort einzeln im Browser zu suchen und zu verwalten, wurde schnell umständlich. Deshalb begann ich prtop: eine Terminaloberfläche, in der ich offene Pull Requests aus dem aktuellen Repository oder forgeübergreifend sammeln kann.'
+  - type: heading
+    attrs: { level: 2 }
     content:
-      -
-        type: text
-        text: 'Welche Abläufe vorhanden sind'
-  -
-    type: paragraph
+      - type: text
+        text: 'Was im Werkzeug steckt'
+  - type: paragraph
     content:
-      -
-        type: text
-        text: 'Der Quellstand enthält ein Dashboard sowie Detailansichten für Pull Requests, Pipelines und Jobs. Die Detailansicht lädt Kommentare und Reviews. Je nach Anbieter und Berechtigung kann man Kommentare posten, Reviews abgeben und Anfragen erstellen, bearbeiten, schließen, wieder öffnen oder mergen. prtop blendet nicht unterstützte Schreibaktionen aus. Die Adapter enthalten auch Endpunkte zum Bearbeiten und Löschen von Kommentaren; die App bindet diese Aktionen noch nicht in die Oberfläche ein.'
-  -
-    type: paragraph
+      - type: text
+        text: 'Ich baue prtop in Rust mit Ratatui. GitHub, GitLab und Forgejo beziehungsweise Codeberg unterscheiden sich bei Reviews und verfügbaren Aktionen. Dafür habe ich getrennte Anbieteradapter angelegt, statt eine einzige gemeinsame API vorauszusetzen.'
+  - type: paragraph
     content:
-      -
-        type: text
-        text: 'Im CI-Bereich lassen sich Pipelines und Jobs öffnen. Logs können in unterstützten Adaptern durchsucht und bei laufenden Jobs verfolgt werden. Retry, Abbruch und manuelle Jobstarts erscheinen nur, wenn die Forge sie unterstützt. GitHub, GitLab und Forgejo haben eigene Adapter; ihre verfügbaren Details und Aktionen unterscheiden sich.'
-  -
-    type: heading
-    attrs:
-      level: 2
+      - type: text
+        text: 'In der Detailansicht prüfe ich Änderungen, Kommentare und Reviews und sehe die zugehörigen CI-Pipelines und Jobs. Die Oberfläche kann Daten im Hintergrund laden, während ich weiter mit ihr arbeite. Der Name verbindet „PR“ für Pull Request mit „btop“.'
+  - type: heading
+    attrs: { level: 2 }
     content:
-      -
-        type: text
-        text: 'Startmodi und Stand'
-  -
-    type: paragraph
+      - type: text
+        text: 'Noch nicht fertig'
+  - type: paragraph
     content:
-      -
-        type: text
-        text: 'Ohne Argument öffnet prtop das erkannte Projekt; mit . oder einem Repository-Pfad lässt sich die Auswahl ausdrücklich setzen. --global zeigt alle konfigurierten Projekte. --demo startet mit festen Beispieldaten und ohne Forge-Verbindung, getrennt vom Livebetrieb. Ein GitHub-Release ist bislang nicht veröffentlicht.'
+      - type: text
+        text: 'prtop ist noch in Arbeit und hat kein Release. Mein Entwicklungsumfeld bietet inzwischen ähnliche Forge-Ansichten, deshalb nutze ich prtop selbst derzeit nicht. Ich möchte das Werkzeug trotzdem zu Ende bauen, statt es halbfertig liegenzulassen.'
 ---
