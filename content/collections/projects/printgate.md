@@ -7,6 +7,7 @@ summary: 'Ich entwickle Printgate als Weboberfläche für PDF-Druckaufträge üb
 project_status: experiment
 featured: false
 started_at: '2026-08-31'
+cover: projects/printgate/printgate-pdf-upload.webp
 used_technologies: [PHP, Laravel, Livewire, CUPS]
 repository_url: 'https://github.com/JackatDJL/printgate'
 topics: [infrastructure, privacy, web-development]

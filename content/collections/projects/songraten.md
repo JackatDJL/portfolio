@@ -9,6 +9,7 @@ featured: false
 started_at: '2023-06-27'
 website_url: 'https://jackatdjl.github.io/SongRaten/'
 repository_url: 'https://github.com/JackatDJL/SongRaten'
+cover: projects/songraten/songraten-moderator-view.webp
 featured_technology: [JavaScript]
 used_technologies: [HTML, CSS, JavaScript]
 topics: [web-development]

@@ -8,6 +8,7 @@ project_status: active
 featured: true
 started_at: '2024-03-08 16:01'
 website_url: 'https://atheblues.de'
+cover: projects/atheblues/atheblues-teammark.webp
 featured_technology:
   - rust
   - Arduino

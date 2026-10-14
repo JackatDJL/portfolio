@@ -7,6 +7,7 @@ summary: 'Ich baute einen lokalen Prototyp für Bienenvölker und Beutenteile. E
 project_status: experiment
 featured: false
 started_at: '2025-04-13'
+cover: projects/imkerportal-ruder/imkerportal-ruder-project-art.webp
 used_technologies: [TypeScript, Next.js, Convex, Clerk, Tailwind CSS]
 topics: [web-development]
 noindex: true
