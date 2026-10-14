@@ -1,6 +1,10 @@
-# Redaktionelle Prüfung der Projektseiten
+# Redaktionelle Prüfung der Projektseiten und Homepage-Fix
 
 Arbeitsbericht zu den 19 verbleibenden Project-Entries. Die Inhalte verbinden Statamic-Daten und Bard-Inhalte mit den bereits ausgewerteten öffentlichen Projektseiten, Repositories, Quellständen und Medien sowie den direkten Bestätigungen des Projektinhabers. Der Bericht hält fehlende persönliche Angaben fest, statt sie im öffentlichen Text zu ergänzen. Veröffentlichungsstatus und `noindex`-Einstellungen wurden grundsätzlich beibehalten.
+
+## Homepage-Fix
+
+Behoben wurde ein Darstellungsfehler im Abschnitt „Aktuell“ am unteren Ende der Homepage, bei dem der Outlink-Pfeil nicht korrekt neben dem Linktext zentriert war. Die CSS-Regel `.home-now__links .related-reference` wurde um `display: flex` und `align-items: center` ergänzt, um die vertikale Zentrierung des Pfeils sicherzustellen.
 
 | Projekt | Verifizierte Quellen | Redaktionell überarbeitet | Cover / Galerie | Fehlende Informationen und Rückfragen |
 | --- | --- | --- | --- | --- |
