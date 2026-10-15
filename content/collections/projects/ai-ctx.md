@@ -3,11 +3,10 @@ id: 592ac462-1e09-4f35-be25-8308b982fb2b
 published: true
 blueprint: project
 title: ai-ctx
-summary: 'ai-ctx ist ein kleines TypeScript-CLI, das eine lokale Codebase in brauchbaren Kontext für KI-Modelle im Browser übersetzt. Es entstand zu einer Zeit, als ich lokal entwickeln wollte, aber noch keinen guten agentischen Coding-Workflow zur Verfügung hatte.'
+summary: 'Ich baute ai-ctx, um lokalen Codekontext in Browser-Chats zu übernehmen. Das CLI konnte globale und projektbezogene Einstellungen verwalten; Datei- und Workspace-Übergabe blieb offen.'
 project_status: archived
 featured: false
-started_at: '2025-04-18 14:16'
-ended_at: '2025-06-12 16:34'
+started_at: '2025-04-18'
 featured_technology:
   - TypeScript
   - Effect
@@ -23,11 +22,9 @@ used_technologies:
   - Vitest
   - pnpm
 repository_url: 'https://github.com/JackatDJL/ai-ctx'
-seo_title: 'ai-ctx: Codebase-Kontext für Browser-KI'
-seo_description: 'ai-ctx ist ein TypeScript-CLI, das lokale Projekte zu einem kompakten Kontext für KI-Modelle im Browser zusammenstellt.'
+seo_title: 'ai-ctx: CLI-Prototyp für Browser-KI'
+seo_description: 'Mein TypeScript-CLI-Prototyp bündelte Konfiguration für Code in Browser-Chats. Datei- und Workspace-Verarbeitung blieb unvollständig.'
 noindex: false
-gallery:
-  - projects/ai-ctx/effect-ai-ctx.png
 updated_by: 7098a585-4701-4963-95aa-52c0d85d3e7d
 updated_at: 1788815940
 topics:
@@ -45,13 +42,13 @@ content:
     content:
       -
         type: text
-        text: 'Das Problem vor den Agenten'
+        text: 'Kontext für Browser-Chats'
   -
     type: paragraph
     content:
       -
         type: text
-        text: 'Bevor gute agentische Coding-Tools für mich sinnvoll zugänglich waren, lief KI-Unterstützung beim Programmieren oft im Browser. Der Code lag aber lokal. Also musste jedes Mal irgendwie genug Projektkontext aus dem Repository in einen Chat gelangen.'
+        text: 'Meine Codeprojekte lagen lokal, während KI-Unterstützung für mich damals oft im Browser stattfand. ai-ctx sollte relevante Dateien zu einer Textausgabe bündeln, die ich in einen Chat übernehmen konnte.'
   -
     type: heading
     attrs:
@@ -59,13 +56,13 @@ content:
     content:
       -
         type: text
-        text: 'Meine kleine Zwischenlösung'
+        text: 'Was ich umgesetzt habe'
   -
     type: paragraph
     content:
       -
         type: text
-        text: 'ai-ctx sollte diesen Schritt automatisieren. Das CLI sammelt Projektkontext und kann eine Codebase in eine einzelne Textdatei zusammenführen, damit ein Browser-Modell nicht nur einen isolierten Codeausschnitt sieht. Die CLI selbst ist in TypeScript aufgebaut und nutzt Effect sowie @effect/cli.'
+        text: 'Ich baute das Befehlsgerüst mit TypeScript, Effect und @effect/cli. „ai-ctx init“ richtete globale und projektbezogene Einstellungen ein; „ai-ctx init reset“ stellte die Standardwerte wieder her. Die Datei- und Workspace-Befehle waren noch nicht bis zur tatsächlichen Verarbeitung umgesetzt.'
   -
     type: heading
     attrs:
@@ -73,11 +70,11 @@ content:
     content:
       -
         type: text
-        text: 'Warum das heute ein Archiv ist'
+        text: 'Warum ich es archiviert habe'
   -
     type: paragraph
     content:
       -
         type: text
-        text: 'Mein eigener Workflow hat sich seitdem stark verändert. Agentische Coding-Tools können den lokalen Projektkontext heute direkt lesen und verändern. Dadurch ist ai-ctx für mich kaum noch nötig, aber gerade deshalb ist es ein schönes kleines Zeitdokument dafür, wie schnell sich Developer-Tooling rund um KI verändert hat.'
+        text: 'Später arbeitete ich häufiger mit Coding-Agenten direkt in meinen Projekten. Den manuellen Kontext-Export brauchte ich dadurch immer seltener. Ich archivierte ai-ctx, bevor ich die Datei- und Workspace-Verarbeitung fertiggestellt hatte.'
 ---

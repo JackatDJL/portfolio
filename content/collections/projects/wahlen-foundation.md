@@ -3,28 +3,38 @@ id: 037c7fec-9f45-4ac2-8c5f-3d3f6cf5c251
 published: true
 blueprint: project
 title: 'Wahlen Foundation'
-summary: 'Ein archivierter Prototyp für digitale Wahlen mit getrennten Verwaltungs- und Abstimmungsoberflächen. Das Projekt blieb ein Entwicklungsstand, keine Behauptung über den Einsatz bei realen Wahlen.'
+summary: 'Ich probierte eine Webanwendung für digitale Abstimmungen aus. Erste Backend-Bausteine für Wahlentwürfe und Fragen entstanden, die Stimmabgabe selbst setzte ich nicht um.'
 project_status: archived
 featured: false
 started_at: '2025-03-15'
 used_technologies: [TypeScript, Next.js, tRPC, Drizzle]
 repository_url: 'https://github.com/JackatDJL/wahlen-foundation'
+cover: 'projects/wahlen-foundation/wahlen-foundation-startseite.webp'
 topics: [civic-technology, web-development]
 noindex: true
 seo_title: 'Wahlen Foundation | Jack Ruder'
-seo_description: 'Wahlen Foundation war ein Webprototyp mit getrennten Verwaltungs- und Abstimmungsoberflächen.'
+seo_description: 'Ein archivierter Webversuch für digitale Abstimmungen mit Backend-Bausteinen zur Wahl- und Fragenverwaltung. Die Stimmabgabe wurde nicht umgesetzt.'
 content:
   - type: paragraph
     content:
       - type: text
-        text: 'Der Prototyp untersuchte, wie Verwaltungsfunktionen und öffentliche Abstimmungsseiten in einer Webanwendung getrennt werden können. Der Code enthält dafür eigene Routen für Anmeldung, Profile, Fragen und Druckausgaben.'
+        text: 'Der Entwurf trennte Verwaltungsaufgaben und öffentliche Abstimmungsseiten innerhalb einer Webanwendung. Ich skizzierte dafür eine zentrale Verwaltung und eigene Wahlseiten für Organisationen.'
   - type: heading
     attrs: { level: 2 }
     content:
       - type: text
-        text: 'Ein Prototyp für getrennte Rollen'
+        text: 'Der Teil, den ich gebaut habe'
   - type: paragraph
     content:
       - type: text
-        text: 'Next.js, TypeScript, tRPC und Drizzle bilden die technische Basis. Das Projekt blieb ein Entwicklungsprototyp und wurde nicht bei einer realen Wahl eingesetzt.'
+        text: 'Ich implementierte erste Backend-Abläufe für Wahlentwürfe: Sie ließen sich anlegen, bearbeiten, veröffentlichen und planen. Auch Fragen konnten über eigene Funktionen verwaltet werden. Damit stand ein Teil der Verwaltung, aber noch keine vollständige Anwendung.'
+  - type: heading
+    attrs: { level: 2 }
+    content:
+      - type: text
+        text: 'Was offen blieb'
+  - type: paragraph
+    content:
+      - type: text
+        text: 'Vor einer echten Wahl hätte ich noch die Verwaltungsoberfläche, die öffentliche Stimmabgabe und die Ergebnisansicht entwickeln müssen. Dazu kam es nicht: Wahlen Foundation blieb ein Prototyp und wurde nie bei einer realen Wahl eingesetzt.'
 ---
