@@ -8,6 +8,7 @@ project_status: archived
 featured: false
 started_at: '2023-12-02'
 repository_url: 'https://github.com/DJL-Foundation/NoPlus'
+cover: 'projects/no-plus/no-plus-brand-sheet.webp'
 featured_technology: [Unity, C#]
 used_technologies: [Unity, C#]
 topics: []

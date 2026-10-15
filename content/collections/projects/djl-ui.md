@@ -7,6 +7,7 @@ summary: 'Ich bündelte wiederverwendbare React-Bausteine und Oberflächeneffekt
 project_status: archived
 featured: false
 repository_url: 'https://github.com/JackatDJL/djl-ui'
+cover: 'projects/djl-ui/djl-ui-button-variants.webp'
 started_at: '2024-06-05'
 featured_technology: [TypeScript, React, Tailwind CSS]
 used_technologies: [TypeScript, React, Tailwind CSS, Storybook, Yarn, Turborepo, Jest]

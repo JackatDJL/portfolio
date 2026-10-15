@@ -9,6 +9,7 @@ featured: false
 started_at: '2025-03-15'
 used_technologies: [TypeScript, Next.js, tRPC, Drizzle]
 repository_url: 'https://github.com/JackatDJL/wahlen-foundation'
+cover: 'projects/wahlen-foundation/wahlen-foundation-startseite.webp'
 topics: [civic-technology, web-development]
 noindex: true
 seo_title: 'Wahlen Foundation | Jack Ruder'

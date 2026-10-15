@@ -8,6 +8,7 @@ project_status: archived
 featured: false
 started_at: '2024-11-08'
 repository_url: 'https://github.com/JackatDJL/Hamburg-Hack-A-Ton-Archive'
+cover: 'projects/hamburg-hack-a-ton-archive/hamburg-hack-a-ton-about.webp'
 used_technologies: [TypeScript, Next.js, React]
 topics: [education, web-development]
 seo_title: 'Hamburg Hack-A-Ton Archive | Jack Ruder'

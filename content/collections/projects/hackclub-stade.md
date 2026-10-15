@@ -6,6 +6,7 @@ title: 'Hackclub Stade'
 summary: 'Ich gründete Hackclub Stade als geplante Technik-AG für Jugendliche aus ganz Stade. Eine regelmäßige AG kam wegen abgelehnter Anträge nicht zustande; später organisierte ich eine Projektwoche unter dem Hackclub-Namen.'
 project_status: paused
 featured: false
+cover: 'projects/hackclub-stade/hackclub-stade-projektwoche.webp'
 topics: [education, teamwork, web-development]
 related_experience: [fb67532f-e86a-4a19-8c5c-71fcf9e8d98d]
 related_projects: [00979e47-6007-439e-b10c-f1b47cc99863]

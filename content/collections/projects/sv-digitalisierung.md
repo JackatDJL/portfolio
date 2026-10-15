@@ -7,6 +7,7 @@ summary: 'Aus meinen früheren Ideen zur Digitalisierung der Schülervertretung 
 project_status: experiment
 featured: false
 repository_url: 'https://github.com/DJL-Foundation/schlie-fach-manager'
+cover: 'projects/sv-digitalisierung/schliessfach-manager-dashboard.webp'
 started_at: '2026-01-17'
 topics: [cli, education]
 used_technologies: [TypeScript, Bun, SQLite]

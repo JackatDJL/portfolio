@@ -7,6 +7,7 @@ summary: 'Ich begann Foundation Drive als Entwurf einer webbasierten Dateiablage
 project_status: archived
 featured: false
 repository_url: 'https://github.com/DJL-Foundation/foundation-drive'
+cover: 'projects/foundation-drive/foundation-drive-startseite.webp'
 started_at: '2025-02-12'
 used_technologies: [TypeScript, Next.js, Drizzle]
 topics: [web-development]

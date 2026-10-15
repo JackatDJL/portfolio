@@ -7,6 +7,7 @@ summary: 'Ich erprobte mit DJL ID einen gemeinsamen Zugang für mehrere DJL-Anwe
 project_status: experiment
 featured: false
 repository_url: 'https://github.com/DJL-Foundation/id'
+cover: 'projects/djl-id/djl-id-placeholder-login.webp'
 featured_technology: [TanStack Start]
 used_technologies: [TypeScript, React, TanStack Start, Better Auth]
 topics: [web-development, privacy]
