@@ -2,8 +2,8 @@
 id: 00979e47-6007-439e-b10c-f1b47cc99863
 published: true
 blueprint: project
-title: 'Projektwoche Nachhaltige Webentwicklung'
-summary: 'Ich plante die Hackclub-Woche zu nachhaltiger Webentwicklung mit, half den Teilnehmenden vor Ort und richtete mit meinem Rust-Paketmanager die bereitgestellten Laptops ein.'
+title: 'Workshop Nachhaltige Webentwicklung'
+summary: 'Bei der Projektwoche des Athenaeums 2025 bot ich mit Hackclub Stade einen Workshop zu nachhaltiger Webentwicklung an. Ich betreute eigene Webprojekte der Teilnehmenden und bereitete die Laptops mit meinem Rust-Paketmanager vor.'
 project_status: archived
 featured: false
 started_at: '2025-08-02'
@@ -13,8 +13,8 @@ website_url: 'https://prowo.hackclub-stade.de'
 cover: projects/projektwoche-nachhaltige-webentwicklung/projektwoche-nachhaltigkeit.png
 topics: [education, web-development]
 related_projects: [5807f242-6c88-4a60-aea5-a529ffa75110]
-seo_title: 'Projektwoche Nachhaltige Webentwicklung | Jack Ruder'
-seo_description: 'Ich plante die Hackclub-Woche mit, half den Teilnehmenden und installierte mit meinem Rust-Paketmanager Werkzeuge auf den Laptops.'
+seo_title: 'Workshop Nachhaltige Webentwicklung 2025 | Jack Ruder'
+seo_description: 'Mein Workshop bei der Athenaeum-Projektwoche 2025: eigene Webprojekte, Unterstützung vor Ort und ein Rust-Paketmanager für die Laptops.'
 noindex: true
 content:
   - type: heading
@@ -25,7 +25,7 @@ content:
   - type: paragraph
     content:
       - type: text
-        text: 'Während der schulischen Projektwoche stand Nachhaltigkeit als gemeinsames Thema im Mittelpunkt. Ich war im Planungsteam aktiv und wollte mit Hackclub Stade ein Angebot schaffen, in dem die Teilnehmenden eigene Webprojekte entwickeln und veröffentlichen konnten. So wurde aus dem Schulthema die Idee für eine Woche nachhaltiger Webentwicklung.'
+        text: 'Die Projektwoche am Athenaeum stand 2025 unter dem Thema Nachhaltigkeit. Ich war im Planungsteam aktiv und wollte mit Hackclub Stade einen Programmierworkshop anbieten. Daraus entstand die Idee für nachhaltige Webentwicklung: Die Teilnehmenden sollten eigene Webprojekte ausprobieren und sich dabei mit dem Thema der Schulprojektwoche beschäftigen.'
   - type: paragraph
     content:
       - type: text

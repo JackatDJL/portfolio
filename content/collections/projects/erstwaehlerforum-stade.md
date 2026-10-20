@@ -63,7 +63,7 @@ content:
   - type: paragraph
     content:
       - type: text
-        text: 'Zur Veranstaltung kamen rund 900 Jugendliche aus vier Schulen. Aus den Schulen und den Medien erhielten wir viel positives Feedback. Es gab aber auch einen ernsten Zwischenfall: Während einer Podiumsdiskussion zeigte ein ungebetener Besucher den Hitlergruß. Wir verwiesen ihn des Hauses und alarmierten die Polizei. Dass so etwas mitten in einer Veranstaltung zur politischen Bildung passiert, bleibt mir besonders in Erinnerung.'
+        text: 'Zur Veranstaltung kamen etwas mehr als 800 Jugendliche aus vier Schulen. Aus den Schulen und den Medien erhielten wir viel positives Feedback. Während einer Podiumsdiskussion zeigte ein Besucher, der sich unbemerkt eingeschlichen hatte, den Hitlergruß. Wir verwiesen ihn des Hauses und alarmierten die Polizei. Dass jemand ohne Berechtigung teilnehmen konnte, sehe ich als großen Fehler in unserer Zugangskontrolle. Für die nächste Veranstaltung müssen wir den Zugang besser absichern. Ich möchte verhindern, dass so etwas auf einer von mir organisierten Veranstaltung noch einmal passiert.'
   - type: heading
     attrs: { level: 2 }
     content:

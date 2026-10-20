@@ -23,7 +23,7 @@ content:
     attrs: { level: 2 }
     content:
       - type: text
-        text: 'Ein vollständiger Arbeitsablauf'
+        text: 'Fächer verleihen und zurücknehmen'
   - type: paragraph
     content:
       - type: text

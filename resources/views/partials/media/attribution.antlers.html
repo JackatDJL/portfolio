@@ -2,9 +2,11 @@
 {{ _caption = caption_override ?? asset:caption }}
 {{ _credit = asset:cc ?? credit_override }}
 {{ _rights = asset:rights ?? rights_override }}
-{{ if _caption || (_credit && _rights != 'jack') }}
-<figcaption class="asset-attribution">
+{{ if hide_caption }}{{ _caption = '' }}{{ /if }}
+{{ if _caption || (_credit && _rights != 'jack') || (_rights == 'jack' && site:content_license_name) }}
+{{ if standalone }}<p class="asset-attribution">{{ else }}<figcaption class="asset-attribution">{{ /if }}
     {{ if _caption }}<span class="asset-attribution__caption">{{ _caption | entities }}</span>{{ /if }}
+    {{ if _rights == 'jack' && site:content_license_name }}<span class="asset-attribution__credit">{{ site:name }} · <a href="{{ site:content_license_url }}" rel="license">{{ site:content_license_name }}</a></span>{{ /if }}
     {{ if _credit && _rights != 'jack' && _credit != _caption }}<span class="asset-attribution__credit">{{ attribution :text="_credit" }}</span>{{ /if }}
-</figcaption>
+{{ if standalone }}</p>{{ else }}</figcaption>{{ /if }}
 {{ /if }}

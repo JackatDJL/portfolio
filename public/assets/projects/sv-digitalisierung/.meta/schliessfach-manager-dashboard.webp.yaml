@@ -1,7 +1,6 @@
 data:
-  alt: "Terminal-Dashboard des Schließfachmanagers v2.1.0 mit null Schließfächern, null Belegung und Statistiken für vier Größen."
-  caption: "Aufnahme des laufenden Programms mit leerer lokaler Testdatenbank. Sie enthält keine Schüler- oder Ausleihdaten."
-  rights: "jack"
+  alt: 'Terminal-Dashboard des Schließfachmanagers v2.1.0 mit null Schließfächern, null Belegung und Statistiken für vier Größen.'
+  rights: jack
 size: 23900
 last_modified: 1792066856
 width: 1280

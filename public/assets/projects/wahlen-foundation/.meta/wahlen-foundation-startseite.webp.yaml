@@ -1,7 +1,6 @@
 data:
-  alt: "Öffentliche Startseite von Wahlen Foundation mit Anmeldeknopf, Hello World und einem Hinweis, dass die Funktion noch nicht verfügbar ist."
-  caption: "Die öffentliche Startseite zeigt den tatsächlich erreichten Platzhalter. Stimmabgabe und Ergebnisansicht sind nicht umgesetzt."
-  rights: "jack"
+  alt: 'Startseite von Wahlen Foundation mit Anmeldeknopf und dem Text Hello World.'
+  rights: jack
 size: 9536
 last_modified: 1792066857
 width: 1280

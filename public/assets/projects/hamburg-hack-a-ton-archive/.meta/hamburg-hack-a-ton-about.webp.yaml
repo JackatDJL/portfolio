@@ -1,7 +1,7 @@
 data:
-  alt: "Groß gesetzter Text auf der About-Seite des Hamburg-Hack-A-Ton-Webentwurfs beschreibt die geplante Veranstaltung als Hackathon für Schülerinnen und Schüler."
-  caption: "Ausschnitt der lokal gestarteten About-Seite des Webentwurfs. Der geplante Hack-A-Ton wurde nicht durchgeführt."
-  rights: "jack"
+  alt: 'Groß gesetzter Text auf der About-Seite des Hamburg-Hack-A-Ton-Webentwurfs beschreibt die geplante Veranstaltung als Hackathon für Schülerinnen und Schüler.'
+  caption: 'Die Website zu meiner Hackathon-Idee.'
+  rights: jack
 size: 86864
 last_modified: 1792067044
 width: 1280

@@ -8,7 +8,7 @@ project_status: active
 featured: false
 used_technologies: [PHP, Laravel, Statamic]
 website_url: 'https://jack.djl.foundation'
-cover: projects/personal-website/personal-website-detail.png
+cover: projects/personal-website/personal-website-home.webp
 topics: [web-development]
 seo_title: 'Persönliche Website | Jack Ruder'
 seo_description: 'Vom TanStack-Start-Prototyp zur Laravel- und Statamic-Website mit Projektarchiv, Blog, Veröffentlichungen, Aktuell-Seite und CV-Profilen.'

@@ -1,6 +1,6 @@
 data:
   alt: 'Printgate-Formular zum Einreichen eines PDF-Dokuments als anstehenden Druckauftrag.'
-  caption: 'Die Oberfläche legt einen PDF-Druckauftrag zur späteren Prüfung an.'
+  caption: 'PDF-Druckaufträge über den Browser einreichen.'
   rights: jack
 size: 12542
 last_modified: 1791983773

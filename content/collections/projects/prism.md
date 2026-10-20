@@ -27,5 +27,5 @@ content:
   - type: paragraph
     content:
       - type: text
-        text: 'Heute ist Prism archiviert. Die öffentliche Seite bewahrt eine statische Projektbeschreibung und eine als Demo markierte Beispielpräsentation. Anmeldung und Downloads sind dort deaktiviert.'
+        text: 'Heute ist Prism archiviert. Mit einem Coding-Agenten brachte ich die Archivansicht wieder in einen aufrufbaren Zustand. Sie bewahrt eine statische Projektbeschreibung und eine als Demo markierte Beispielpräsentation. Anmeldung und Downloads sind dort deaktiviert.'
 ---

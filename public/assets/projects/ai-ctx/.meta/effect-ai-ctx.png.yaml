@@ -2,7 +2,7 @@ data:
   alt: 'TypeScript-Code definiert den Befehl ai-ctx mit @effect/cli und den Unterbefehlen file, workspace, test und init.'
   caption: 'Hauptbefehl und Unterbefehle in src/Cli.ts.'
   rights: cc
-  cc: 'ai-ctx-Projektteam; für die Portfolioveröffentlichung freigegeben'
+  cc: 'Quelle: ai-ctx'
 size: 34514
 last_modified: 1791810636
 width: 750

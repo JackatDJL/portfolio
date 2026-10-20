@@ -3,7 +3,7 @@ id: 55e60c04-3c05-46dd-81ef-c9487aa27dac
 published: true
 blueprint: project
 title: 'DJL UI'
-summary: 'Ich bündelte wiederverwendbare React-Bausteine und Oberflächeneffekte in einem TypeScript-Paket. Das archivierte Paket wurde mit einer kleinen Storybook-App dokumentiert.'
+summary: 'Mit DJL UI wollte ich das Geist-Design von Vercel und ausgewählte Komponenten auf Basis von shadcn/ui nachbauen. Ich entwickelte React-Komponenten und probierte sie in Storybook aus.'
 project_status: archived
 featured: false
 repository_url: 'https://github.com/JackatDJL/djl-ui'
@@ -13,29 +13,33 @@ featured_technology: [TypeScript, React, Tailwind CSS]
 used_technologies: [TypeScript, React, Tailwind CSS, Storybook, Yarn, Turborepo, Jest]
 topics: [web-development]
 seo_title: 'DJL UI | Jack Ruder'
-seo_description: 'Das archivierte DJL UI bündelte TypeScript- und React-Komponenten mit Tailwind CSS, Effekten und einer Storybook-App.'
+seo_description: 'Mein Versuch, das Geist-Design von Vercel mit React, Tailwind CSS und shadcn/ui nachzubauen. Komponentenansichten entstanden in Storybook.'
 noindex: true
 content:
-  - type: paragraph
+  -
+    type: paragraph
     content:
-      - type: text
-        text: 'Ähnliche Eingaben, Dialoge und Karten tauchten in mehreren Webprojekten wieder auf. Ich bündelte solche Bausteine, damit sie in React-Projekten wiederverwendbar waren und nicht jedes Mal neu entstehen mussten.'
-  - type: heading
-    attrs: { level: 2 }
+      -
+        type: text
+        text: 'Ich mochte das Geist-Design von Vercel und wollte Oberflächen mit diesem Aussehen bauen. Einige Komponenten konnte man auf den Vercel-Seiten sehen, aber nicht als Bibliothek herunterladen. Mit DJL UI wollte ich dieses Design und ausgewählte Komponenten selbst nachbauen.'
+  -
+    type: heading
+    attrs:
+      level: 2
     content:
-      - type: text
-        text: 'Komponenten und Spielwiese'
-  - type: paragraph
+      -
+        type: text
+        text: 'shadcn/ui als Ausgangspunkt'
+  -
+    type: paragraph
     content:
-      - type: text
-        text: 'Ich legte ein TypeScript-Monorepo mit einem React-Paket auf Basis von Tailwind CSS an. Es umfasst unter anderem Eingaben, Dialoge, Drawer, Karten, Tabs, Schalter und Ladeanzeigen sowie kleinere Text- und Hintergrundeffekte. Mit Storybook probierte ich Komponenten unabhängig von einer vollständigen Website aus; dokumentiert sind dort verschiedene Button-Varianten.'
-  - type: heading
-    attrs: { level: 2 }
+      -
+        type: text
+        text: 'Als Grundlage nahm ich shadcn/ui. Darauf baute ich ein TypeScript-Paket mit React und Tailwind CSS auf. Ich arbeitete an Eingaben, Dialogen, Karten und weiteren Komponenten sowie an Text- und Hintergrundeffekten. In Storybook konnte ich einzelne Komponenten unabhängig von einer ganzen Anwendung ausprobieren; für die Buttons legte ich mehrere Varianten an.'
+  -
+    type: paragraph
     content:
-      - type: text
-        text: 'Was aus dem Paket wurde'
-  - type: paragraph
-    content:
-      - type: text
-        text: 'Ich habe das Paket nicht weitergeführt. Eine separate Next.js-Dokumentation blieb offen; die vorhandene Storybook-App ist der letzte dokumentierte Arbeitsstand. Das Projektarchiv ordnet das Ende dem März 2025 zu.'
+      -
+        type: text
+        text: 'Später wurde mir klar, dass shadcn/ui bereits sehr viel von dem abdeckt, was ich brauche. Für einzelne Anpassungen kann ich auch direkt CSS schreiben. Eine eigene Bibliothek weiterzupflegen hatte für mich deshalb keinen ausreichenden Nutzen mehr. DJL UI ist archiviert.'
 ---

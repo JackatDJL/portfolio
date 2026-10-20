@@ -3,7 +3,7 @@ id: 5807f242-6c88-4a60-aea5-a529ffa75110
 published: true
 blueprint: project
 title: 'Hackclub Stade'
-summary: 'Ich gründete Hackclub Stade als geplante Technik-AG für Jugendliche aus ganz Stade. Eine regelmäßige AG kam wegen abgelehnter Anträge nicht zustande; später organisierte ich eine Projektwoche unter dem Hackclub-Namen.'
+summary: 'Ich gründete Hackclub Stade als geplante Technik-AG für Jugendliche aus ganz Stade. Eine regelmäßige AG kam wegen abgelehnter Anträge nicht zustande; später bot ich einen Workshop in der Schulprojektwoche an.'
 project_status: paused
 featured: false
 cover: 'projects/hackclub-stade/hackclub-stade-projektwoche.webp'
@@ -11,7 +11,7 @@ topics: [education, teamwork, web-development]
 related_experience: [fb67532f-e86a-4a19-8c5c-71fcf9e8d98d]
 related_projects: [00979e47-6007-439e-b10c-f1b47cc99863]
 seo_title: 'Hackclub Stade | Jack Ruder'
-seo_description: 'Ich gründete Hackclub Stade als Technik-AG für Jugendliche aus Stade. Die AG kam nicht zustande; später organisierte ich eine Projektwoche unter dem Namen.'
+seo_description: 'Ich gründete Hackclub Stade als Technik-AG für Jugendliche aus Stade. Die AG kam nicht zustande; später bot ich einen Workshop in der Schulprojektwoche an.'
 noindex: true
 content:
   - type: paragraph
@@ -22,7 +22,7 @@ content:
     attrs: { level: 2 }
     content:
       - type: text
-        text: 'Keine regelmäßige AG, später eine Projektwoche'
+        text: 'Ein Workshop unter dem Hackclub-Namen'
   - type: paragraph
     content:
       - type: text
@@ -30,5 +30,5 @@ content:
   - type: paragraph
     content:
       - type: text
-        text: 'Später nutzte ich die Hackclub-Untergruppe unter dem Dach der US-amerikanischen The Hack Foundation als organisatorischen Träger für einzelne Vorhaben. Dazu gehörte im August 2025 die Projektwoche „Nachhaltige Webentwicklung“ am Athenaeum. Sie war ein einzelnes Angebot und kein Beginn eines regelmäßigen AG-Betriebs. In der Oberstufe fehlt mir inzwischen die Zeit, eine solche AG verlässlich zu leiten.'
+        text: 'Später nutzte ich die Hackclub-Untergruppe unter dem Dach der US-amerikanischen The Hack Foundation als organisatorischen Träger für einzelne Vorhaben. Dazu gehörte im August 2025 der Workshop „Nachhaltige Webentwicklung“ bei der Projektwoche am Athenaeum. Er war ein einzelnes Angebot und kein Beginn eines regelmäßigen AG-Betriebs. In der Oberstufe fehlt mir inzwischen die Zeit, eine solche AG verlässlich zu leiten.'
 ---

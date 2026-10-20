@@ -3,7 +3,7 @@ id: 037c7fec-9f45-4ac2-8c5f-3d3f6cf5c251
 published: true
 blueprint: project
 title: 'Wahlen Foundation'
-summary: 'Ich probierte eine Webanwendung für digitale Abstimmungen aus. Erste Backend-Bausteine für Wahlentwürfe und Fragen entstanden, die Stimmabgabe selbst setzte ich nicht um.'
+summary: 'Für unsere Schülervertretung begann ich ein digitales Wahlsystem. Einmalige Tokens sollten Mehrfachabstimmungen verhindern und die Wahlentscheidung geheim halten. Das Projekt endete nach den ersten Backend-Arbeiten.'
 project_status: archived
 featured: false
 started_at: '2025-03-15'
@@ -15,26 +15,36 @@ noindex: true
 seo_title: 'Wahlen Foundation | Jack Ruder'
 seo_description: 'Ein archivierter Webversuch für digitale Abstimmungen mit Backend-Bausteinen zur Wahl- und Fragenverwaltung. Die Stimmabgabe wurde nicht umgesetzt.'
 content:
-  - type: paragraph
+  -
+    type: paragraph
     content:
-      - type: text
-        text: 'Der Entwurf trennte Verwaltungsaufgaben und öffentliche Abstimmungsseiten innerhalb einer Webanwendung. Ich skizzierte dafür eine zentrale Verwaltung und eigene Wahlseiten für Organisationen.'
-  - type: heading
-    attrs: { level: 2 }
+      -
+        type: text
+        text: 'Die Idee zu Wahlen Foundation kam aus unserer Schülervertretung. Wir wollten Wahlen digitalisieren, bei denen mehrere Personen für mehrere Posten kandidieren. Bei einer Abstimmung per Handzeichen kann schnell unübersichtlich werden, wer bereits wie oft abgestimmt hat. Ich wollte ein Verfahren bauen, das Mehrfachabstimmungen verhindert.'
+  -
+    type: heading
+    attrs:
+      level: 2
     content:
-      - type: text
-        text: 'Der Teil, den ich gebaut habe'
-  - type: paragraph
+      -
+        type: text
+        text: 'Eine Stimme pro Token'
+  -
+    type: paragraph
     content:
-      - type: text
-        text: 'Ich implementierte erste Backend-Abläufe für Wahlentwürfe: Sie ließen sich anlegen, bearbeiten, veröffentlichen und planen. Auch Fragen konnten über eigene Funktionen verwaltet werden. Damit stand ein Teil der Verwaltung, aber noch keine vollständige Anwendung.'
-  - type: heading
-    attrs: { level: 2 }
+      -
+        type: text
+        text: 'Jede wahlberechtigte Person sollte einen Token erhalten und damit einmal abstimmen können. Gleichzeitig sollte sich ihre Wahlentscheidung nicht zu ihr zurückverfolgen lassen.'
+  -
+    type: paragraph
     content:
-      - type: text
-        text: 'Was offen blieb'
-  - type: paragraph
+      -
+        type: text
+        text: 'Ich begann die Anwendung mit Next.js, tRPC und Drizzle. Zuerst entwickelte ich Backend-Funktionen, um Wahlentwürfe anzulegen, zu bearbeiten, zu veröffentlichen und zu planen. Auch die Fragen einer Wahl ließen sich verwalten.'
+  -
+    type: paragraph
     content:
-      - type: text
-        text: 'Vor einer echten Wahl hätte ich noch die Verwaltungsoberfläche, die öffentliche Stimmabgabe und die Ergebnisansicht entwickeln müssen. Dazu kam es nicht: Wahlen Foundation blieb ein Prototyp und wurde nie bei einer realen Wahl eingesetzt.'
+      -
+        type: text
+        text: 'Die SV verlor später das Interesse an dem Vorhaben. Ich baute weder die Verwaltungsoberfläche noch die Stimmabgabe und Ergebnisansicht fertig. Das Projekt wurde bei keiner echten Wahl eingesetzt und ist inzwischen archiviert.'
 ---

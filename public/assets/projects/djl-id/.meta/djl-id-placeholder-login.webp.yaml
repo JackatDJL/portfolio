@@ -1,7 +1,6 @@
 data:
-  alt: "Anmeldemaske des DJL-ID-Prototyps mit leeren E-Mail- und Passwortfeldern und einem Hinweis auf die noch nicht implementierte Anmeldung."
-  caption: "Lokale Vorschau der Platzhalter-Anmeldeseite. Ein gemeinsamer produktiver Login entstand nicht."
-  rights: "jack"
+  alt: 'Anmeldemaske von DJL ID mit Feldern für E-Mail-Adresse und Passwort.'
+  rights: jack
 size: 17860
 last_modified: 1792066855
 width: 1280

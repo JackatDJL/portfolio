@@ -76,5 +76,5 @@ content:
     content:
       -
         type: text
-        text: 'Später arbeitete ich häufiger mit Coding-Agenten direkt in meinen Projekten. Den manuellen Kontext-Export brauchte ich dadurch immer seltener. Ich archivierte ai-ctx, bevor ich die Datei- und Workspace-Verarbeitung fertiggestellt hatte.'
+        text: 'Ungefähr zur gleichen Zeit begann ich, mich mit Agenten auseinanderzusetzen, die direkt im lokalen Projekt arbeiten. Bei mir war das anfangs GitHub Copilot, später kamen Codex, OpenCode und andere Werkzeuge dazu. Für eine Frage zu meinem Code musste ich dadurch nicht mehr das ganze Projekt in Gemini mit seinem großen kostenlosen Kontextfenster hochladen. Ich konnte einen Agenten direkt im Terminal nach einer Lösung fragen. Damit fiel mein eigener Bedarf für ai-ctx weg, bevor ich die Datei- und Workspace-Verarbeitung fertiggestellt hatte.'
 ---

@@ -1,7 +1,7 @@
 data:
-  alt: "Sechs Button-Varianten der React-Bibliothek djl-ui in einer hellen lokalen Storybook-Vorschau."
-  caption: "Lokale Storybook-Demo der bereits vorhandenen Button-Varianten, für die Aufnahme in einem Raster angeordnet. Die Farbpalette ist ein neutrales Beispielthema."
-  rights: "jack"
+  alt: 'Sechs Button-Varianten der React-Bibliothek djl-ui in einer hellen lokalen Storybook-Vorschau.'
+  caption: 'Button-Varianten in Storybook.'
+  rights: jack
 size: 15156
 last_modified: 1792066855
 width: 1280

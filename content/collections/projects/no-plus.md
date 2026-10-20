@@ -24,7 +24,7 @@ content:
     attrs: { level: 2 }
     content:
       - type: text
-        text: 'Ein kleiner technischer Anfang'
+        text: 'Kartenlader und Startanimation'
   - type: paragraph
     content:
       - type: text
