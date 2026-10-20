@@ -59,6 +59,21 @@ tabs:
               validate:
                 - required
       -
+        display: Inhaltslizenz
+        fields:
+          -
+            handle: content_license_name
+            field:
+              type: text
+              display: Lizenzname
+              instructions: 'Zentrale Lizenz für eigene Texte und Bilder. Abweichende Einzelangaben haben Vorrang.'
+          -
+            handle: content_license_url
+            field:
+              type: text
+              input_type: url
+              display: Lizenzlink
+      -
         display: 'Soziale Medien'
         fields:
           -

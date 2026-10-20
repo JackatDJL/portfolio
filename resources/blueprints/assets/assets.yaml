@@ -10,7 +10,7 @@ tabs:
             field:
               display: 'Alt Text'
               type: text
-              instructions: 'Beschreibung des Bildes'
+              instructions: 'Beschreibt den sichtbaren Bildinhalt für Screenreader. Wird nicht als Bildunterschrift angezeigt.'
           -
             handle: caption
             field:
@@ -35,8 +35,8 @@ tabs:
             handle: cc
             field:
               type: text
-              display: 'Creative Commons Attribution'
-              instructions: Bildrechte
+              display: 'Urheber / Quelle'
+              instructions: 'Kurzer Bildnachweis, etwa Foto: Name. Lizenz nur angeben, wenn sie für dieses Werk gilt.'
               validate:
                 - sometimes
                 - required

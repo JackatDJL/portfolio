@@ -44,4 +44,24 @@ class AssetAttributionTest extends TestCase
         $html = (string) Antlers::parse(file_get_contents(resource_path('views/partials/media/attribution.antlers.html')), ['asset' => []]);
         $this->assertStringNotContainsString('figcaption', $html);
     }
+
+    public function test_own_images_use_the_central_license_without_a_stale_credit(): void
+    {
+        $html = (string) Antlers::parse(file_get_contents(resource_path('views/partials/media/attribution.antlers.html')), [
+            'asset' => ['rights' => 'jack', 'cc' => 'Old attribution'],
+            'site' => ['name' => 'Jack Ruder', 'content_license_name' => 'CC BY-SA 4.0', 'content_license_url' => 'https://creativecommons.org/licenses/by-sa/4.0/deed.de'],
+        ]);
+        $this->assertStringContainsString('Jack Ruder', $html);
+        $this->assertStringContainsString('CC BY-SA 4.0', $html);
+        $this->assertStringNotContainsString('Old attribution', $html);
+    }
+
+    public function test_project_caption_only_appears_once_on_the_detail_page(): void
+    {
+        $caption = 'Workshop bei der Projektwoche des Athenaeums 2025.';
+        $detail = $this->get('/projekte/hackclub-stade')->assertOk()->getContent();
+        $this->assertSame(1, substr_count($detail, $caption));
+        $this->assertStringContainsString('Jack Ruder ·', $detail);
+        $this->assertStringNotContainsString($caption, $this->get('/projekte')->assertOk()->getContent());
+    }
 }

@@ -21,7 +21,7 @@ Research date: 13 September 2026. This note separates source-supported claims fr
 | Imkerportal Ruder | A local document describes a proof-of-concept for beekeeping records and NFC-linked hive components, but the public repository has only generic starter content. | Do not publish substantive claims without approval that the local PoC material is public. | Local-only: `/home/jack/dev/imkerportal-ruder/README.md`; [GitHub](https://github.com/JackatDJL/imkerportal-ruder) |
 | Printgate | Early-development self-hosted web gateway for private remote printing to printers accessible from a Linux host. It deliberately avoids exposing CUPS publicly. | Early development; local history begins 2026-08-31. | `/home/jack/dev/printgate/README.md`; [GitHub](https://github.com/JackatDJL/printgate) |
 | DJL UI | Reusable UI/design-system experiment. | Archived, March 2025 according to the archive. | `/home/jack/dev/foundation-homepage/src/content/projects.ts`; [GitHub](https://github.com/JackatDJL/djl-ui) |
-| NoPlus / A Cube’s Journey | Respectively unfinished FPS/open-world-loader work and unfinished Unity/game-jam story-game idea. These are useful archive/progression entries, not flagship work. | Archived (2023 / 2025 in archive). | `/home/jack/dev/foundation-homepage/src/content/projects.ts` |
+| NoPlus | Unfinished FPS/open-world-loader work; useful archive/progression entry. | Archived (2023). | `/home/jack/dev/foundation-homepage/src/content/projects.ts` |
 | SongRaten | Music-guessing project. This is all the public repository description establishes; keep any entry short and archival. | Archived/older project; public repo created 2023-06-27. | [GitHub](https://github.com/JackatDJL/SongRaten) |
 | Hamburg Hack-A-Ton Archive | Planning-stage archive/prototype, explicitly not affiliated with the City of Hamburg or Hack Foundation. | Archived; public repository created 2024-11-08. | [GitHub](https://github.com/JackatDJL/Hamburg-Hack-A-Ton-Archive) |
 | Athenetz-SV-Old | Older student-council monorepo at Gymnasium Athenaeum Stade. It belongs in the SV-digitisation family, not as a separate personal project. | Older iteration; public repository created 2024-06-05. | [GitHub](https://github.com/JackatDJL/Athenetz-SV-Old) |
@@ -44,7 +44,7 @@ Research date: 13 September 2026. This note separates source-supported claims fr
 - Consolidate **Erstwählerforum website, polling, signage and identity-related repositories** under the civic project; do not publish technical subprojects as independent projects.
 - Consolidate **Athenetz-SV-Old** with SV digitisation / Schließfachmanager. Athenetz-SV-Mobile has only insufficient standalone public evidence.
 - Treat **DJL ID**, **DJL Custom Domains**, **Foundation Drive** and **Wahlen Foundation** as clearly labelled experiments/unfinished work.
-- Keep NoPlus and A Cube’s Journey as archive/progression material, potentially drafts.
+- Keep NoPlus as archive/progression material, potentially a draft.
 - Do not present forks, starter templates, vendor repositories, or internal Volt repositories as personal projects. Public account forks include t3code, OnBoard, first-contributions, next.js, blot and tonkeeper-web; OnBoard has no evidence here for an original independent project. `startProjects` is a discontinued bundle of small test projects and should not produce entries beyond a carefully sourced SongRaten archive entry.
 - `jimcli` has no public README in the inspected material: omit it pending evidence. The public Imkerportal repository has only generic starter content despite the richer local PoC document; do not publish the local-only technical claims without approval that they are public.
 
@@ -52,7 +52,7 @@ Research date: 13 September 2026. This note separates source-supported claims fr
 
 Use a date only where the cited source supports it. Public repository creation dates are acceptable conservative **project-start proxies**, not proof of conception or public launch:
 
-- `ai-ctx`: 18 April 2025; `Wahlen Foundation`: 15 March 2025; `Imkerportal Ruder`: 13 April 2025; `Prism`: 20 February 2025; `Foundation Drive`: 12 February 2025; `A Cube’s Journey`: 2 February 2025; `NoPlus`: 2 December 2023.
+- `ai-ctx`: 18 April 2025; `Wahlen Foundation`: 15 March 2025; `Imkerportal Ruder`: 13 April 2025; `Prism`: 20 February 2025; `Foundation Drive`: 12 February 2025; `NoPlus`: 2 December 2023.
 - `Projektwoche`: 2 August 2025 (repository start), while the programme itself should be dated simply 2025 unless event dates are sourced.
 - `Schließfachmanager`: 17 January 2026; `DJL ID`: 4 March 2026; `DJL Custom Domains`: use the local repository history only (March 2026) unless a public creation date is checked.
 - `prtop`: 29 August 2026; `Printgate`: 31 August 2026.

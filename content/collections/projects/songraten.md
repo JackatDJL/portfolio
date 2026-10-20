@@ -3,40 +3,31 @@ id: 4bbd29e1-014f-423d-81fa-6a2ecb16c1d0
 published: true
 blueprint: project
 title: SongRaten
-summary: 'SongRaten war eines meiner frühen Webprojekte: ein Musik-Ratespiel mit getrennten Ansichten für Spielleitung und Mitspielende.'
+summary: 'Ich baute erste Ansichten für Spielleitung und Teams, kam aber nicht bis zu einer vollständigen Unterrichtsrunde.'
 project_status: archived
 featured: false
 started_at: '2023-06-27'
-ended_at: '2023-10-01'
 website_url: 'https://jackatdjl.github.io/SongRaten/'
 repository_url: 'https://github.com/JackatDJL/SongRaten'
+cover: projects/songraten/songraten-moderator-view.webp
 featured_technology: [JavaScript]
 used_technologies: [HTML, CSS, JavaScript]
 topics: [web-development]
 seo_title: 'SongRaten | Jack Ruder'
-seo_description: 'SongRaten ist ein frühes browserbasiertes Musik-Ratespiel mit Ansichten für Spielleitung und Mitspielende.'
+seo_description: 'SongRaten sollte ein Buzzer-Spiel für den Unterricht werden. Spotify hätte die Musik geliefert; die App sollte Teams und Buzzer verwalten.'
 noindex: true
 content:
   - type: paragraph
     content:
       - type: text
-        text: 'SongRaten entstand als browserbasiertes Musik-Ratespiel. Die Anwendung trennt die Ansicht der Spielleitung von den Ansichten der Mitspielenden und bringt damit ein kleines Mehrspieler-Szenario in klassisches Frontend ohne Framework.'
+        text: 'Ich wollte ein Spiel, das man im Unterricht wie Kahoot kurz starten kann. Die Teams sollten einem gemeinsamen Raum beitreten und bei einem erkannten Lied auf ihren Buzzer drücken. Die Musik wäre auf einem separaten Handy über Spotify abgespielt worden. SongRaten selbst sollte nur den Raum, die Teams und die Buzzer verwalten, keine Songs streamen.'
   - type: heading
     attrs: { level: 2 }
     content:
       - type: text
-        text: 'Eines meiner frühen Webprojekte'
+        text: 'Beim Entwurf geblieben'
   - type: paragraph
     content:
       - type: text
-        text: 'Im Repository liegen eigene Seiten für den Spielstart, die Spielleitung, Spielerinnen und Spieler sowie einen Code-gestützten Einstieg. JavaScript-Dateien steuern den Ablauf, CSS definiert die einzelnen Spielansichten. Bilder für Buzzer und Sperrzustände gehören ebenso dazu wie Sprachdateien für Deutsch, Englisch und Latein.'
-  - type: heading
-    attrs: { level: 2 }
-    content:
-      - type: text
-        text: Rückblick
-  - type: paragraph
-    content:
-      - type: text
-        text: 'SongRaten ist kein großes Produkt geworden. Als frühes Artefakt zeigt es aber, wie ich schon damals versucht habe, aus mehreren Rollen, Zuständen und Screens ein zusammenhängendes Web-Erlebnis zu bauen.'
+        text: 'Ich legte frühe Ansichten für die Spielleitung und die Teams an, kam aber nicht bis zu einer vollständigen, spielbaren Runde. SongRaten blieb deshalb ein früher Entwurf des Buzzer-Werkzeugs.'
 ---

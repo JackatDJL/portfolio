@@ -2,13 +2,9 @@
 id: 1b4ba371-c0b4-4fae-8a93-1f2fabf11477
 blueprint: project
 title: 'Erstwählerforum Stade'
-summary: 'Das Erstwählerforum Stade war ein schulübergreifendes Projekt politischer Bildung für junge Menschen, besonders für Erstwählende. Ich habe es gegründet und an Organisation, Kommunikation und öffentlich sichtbarer Technik mitgearbeitet.'
+summary: 'Ich stieß das schulübergreifende Erstwählerforum an, leitete ein Team, entwarf das Branding und moderierte eine der Podiumsdiskussionen. Für 2027 planen wir die nächste Ausgabe zur Landtagswahl.'
 project_status: active
 featured: false
-website_url: 'https://ewf-stade.de'
-used_technologies:
-  - TypeScript
-  - Webentwicklung
 topics:
   - political-education
   - civic-technology
@@ -16,66 +12,65 @@ topics:
   - teamwork
 related_experience:
   - 7f821bf2-4f62-433c-87e1-8d821d053170
-seo_title: 'Erstwählerforum Stade'
-seo_description: 'Ein schulübergreifendes Forum für politische Bildung und Gespräche zwischen jungen Menschen und politischen Akteurinnen und Akteuren in Stade.'
+seo_title: 'Erstwählerforum Stade | Jack Ruder'
+seo_description: 'Ich gründete das schulübergreifende Forum mit, gestaltete sein Branding und moderierte eine Diskussion. 2027 planen wir die nächste Ausgabe.'
 noindex: true
-started_at: '2025-10-29 23:00'
-cover: projects/erstwaehlerforum-stade/img-20260602-wa0084.jpg
+started_at: '2025-10-25'
+cover: projects/erstwaehlerforum-stade/img-20260602-wa0030.jpg
 gallery:
-  - projects/erstwaehlerforum-stade/img-20260602-wa0136.jpg
-  - projects/erstwaehlerforum-stade/img-20260602-wa0128.jpg
-  - projects/erstwaehlerforum-stade/img-20260602-wa0119.jpg
-  - projects/erstwaehlerforum-stade/img-20260602-wa0124.jpg
-  - projects/erstwaehlerforum-stade/img-20260602-wa0086.jpg
-  - projects/erstwaehlerforum-stade/img-20260602-wa0085.jpg
-  - projects/erstwaehlerforum-stade/img-20260602-wa0084.jpg
-  - projects/erstwaehlerforum-stade/img-20260602-wa0088.jpg
-  - projects/erstwaehlerforum-stade/img-20260602-wa0082.jpg
-  - projects/erstwaehlerforum-stade/img-20260602-wa0067.jpg
-  - projects/erstwaehlerforum-stade/img-20260602-wa0062.jpg
-  - projects/erstwaehlerforum-stade/img-20260602-wa0059.jpg
-  - projects/erstwaehlerforum-stade/img-20260602-wa0057.jpg
-  - projects/erstwaehlerforum-stade/img-20260602-wa0041.jpg
-  - projects/erstwaehlerforum-stade/img-20260602-wa0035.jpg
   - projects/erstwaehlerforum-stade/img-20260602-wa0037.jpg
-  - projects/erstwaehlerforum-stade/img-20260602-wa0036.jpg
-  - projects/erstwaehlerforum-stade/img-20260602-wa0038.jpg
-  - projects/erstwaehlerforum-stade/img-20260602-wa0030.jpg
-  - projects/erstwaehlerforum-stade/img-20260602-wa0031.jpg
-  - projects/erstwaehlerforum-stade/img-20260602-wa0033.jpg
-  - projects/erstwaehlerforum-stade/img-20260603-wa0036.jpg
-  - projects/erstwaehlerforum-stade/img-20260607-wa0017.jpg
-  - projects/erstwaehlerforum-stade/20260602_120551(1).jpg
-  - projects/erstwaehlerforum-stade/20260602_115925.jpg
-  - projects/erstwaehlerforum-stade/20260602_115921.jpg
-  - projects/erstwaehlerforum-stade/20260602_120551.jpg
-  - projects/erstwaehlerforum-stade/20260602_115808.jpg
-  - projects/erstwaehlerforum-stade/20260602_115720.jpg
-  - projects/erstwaehlerforum-stade/20260602_115715.jpg
-  - projects/erstwaehlerforum-stade/20260602_080337.jpg
-  - projects/erstwaehlerforum-stade/20260602_080330.jpg
-  - projects/erstwaehlerforum-stade/img-20260528-wa0007.jpg
+  - projects/erstwaehlerforum-stade/img-20260602-wa0085.jpg
+  - projects/erstwaehlerforum-stade/img-20260602-wa0136.jpg
+  - projects/erstwaehlerforum-stade/img-20260602-wa0059.jpg
 updated_by: 7098a585-4701-4963-95aa-52c0d85d3e7d
 updated_at: 1789303568
 content:
-  -
-    type: paragraph
+  - type: heading
+    attrs: { level: 2 }
     content:
-      -
-        type: text
-        text: 'Das Erstwählerforum brachte Schülerinnen und Schüler verschiedener Schulen in Stade mit politischen Akteurinnen und Akteuren zusammen. Moderierte Gespräche, ein politischer Marktplatz und kurze Impulsformate machten Fragen junger Menschen zum Ausgangspunkt.'
-  -
-    type: heading
-    attrs:
-      level: 2
+      - type: text
+        text: 'Aus einer Idee wurde eine schulübergreifende Gruppe'
+  - type: paragraph
     content:
-      -
-        type: text
-        text: 'Von der Idee zur Veranstaltung'
-  -
-    type: paragraph
+      - type: text
+        text: 'Am letzten Wochenende der niedersächsischen Herbstferien 2025 kam mir die Idee für ein Erstwählerforum. Kurz darauf stellte ich Anträge beim Schulvorstand und erhielt den Auftrag, eine Planungsgruppe aufzubauen. Bis zum Jahresende stellte ich dafür ein Team aus Schülerinnen und Schülern zusammen. Von Anfang an sollte das Forum über eine einzelne Schule hinausreichen: Jugendliche aus mehreren Stader Schulen sollten gemeinsam auf lokale Politik treffen und ihre eigenen Fragen einbringen können.'
+  - type: paragraph
     content:
-      -
-        type: text
-        text: 'Ich habe das Forum gegründet und im Organisationsteam an Kommunikation, Ablauf und den öffentlich sichtbaren technischen Bausteinen gearbeitet. Die Veranstaltung sollte politische Fragen nicht nur erklären, sondern Raum geben, sie direkt zu stellen.'
+      - type: text
+        text: 'Im ersten Quartal 2026 arbeiteten wir das Konzept aus und legten den Veranstaltungsort fest. Danach standen Finanzierung, Ablauf und die vielen organisatorischen Absprachen im Vordergrund. Dazu gehörten Gespräche mit den beteiligten Schulen und politischen Akteuren sowie die Koordination mit dem Stadeum. So wurde aus einer Idee ein gemeinsamer Veranstaltungstag für Schülerinnen und Schüler aus vier Stader Schulen.'
+  - type: heading
+    attrs: { level: 2 }
+    content:
+      - type: text
+        text: 'Ein Team mit klaren Zuständigkeiten'
+  - type: paragraph
+    content:
+      - type: text
+        text: 'Wir verteilten feste Aufgaben, wollten nach außen aber als ein gemeinsames Team auftreten. Ich lud zu den Treffen ein, organisierte Räume und leitete die Besprechungen. Zum Ende der Planung trafen wir uns teilweise zweimal pro Woche; dazwischen hielten wir uns in einer gemeinsamen WhatsApp-Gruppe auf dem Laufenden. Die Aufgabenverteilung machte es möglich, mehrere Arbeitsbereiche parallel voranzubringen, ohne das Forum als Projekt einzelner Personen darzustellen.'
+  - type: paragraph
+    content:
+      - type: text
+        text: 'Ich entwarf das Logo, die Banner und die gebrandeten Vorlagen für das Forum. Viele Fäden liefen auch organisatorisch bei mir zusammen: Ich war der Hauptkontakt zum Stadeum und hielt die Kommunikation mit den verschiedenen Bereichen aufrecht. Gemeinsam mit einem weiteren Teammitglied übernahm ich Aufgaben, die sonst liegen geblieben wären, und arbeitete sie nach. Am Veranstaltungstag koordinierte ich viel zwischen den Räumen und leitete selbst eine Podiumsdiskussion.'
+  - type: heading
+    attrs: { level: 2 }
+    content:
+      - type: text
+        text: 'Drei Diskussionsblöcke und ein politischer Markt'
+  - type: paragraph
+    content:
+      - type: text
+        text: 'Am 2. Juni 2026 lief das Forum von 8 bis 13 Uhr. Nach einer gemeinsamen Einführung folgten drei Programmblöcke und zum Abschluss eine gemeinsame Verabschiedung. Im Foyer fand der politische Markt statt; in zwei weiteren Räumen organisierten wir Podiumsdiskussionen. Die Formate sollten sich ergänzen: Im Gespräch am Stand konnten Jugendliche direkt nachfragen, während die Podien verschiedene Positionen zu gemeinsamen Themen nebeneinanderstellten.'
+  - type: paragraph
+    content:
+      - type: text
+        text: 'Zur Veranstaltung kamen etwas mehr als 800 Jugendliche aus vier Schulen. Aus den Schulen und den Medien erhielten wir viel positives Feedback. Während einer Podiumsdiskussion zeigte ein Besucher, der sich unbemerkt eingeschlichen hatte, den Hitlergruß. Wir verwiesen ihn des Hauses und alarmierten die Polizei. Dass jemand ohne Berechtigung teilnehmen konnte, sehe ich als großen Fehler in unserer Zugangskontrolle. Für die nächste Veranstaltung müssen wir den Zugang besser absichern. Ich möchte verhindern, dass so etwas auf einer von mir organisierten Veranstaltung noch einmal passiert.'
+  - type: heading
+    attrs: { level: 2 }
+    content:
+      - type: text
+        text: 'Die nächste Ausgabe ist bereits in Planung'
+  - type: paragraph
+    content:
+      - type: text
+        text: 'Das Erstwählerforum soll weitergehen. Für 2027 planen wir die nächste Ausgabe zur Landtagswahl und sammeln bereits neue Themen. Ich arbeite mit dem Team daran, die Erfahrungen aus dem ersten Forum in die nächste Veranstaltung mitzunehmen.'
 ---

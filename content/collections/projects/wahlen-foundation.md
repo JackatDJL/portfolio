@@ -3,28 +3,48 @@ id: 037c7fec-9f45-4ac2-8c5f-3d3f6cf5c251
 published: true
 blueprint: project
 title: 'Wahlen Foundation'
-summary: 'Ein archivierter Prototyp für digitale Wahlen mit getrennten Verwaltungs- und Abstimmungsoberflächen. Das Projekt blieb ein Entwicklungsstand, keine Behauptung über den Einsatz bei realen Wahlen.'
+summary: 'Für unsere Schülervertretung begann ich ein digitales Wahlsystem. Einmalige Tokens sollten Mehrfachabstimmungen verhindern und die Wahlentscheidung geheim halten. Das Projekt endete nach den ersten Backend-Arbeiten.'
 project_status: archived
 featured: false
 started_at: '2025-03-15'
 used_technologies: [TypeScript, Next.js, tRPC, Drizzle]
 repository_url: 'https://github.com/JackatDJL/wahlen-foundation'
+cover: 'projects/wahlen-foundation/wahlen-foundation-startseite.webp'
 topics: [civic-technology, web-development]
 noindex: true
 seo_title: 'Wahlen Foundation | Jack Ruder'
-seo_description: 'Wahlen Foundation war ein Webprototyp mit getrennten Verwaltungs- und Abstimmungsoberflächen.'
+seo_description: 'Ein archivierter Webversuch für digitale Abstimmungen mit Backend-Bausteinen zur Wahl- und Fragenverwaltung. Die Stimmabgabe wurde nicht umgesetzt.'
 content:
-  - type: paragraph
+  -
+    type: paragraph
     content:
-      - type: text
-        text: 'Der Prototyp untersuchte, wie Verwaltungsfunktionen und öffentliche Abstimmungsseiten in einer Webanwendung getrennt werden können. Der Code enthält dafür eigene Routen für Anmeldung, Profile, Fragen und Druckausgaben.'
-  - type: heading
-    attrs: { level: 2 }
+      -
+        type: text
+        text: 'Die Idee zu Wahlen Foundation kam aus unserer Schülervertretung. Wir wollten Wahlen digitalisieren, bei denen mehrere Personen für mehrere Posten kandidieren. Bei einer Abstimmung per Handzeichen kann schnell unübersichtlich werden, wer bereits wie oft abgestimmt hat. Ich wollte ein Verfahren bauen, das Mehrfachabstimmungen verhindert.'
+  -
+    type: heading
+    attrs:
+      level: 2
     content:
-      - type: text
-        text: 'Ein Prototyp für getrennte Rollen'
-  - type: paragraph
+      -
+        type: text
+        text: 'Eine Stimme pro Token'
+  -
+    type: paragraph
     content:
-      - type: text
-        text: 'Next.js, TypeScript, tRPC und Drizzle bilden die technische Basis. Das Projekt blieb ein Entwicklungsprototyp und wurde nicht bei einer realen Wahl eingesetzt.'
+      -
+        type: text
+        text: 'Jede wahlberechtigte Person sollte einen Token erhalten und damit einmal abstimmen können. Gleichzeitig sollte sich ihre Wahlentscheidung nicht zu ihr zurückverfolgen lassen.'
+  -
+    type: paragraph
+    content:
+      -
+        type: text
+        text: 'Ich begann die Anwendung mit Next.js, tRPC und Drizzle. Zuerst entwickelte ich Backend-Funktionen, um Wahlentwürfe anzulegen, zu bearbeiten, zu veröffentlichen und zu planen. Auch die Fragen einer Wahl ließen sich verwalten.'
+  -
+    type: paragraph
+    content:
+      -
+        type: text
+        text: 'Die SV verlor später das Interesse an dem Vorhaben. Ich baute weder die Verwaltungsoberfläche noch die Stimmabgabe und Ergebnisansicht fertig. Das Projekt wurde bei keiner echten Wahl eingesetzt und ist inzwischen archiviert.'
 ---
