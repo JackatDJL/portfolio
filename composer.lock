@@ -2115,16 +2115,16 @@
         },
         {
             "name": "league/commonmark",
-            "version": "2.10.1",
+            "version": "2.10.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/thephpleague/commonmark.git",
-                "reference": "9d489ab67a02960fd8ffe624d93f751daf95439e"
+                "reference": "6efbd9c472b91db0a3350fcd601c8332c2382e1f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/thephpleague/commonmark/zipball/9d489ab67a02960fd8ffe624d93f751daf95439e",
-                "reference": "9d489ab67a02960fd8ffe624d93f751daf95439e",
+                "url": "https://api.github.com/repos/thephpleague/commonmark/zipball/6efbd9c472b91db0a3350fcd601c8332c2382e1f",
+                "reference": "6efbd9c472b91db0a3350fcd601c8332c2382e1f",
                 "shasum": ""
             },
             "require": {
@@ -2218,7 +2218,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-09-07T13:44:26+00:00"
+            "time": "2026-09-21T13:07:34+00:00"
         },
         {
             "name": "league/config",
@@ -4706,16 +4706,16 @@
         },
         {
             "name": "rhukster/dom-sanitizer",
-            "version": "1.0.16",
+            "version": "1.0.19",
             "source": {
                 "type": "git",
                 "url": "https://github.com/rhukster/dom-sanitizer.git",
-                "reference": "f0eb17834e2fb52d9610aebcceaf5009d183cc86"
+                "reference": "b4a19b982b74d2f5f78e683afd2ad00e99a6dc3c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/rhukster/dom-sanitizer/zipball/f0eb17834e2fb52d9610aebcceaf5009d183cc86",
-                "reference": "f0eb17834e2fb52d9610aebcceaf5009d183cc86",
+                "url": "https://api.github.com/repos/rhukster/dom-sanitizer/zipball/b4a19b982b74d2f5f78e683afd2ad00e99a6dc3c",
+                "reference": "b4a19b982b74d2f5f78e683afd2ad00e99a6dc3c",
                 "shasum": ""
             },
             "require": {
@@ -4745,9 +4745,9 @@
             "description": "A simple but effective DOM/SVG/MathML Sanitizer for PHP 7.4+",
             "support": {
                 "issues": "https://github.com/rhukster/dom-sanitizer/issues",
-                "source": "https://github.com/rhukster/dom-sanitizer/tree/1.0.16"
+                "source": "https://github.com/rhukster/dom-sanitizer/tree/1.0.19"
             },
-            "time": "2026-09-01T23:21:41+00:00"
+            "time": "2026-09-30T16:45:11+00:00"
         },
         {
             "name": "scrivo/highlight.php",
@@ -5275,16 +5275,16 @@
         },
         {
             "name": "statamic/cms",
-            "version": "v6.32.0",
+            "version": "v6.35.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/statamic/cms.git",
-                "reference": "69ab73556d104b5f304c4db75a0dac8ee26be156"
+                "reference": "a5330b015b87e3a37e8d0aefa176707e1b666581"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/statamic/cms/zipball/69ab73556d104b5f304c4db75a0dac8ee26be156",
-                "reference": "69ab73556d104b5f304c4db75a0dac8ee26be156",
+                "url": "https://api.github.com/repos/statamic/cms/zipball/a5330b015b87e3a37e8d0aefa176707e1b666581",
+                "reference": "a5330b015b87e3a37e8d0aefa176707e1b666581",
                 "shasum": ""
             },
             "require": {
@@ -5306,7 +5306,7 @@
                 "nesbot/carbon": "^3.0",
                 "pragmarx/google2fa": "^8.0 || ^9.0",
                 "rebing/graphql-laravel": "^9.15",
-                "rhukster/dom-sanitizer": "^1.0.10",
+                "rhukster/dom-sanitizer": "^1.0.19",
                 "spatie/blink": "^1.3",
                 "spatie/error-solutions": "^1.0 || ^2.0",
                 "statamic/stringy": "^3.1.2",
@@ -5328,7 +5328,7 @@
                 "doctrine/dbal": "^3.6",
                 "fakerphp/faker": "~1.10",
                 "google/cloud-translate": "^1.6",
-                "larastan/larastan": "^3.10",
+                "larastan/larastan": "^3.12.3",
                 "laravel/pao": "^1.1",
                 "laravel/pint": "1.16.0",
                 "laravel/socialite": "^5.28",
@@ -5383,7 +5383,7 @@
             ],
             "support": {
                 "issues": "https://github.com/statamic/cms/issues",
-                "source": "https://github.com/statamic/cms/tree/v6.32.0"
+                "source": "https://github.com/statamic/cms/tree/v6.35.1"
             },
             "funding": [
                 {
@@ -5391,7 +5391,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-09-09T20:02:03+00:00"
+            "time": "2026-10-06T17:28:38+00:00"
         },
         {
             "name": "statamic/ssg",
@@ -6199,16 +6199,16 @@
         },
         {
             "name": "symfony/http-foundation",
-            "version": "v8.1.6",
+            "version": "v8.1.9",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/http-foundation.git",
-                "reference": "093b78326f649c3a9db922b9f17123b6aeb3b8fb"
+                "reference": "7850897fb8659f98491b03be79ac48600bdaf9ab"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/http-foundation/zipball/093b78326f649c3a9db922b9f17123b6aeb3b8fb",
-                "reference": "093b78326f649c3a9db922b9f17123b6aeb3b8fb",
+                "url": "https://api.github.com/repos/symfony/http-foundation/zipball/7850897fb8659f98491b03be79ac48600bdaf9ab",
+                "reference": "7850897fb8659f98491b03be79ac48600bdaf9ab",
                 "shasum": ""
             },
             "require": {
@@ -6256,7 +6256,7 @@
             "description": "Defines an object-oriented layer for the HTTP specification",
             "homepage": "https://symfony.com",
             "support": {
-                "source": "https://github.com/symfony/http-foundation/tree/v8.1.6"
+                "source": "https://github.com/symfony/http-foundation/tree/v8.1.9"
             },
             "funding": [
                 {
@@ -6276,7 +6276,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-08-30T20:10:55+00:00"
+            "time": "2026-10-08T16:57:43+00:00"
         },
         {
             "name": "symfony/http-kernel",
