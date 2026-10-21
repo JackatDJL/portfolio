@@ -9,7 +9,8 @@ RUN bun run build
 
 FROM docker.io/library/composer:2 AS composer-bin
 
-FROM php:8.4-fpm-bookworm AS application
+# Includes the complete fixes for CVE-2026-109618 and CVE-2026-109619.
+FROM php:8.4.27-fpm-bookworm AS application
 ENV DEBIAN_FRONTEND=noninteractive
 WORKDIR /var/www/html
 
