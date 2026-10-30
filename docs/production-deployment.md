@@ -169,3 +169,9 @@ For an application regression, redeploy the previous successful Dokploy image/bu
 ## PDF requirements
 
 The image installs LuaLaTeX and the packages used by `resources/views/latex/cv.blade.php`: `fontspec`, `xcolor`, `graphicx`, `hyperref`, `tikz`, `array`, `paracol`, `tabularx`, and `needspace`. The repository's Fira Sans font files are copied into the application image. PDF source and auxiliary files stay in the permission-restricted persistent `storage/app/private/cv-latex` directory and are deleted by the renderer after each request.
+
+## PHP runtime security update (21 October 2026)
+
+The application image is pinned to PHP 8.4.27 for CVE-2026-109618 and CVE-2026-109619. Composer rejects earlier affected releases on supported PHP branches. Session upload-progress tracking is disabled as defense in depth; the PHP patch remains required.
+
+See [the HTML security report](php-rce-security-summary.html) for the advisories, verification results, and outstanding checks. Rebuild with `docker compose -f compose.production.yaml build --pull --no-cache portfolio` and recreate the service to replace every old worker. Confirm `php -v` and `php-fpm -v` inside the new container report 8.4.27. To verify upload-progress tracking without exposing unrelated FPM configuration (including environment values), run `php-fpm -i | grep -E '^(PHP Version|session.upload_progress.enabled) =>'`; it must report `8.4.27` and `Off`. Check health, CMS uploads, sessions, PDF rendering, and content sync before considering remediation complete. A merge alone does not patch a running container.
