@@ -35,6 +35,7 @@ bun run test:browser
 docker compose -f compose.production.yaml build --pull --no-cache portfolio
 docker compose -f compose.production.yaml up -d --force-recreate portfolio
 docker compose -f compose.production.yaml exec portfolio php -v
-docker compose -f compose.production.yaml exec portfolio php-fpm -i</pre>
-<p>Check that CLI and FPM both report PHP 8.4.27 and upload-progress tracking is disabled. Verify /up, the homepage, Control Panel login and uploads, CV sessions, PDF export, and content sync. Review worker startup logs for warnings. Do not roll back to a vulnerable PHP image.</p></section>
+docker compose -f compose.production.yaml exec portfolio php-fpm -v
+docker compose -f compose.production.yaml exec portfolio sh -lc "php-fpm -i | grep -E '^(PHP Version|session.upload_progress.enabled) =>'"</pre>
+<p>Check that CLI and FPM both report PHP 8.4.27 and upload-progress tracking is disabled. The filtered FPM command avoids exposing unrelated configuration, including environment values. Verify /up, the homepage, Control Panel login and uploads, CV sessions, PDF export, and content sync. Review worker startup logs for warnings. Do not roll back to a vulnerable PHP image.</p></section>
 <footer><small>Sources: the two PHP advisories above, <a href="https://github.com/php/php-src/blob/PHP-8.4/NEWS">PHP changelog</a>, <a href="https://github.com/docker-library/official-images/blob/master/library/php">official PHP image manifest</a>, repository configuration, and recorded baseline checks.</small></footer></html>

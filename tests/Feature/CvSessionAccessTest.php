@@ -73,10 +73,10 @@ class CvSessionAccessTest extends TestCase
             $this->assertStringContainsString('PRIVATE-CV-STREET-SENTINEL', $privateVisibleText);
             $this->assertStringContainsString('PRIVATE-CV-HOUSE-SENTINEL', $privateVisibleText);
             $authorizedUrl = 'jack.djl.foundation/cv/jobmesse-26#cv='.$token;
-            $this->assertStringContainsString($authorizedUrl, $privateVisibleText);
-            $this->assertGreaterThanOrEqual(3, substr_count($privateVisibleText, $authorizedUrl));
+            // PDF viewers keep URL fragments in the link action, not visible text.
+            $this->assertStringNotContainsString($token, $privateVisibleText);
             $this->assertStringNotContainsString('https://jack.djl.foundation/cv/jobmesse-26', $privateVisibleText);
-            $this->assertStringContainsString('#cv='.$token, $privateUrls);
+            $this->assertStringContainsString($authorizedUrl, $privateUrls);
             $this->assertStringNotContainsString('?cv=', $privateUrls);
             $this->assertStringNotContainsString('?token=', $privateUrls);
 
