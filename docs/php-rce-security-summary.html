@@ -20,9 +20,9 @@
 <li>Composer audit reports medium advisory CVE-2026-45070 for symfony/mime 8.1.6. Version 8.1.10 fixes it. The separate Statamic dependency update tracks that upgrade, so this PR stays in Draft until the audit passes against the updated base.</li>
 <li>The PHP feature suite passed: 59 tests, 659 assertions. The three Control Panel CV tests create temporary synthetic users and remove them afterward. The test container used a disposable APP_KEY and did not copy the repository's users directory.</li>
 <li>The CV PDF test failure came from looking for a URL fragment in extracted visible text. PDF viewers store that fragment in the link annotation. The test now checks the annotation and rejects any extra bare profile URL.</li>
-<li>The Vercel Preview check failed. Its failure cause is not available in the GitHub status, and the preview has not been retried. No production deployment ran.</li>
+<li>The Vercel Preview check failed because its builder uses PHP 8.4.19, below the patched PHP requirement in composer.json. Do not lower that requirement to satisfy the preview. The preview runtime needs a patched PHP version. No production deployment ran.</li>
 </ul></section>
-<section><h2>Deployment and remaining verification</h2><p>After the separate Symfony security update is merged, rerun Composer audit and the required checks, then diagnose the failed Vercel Preview. Production rollout remains a separate action. Build with fresh image pulls and package layers, then recreate the service so every old worker is replaced. The existing Dockerfile installs Debian packages from current repositories during a fresh build.</p>
+<section><h2>Deployment and remaining verification</h2><p>After the separate Symfony security update is merged, rerun Composer audit and the required checks. The Vercel Preview runtime also needs a patched PHP version before its check can pass. Production rollout remains a separate action. Build with fresh image pulls and package layers, then recreate the service so every old worker is replaced. The existing Dockerfile installs Debian packages from current repositories during a fresh build.</p>
 <pre>composer validate --no-check-publish
 composer audit --locked
 composer check-platform-reqs --lock
