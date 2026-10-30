@@ -5,7 +5,7 @@
 :root{font-family:system-ui,sans-serif;color:#172033;background:#eef2f6;line-height:1.6}body{max-width:920px;margin:40px auto;padding:0 20px}header,section{background:white;padding:28px;border-radius:14px;margin:18px 0}h1{font-size:2rem;line-height:1.2}h2{font-size:1.2rem}a{color:#174db6}code,pre{font-family:ui-monospace,monospace;font-size:.9em}pre{background:#f1f4f8;padding:16px;overflow:auto}.status{border-left:5px solid #ad6200}td,th{text-align:left;padding:10px;border-bottom:1px solid #ddd}table{border-collapse:collapse;width:100%}small{color:#526070}@media print{body{margin:0;background:white}header,section{padding:12px;border:1px solid #ddd;break-inside:avoid}}
 </style>
 <header><small>SECURITY REVIEW · 21 OCTOBER 2026 · JackatDJL/portfolio</small><h1>PHP runtime RCE remediation</h1><p>Prepared fix: PHP 8.4.27, patched version requirements, and session upload-progress hardening.</p></header>
-<section class="status"><h2>Status: draft; verification incomplete</h2><p>The changes are proposed for review. Production has not been inspected or redeployed. The workspace proxy was unreachable and its execution connection subsequently failed. A complete dependency refresh, current vulnerability audit, container build, and post-change application tests remain blocked. This report does not establish that the live site is patched or that every dependency is current.</p></section>
+<section class="status"><h2>Status: draft; dependency audit and preview check remain open</h2><p>The PHP 8.4.27 image built locally, and the PHP integration suite passed. Composer audit still reports a vulnerability in the locked Symfony MIME package. The Vercel Preview check also failed. Production has not been inspected or redeployed, and no production deployment was triggered.</p></section>
 <section><h2>What the CVEs mean</h2><p><strong>CVE-2026-109618 — out-of-memory corruption.</strong> A memory failure can interrupt PHP while request data is only partly initialized. Shutdown may then use invalid state, enabling code execution as the web worker. Upstream demonstrated remote exploitation with Apache mod_php; PHP-FPM remains susceptible under application-dependent conditions, without a complete demonstrated FPM exploit for this advisory. Updating PHP is the complete mitigation. <a href="https://github.com/php/php-src/security/advisories/GHSA-w8hw-w9fx-j79w">PHP advisory</a>.</p>
 <p><strong>CVE-2026-109619 — stale global state.</strong> A worker can retain references to memory from a finished request. A later request may use those references after the memory is freed. The session upload-progress path has been validated with FPM when suitable application operations are reachable. Disabling that feature reduces exposure but does not replace the complete PHP patch. <a href="https://github.com/php/php-src/security/advisories/GHSA-6wmf-4rv5-p3rp">PHP advisory</a>.</p>
 <p>Both advisories are critical, rated 9.2 by upstream. Patched releases are 8.2.35, 8.3.36, 8.4.27 and 8.5.12. This application uses Nginx and PHP-FPM; using FPM is not sufficient evidence of immunity.</p></section>
@@ -15,27 +15,23 @@
 <tr><td>docker/php.ini</td><td>Disable session.upload_progress.enabled. Ordinary application sessions and file uploads remain enabled; upload-progress integrations require checking.</td></tr>
 </tbody></table><p>The lock hash was computed using Composer's documented source algorithm, cross-checked against the original lock hash. This is a metadata change, not a dependency solver run.</p></section>
 <section><h2>Checks and limits</h2><ul>
-<li>Before changes, local PHP reported 8.4.27. This says nothing about the deployed container.</li>
-<li>Baseline Composer validation passed with the existing missing-license warning; installed platform requirements passed.</li>
-<li>Baseline application suite: 58 passed, 1 failed, 641 assertions. The failure is CvSessionAccessTest's visible private PDF URL assertion at line 76, also documented in the previous security PR.</li>
-<li>Composer audit could not reach Packagist. Docker daemon access failed. No clean audit or successful image build is claimed.</li>
-<li>Broader Composer/Bun updates and frontend verification are outstanding. The exact production PHP version and exploitability have not been established.</li>
+<li>The no-cache Podman build passed. The resulting image reports PHP 8.4.27 in both CLI and FPM. The frontend build also completed as part of the Docker build.</li>
+<li>Composer validation passed with the existing missing-license warning. Composer platform checks passed on PHP 8.4.27.</li>
+<li>Composer audit reports medium advisory CVE-2026-45070 for symfony/mime 8.1.6. Version 8.1.10 fixes it. The separate Statamic dependency update tracks that upgrade, so this PR stays in Draft until the audit passes against the updated base.</li>
+<li>The PHP feature suite passed: 59 tests, 659 assertions. The three Control Panel CV tests create temporary synthetic users and remove them afterward. The test container used a disposable APP_KEY and did not copy the repository's users directory.</li>
+<li>The CV PDF test failure came from looking for a URL fragment in extracted visible text. PDF viewers store that fragment in the link annotation. The test now checks the annotation and rejects any extra bare profile URL.</li>
+<li>The Vercel Preview check failed. Its failure cause is not available in the GitHub status, and the preview has not been retried. No production deployment ran.</li>
 </ul></section>
-<section><h2>Deployment and remaining verification</h2><p>On a working build host, resolve and review all compatible Composer and Bun updates, run the audits and application/browser tests, and commit the resulting lockfiles. Build with fresh image pulls and package layers, then recreate the service so every old worker is replaced. The existing Dockerfile installs Debian packages from current repositories during a fresh build.</p>
-<pre>composer update --with-all-dependencies
-composer validate --no-check-publish
+<section><h2>Deployment and remaining verification</h2><p>After the separate Symfony security update is merged, rerun Composer audit and the required checks, then diagnose the failed Vercel Preview. Production rollout remains a separate action. Build with fresh image pulls and package layers, then recreate the service so every old worker is replaced. The existing Dockerfile installs Debian packages from current repositories during a fresh build.</p>
+<pre>composer validate --no-check-publish
 composer audit --locked
-composer check-platform-reqs
-php artisan test
-bun update
-bun audit
-bun run build
-bun run test:browser
+composer check-platform-reqs --lock
+vendor/bin/phpunit --no-coverage
 
 docker compose -f compose.production.yaml build --pull --no-cache portfolio
 docker compose -f compose.production.yaml up -d --force-recreate portfolio
 docker compose -f compose.production.yaml exec portfolio php -v
 docker compose -f compose.production.yaml exec portfolio php-fpm -v
-docker compose -f compose.production.yaml exec portfolio sh -lc "php-fpm -i | grep -E '^(PHP Version|session.upload_progress.enabled) =>'"</pre>
+docker compose -f compose.production.yaml exec portfolio sh -lc "php-fpm -i | grep -E '^(PHP Version|session.upload_progress.enabled) =&gt;'"</pre>
 <p>Check that CLI and FPM both report PHP 8.4.27 and upload-progress tracking is disabled. The filtered FPM command avoids exposing unrelated configuration, including environment values. Verify /up, the homepage, Control Panel login and uploads, CV sessions, PDF export, and content sync. Review worker startup logs for warnings. Do not roll back to a vulnerable PHP image.</p></section>
 <footer><small>Sources: the two PHP advisories above, <a href="https://github.com/php/php-src/blob/PHP-8.4/NEWS">PHP changelog</a>, <a href="https://github.com/docker-library/official-images/blob/master/library/php">official PHP image manifest</a>, repository configuration, and recorded baseline checks.</small></footer></html>

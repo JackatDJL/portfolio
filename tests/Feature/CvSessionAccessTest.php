@@ -77,6 +77,11 @@ class CvSessionAccessTest extends TestCase
             $this->assertStringNotContainsString($token, $privateVisibleText);
             $this->assertStringNotContainsString('https://jack.djl.foundation/cv/jobmesse-26', $privateVisibleText);
             $this->assertStringContainsString($authorizedUrl, $privateUrls);
+            $urlsWithoutAuthorizedProfileLinks = str_replace($authorizedUrl, '', $privateUrls);
+            $this->assertStringNotContainsString(
+                'jack.djl.foundation/cv/jobmesse-26',
+                $urlsWithoutAuthorizedProfileLinks,
+            );
             $this->assertStringNotContainsString('?cv=', $privateUrls);
             $this->assertStringNotContainsString('?token=', $privateUrls);
 
