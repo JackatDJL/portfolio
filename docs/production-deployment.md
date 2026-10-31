@@ -98,6 +98,17 @@ Use the existing remotely managed Cloudflare Tunnel and Dokploy Traefik route:
 
 Do not open Hetzner public ports 80 or 443. The current server design sends Cloudflare Tunnel traffic to Traefik on localhost port 80.
 
+The portfolio's Nginx forwards the external scheme and port to PHP as HTTPS and 443. This is scoped to this container and relies on visitor traffic reaching it only through the HTTPS Cloudflare Tunnel; do not expose its HTTP port directly to untrusted clients. This avoids trusting forwarded headers globally on the shared Traefik entrypoint.
+
+Before deploying an image change, the proxy regression can be checked locally with Podman:
+
+```sh
+podman build --tag localhost/portfolio:proxy-check .
+bash tests/scripts/proxy-routing.sh localhost/portfolio:proxy-check
+```
+
+The script uses temporary containers, a test key, and Git-tracked content. It checks the portfolio through Traefik 3.6.7, including the CV PDF and an unauthenticated private CV request, and checks that an unrelated service retains Traefik's normal forwarded headers.
+
 ## Content synchronization behavior
 
 `php artisan portfolio:content-sync` runs every five minutes from the image's cron entry. To inspect a run without committing, fetching, or merging:
