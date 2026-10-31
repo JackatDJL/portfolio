@@ -39,7 +39,7 @@
     </section>
     <section class="home-now site-container" aria-labelledby="now-title">
         <h2 id="now-title" data-home-heading><a class="related-reference related-reference--heading related-reference--reveal" href="/aktuell" data-related-reference><span class="semantic-link">Aktuell</span>{{ partial:components/open-file size="heading" }}</a></h2>
-        <div class="home-now__content">{{ if now:homepage_summary }}<div class="home-now__summary">{{ now:homepage_summary | bard_html }}</div>{{ /if }}{{ if now:homepage_button_label && now:homepage_button_link }}<div class="home-now__cta">{{ partial:components/button :href="now:homepage_button_link" :label="now:homepage_button_label" }}</div>{{ /if }}</div>
+        <div class="home-now__content">{{ if now:homepage_summary }}<div class="home-now__summary">{{ now:homepage_summary | bard_html }}</div>{{ elseif now:intro }}<div class="home-now__summary">{{ now:intro | bard_html }}</div>{{ /if }}{{ if now:homepage_button_label && now:homepage_button_link }}<div class="home-now__cta">{{ partial:components/button :href="now:homepage_button_link" :label="now:homepage_button_label" }}</div>{{ /if }}</div>
         {{ if now:homepage_links }}<ul class="home-now__links">{{ now:homepage_links limit="3" }}{{ if label && link }}<li>{{ partial:components/outlink :href="link" :label="label" }}</li>{{ /if }}{{ /now:homepage_links }}</ul>{{ /if }}
     </section>
 </article>

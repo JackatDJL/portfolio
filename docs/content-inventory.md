@@ -24,7 +24,6 @@ This pass records source-backed drafts. New entries remain unpublished for revie
 | DJL UI | draft, archived | DJL archive manifest and public repository | `content/collections/projects/djl-ui.md` |
 | SongRaten | draft, archived | public repository metadata | `content/collections/projects/songraten.md` |
 | NoPlus | draft, archived | DJL archive manifest | `content/collections/projects/no-plus.md` |
-| A Cube's Journey | draft, archived | DJL archive manifest | `content/collections/projects/a-cubes-journey.md` |
 | Hamburg Hack-A-Ton Archive | draft, archived | public repository metadata | `content/collections/projects/hamburg-hack-a-ton-archive.md` |
 
 ## Experience created

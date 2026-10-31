@@ -3,39 +3,43 @@ id: 55e60c04-3c05-46dd-81ef-c9487aa27dac
 published: true
 blueprint: project
 title: 'DJL UI'
-summary: 'Ein archiviertes Experiment für wiederverwendbare Oberflächenbausteine und ein gemeinsames Designsystem im DJL-Umfeld.'
+summary: 'Mit DJL UI wollte ich das Geist-Design von Vercel und ausgewählte Komponenten auf Basis von shadcn/ui nachbauen. Ich entwickelte React-Komponenten und probierte sie in Storybook aus.'
 project_status: archived
 featured: false
 repository_url: 'https://github.com/JackatDJL/djl-ui'
+cover: 'projects/djl-ui/djl-ui-button-variants.webp'
 started_at: '2024-06-05'
-ended_at: '2025-03-21'
-featured_technology: [TypeScript, React, Storybook]
-used_technologies: [TypeScript, React, Storybook, Yarn, Jest]
+featured_technology: [TypeScript, React, Tailwind CSS]
+used_technologies: [TypeScript, React, Tailwind CSS, Storybook, Yarn, Turborepo, Jest]
 topics: [web-development]
 seo_title: 'DJL UI | Jack Ruder'
-seo_description: 'DJL UI war ein TypeScript- und React-Monorepo für wiederverwendbare UI-Komponenten und deren Storybook-Dokumentation.'
+seo_description: 'Mein Versuch, das Geist-Design von Vercel mit React, Tailwind CSS und shadcn/ui nachzubauen. Komponentenansichten entstanden in Storybook.'
 noindex: true
 content:
-  - type: paragraph
+  -
+    type: paragraph
     content:
-      - type: text
-        text: 'DJL UI war mein Versuch, wiederkehrende Oberflächenbausteine für mehrere Projekte an einem Ort zu sammeln.'
-  - type: heading
-    attrs: { level: 2 }
+      -
+        type: text
+        text: 'Ich mochte das Geist-Design von Vercel und wollte Oberflächen mit diesem Aussehen bauen. Einige Komponenten konnte man auf den Vercel-Seiten sehen, aber nicht als Bibliothek herunterladen. Mit DJL UI wollte ich dieses Design und ausgewählte Komponenten selbst nachbauen.'
+  -
+    type: heading
+    attrs:
+      level: 2
     content:
-      - type: text
-        text: 'Komponenten statt Kopien'
-  - type: paragraph
+      -
+        type: text
+        text: 'shadcn/ui als Ausgangspunkt'
+  -
+    type: paragraph
     content:
-      - type: text
-        text: 'Das TypeScript-Monorepo enthält ein React-Paket mit Eingaben, Dialogen, Karten, Schaltern, Ladezuständen und kleinen Bewegungseffekten. Eine Storybook-App diente dazu, die Komponenten isoliert zu betrachten und ihre Varianten festzuhalten. Ergänzend liegen gemeinsame ESLint- und TypeScript-Konfigurationen im Repository.'
-  - type: heading
-    attrs: { level: 2 }
+      -
+        type: text
+        text: 'Als Grundlage nahm ich shadcn/ui. Darauf baute ich ein TypeScript-Paket mit React und Tailwind CSS auf. Ich arbeitete an Eingaben, Dialogen, Karten und weiteren Komponenten sowie an Text- und Hintergrundeffekten. In Storybook konnte ich einzelne Komponenten unabhängig von einer ganzen Anwendung ausprobieren; für die Buttons legte ich mehrere Varianten an.'
+  -
+    type: paragraph
     content:
-      - type: text
-        text: Rückblick
-  - type: paragraph
-    content:
-      - type: text
-        text: 'Das Paket wird nicht weitergeführt. Es bleibt als Momentaufnahme meiner frühen Arbeit an komponentenbasierten React-Oberflächen erhalten.'
+      -
+        type: text
+        text: 'Später wurde mir klar, dass shadcn/ui bereits sehr viel von dem abdeckt, was ich brauche. Für einzelne Anpassungen kann ich auch direkt CSS schreiben. Eine eigene Bibliothek weiterzupflegen hatte für mich deshalb keinen ausreichenden Nutzen mehr. DJL UI ist archiviert.'
 ---
