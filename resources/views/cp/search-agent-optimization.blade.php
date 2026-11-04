@@ -32,6 +32,8 @@
         .indexed { background: #e3f4e9; color: #176036; }
         .noindex { background: #fff0d6; color: #784900; }
         .empty { padding: 24px 8px; text-align: center; color: #68717e; }
+        .pagination { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 16px; }
+        .pagination a { color: #2857a4; font-weight: 650; }
         code { overflow-wrap: anywhere; }
         @media (prefers-color-scheme: dark) {
             body { background: #17191d; color: #eef0f3; }
@@ -76,6 +78,7 @@
             @csrf
             <input type="hidden" name="filter" value="{{ $filter }}">
             <input type="hidden" name="q" value="{{ $query }}">
+            <input type="hidden" name="page" value="{{ $entries->currentPage() }}">
             <div class="bulk">
                 <label>Ausgewählte Seiten
                     <select name="action" required>
@@ -84,7 +87,7 @@
                     </select>
                 </label>
                 <button type="submit">Auswahl aktualisieren</button>
-                <span class="muted">Einträge auswählen und gemeinsam ändern.</span>
+                <span class="muted">Einträge auswählen und gemeinsam ändern; die Auswahl gilt für diese Seite.</span>
             </div>
 
             <table>
@@ -103,6 +106,13 @@
                 @endforelse
                 </tbody>
             </table>
+            @if ($entries->hasPages())
+                <nav class="pagination" aria-label="Seitennavigation">
+                    @if ($entries->previousPageUrl()) <a href="{{ $entries->previousPageUrl() }}">← Vorherige Seite</a> @else <span></span> @endif
+                    <span class="muted">Seite {{ $entries->currentPage() }} von {{ $entries->lastPage() }}</span>
+                    @if ($entries->nextPageUrl()) <a href="{{ $entries->nextPageUrl() }}">Nächste Seite →</a> @else <span></span> @endif
+                </nav>
+            @endif
         </form>
     </section>
 

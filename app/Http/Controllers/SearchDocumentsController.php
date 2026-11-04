@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Support\SearchPath;
 use Illuminate\Http\Response;
 use Statamic\Facades\Entry;
 use Statamic\Facades\GlobalSet;
@@ -14,7 +15,7 @@ class SearchDocumentsController extends Controller
     {
         $baseUrl = $this->baseUrl();
         $globals = GlobalSet::findByHandle('search_agent_optimization')?->inDefaultSite();
-        $noindexRoutes = (array) ($globals?->get('noindex_routes') ?? []);
+        $noindexRoutes = SearchPath::normalizeList($globals?->get('noindex_routes') ?? []);
         $paths = collect(['/projekte', '/blog', '/publikationen', '/aktuell', '/cv'])
             ->reject(fn ($path) => in_array($path, $noindexRoutes, true))
             ->values()
@@ -22,12 +23,12 @@ class SearchDocumentsController extends Controller
 
         foreach (self::PUBLIC_COLLECTIONS as $collection) {
             foreach (Entry::query()->where('collection', $collection)->get() as $entry) {
-                $path = $entry->url();
+                $path = SearchPath::normalize($entry->url());
 
                 if ($entry->status() !== 'published'
                     || ! $path
                     || filter_var($entry->value('noindex') ?? false, FILTER_VALIDATE_BOOLEAN)
-                    || in_array('/'.ltrim($path, '/'), $noindexRoutes, true)
+                    || in_array($path, $noindexRoutes, true)
                     || $entry->value('project_status') === 'confidential') {
                     continue;
                 }
@@ -74,7 +75,7 @@ class SearchDocumentsController extends Controller
         abort_if($markdown === '', 404);
 
         $baseUrl = $this->baseUrl();
-        $markdown = preg_replace_callback('/(\]\()([^\s)]+)(\))/u', function (array $match) use ($baseUrl): string {
+        $markdown = preg_replace_callback('~(\]\()([^\s)]+)(\s+(?:"[^"]*"|\'[^\']*\'))?(\))~u', function (array $match) use ($baseUrl): string {
             $target = $match[2];
 
             if (preg_match('~^(?:[a-z][a-z0-9+.-]*:|//|#)~i', $target)) {
@@ -83,7 +84,7 @@ class SearchDocumentsController extends Controller
 
             $path = str_starts_with($target, '/') ? $target : '/'.$target;
 
-            return $match[1].$baseUrl.$path.$match[3];
+            return $match[1].$baseUrl.$path.($match[3] ?? '').$match[4];
         }, $markdown) ?? $markdown;
 
         return response($markdown."\n", 200, [

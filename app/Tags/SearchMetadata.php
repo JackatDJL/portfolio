@@ -2,6 +2,7 @@
 
 namespace App\Tags;
 
+use App\Support\SearchPath;
 use Statamic\Facades\GlobalSet;
 use Statamic\Fields\Value;
 use Statamic\Tags\Tags;
@@ -20,9 +21,9 @@ class SearchMetadata extends Tags
         foreach (['site_description', 'default_og_image', 'schema_same_as', 'person_topics', 'person_job_title', 'noindex_routes'] as $key) {
             $seo[$key] = $searchSettings?->get($key);
         }
-        $baseUrl = rtrim((string) ($site['website_url'] ?? config('app.url')), '/');
-        $path = '/'.ltrim(request()->getPathInfo(), '/');
-        $canonical = $baseUrl.($path === '/' ? '/' : rtrim($path, '/'));
+        $baseUrl = rtrim((string) ($this->plainValue($site['website_url'] ?? null) ?: config('app.url')), '/');
+        $path = SearchPath::normalize(request()->getPathInfo()) ?? '/';
+        $canonical = $baseUrl.$path;
 
         $title = trim((string) ($this->context->get('seo_title') ?: $this->context->get('title') ?: ($site['name'] ?? 'Jack Ruder')));
         $siteName = (string) ($site['name'] ?? 'Jack Ruder');
@@ -42,15 +43,16 @@ class SearchMetadata extends Tags
         ));
         $image = $this->imageUrl($this->context->get('seo_image'), $baseUrl)
             ?: $this->imageUrl($seo['default_og_image'] ?? null, $baseUrl);
-        $noindex = filter_var($this->context->get('noindex') ?? false, FILTER_VALIDATE_BOOLEAN)
-            || in_array($path, (array) ($seo['noindex_routes'] ?? []), true);
+        $noindex = filter_var($this->plainValue($this->context->get('noindex')) ?? false, FILTER_VALIDATE_BOOLEAN)
+            || in_array($path, SearchPath::normalizeList($seo['noindex_routes'] ?? []), true)
+            || $this->plainValue($this->context->get('project_status')) === 'confidential';
         $collection = $this->context->get('collection');
         $collection = is_object($collection) && method_exists($collection, 'handle') ? $collection->handle() : (string) $collection;
         $type = in_array($collection, ['posts', 'publications'], true) ? 'article' : 'website';
 
-        $site['schema_same_as'] = $seo['schema_same_as'] ?? [];
-        $site['person_topics'] = $seo['person_topics'] ?? [];
-        $site['person_job_title'] = $seo['person_job_title'] ?? null;
+        $site['schema_same_as'] = $this->listValue($seo['schema_same_as'] ?? []);
+        $site['person_topics'] = $this->listValue($seo['person_topics'] ?? []);
+        $site['person_job_title'] = $this->plainValue($seo['person_job_title'] ?? null);
 
         $tags = [
             $description !== '' ? '<meta name="description" content="'.e($description).'">' : '',
@@ -68,7 +70,7 @@ class SearchMetadata extends Tags
             $image ? '<meta property="og:image" content="'.e($image).'">' : '',
             $image ? '<meta property="og:image:alt" content="'.e($siteName).'">' : '',
             $image ? '<meta name="twitter:image" content="'.e($image).'">' : '',
-            '<script type="application/ld+json">'.$this->jsonLd($site, $baseUrl, $canonical, $title, $description, $image).'</script>',
+            '<script type="application/ld+json">'.$this->jsonLd($site, $baseUrl, $canonical, $title, $description).'</script>',
         ];
 
         return implode("\n        ", array_filter($tags));
@@ -112,13 +114,36 @@ class SearchMetadata extends Tags
         return $baseUrl.'/assets/'.ltrim($image, '/');
     }
 
-    private function jsonLd(array $site, string $baseUrl, string $canonical, string $title, string $description, ?string $image): string
+    private function plainValue(mixed $value): mixed
+    {
+        return $value instanceof Value ? $value->value() : $value;
+    }
+
+    private function listValue(mixed $value): array
+    {
+        $value = $this->plainValue($value);
+
+        if (! is_iterable($value)) {
+            return [];
+        }
+
+        $items = [];
+        foreach ($value as $item) {
+            $items[] = $this->plainValue($item);
+        }
+
+        return $items;
+    }
+
+    private function jsonLd(array $site, string $baseUrl, string $canonical, string $title, string $description): string
     {
         $sameAs = array_values(array_filter([
             $site['github_url'] ?? null,
             $site['codeberg_url'] ?? null,
             ...((array) ($site['schema_same_as'] ?? [])),
-        ], fn ($url) => is_string($url) && preg_match('#^https://#i', $url)));
+        ], fn ($url) => is_string($url)
+            && filter_var($url, FILTER_VALIDATE_URL) !== false
+            && preg_match('#^https://#i', $url)));
 
         $person = array_filter([
             '@type' => 'Person',
@@ -127,7 +152,7 @@ class SearchMetadata extends Tags
             'url' => $baseUrl.'/',
             'description' => $site['short_bio'] ?? null,
             'jobTitle' => $site['person_job_title'] ?? null,
-            'image' => $image ?: $this->imageUrl($site['profile_image'] ?? null, $baseUrl),
+            'image' => $this->imageUrl($site['profile_image'] ?? null, $baseUrl),
             'sameAs' => $sameAs ?: null,
             'homeLocation' => ! empty($site['location']) ? [
                 '@type' => 'Place',

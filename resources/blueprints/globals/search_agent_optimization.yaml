@@ -26,6 +26,8 @@ tabs:
               type: list
               display: 'Nicht indexierte Routen'
               instructions: 'Wird über die Index-Seite dieser Globals gepflegt. Nur exakte Pfade wie /cv.'
+              visibility: read_only
+              validate: ['nullable', 'array', 'noindex_path_list']
   llm:
     display: 'LLM-Dateien'
     sections:
@@ -58,7 +60,7 @@ tabs:
               type: list
               display: 'Weitere öffentliche Profil-URLs'
               instructions: 'Nur Profile, die eindeutig Jack Ruder zugeordnet sind. GitHub und Codeberg aus den Website-Globals werden bereits übernommen.'
-              validate: ['nullable', 'url', 'starts_with:https://']
+              validate: ['nullable', 'array', 'https_url_list']
           -
             handle: person_job_title
             field:

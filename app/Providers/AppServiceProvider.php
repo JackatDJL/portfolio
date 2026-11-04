@@ -6,7 +6,9 @@ use App\Fieldtypes\ProtectedText;
 use App\Tags\CvTitle;
 use App\Tags\HomepageProjects;
 use App\Tags\SearchMetadata;
+use App\Support\SearchPath;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\URL;
 use Statamic\Facades\CP\Nav;
 use Illuminate\Support\ServiceProvider;
@@ -35,6 +37,22 @@ class AppServiceProvider extends ServiceProvider
         CvTitle::register();
         HomepageProjects::register();
         SearchMetadata::register();
+        Validator::extend('noindex_path_list', fn ($attribute, $value) => SearchPath::isValidList($value));
+        Validator::extend('https_url_list', function ($attribute, $value): bool {
+            if (! is_array($value)) {
+                return false;
+            }
+
+            foreach ($value as $url) {
+                if (! is_string($url)
+                    || filter_var($url, FILTER_VALIDATE_URL) === false
+                    || ! preg_match('#^https://#i', $url)) {
+                    return false;
+                }
+            }
+
+            return true;
+        });
         Statamic::externalScript(asset('/cp-cv-profile-access.js'));
 
         Statamic::pushCpRoutes(function () {
