@@ -14,7 +14,7 @@
     .project-record__time { display: flex; align-items: baseline; gap: 1rem; margin-bottom: 1.5rem; font-family: var(--font-mono); font-size: 0.875rem; color: var(--site-text-muted); }
     .project-record__time time { font-size: clamp(2.25rem, 5vw, 5rem); line-height: .85; letter-spacing: -.06em; color: var(--site-text); }
     .project-record__link { display: block; text-decoration: none; }
-    .project-record h2 { font-size: clamp(2.6rem, 6vw, 6.5rem); line-height: .94; margin: 1.25rem 0; letter-spacing: -0.055em; text-wrap: balance; }
+    .project-record h2 { margin: 1.25rem 0; font-size: clamp(2.6rem, 6vw, 6.5rem); line-height: .94; letter-spacing: -0.055em; text-wrap: balance; }
     .project-record__link p { max-width: 38rem; color: var(--site-text-muted); line-height: 1.65; }
     .project-technologies { gap: .5rem; }
     .project-technologies .chip { font-size: .75rem; }
@@ -27,12 +27,14 @@
     .journal-lead, .journal-entry { display: grid; gap: 2rem; padding-block: 2rem; border-top: 1px solid var(--site-border-strong); }
     .journal-date { display: flex; flex-wrap: wrap; gap: 1rem; font-family: var(--font-mono); font-size: 0.875rem; }
     .journal-link { display: block; text-decoration: none; }
-    .journal-link h2 { margin: 0; font-size: clamp(1.875rem, 4.2vw, 3.75rem); line-height: 1.12; letter-spacing: -0.035em; text-wrap: pretty; transition: color 180ms var(--ease-standard), transform 180ms var(--ease-standard); }
+    .journal-link h2, .project-record__link h2, .publication-record__link h2 { position: relative; margin: 0; font-size: clamp(1.875rem, 4.2vw, 3.75rem); line-height: 1.12; letter-spacing: -0.035em; text-wrap: pretty; transition: color 180ms var(--ease-standard); }
+    .project-record__link h2 { margin: 1.25rem 0; font-size: clamp(2.6rem, 6vw, 6.5rem); line-height: .94; letter-spacing: -0.055em; text-wrap: balance; transition: color 180ms var(--ease-standard), transform 180ms var(--ease-standard); }
+    .publication-record__link h2 { font-size: clamp(1.875rem, 3vw, 3rem); line-height: 1.15; letter-spacing: -0.025em; }
     .journal-link p { max-width: 42rem; margin: 2rem 0 0; font-size: 1.125rem; line-height: 1.65; color: var(--site-text-muted); }
-    .journal-link h2::after { content: ''; display: block; width: 0; height: 2px; margin-top: .55rem; background: var(--site-accent); transition: width 240ms var(--ease-emphasized); }
-    .journal-link:hover h2, .journal-link:focus-visible h2 { color: var(--site-focus); transform: translateX(.35rem); }
-    .journal-link:hover h2::after, .journal-link:focus-visible h2::after { width: min(7rem, 30%); }
-    .publication-record__link:hover h2, .publication-record__link:focus-visible h2 { text-decoration: underline; text-decoration-color: var(--site-accent); text-decoration-thickness: 0.07em; text-underline-offset: 0.12em; }
+    .journal-link h2::after, .project-record__link h2::after { content: ''; display: block; width: 0; height: 2px; margin-top: .55rem; background: var(--site-accent); transition: width 240ms var(--ease-emphasized); }
+    .journal-link:hover h2, .journal-link:focus-visible h2, .project-record__link:hover h2, .project-record__link:focus-visible h2 { color: var(--site-focus); transform: translateX(.35rem); }
+    .publication-record__link:hover h2, .publication-record__link:focus-visible h2 { color: var(--site-focus); }
+    .journal-link:hover h2::after, .journal-link:focus-visible h2::after, .project-record__link:hover h2::after, .project-record__link:focus-visible h2::after { width: min(7rem, 30%); }
     .journal-entry h2 { font-size: clamp(1.5rem, 3vw, 2.25rem); }
     .journal-archive { margin-top: var(--spacing-section-sm); }
     .publication-record { display: grid; gap: 1.5rem; padding-block: 2rem; border-top: 1px solid var(--site-border-strong); }
@@ -40,7 +42,6 @@
     .publication-record__date strong { font-size: 1.5rem; font-weight: 500; }
     .publication-record__date span { color: var(--site-text-muted); font-size: 0.875rem; }
     .publication-record__link { display: block; margin: 1rem 0; text-decoration: none; }
-    .publication-record h2 { font-size: clamp(1.875rem, 3vw, 3rem); line-height: 1.15; letter-spacing: -0.025em; }
     .publication-record__authors, .publication-record__publisher { margin-block: 0.25rem; }
     .publication-record__publisher { color: var(--site-text-muted); }
     .publication-record .publication-identifier { display: inline-block; margin-top: 0.75rem; }
