@@ -40,9 +40,9 @@ test('CV document links keep the shared semantic-link and arrow treatment', asyn
         expect(linkAndThreadColors.arrow).toBe(linkAndThreadColors.thread);
 
         const longTitle = page.locator('.cv-document__career a[href*="projektwoche-nachhaltige-webentwicklung"]');
-        await expect(longTitle.locator('.semantic-link')).toHaveText('Projektwoche Nachhaltige Webentwicklung');
+        await expect(longTitle.locator('.semantic-link')).toHaveText('Workshop Nachhaltige Webentwicklung');
         await expect(longTitle.locator('.related-reference__arrow-mask')).toBeVisible();
-        await expect(longTitle).toContainText('Projektwoche Nachhaltige Webentwicklung');
+        await expect(longTitle).toContainText('Workshop Nachhaltige Webentwicklung');
 
         await longTitle.hover();
         await expect(longTitle.locator('.semantic-link')).toHaveCSS('background-size', '100% 100%');
@@ -110,7 +110,7 @@ test('CV document links keep the shared semantic-link and arrow treatment', asyn
     await expect(educationProject.locator('.semantic-link')).toBeVisible();
     await expect(educationProject.locator('.related-reference__arrow-mask')).toBeVisible();
     const wrappedProject = page.locator('.detail-layout__rail a[href*="projektwoche-nachhaltige-webentwicklung"]');
-    await expect(wrappedProject.locator('.semantic-link')).toHaveText('Projektwoche Nachhaltige Webentwicklung');
+    await expect(wrappedProject.locator('.semantic-link')).toHaveText('Workshop Nachhaltige Webentwicklung');
     const wrappedProjectArrow = await wrappedProject.evaluate((link) => {
         const range = document.createRange();
         range.selectNodeContents(link.querySelector('.semantic-link'));
