@@ -21,13 +21,19 @@ class SearchDocumentsController extends Controller
             ->all();
 
         foreach (self::PUBLIC_COLLECTIONS as $collection) {
-            Entry::query()->where('collection', $collection)->get()
-                ->filter(fn ($entry) => $entry->published()
-                    && $entry->url()
-                    && ! filter_var($entry->value('noindex') ?? false, FILTER_VALIDATE_BOOLEAN)
-                    && ! in_array('/'.ltrim($entry->url(), '/'), $noindexRoutes, true)
-                    && $entry->value('project_status') !== 'confidential')
-                ->each(fn ($entry) => $paths[] = $entry->url());
+            foreach (Entry::query()->where('collection', $collection)->get() as $entry) {
+                $path = $entry->url();
+
+                if (! $entry->published()
+                    || ! $path
+                    || filter_var($entry->value('noindex') ?? false, FILTER_VALIDATE_BOOLEAN)
+                    || in_array('/'.ltrim($path, '/'), $noindexRoutes, true)
+                    || $entry->value('project_status') === 'confidential') {
+                    continue;
+                }
+
+                $paths[] = $path;
+            }
         }
 
         $writer = new \XMLWriter;

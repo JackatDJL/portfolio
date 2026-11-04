@@ -100,7 +100,7 @@ class SearchAgentOptimizationController extends Controller
                 continue;
             }
 
-            $entry->data(array_merge($entry->data(), ['noindex' => $data['action'] === 'noindex']));
+            $entry->set('noindex', $data['action'] === 'noindex');
             $entry->save();
             $changed++;
         }
