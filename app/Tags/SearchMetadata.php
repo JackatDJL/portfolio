@@ -3,6 +3,7 @@
 namespace App\Tags;
 
 use Statamic\Facades\GlobalSet;
+use Statamic\Fields\Value;
 use Statamic\Tags\Tags;
 
 class SearchMetadata extends Tags
@@ -75,6 +76,10 @@ class SearchMetadata extends Tags
 
     private function imageUrl(mixed $image, string $baseUrl): ?string
     {
+        if ($image instanceof Value) {
+            $image = $image->value();
+        }
+
         if (is_iterable($image)) {
             foreach ($image as $candidate) {
                 $image = $candidate;
