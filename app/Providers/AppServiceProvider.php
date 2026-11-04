@@ -37,7 +37,11 @@ class AppServiceProvider extends ServiceProvider
         CvTitle::register();
         HomepageProjects::register();
         SearchMetadata::register();
-        Validator::extend('noindex_path_list', fn ($attribute, $value) => SearchPath::isValidList($value));
+        Validator::extend(
+            'noindex_path_list',
+            fn ($attribute, $value) => SearchPath::isValidList($value),
+            ':attribute muss gültige absolute Pfade wie /cv enthalten; nur / darf mit einem Schrägstrich enden.',
+        );
         Validator::extend('https_url_list', function ($attribute, $value): bool {
             if (! is_array($value)) {
                 return false;
@@ -52,7 +56,7 @@ class AppServiceProvider extends ServiceProvider
             }
 
             return true;
-        });
+        }, ':attribute darf nur gültige öffentliche HTTPS-URLs enthalten.');
         Statamic::externalScript(asset('/cp-cv-profile-access.js'));
 
         Statamic::pushCpRoutes(function () {

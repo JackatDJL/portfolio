@@ -28,9 +28,10 @@ class SearchMetadata extends Tags
         $path = SearchPath::normalize(request()->getPathInfo()) ?? '/';
         $canonical = $baseUrl.$path;
 
-        $title = trim((string) ($this->context->get('seo_title') ?: $this->context->get('title') ?: ($site['name'] ?? 'Jack Ruder')));
-        $siteName = (string) ($site['name'] ?? 'Jack Ruder');
-        if ($path === '/' && ! $this->context->get('seo_title')) {
+        $seoTitle = $this->plainValue($this->context->get('seo_title'));
+        $title = trim((string) ($seoTitle ?: $this->plainValue($this->context->get('title')) ?: $this->plainValue($site['name'] ?? null) ?: 'Jack Ruder'));
+        $siteName = (string) ($this->plainValue($site['name'] ?? null) ?: 'Jack Ruder');
+        if ($path === '/' && ! $seoTitle) {
             $title = $siteName;
         }
         if ($title !== $siteName && ! str_contains($title, $siteName)) {
@@ -38,11 +39,11 @@ class SearchMetadata extends Tags
         }
 
         $description = trim((string) (
-            $this->context->get('seo_description')
-            ?: $this->context->get('summary')
-            ?: $this->context->get('abstract')
-            ?: ($seo['site_description'] ?? null)
-            ?: ($site['short_bio'] ?? '')
+            $this->plainValue($this->context->get('seo_description'))
+            ?: $this->plainValue($this->context->get('summary'))
+            ?: $this->plainValue($this->context->get('abstract'))
+            ?: $this->plainValue($seo['site_description'] ?? null)
+            ?: $this->plainValue($site['short_bio'] ?? null)
         ));
         $image = $this->imageUrl($this->context->get('seo_image'), $baseUrl)
             ?: $this->imageUrl($seo['default_og_image'] ?? null, $baseUrl);
