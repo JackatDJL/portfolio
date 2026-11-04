@@ -24,7 +24,7 @@ class SearchDocumentsController extends Controller
             foreach (Entry::query()->where('collection', $collection)->get() as $entry) {
                 $path = $entry->url();
 
-                if (! $entry->published()
+                if ($entry->status() !== 'published'
                     || ! $path
                     || filter_var($entry->value('noindex') ?? false, FILTER_VALIDATE_BOOLEAN)
                     || in_array('/'.ltrim($path, '/'), $noindexRoutes, true)
