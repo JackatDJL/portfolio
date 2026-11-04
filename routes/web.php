@@ -5,12 +5,17 @@ use App\Http\Controllers\CvPdfController;
 use App\Http\Controllers\CvPrivateDataController;
 use App\Http\Controllers\CvPrivateLinkController;
 use App\Http\Controllers\CvTokenExchangeController;
+use App\Http\Controllers\SearchDocumentsController;
 use Illuminate\Support\Facades\Route;
 use Statamic\View\View;
 
 // Route::statamic('example', 'example-view', [
 //    'title' => 'Example'
 // ]);
+
+Route::get('/sitemap.xml', [SearchDocumentsController::class, 'sitemap'])->name('sitemap');
+Route::get('/llms.txt', [SearchDocumentsController::class, 'llms'])->name('llms');
+Route::get('/llms-full.txt', [SearchDocumentsController::class, 'llmsFull'])->name('llms.full');
 
 Route::get('/design-system', function () {
     abort_unless(app()->environment(['local', 'testing']) && config('design-system.enabled'), 404);

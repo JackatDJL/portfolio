@@ -23,6 +23,7 @@
         </script>
         {{ /if }}
         <title>{{ cv_title | sanitize }}</title>
+        {{ search_metadata | raw }}
         <script>
             try {
                 const theme = localStorage.getItem('jack-theme');

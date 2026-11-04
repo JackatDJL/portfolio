@@ -76,6 +76,7 @@
                     {{ if cv_resolved:public_identity:website }}{{ partial:components/outlink :href="cv_resolved:public_identity:website" label="Website" classes="related-reference--text" }}{{ /if }}
                     {{ if cv_resolved:public_identity:github_url }}{{ partial:components/outlink :href="cv_resolved:public_identity:github_url" label="GitHub" classes="related-reference--text" }}{{ /if }}
                     {{ if cv_resolved:public_identity:codeberg_url }}{{ partial:components/outlink :href="cv_resolved:public_identity:codeberg_url" label="Codeberg" classes="related-reference--text" }}{{ /if }}
+                    {{ cv_resolved:public_identity:social_links }}{{ partial:components/outlink :href="url" :label="label" classes="related-reference--text" }}{{ /cv_resolved:public_identity:social_links }}
                 </nav>
             </section>
         </aside>

@@ -81,6 +81,7 @@ $v = function ($value) use ($u) {
 @if($cv['contact']['website'])\sidevalue{\cvoutlink{ {{ $u($cv['contact']['website']) }} }{Website}}@endif
 @if($cv['contact']['github'])\sidevalue{\cvoutlink{ {{ $u($cv['contact']['github']) }} }{GitHub}}@endif
 @if($cv['contact']['codeberg'])\sidevalue{\cvoutlink{ {{ $u($cv['contact']['codeberg']) }} }{Codeberg}}@endif
+@foreach($cv['contact']['social_links'] as $link)\sidevalue{\cvoutlink{ {{ $u($link['url']) }} }{ {{ $e($link['label']) }} }}@endforeach
 \switchcolumn
 \sectiontitle{Erfahrung}
 @foreach($cv['experience'] as $item)\entry{ {{ $e($item['title']) }} }{ {{ $e($item['period']) }} }{ {{ $e($item['organisation']) }} }{ {{ $u($item['url']) }} }{ {{ $e($item['summary']) }} }@endforeach
