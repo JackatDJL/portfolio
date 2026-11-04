@@ -30,7 +30,7 @@
                 {{ /nav:footer }}
                 {{ if site:github_url }}<a href="{{ site:github_url }}" target="_blank" rel="noreferrer">GitHub ↗</a>{{ /if }}
                 {{ if site:codeberg_url }}<a href="{{ site:codeberg_url }}" target="_blank" rel="noreferrer">Codeberg ↗</a>{{ /if }}
-                {{ site:social_links }}{{ if url }}<a href="{{ url }}" target="_blank" rel="noreferrer">{{ label }} ↗</a>{{ /if }}{{ /site:social_links }}
+                {{ site:social_links }}{{ if url }}<a href="{{ url }}" target="_blank" rel="noreferrer">{{ label | sanitize }} ↗</a>{{ /if }}{{ /site:social_links }}
             </nav>
         </div>
     </div>
