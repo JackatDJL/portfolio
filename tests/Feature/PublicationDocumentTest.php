@@ -23,6 +23,8 @@ class PublicationDocumentTest extends TestCase
             $response->assertSee('data-pdf-url="'.$document.'"', false);
             $response->assertSee('href="'.$document.'"', false);
             $this->assertSame(1, substr_count($response->getContent(), 'href="'.$document.'"'));
+            $response->assertDontSee('PDF direkt öffnen');
+            $response->assertSee('class="pdf-viewer__preview-link"', false);
         }
     }
 }

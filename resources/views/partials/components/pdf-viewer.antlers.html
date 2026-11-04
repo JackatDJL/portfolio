@@ -1,14 +1,14 @@
 {{# PDF.js renders a restrained first-page preview. The original document stays
     available as the explicit reading action. #}}
 <section class="pdf-viewer" data-pdf-viewer data-pdf-preview data-pdf-url="{{ url }}" aria-label="PDF-Vorschau">
+    <a class="pdf-viewer__preview-link" href="{{ fallback_url ?? url }}" target="_blank" rel="noreferrer" aria-label="Dokument öffnen">
     <div class="pdf-viewer__preview-stage">
         <div class="pdf-viewer__loading" data-pdf-loading role="status">Dokument wird geladen …</div>
         <div class="pdf-viewer__pages" data-pdf-pages aria-label="Erste Seite der PDF-Vorschau"></div>
     </div>
 
     <div class="pdf-viewer__error" data-pdf-error hidden role="status">
-        <p>Die Vorschau konnte nicht geladen werden.</p>
+        <p>Die Vorschau konnte nicht geladen werden. Dokument öffnen ↗</p>
     </div>
-
-    <p class="pdf-viewer__fallback"><a class="btn btn-primary" href="{{ fallback_url ?? url }}" target="_blank" rel="noreferrer">PDF direkt öffnen ↗</a></p>
+    </a>
 </section>

@@ -3,6 +3,7 @@
         <div class="site-footer__identity">
             {{ partial:components/wordmark classes="text-lg" }}
             <p class="text-sm text-muted">&copy; {{ current_date | format('Y') }}</p>
+            {{ if site:content_license_name }}<p class="text-sm text-muted">Eigene Texte und Bilder: <a href="{{ site:content_license_url }}" rel="license">{{ site:content_license_name }}</a>.<br>Abweichende Angaben haben Vorrang.</p>{{ /if }}
         </div>
 
         <nav class="site-footer__nav" aria-label="Footer-Navigation">
