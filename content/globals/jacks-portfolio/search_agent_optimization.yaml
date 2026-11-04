@@ -1,0 +1,46 @@
+site_description: 'Die persönliche Website von Jack Ruder aus Stade: Softwareentwicklung, Robotik, Open Source und politische Bildung.'
+default_og_image: 'https://jack.djl.foundation/assets/jack/profile_pictures/jack-20251020.jpg'
+noindex_routes: []
+llms: |-
+  # Jack Ruder
+
+  Jack Ruder ist Schüler und Entwickler aus Stade. Auf dieser Website dokumentiert er ausgewählte Projekte, Veröffentlichungen und Engagement in Softwareentwicklung, Robotik, Open Source und politischer Bildung.
+
+  ## Überblick
+
+  - [Startseite](/)
+  - [Projekte](/projekte)
+  - [Erstwählerforum Stade](/projekte/erstwaehlerforum-stade)
+  - [Blog](/blog)
+  - [Veröffentlichungen](/publikationen)
+  - [Lebenslauf](/cv)
+
+  Für aktuelle Angaben und den vollständigen Kontext sind die verlinkten Seiten maßgeblich.
+llms_full: |-
+  # Jack Ruder
+
+  Jack Ruder ist Schüler und Entwickler aus Stade, Niedersachsen. Er arbeitet an Softwareprojekten, Robotik, Open Source und politischer Bildung. Diese Website ist sein persönliches Portfolio und Arbeitsarchiv.
+
+  ## Ausgewählte Themen und Projekte
+
+  ### Erstwählerforum Stade
+
+  Das Erstwählerforum Stade war ein schulübergreifendes Projekt politischer Bildung für junge Menschen, besonders für Erstwählende. Jack Ruder hat es gegründet und an Organisation, Kommunikation und öffentlich sichtbarer Technik mitgearbeitet. Das Forum brachte Schülerinnen und Schüler verschiedener Schulen in Stade mit politischen Akteurinnen und Akteuren zusammen.
+
+  [Projektseite: Erstwählerforum Stade](/projekte/erstwaehlerforum-stade)
+
+  ## Weitere Seiten
+
+  - [Startseite](/)
+  - [Projekte](/projekte)
+  - [Blog](/blog)
+  - [Veröffentlichungen](/publikationen)
+  - [Lebenslauf](/cv)
+
+  Die Projektseiten und Veröffentlichungen enthalten die maßgeblichen Einzelheiten. Diese Zusammenfassung ist eine Navigation und ersetzt nicht die verlinkten Originalinhalte.
+schema_same_as: []
+person_topics:
+  - Softwareentwicklung
+  - Robotik
+  - Open Source
+  - Politische Bildung

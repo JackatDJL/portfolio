@@ -1,0 +1,22 @@
+title: Seiten
+tabs:
+  main:
+    display: Inhalt
+    sections:
+      -
+        fields:
+          -
+            handle: title
+            field:
+              type: text
+              display: Titel
+              validate: [required]
+          -
+            import: page_content
+  search:
+    display: 'SEO & Indexierung'
+    sections:
+      -
+        fields:
+          -
+            import: seo

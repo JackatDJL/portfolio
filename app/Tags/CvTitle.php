@@ -9,7 +9,13 @@ class CvTitle extends Tags
     public function index(): string
     {
         $request = request();
-        if (!$request->is('cv', 'cv/*')) return (string) ($this->context->get('title') ?? $this->context->get('site:name') ?? 'Jack Ruder');
+        if (!$request->is('cv', 'cv/*')) {
+            if ($request->path() === '/' && ! $this->context->get('seo_title')) {
+                return (string) ($this->context->get('site:name') ?: 'Jack Ruder');
+            }
+
+            return (string) ($this->context->get('seo_title') ?: $this->context->get('title') ?: $this->context->get('site:name') ?: 'Jack Ruder');
+        }
         $name = (string) ($this->context->get('site:name') ?? 'Lebenslauf');
         $title = $name.' · Lebenslauf';
         if (in_array($request->segment(2), ['exp', 'edu'], true)) return $title.' · '.$this->context->get('title');
