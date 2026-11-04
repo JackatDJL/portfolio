@@ -38,6 +38,7 @@ final class CvViewModel
                 'website' => $identity['website'],
                 'github' => $identity['github_url'],
                 'codeberg' => $identity['codeberg_url'],
+                'social_links' => $identity['social_links'],
             ],
             'about' => $this->plainText($resolved['sections']['about']['value']),
             'knowledge' => (array) $resolved['sections']['knowledge']['value'],

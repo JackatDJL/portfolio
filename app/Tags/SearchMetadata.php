@@ -3,6 +3,7 @@
 namespace App\Tags;
 
 use App\Support\SearchPath;
+use App\Support\SocialLinks;
 use Statamic\Facades\GlobalSet;
 use Statamic\Fields\Value;
 use Statamic\Tags\Tags;
@@ -15,9 +16,10 @@ class SearchMetadata extends Tags
         $globals = GlobalSet::findByHandle('site')?->inDefaultSite();
         $searchSettings = GlobalSet::findByHandle('search_agent_optimization')?->inDefaultSite();
         $site = [];
-        foreach (['name', 'website_url', 'short_bio', 'github_url', 'codeberg_url', 'profile_image', 'location'] as $key) {
+        foreach (['name', 'website_url', 'short_bio', 'github_url', 'codeberg_url', 'profile_image', 'location', 'social_links'] as $key) {
             $site[$key] = $globals?->get($key);
         }
+        $site['social_links'] = SocialLinks::normalize($site['social_links'] ?? []);
         $seo = [];
         foreach (['site_description', 'default_og_image', 'schema_same_as', 'person_topics', 'person_job_title', 'noindex_routes'] as $key) {
             $seo[$key] = $searchSettings?->get($key);
@@ -142,13 +144,17 @@ class SearchMetadata extends Tags
     /** Encodes the site's Person, WebSite, and current WebPage schema graph. */
     private function jsonLd(array $site, string $baseUrl, string $canonical, string $title, string $description): string
     {
-        $sameAs = array_values(array_filter([
+        $sameAs = array_values(array_unique(array_filter([
             $site['github_url'] ?? null,
             $site['codeberg_url'] ?? null,
             ...((array) ($site['schema_same_as'] ?? [])),
+            ...array_map(
+                fn (array $link) => $link['url'],
+                array_filter($site['social_links'] ?? [], fn (array $link) => $link['schema_same_as']),
+            ),
         ], fn ($url) => is_string($url)
             && filter_var($url, FILTER_VALIDATE_URL) !== false
-            && preg_match('#^https://#i', $url)));
+            && preg_match('#^https://#i', $url))));
 
         $person = array_filter([
             '@type' => 'Person',

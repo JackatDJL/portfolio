@@ -6,5 +6,24 @@ website_url: 'https://jack.djl.foundation'
 short_bio: 'Schüler aus Stade mit Projekten in Softwareentwicklung, Robotik, politischer Bildung und Musik. Ich entwickle Open-Source-Software, organisiere Veranstaltungen und arbeite an technischen und kommunikativen Projekten.'
 github_url: 'https://github.com/JackatDJL'
 codeberg_url: 'https://codeberg.org/jkxrx'
+social_links:
+  - label: Mastodon
+    url: null
+    schema_same_as: true
+  - label: Instagram
+    url: null
+    schema_same_as: true
+  - label: Twitter
+    url: null
+    schema_same_as: true
+  - label: 'Matrix (@jkxrx:djl.foundation)'
+    url: 'https://matrix.to/#/@jkxrx:djl.foundation'
+    schema_same_as: true
+  - label: 'Matrix-Raum (#moin:djl.foundation)'
+    url: 'https://matrix.to/#/#moin:djl.foundation'
+    schema_same_as: false
+  - label: LinkedIn
+    url: null
+    schema_same_as: true
 content_license_name: 'CC BY-SA 4.0'
 content_license_url: 'https://creativecommons.org/licenses/by-sa/4.0/deed.de'

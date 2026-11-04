@@ -94,3 +94,28 @@ tabs:
               validate:
                 - required
                 - 'starts_with:https://codeberg.org/'
+          -
+            handle: social_links
+            field:
+              type: grid
+              display: 'Weitere öffentliche Plattformen'
+              instructions: 'Diese Links erscheinen auf der Website, im Lebenslauf und in der PDF. Matrix-Profile und öffentliche Räume können als matrix.to-Links eingetragen werden.'
+              add_row: Plattform hinzufügen
+              fields:
+                - handle: label
+                  field: { type: text, display: Plattform, validate: [required], width: 35 }
+                - handle: url
+                  field:
+                    type: text
+                    input_type: url
+                    display: 'Öffentliche URL'
+                    instructions: 'Nur öffentliche HTTPS-Links. Leer lassen, bis die URL feststeht.'
+                    validate: ['nullable', 'url', 'starts_with:https://']
+                    width: 45
+                - handle: schema_same_as
+                  field:
+                    type: toggle
+                    display: 'Als Personenprofil im Schema verwenden'
+                    instructions: 'Für persönliche Profile aktivieren; für Räume und Communities deaktivieren.'
+                    default: true
+                    width: 20
