@@ -63,6 +63,9 @@ return [
         '/publikationen',
         '/cv',
         '/cv/jobmesse-26',
+        '/sitemap.xml',
+        '/llms.txt',
+        '/llms-full.txt',
     ],
 
     /*

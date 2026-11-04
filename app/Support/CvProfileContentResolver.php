@@ -77,6 +77,7 @@ final class CvProfileContentResolver
                 'website' => (string) $site->value('website_url', ''),
                 'github_url' => (string) $site->value('github_url', ''),
                 'codeberg_url' => (string) $site->value('codeberg_url', ''),
+                'social_links' => SocialLinks::normalize($site->value('social_links', [])),
                 'short_bio' => (string) $site->value('short_bio', ''),
                 'profile_image' => $this->augmentedValue($site, 'profile_image'),
                 'profile_image_path' => $site->value('profile_image'),

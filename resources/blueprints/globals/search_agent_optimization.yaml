@@ -1,0 +1,75 @@
+title: 'Search Agent Optimization'
+tabs:
+  indexing:
+    display: 'SEO & Social'
+    sections:
+      -
+        display: 'Standardangaben für Suchmaschinen und Social Sharing'
+        fields:
+          -
+            handle: site_description
+            field:
+              type: textarea
+              display: 'Beschreibung der Website'
+              instructions: 'Wird als allgemeine Beschreibung genutzt, wenn ein Eintrag keine eigene SEO-Beschreibung hat.'
+          -
+            handle: default_og_image
+            field:
+              type: text
+              display: 'Standardbild für Open Graph'
+              instructions: 'Vollständige öffentliche HTTPS-Bild-URL; Einträge können ein eigenes SEO-Bild verwenden.'
+              input_type: url
+              validate: ['nullable', 'url', 'starts_with:https://']
+          -
+            handle: noindex_routes
+            field:
+              type: list
+              display: 'Nicht indexierte Routen'
+              instructions: 'Wird über die Index-Seite dieser Globals gepflegt. Nur exakte Pfade wie /cv.'
+              visibility: read_only
+              validate: ['nullable', 'array', 'noindex_path_list']
+  llm:
+    display: 'LLM-Dateien'
+    sections:
+      -
+        display: 'Markdown-Dateien unter /llms.txt und /llms-full.txt'
+        fields:
+          -
+            handle: llms
+            field:
+              type: markdown
+              display: 'llms.txt'
+              instructions: 'Kurze Orientierung für KI-Systeme. Markdown-Links auf interne Pfade wie /projekte/slug werden als vollständige Website-URLs ausgegeben.'
+              escape_markup: true
+          -
+            handle: llms_full
+            field:
+              type: markdown
+              display: 'llms-full.txt'
+              instructions: 'Ausführlichere, quellengestützte Zusammenfassung. Markdown-Links auf interne Pfade werden als vollständige Website-URLs ausgegeben.'
+              escape_markup: true
+  schema:
+    display: 'Person-Schema'
+    sections:
+      -
+        display: 'Zusätzliche, verifizierte Identitätsangaben'
+        fields:
+          -
+            handle: schema_same_as
+            field:
+              type: list
+              display: 'Weitere öffentliche Profil-URLs'
+              instructions: 'Nur Profile, die eindeutig Jack Ruder zugeordnet sind. GitHub und Codeberg aus den Website-Globals werden bereits übernommen.'
+              validate: ['nullable', 'array', 'https_url_list']
+          -
+            handle: person_job_title
+            field:
+              type: text
+              display: 'Öffentliche Rollenbezeichnung'
+              instructions: 'Optional. Nur eine aktuell zutreffende, auf der Website belegte Rolle eintragen.'
+          -
+            handle: person_topics
+            field:
+              type: list
+              display: 'Themen'
+              instructions: 'Themen, mit denen Jack Ruder auf der Website belegt verbunden ist; werden als knowsAbout ausgegeben.'

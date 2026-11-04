@@ -3,8 +3,11 @@
 set -e
 
 # PHP for the build environment
-dnf clean metadata
-dnf install -y php8.4 php8.4-{common,mbstring,gd,bcmath,xml,fpm,intl,zip} wget
+# Vercel's AL2023 image can start from an older repository snapshot. Use the
+# release that provides the patched PHP version required by composer.json.
+AL2023_RELEASE=2023.12.20261021
+dnf --releasever="$AL2023_RELEASE" clean metadata
+dnf --releasever="$AL2023_RELEASE" install -y php8.4 php8.4-{common,mbstring,gd,bcmath,xml,fpm,intl,zip} wget
 
 curl -fsSL https://bun.sh/install | bash
 bun upgrade

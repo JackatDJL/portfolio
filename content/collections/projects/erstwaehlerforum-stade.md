@@ -14,7 +14,7 @@ related_experience:
   - 7f821bf2-4f62-433c-87e1-8d821d053170
 seo_title: 'Erstwählerforum Stade | Jack Ruder'
 seo_description: 'Ich gründete das schulübergreifende Forum mit, gestaltete sein Branding und moderierte eine Diskussion. 2027 planen wir die nächste Ausgabe.'
-noindex: true
+noindex: false
 started_at: '2025-10-25 00:00'
 cover: projects/erstwaehlerforum-stade/img-20260602-wa0030.jpg
 gallery:

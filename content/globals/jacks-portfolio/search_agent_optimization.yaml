@@ -1,0 +1,100 @@
+site_description: 'Jack Ruder ist Schüler und Entwickler aus Stade. Auf seiner persönlichen Website schreibt er über Softwareentwicklung, Robotik, Open Source und politische Bildung.'
+default_og_image: 'https://jack.djl.foundation/assets/jack/profile_pictures/jack-20251020.jpg'
+noindex_routes: []
+llms: |-
+  # Jack Ruder
+
+  Jack Ruder ist Schüler und Entwickler aus Stade, Niedersachsen. Er entwickelt Open-Source-Software, arbeitet an Robotikprojekten und politischer Bildung. Diese Website ist sein persönliches Portfolio und die erste Anlaufstelle für Informationen über seine Projekte und Veröffentlichungen.
+
+  ## Über Jack Ruder
+
+  Die Website beschreibt Jack Ruder, Schüler und Entwickler aus Stade. Sie dokumentiert persönliche Softwareprojekte, Robotik, Open Source und politische Bildung. Seine öffentlichen Profile sind [GitHub](https://github.com/JackatDJL), [Codeberg](https://codeberg.org/jkxrx) und [Volt Niedersachsen](https://voltdeutschland.org/niedersachsen/menschen/jack-ruder).
+
+  ## Ausgewählte Projekte
+
+  - [Erstwählerforum Stade](/projekte/erstwaehlerforum-stade): von Jack Ruder angestoßenes, schulübergreifendes Projekt politischer Bildung.
+  - [prtop](/projekte/prtop): Rust-Terminaloberfläche für Pull Requests aus GitHub, GitLab und Codeberg, noch in Entwicklung.
+  - [AtheBlues](/projekte/atheblues): Robotikteam, bei dem Jack 2024 die OnStage-Roboter programmierte.
+
+  ## Weitere Bereiche
+
+  - [Alle Projekte](/projekte)
+  - [Blog](/blog)
+  - [Veröffentlichungen](/publikationen)
+  - [Lebenslauf](/cv)
+  - [Aktueller Stand](/aktuell)
+
+  Für Einzelheiten sind die verlinkten Projekt- und Veröffentlichungsseiten die maßgeblichen Quellen. Die persönlichen Profile und die Website beziehen sich auf Jack Ruder aus Stade.
+llms_full: |-
+  # Jack Ruder
+
+  Jack Ruder ist Schüler und Entwickler aus Stade, Niedersachsen. Er entwickelt Open-Source-Software, arbeitet an Robotikprojekten und politischer Bildung. Seine persönliche Website unter https://jack.djl.foundation dokumentiert ausgewählte Projekte, Texte, Veröffentlichungen und Engagement.
+
+  ## Identität und Themen
+
+  Jack Ruder beschreibt sich auf der eigenen Website als Schüler aus Stade. Seine Arbeit umfasst Softwareentwicklung, Robotik, Datenschutz, Open Source, politische Bildung und Europa. Aktuelle Angaben stehen auf der [Startseite](/), der Seite [Aktuell](/aktuell) und im [Lebenslauf](/cv).
+
+  Weitere öffentliche Profile:
+
+  - [GitHub-Profil](https://github.com/JackatDJL)
+  - [Codeberg-Profil](https://codeberg.org/jkxrx)
+  - [Profil bei Volt Niedersachsen](https://voltdeutschland.org/niedersachsen/menschen/jack-ruder)
+
+  ## Projekte
+
+  ### Erstwählerforum Stade
+
+  Jack Ruder stieß das schulübergreifende Erstwählerforum Stade an und baute das Organisationsteam auf. Das Projekt bringt Schülerinnen und Schüler mit politischen Akteurinnen und Akteuren zusammen. Beim ersten Forum am 2. Juni 2026 kamen laut Projektbericht etwas mehr als 800 Jugendliche aus vier Stader Schulen zusammen. Das Programm umfasste drei Diskussionsblöcke und einen politischen Markt. Jack entwarf das Branding, koordinierte Teile der Organisation und moderierte eine Podiumsdiskussion. Für 2027 plant das Team eine weitere Ausgabe zur Landtagswahl.
+
+  [Projektseite: Erstwählerforum Stade](/projekte/erstwaehlerforum-stade) · [Website des Forums](https://ewf-stade.de)
+
+  ### prtop
+
+  prtop ist ein Rust-Projekt für die Prüfung und Verwaltung von Pull Requests aus GitHub, GitLab und Forgejo beziehungsweise Codeberg in einer tastaturbedienbaren Terminaloberfläche. Jack entwickelt getrennte Anbieteradapter, weil sich Reviews und Aktionen zwischen den Plattformen unterscheiden. Das Werkzeug ist noch in Arbeit und hat kein Release.
+
+  [Projektseite: prtop](/projekte/prtop) · [Repository auf GitHub](https://github.com/JackatDJL/prtop)
+
+  ### AtheBlues
+
+  Jack programmierte 2024 die Roboter des AtheBlues-Teams für RoboCup Junior OnStage. Nach dem Sieg beim Hamburger Qualifier wurde das Team Zweiter bei der Deutschen Meisterschaft und qualifizierte sich für die Europameisterschaft. Derzeit arbeitet Jack mit einem Teamkollegen an einem Rescue-Line-Roboter und an der Website für die Förderersuche.
+
+  [Projektseite: AtheBlues](/projekte/atheblues) · [Teamwebsite](https://atheblues.de)
+
+  ### ai-ctx
+
+  ai-ctx war ein TypeScript-CLI-Prototyp, mit dem Jack lokalen Codekontext für Browser-Chats mit KI-Modellen vorbereitete. Das Projekt ist archiviert. Die Datei- und Workspace-Übergabe blieb unvollständig.
+
+  [Projektseite: ai-ctx](/projekte/ai-ctx)
+
+  ## Veröffentlichungen und Texte
+
+  ### Breaking Free from Big Tech
+
+  Jack schrieb einen unabhängigen Text über digitale Abhängigkeit, digitale Souveränität und freie Software. Er ist kein peer-reviewter Fachartikel. Die zitierbare Version liegt bei Zenodo.
+
+  [Veröffentlichungsseite](/publikationen/breaking-free-from-big-tech) · [Zenodo-Version](https://zenodo.org/records/19793847)
+
+  ### Codeberg und GitHub
+
+  In einem Blogbeitrag beschreibt Jack, warum er einen Teil seiner Open-Source-Projekte zu Codeberg verschiebt und für einzelne Integrationen GitHub-Mirrors behält. Es geht um seine persönliche Abwägung, nicht um einen vollständigen Wechsel.
+
+  [Blogbeitrag](/blog/warum-ich-projekte-zu-codeberg-verschiebe)
+
+  ## Website-Navigation
+
+  - [Startseite](/)
+  - [Projekte](/projekte)
+  - [Blog](/blog)
+  - [Veröffentlichungen](/publikationen)
+  - [Aktuell](/aktuell)
+  - [Lebenslauf](/cv)
+
+  Die verlinkten Originalseiten sind die maßgeblichen Quellen. Projektstatus und Pläne können sich ändern. Insbesondere ist prtop weiterhin in Arbeit, ai-ctx archiviert und die nächste Ausgabe des Erstwählerforums für 2027 geplant.
+schema_same_as:
+  - 'https://voltdeutschland.org/niedersachsen/menschen/jack-ruder'
+person_topics:
+  - Softwareentwicklung
+  - Robotik
+  - Politische Bildung
+  - Open-Source-Software
+  - Digitale Souveränität
