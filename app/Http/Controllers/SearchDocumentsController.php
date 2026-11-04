@@ -11,6 +11,7 @@ class SearchDocumentsController extends Controller
 {
     private const PUBLIC_COLLECTIONS = ['pages', 'projects', 'posts', 'publications', 'education', 'experience'];
 
+    /** Returns an XML sitemap of published, indexable routes and collection entries. */
     public function sitemap(): Response
     {
         $baseUrl = $this->baseUrl();
@@ -58,16 +59,19 @@ class SearchDocumentsController extends Controller
         ]);
     }
 
+    /** Serves the short, globally configured Markdown guide for language models. */
     public function llms(): Response
     {
         return $this->markdown('llms');
     }
 
+    /** Serves the full, globally configured Markdown guide for language models. */
     public function llmsFull(): Response
     {
         return $this->markdown('llms_full');
     }
 
+    /** Serves a configured Markdown field and expands relative links to absolute URLs. */
     private function markdown(string $field): Response
     {
         $globals = GlobalSet::findByHandle('search_agent_optimization')?->inDefaultSite();
@@ -94,6 +98,7 @@ class SearchDocumentsController extends Controller
         ]);
     }
 
+    /** Resolves the canonical website base URL from globals or the application config. */
     private function baseUrl(): string
     {
         $globals = GlobalSet::findByHandle('site')?->inDefaultSite();

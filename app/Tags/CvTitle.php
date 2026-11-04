@@ -6,6 +6,7 @@ use Statamic\Facades\Entry;
 
 class CvTitle extends Tags
 {
+    /** Selects the page title, including CV-specific titles for profile and section routes. */
     public function index(): string
     {
         $request = request();

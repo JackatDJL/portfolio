@@ -6,6 +6,7 @@ use Statamic\Fields\Value;
 
 final class SearchPath
 {
+    /** Normalizes a path to one leading slash while preserving the site root. */
     public static function normalize(mixed $path): ?string
     {
         if ($path instanceof Value) {
@@ -31,6 +32,7 @@ final class SearchPath
         return $path === '' ? null : '/'.$path;
     }
 
+    /** Normalizes, removes empty values from, and deduplicates a list of paths. */
     public static function normalizeList(mixed $paths): array
     {
         if ($paths instanceof Value) {
@@ -54,6 +56,7 @@ final class SearchPath
         return array_values(array_unique($normalized));
     }
 
+    /** Checks that every configured path is absolute and has no trailing slash except root. */
     public static function isValidList(mixed $paths): bool
     {
         if ($paths instanceof Value) {

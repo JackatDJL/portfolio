@@ -9,6 +9,7 @@ use Statamic\Tags\Tags;
 
 class SearchMetadata extends Tags
 {
+    /** Renders canonical, social, robots, and structured metadata for the current page. */
     public function index(): string
     {
         $globals = GlobalSet::findByHandle('site')?->inDefaultSite();
@@ -76,6 +77,7 @@ class SearchMetadata extends Tags
         return implode("\n        ", array_filter($tags));
     }
 
+    /** Converts an asset value or path to an absolute image URL. */
     private function imageUrl(mixed $image, string $baseUrl): ?string
     {
         if ($image instanceof Value) {
@@ -114,11 +116,13 @@ class SearchMetadata extends Tags
         return $baseUrl.'/assets/'.ltrim($image, '/');
     }
 
+    /** Unwraps a Statamic field value before using its underlying data. */
     private function plainValue(mixed $value): mixed
     {
         return $value instanceof Value ? $value->value() : $value;
     }
 
+    /** Converts an iterable Statamic field value into a plain PHP list. */
     private function listValue(mixed $value): array
     {
         $value = $this->plainValue($value);
@@ -135,6 +139,7 @@ class SearchMetadata extends Tags
         return $items;
     }
 
+    /** Encodes the site's Person, WebSite, and current WebPage schema graph. */
     private function jsonLd(array $site, string $baseUrl, string $canonical, string $title, string $description): string
     {
         $sameAs = array_values(array_filter([

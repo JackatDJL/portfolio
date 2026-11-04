@@ -27,6 +27,7 @@ class SearchAgentOptimizationController extends Controller
 
     private const PAGE_SIZE = 100;
 
+    /** Builds the searchable, filterable, paginated list of published entries and routes. */
     public function index(Request $request): View
     {
         $globals = GlobalSet::findByHandle('search_agent_optimization')?->inDefaultSite();
@@ -91,6 +92,7 @@ class SearchAgentOptimizationController extends Controller
         ]);
     }
 
+    /** Applies an authorized bulk indexing update and serializes route-list changes. */
     public function update(Request $request): RedirectResponse
     {
         $data = $request->validate([
