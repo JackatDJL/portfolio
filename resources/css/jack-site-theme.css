@@ -848,7 +848,7 @@
     .related-reference__footer { display: flex; min-height: 1.35rem; align-items: start; justify-content: space-between; gap: 0.75rem; }
     .related-reference__arrow-mask { display: inline-grid; width: 1.1em; height: 1.1em; flex: none; place-items: center; overflow: clip; border-radius: 50%; vertical-align: -0.1em; margin-left: 0.1em; }
     .related-reference__arrow { display: inline-block; color: var(--link-accent, var(--site-text)); font-size: 1.15em; font-weight: 700; line-height: 1; transition: transform 180ms var(--ease-emphasized); will-change: transform; }
-    .related-reference__title { display: inline; white-space: nowrap; }
+    .related-reference__title { display: inline; }
     .related-reference__title > .related-reference__arrow-mask { vertical-align: middle; }
     .related-reference--inline { padding: .55rem 0; }
     .related-reference--inline .related-reference__meta { display: block; margin-top: .25rem; color: var(--site-text-muted); font-size: .74rem; line-height: 1.45; }
