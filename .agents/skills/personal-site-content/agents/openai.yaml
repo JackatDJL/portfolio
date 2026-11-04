@@ -1,0 +1,7 @@
+interface:
+  display_name: "Personal-site content"
+  short_description: "Keep personal-site work real and person-first"
+  default_prompt: "Use $personal-site-content while shaping this personal-site page."
+
+policy:
+  allow_implicit_invocation: true
