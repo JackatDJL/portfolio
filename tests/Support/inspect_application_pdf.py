@@ -25,6 +25,7 @@ bbox = ET.fromstring(subprocess.run(['pdftotext', '-f', '1', '-l', '1', '-bbox',
 words = [[word.text, *[float(word.attrib[key]) for key in ['xMin', 'yMin', 'xMax', 'yMax']]] for word in bbox.iter() if word.tag.endswith('}word')]
 print(json.dumps({
     'first_words': words,
+    'fonts': [[str(font.get_object().get('/BaseFont', '')) for font in page['/Resources'].get('/Font', {}).get_object().values()] for page in reader.pages],
     'sizes': [[float(p.mediabox.width), float(p.mediabox.height)] for p in reader.pages],
     'texts': [page.extract_text() for page in reader.pages],
     'outline': [item.title for item in reader.outline if not isinstance(item, list)],

@@ -5,6 +5,7 @@ namespace App\Support;
 use Illuminate\Support\Carbon;
 use Illuminate\Validation\ValidationException;
 use Statamic\Contracts\Entries\Entry;
+use Statamic\Facades\GlobalSet;
 
 final class ApplicationLetter
 {
@@ -40,12 +41,24 @@ final class ApplicationLetter
             }
         }
 
+        $private = CvPrivateData::reveal(GlobalSet::find('cv')->inDefaultSite(), strict: true);
+        $country = trim($private['country'] ?? '');
+        $senderLines = array_values(array_filter([
+            trim(($private['street'] ?? '').' '.($private['house_number'] ?? '')),
+            trim(($private['postal_code'] ?? '').' '.($private['city'] ?? '')),
+            in_array(mb_strtolower($country), ['', 'de', 'deutschland', 'germany'], true) ? '' : $country,
+        ]));
+        $date = Carbon::parse(ApplicationData::date($entry))->locale('de');
+        $place = trim($private['city'] ?? '');
+
         return [
             'recipient' => array_values(array_filter([
                 $recipient['organisation'], $recipient['recipient'] ?? '',
                 ...preg_split('/\R/u', $recipient['address']),
             ])),
             'sender' => $cv['name'],
+            'sender_address_lines' => $senderLines ?: preg_split('/,\s*/u', $cv['contact']['address']),
+            'date_line' => ($place !== '' ? $place.', den ' : '').$date->translatedFormat('j. F Y'),
             'address' => $cv['contact']['address'],
             'return_address' => $cv['sender_return_address'],
             'email' => $cv['contact']['email'] ?: $cv['contact']['public_email'],

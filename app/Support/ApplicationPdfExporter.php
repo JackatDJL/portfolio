@@ -179,6 +179,7 @@ final class ApplicationPdfExporter
         $process->setTimeout(5);
         $process->mustRun();
         $files = [__FILE__, base_path('app/Support/ApplicationLetter.php'), base_path('app/Support/ApplicationData.php'), base_path('app/Support/CvPrivateData.php'), base_path('scripts/compose-application-pdf.py'), base_path('requirements-pdf.txt'), (new \ReflectionClass($this->postProcessor))->getFileName()];
+        $files = [...$files, ...glob(base_path('resources/application-fonts/*.ttf'))];
         $fingerprintCv = $cv;
         $fingerprintCv['photo'] = null; // The immutable photo snapshot is covered by photo_digest.
         $fingerprint = [

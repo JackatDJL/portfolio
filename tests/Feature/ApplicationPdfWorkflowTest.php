@@ -92,13 +92,25 @@ class ApplicationPdfWorkflowTest extends TestCase
         $this->fixture->documents();
         $pdf = app(ApplicationPdfExporter::class)->render($this->fixture->entry);
         $text = $this->text($pdf);
-        foreach (['Beispiel GmbH', 'Musterstraße', '06.11.2026', 'Sehr geehrte', 'Mit freundlichen', 'private-export@example.invalid', '+49 000 123456'] as $expected) {
+        foreach (['Beispiel GmbH', 'Musterstraße', 'Musterstadt, den 6. November 2026', 'Sehr geehrte', 'Mit freundlichen', 'private-export@example.invalid', '+49 000 123456'] as $expected) {
             $this->assertStringContainsString($expected, $text);
         }
         $this->assertStringNotContainsString('Geschützte Angabe', $text);
         $inspection = $this->inspect($pdf);
         $recipientWord = collect($inspection['first_words'])->first(fn ($word) => $word[0] === 'Beispiel');
         $this->assertNotNull($recipientWord);
+        $letterFonts = implode(' ', $inspection['fonts'][0]);
+        $this->assertStringContainsString('NotoSans-SemiCondensed', $letterFonts);
+        $this->assertStringNotContainsString('FiraSans', $letterFonts);
+        $dateYear = collect($inspection['first_words'])->first(fn ($word) => $word[0] === '2026');
+        $this->assertNotNull($dateYear);
+        $this->assertEqualsWithDelta(185 * 72 / 25.4, $dateYear[3], 1);
+        $this->assertGreaterThan(80 * 72 / 25.4, $dateYear[2]);
+        $this->assertLessThan(86 * 72 / 25.4, $dateYear[4]);
+        $subjectWord = collect($inspection['first_words'])->first(fn ($word) => $word[0] === 'Bewerbung');
+        $this->assertGreaterThan(90 * 72 / 25.4, $subjectWord[2]);
+        $this->assertLessThan(100 * 72 / 25.4, $subjectWord[4]);
+        $this->assertStringNotContainsString('Anlagen', $inspection['texts'][0]);
         $this->assertEqualsWithDelta(25 * 72 / 25.4, $recipientWord[1], 1);
         $this->assertGreaterThan(45 * 72 / 25.4, $recipientWord[2]);
         $this->assertLessThan(90 * 72 / 25.4, $recipientWord[4]);

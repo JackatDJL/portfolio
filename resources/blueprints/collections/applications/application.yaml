@@ -131,7 +131,7 @@ tabs:
           fields:
           - handle: subject
             field:
-              type: text
+              type: textarea
               display: Betreff
           - handle: salutation
             field:

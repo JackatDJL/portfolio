@@ -52,7 +52,7 @@ final class ApplicationPdfFixture
             'title' => 'Synthetic PDF integration fixture', 'application_status' => 'draft',
             'recipient' => ApplicationData::encrypt([['organisation' => 'Beispiel GmbH · Layouttest', 'recipient' => 'Personalabteilung', 'address' => "Beispielweg 12\n54321 Beispielstadt"]]),
             'letter' => ApplicationData::encrypt([[
-                'subject' => 'Bewerbung um ein Praktikum · technischer Layouttest',
+                'subject' => "Bewerbung um ein Praktikum\nReferenz Layouttest",
                 'salutation' => 'Sehr geehrte Damen und Herren,',
                 'body' => [
                     ['type' => 'paragraph', 'content' => [['type' => 'text', 'text' => 'Dies ist ausschließlich ein synthetischer Layouttest. Der Text beschreibt keine echte Bewerbung und enthält keine erfundenen Qualifikationen.']]],
@@ -79,6 +79,18 @@ final class ApplicationPdfFixture
             $items[] = ['label' => $label, 'file' => [$name]];
         }
         $this->entry->set('documents', ApplicationData::encrypt([['mode' => 'override', 'items' => $items]]));
+        // Links are authored in Bard; the reference-style letter adds no automatic Anlagen block.
+        $letter = ApplicationData::group($this->entry, 'letter');
+        $links = [['type' => 'text', 'text' => 'Lebenslauf', 'marks' => [['type' => 'link', 'attrs' => ['href' => '#cv']]]]];
+        foreach ($items as $index => $item) {
+            $links[] = ['type' => 'text', 'text' => ', '];
+            $links[] = ['type' => 'text', 'text' => $item['label'], 'marks' => [['type' => 'link', 'attrs' => ['href' => '#document-'.($index + 1)]]]];
+        }
+        $letter['body'][2]['content'] = [
+            ['type' => 'text', 'text' => 'Die beigefügten Unterlagen dienen ausschließlich der technischen Prüfung: '],
+            ...$links, ['type' => 'text', 'text' => '.'],
+        ];
+        $this->entry->set('letter', ApplicationData::encrypt([$letter]));
     }
 
     public function restore(): void
