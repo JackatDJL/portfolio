@@ -81,7 +81,7 @@ final class ApplicationPrivacy
                 return;
             }
             $entry->published(false);
-            $entry->data($entry->data()->except('workflow')->all());
+            $entry->data($entry->data()->except(['workflow', 'electronic_signatures'])->all());
             // Slugs are opaque even when the CP auto-generates one from the title.
             $entry->slug($entry->id() ?: (string) Str::uuid());
             foreach (ApplicationData::GROUPS as $handle) {

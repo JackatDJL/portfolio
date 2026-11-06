@@ -2,13 +2,14 @@
 
 namespace App\Support;
 
+use App\Signatures\ApplicationCompositeSource;
 use Illuminate\Validation\ValidationException;
 use Statamic\Contracts\Entries\Entry;
 use Statamic\Facades\Asset;
 use Symfony\Component\Process\Process;
 use Throwable;
 
-final class ApplicationPdfExporter
+final class ApplicationPdfExporter implements ApplicationCompositeSource
 {
     public function __construct(
         private CvViewModel $viewModel,
