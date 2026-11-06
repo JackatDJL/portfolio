@@ -1,6 +1,6 @@
 # Private application management
 
-Applications are managed in Statamic under **Content → Bewerbungen**. There is no public application index, recipient link, delivery capability or email action. CV grants do not grant application access. Only Statamic super users can access the collection, its defaults and its document container. This restriction runs before Statamic's broad `configure collections` and asset permissions.
+Applications are managed in Statamic under **Content → Bewerbungen**. There is no public application index or email action. Optional scoped recipient PDF links are documented in [the PDF workflow](application-pdf-workflow.md). CV grants do not grant application access. Only Statamic super users can manage the collection, its defaults and its document container. This restriction runs before Statamic's broad `configure collections` and asset permissions.
 
 ## Editing an application
 
@@ -27,7 +27,7 @@ Keep runtime content and private storage persistent when deploying. Git-based co
 
 The saved application's private CV can be downloaded from the editor. The CP-only route `GET /cp/applications/{entry-id}/cv.pdf` resolves a detached overlay through `CvProfileContentResolver`, then uses `CvViewModel`, the established LaTeX template and `CvPdfRenderer`. It uses private temporary compilation and deletes the returned PDF after sending. It creates no CV capability and does not use the public PDF cache. The existing LuaLaTeX installation and fonts are required.
 
-This workflow manages the cover letter and ordered attachments; it does not combine them into a submission PDF, deliver recipient links or send mail. A deployment and any recipient delivery workflow require separate work.
+The [PDF workflow](application-pdf-workflow.md) adds composed exports, private previews, content-aware caching and optional revocable recipient links. It sends no mail and applies no QES.
 
 ## Verification
 

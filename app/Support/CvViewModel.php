@@ -51,6 +51,17 @@ final class CvViewModel
         ];
     }
 
+    public function forApplication(\Statamic\Contracts\Entries\Entry $application): array
+    {
+        // Corrupt configured private data must stop the export, never become public masks.
+        $private = CvPrivateData::reveal(GlobalSet::find('cv')->inDefaultSite(), strict: true);
+        $resolved = $this->resolver->resolveForApplication($application);
+
+        return [...$this->make(null, true, null, $resolved), 'private_export' => true,
+            'sender_return_address' => implode(', ', array_filter([trim(($private['street'] ?? '').' '.($private['house_number'] ?? '')), trim(($private['postal_code'] ?? '').' '.($private['city'] ?? ''))])),
+        ];
+    }
+
     private function collection(string $handle): array
     {
         return Entries::query()->where('collection', $handle)->where('published', true)->get()

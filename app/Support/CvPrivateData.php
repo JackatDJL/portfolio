@@ -20,7 +20,7 @@ final class CvPrivateData
         'place_of_birth',
     ];
 
-    public static function reveal(Variables $variables): array
+    public static function reveal(Variables $variables, bool $strict = false): array
     {
         $revealed = [];
 
@@ -33,6 +33,9 @@ final class CvPrivateData
             try {
                 $revealed[$handle] = Crypt::decryptString($ciphertext);
             } catch (DecryptException) {
+                if ($strict) {
+                    throw new \RuntimeException('Configured private CV data cannot be decrypted.');
+                }
                 report(new DecryptException("The CV field [{$handle}] is not valid encrypted data."));
             }
         }
