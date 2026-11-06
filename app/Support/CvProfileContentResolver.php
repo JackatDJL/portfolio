@@ -93,6 +93,33 @@ final class CvProfileContentResolver
         ];
     }
 
+    /** Resolve on a detached entry; never save changes to a shared CV profile. */
+    public function resolveForApplication(\Statamic\Contracts\Entries\Entry $application): array
+    {
+        $settings = ApplicationData::group($application, 'cv');
+        $reference = $this->referencedEntry($settings['profile'] ?? null);
+        abort_if(! empty($settings['profile']) && (! $reference || $reference->collectionHandle() !== 'cv_profiles'), 422);
+        $resolved = $this->resolve($reference?->slug());
+        $overlay = Entries::make()->collection('cv_profiles')->data($settings);
+        foreach (self::SECTIONS as $handle) {
+            $mode = $settings[$handle.'_source'] ?? 'inherit';
+            if ($mode === 'hide') {
+                $resolved['sections'][$handle] = $this->section(null, $handle);
+            }
+            if ($mode === 'override') {
+                $resolved['sections'][$handle] = $this->section($overlay, $handle);
+            }
+        }
+        if (! empty($settings['introduction'])) {
+            $resolved['sections']['about'] = ['source' => 'application', 'value' => $settings['introduction'], 'display' => null];
+        }
+        if (! empty($settings['accent_color'])) {
+            $resolved['application_accent'] = $settings['accent_color'];
+        }
+
+        return $resolved;
+    }
+
     private function sectionSelection(?Entry $profile, string $sourceMode, string $handle): string
     {
         if ($sourceMode === 'template_only') {
