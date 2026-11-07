@@ -5,11 +5,16 @@ namespace App\Providers;
 use App\Fieldtypes\ApplicationPrivateGrid;
 use App\Fieldtypes\ApplicationTextComponent;
 use App\Fieldtypes\ProtectedText;
+use App\Support\ApplicationPdfPostProcessor;
 use App\Support\ApplicationPrivacy;
 use App\Support\SearchPath;
+use App\Support\UnmodifiedApplicationPdf;
 use App\Tags\CvTitle;
 use App\Tags\HomepageProjects;
 use App\Tags\SearchMetadata;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Validator;
@@ -24,7 +29,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->bind(ApplicationPdfPostProcessor::class, UnmodifiedApplicationPdf::class);
     }
 
     /**
@@ -40,6 +45,8 @@ class AppServiceProvider extends ServiceProvider
         ApplicationPrivateGrid::register();
         ApplicationTextComponent::register();
         ApplicationPrivacy::boot();
+        RateLimiter::for('application-pdf', fn (Request $request) => Limit::perMinute(6)->by($request->user()?->getAuthIdentifier() ?: $request->ip()));
+        RateLimiter::for('application-exchange', fn (Request $request) => Limit::perMinute(12)->by($request->ip()));
         CvTitle::register();
         HomepageProjects::register();
         SearchMetadata::register();

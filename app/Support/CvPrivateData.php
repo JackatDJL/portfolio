@@ -20,19 +20,30 @@ final class CvPrivateData
         'place_of_birth',
     ];
 
-    public static function reveal(Variables $variables): array
+    public static function reveal(Variables $variables, bool $strict = false): array
     {
         $revealed = [];
 
         foreach (self::FIELDS as $handle) {
             $ciphertext = $variables->value($handle);
-            if (! is_string($ciphertext) || $ciphertext === '') {
+            if ($ciphertext === null || $ciphertext === '') {
+                continue;
+            }
+            if (! is_string($ciphertext)) {
+                if ($strict) {
+                    throw new \RuntimeException('Configured private CV data is malformed.');
+                }
+                report(new \RuntimeException("The CV field [{$handle}] is not encrypted string data."));
+
                 continue;
             }
 
             try {
                 $revealed[$handle] = Crypt::decryptString($ciphertext);
             } catch (DecryptException) {
+                if ($strict) {
+                    throw new \RuntimeException('Configured private CV data cannot be decrypted.');
+                }
                 report(new DecryptException("The CV field [{$handle}] is not valid encrypted data."));
             }
         }

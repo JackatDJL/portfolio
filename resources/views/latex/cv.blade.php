@@ -1,7 +1,7 @@
 @php
 use App\Support\Latex;
 $e = fn ($value) => new \Illuminate\Support\HtmlString(Latex::escape((string) $value));
-$u = fn ($value) => new \Illuminate\Support\HtmlString(strtr((string) $value, ['\\' => '\%5C', '{' => '\%7B', '}' => '\%7D', '%' => '\%', '#' => '\#', '~' => '\%7E']));
+$u = fn ($value) => new \Illuminate\Support\HtmlString(Latex::escapeUrl((string) $value));
 $linkAccent = Latex::accessibleAccent((string) $cv['accent']);
 $v = function ($value) use ($u) {
     $visible = preg_replace('/^https?:\/\//i', '', (string) $value);
@@ -66,9 +66,9 @@ $v = function ($value) use ($u) {
 \columnratio{.27}\begin{paracol}{2}
 \sidebarhead{Kontakt}
 @if($cv['contact']['public_email'])\sidevalue{E-Mail: \cvlink{mailto:{{ $u($cv['contact']['public_email']) }}}{ {{ $e($cv['contact']['public_email']) }} }}@endif
-@if($cv['contact']['email'])\sidevalue{Private E-Mail: \cvlink{mailto:{{ $u($cv['contact']['email']) }}}{ {{ $e($cv['contact']['email']) }} }}@else\sidevalue{Private E-Mail: Geschützte Angabe}@endif
-@if($cv['contact']['phone'])\sidevalue{ {{ $e($cv['contact']['phone']) }} }@else\sidevalue{Geschützte Angabe}@endif
-@if($cv['contact']['address'])\sidevalue{ {{ $e($cv['contact']['address']) }} }@else\sidevalue{Geschützte Angabe}@endif
+@if($cv['contact']['email'])\sidevalue{Private E-Mail: \cvlink{mailto:{{ $u($cv['contact']['email']) }}}{ {{ $e($cv['contact']['email']) }} }}@elseif(empty($cv['private_export']))\sidevalue{Private E-Mail: Geschützte Angabe}@endif
+@if($cv['contact']['phone'])\sidevalue{ {{ $e($cv['contact']['phone']) }} }@elseif(empty($cv['private_export']))\sidevalue{Geschützte Angabe}@endif
+@if($cv['contact']['address'])\sidevalue{ {{ $e($cv['contact']['address']) }} }@elseif(empty($cv['private_export']))\sidevalue{Geschützte Angabe}@endif
 \sidevalue{ {{ $e($cv['location']) }} }
 \sidebarhead{Interaktiver Lebenslauf}
 \sidevalue{\begingroup\fontsize{8.6}{11}\selectfont\bfseries\cvurl{ {{ $u($cv['interactive_url']) }} }{ {{ $v($cv['interactive_url']) }} }\endgroup}

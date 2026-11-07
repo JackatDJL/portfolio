@@ -20,6 +20,18 @@ final class Latex
         ]);
     }
 
+    /** Escape a URI without losing subsequent fragment hashes in hyperref's href parser. */
+    public static function escapeUrl(string $value): string
+    {
+        $value = trim($value);
+        if (($fragment = strpos($value, '#')) !== false) {
+            $value = substr($value, 0, $fragment + 1).str_replace('#', '%23', substr($value, $fragment + 1));
+        }
+        $value = strtr($value, ['\\' => '%5C', '{' => '%7B', '}' => '%7D', ' ' => '%20', '^' => '%5E', '~' => '%7E']);
+
+        return strtr($value, ['%' => '\\%', '#' => '\\#', '&' => '\\&', '_' => '\\_', '$' => '\\$']);
+    }
+
     public static function accessibleAccent(string $accent): string
     {
         $hex = ltrim(trim($accent), '#');

@@ -14,6 +14,7 @@ use Statamic\Facades\Entry;
 use Statamic\Facades\GlobalSet;
 use Statamic\Facades\Site;
 use Statamic\Facades\User;
+use Tests\Support\ApplicationPdfFixture;
 use Tests\TestCase;
 
 class ApplicationManagementTest extends TestCase
@@ -211,16 +212,18 @@ class ApplicationManagementTest extends TestCase
 
     public function test_application_cv_compiles_through_existing_private_pipeline(): void
     {
-        $entry = Entry::make()->collection('applications')->data([
-            'cv' => ApplicationData::encrypt([['introduction' => 'Application specific introduction', 'accent_color' => '#123456']]),
-        ]);
-        $file = app(CvPdfRenderer::class)->renderApplication($entry);
+        $fixture = new ApplicationPdfFixture;
+        $file = null;
         try {
-            $this->assertStringStartsWith(storage_path('app/private/'), $file);
+            $file = app(CvPdfRenderer::class)->renderApplication($fixture->entry);
+            $this->assertStringStartsWith($fixture->root.'/compiler/', $file);
             $this->assertStringStartsWith('%PDF-', file_get_contents($file));
             $this->assertSame(0600, fileperms($file) & 0777);
         } finally {
-            @unlink($file);
+            if ($file) {
+                @unlink($file);
+            }
+            $fixture->cleanup();
         }
     }
 

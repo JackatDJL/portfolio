@@ -1,11 +1,13 @@
 <?php
 
+use App\Http\Controllers\ApplicationPdfController;
 use App\Http\Controllers\CvPageController;
 use App\Http\Controllers\CvPdfController;
 use App\Http\Controllers\CvPrivateDataController;
 use App\Http\Controllers\CvPrivateLinkController;
 use App\Http\Controllers\CvTokenExchangeController;
 use App\Http\Controllers\SearchDocumentsController;
+use App\Http\Middleware\ApplicationAccess;
 use Illuminate\Support\Facades\Route;
 use Statamic\View\View;
 
@@ -65,3 +67,9 @@ Route::get('/cv/{profile}', [CvPageController::class, 'profile'])
 
 Route::get('/cp/cv/private-link/status', [CvPrivateLinkController::class, 'status'])->middleware(['statamic.cp', 'statamic.cp.authenticated']);
 Route::get('/cp/cv/private-link/qr', [CvPrivateLinkController::class, 'qr'])->middleware(['statamic.cp', 'statamic.cp.authenticated']);
+
+Route::prefix('applications')->middleware(ApplicationAccess::class)->group(function () {
+    Route::post('token-exchange', [ApplicationPdfController::class, 'exchange'])->middleware('throttle:application-exchange')->name('applications.exchange');
+    Route::get('{id}/pdf', [ApplicationPdfController::class, 'recipient'])->whereUuid('id')->middleware('throttle:application-pdf')->name('applications.pdf');
+    Route::get('{id}', [ApplicationPdfController::class, 'landing'])->whereUuid('id')->name('applications.access');
+});
