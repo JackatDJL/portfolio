@@ -52,3 +52,72 @@ document.addEventListener('click', async (event) => {
     decorate();
     new MutationObserver(decorate).observe(document.documentElement, { childList: true, subtree: true });
 })();
+
+// Private, explicit signature operations. No action runs on publish, preview or autosave.
+document.addEventListener('click', async event => {
+    const button = event.target.closest('[data-signature-action]');
+    if (!button) return;
+    const panel = button.closest('[data-application-signatures]');
+    const status = panel.querySelector('[data-signature-status]');
+    const match = location.pathname.match(/\/collections\/applications\/entries\/([^/]+)(?:\/|$)/);
+    if (!match || match[1] === 'create') { status.textContent = 'Bitte zuerst speichern.'; return; }
+    const base = location.pathname.split('/collections/')[0] + '/applications/' + encodeURIComponent(match[1]) + '/signatures/';
+    const action = button.dataset.signatureAction;
+    const version = button.dataset.version;
+    const digest = button.dataset.sha256;
+    if (action === 'download') { window.open(base + 'download?version=' + encodeURIComponent(version) + (button.dataset.signed ? '&signed=1' : ''), '_blank', 'noopener,noreferrer'); return; }
+    if (action !== 'status' && !window.confirm(action === 'sandbox'
+        ? 'Exakt diese PDF lokal mit einem wegwerfbaren Testzertifikat signieren? KEINE QES. SHA-256: ' + digest
+        : action === 'activate' ? 'Diese Version ausdrücklich zur Auslieferung auswählen? Integrität ist geprüft; QES und Widerruf sind NICHT bestätigt. Sandbox bleibt für Empfänger gesperrt.'
+        : action === 'prepare' ? 'Gespeicherte Daten zur endgültigen privaten PDF einfrieren? Änderungen erfordern eine neue Version.'
+        : action === 'unsigned' ? 'Signaturauswahl aufheben und künftig die aktuelle unsignierte PDF ausliefern?'
+        : 'Extern signierte PDF für genau diese unveränderte Version importieren? SHA-256: ' + digest)) return;
+    let file;
+    if (action === 'import') {
+        file = button.parentElement.querySelector('input[type="file"]').files[0];
+        if (!file) { status.textContent = 'Bitte eine signierte PDF auswählen.'; return; }
+    }
+    button.disabled = true;
+    try {
+        if (action !== 'status') {
+            const body = new FormData();
+            body.append('authorized', '1');
+            if (version) body.append('version', version);
+            if (digest) body.append('sha256', digest);
+            if (file) body.append('pdf', file);
+            const response = await fetch(base + action, { method: 'POST', body, headers: { Accept: 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '' } });
+            if (!response.ok) { const data = await response.json(); throw new Error(data.message || 'Vorgang fehlgeschlagen.'); }
+        }
+        const response = await fetch(base + 'status', { headers: { Accept: 'application/json' } });
+        if (!response.ok) throw new Error('Status nicht verfügbar.');
+        const data = await response.json();
+        status.textContent = 'Auslieferung: ' + data.mode + '. QES-Qualifikation nicht geprüft. Vorschau bleibt unsigniert. Bei Änderungen wird eine ausgewählte signierte Auslieferung gesperrt.';
+        const list = panel.querySelector('[data-signature-versions]');
+        list.replaceChildren();
+        for (const item of data.versions) {
+            const row = document.createElement('div');
+            const label = document.createElement('p');
+            label.textContent = item.id + ' · ' + item.state + (item.sandbox ? ' · SANDBOX, KEINE QES' : '') + (item.id === data.active_version_id ? ' · ausgewählt' : '') + ' · SHA-256: ' + item.sha256;
+            row.append(label);
+            if (item.verification) {
+                const report = document.createElement('p');
+                report.textContent = 'Integrität: ' + item.verification.integrity + '; Zertifikatspfad: ' + item.verification.certificate_path + '; Widerruf: ' + item.verification.revocation + '; Qualifikation: ' + item.verification.qualification;
+                row.append(report);
+            }
+            const add = (action, text, signed = false) => {
+                const control = document.createElement('button'); control.type = 'button'; control.textContent = text;
+                Object.assign(control.dataset, { signatureAction: action, version: item.id, sha256: item.sha256 });
+                if (signed) control.dataset.signed = '1';
+                row.append(control);
+            };
+            add('download', 'Unsigniertes Original');
+            if (item.state === 'prepared') {
+                const input = document.createElement('input'); input.type = 'file'; input.accept = 'application/pdf'; input.setAttribute('aria-label', 'Extern signierte PDF'); row.append(input);
+                add('import', 'Extern signierte PDF importieren');
+                if (data.capabilities.available && data.capabilities.sandbox) add('sandbox', 'Lokale Testsignatur (keine QES)');
+            } else if (item.state === 'validated') { add('download', 'Signierte PDF', true); add('activate', 'Zur Auslieferung auswählen'); }
+            list.append(row);
+        }
+    } catch (error) { status.textContent = error.message; }
+    finally { button.disabled = false; }
+});

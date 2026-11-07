@@ -7,7 +7,7 @@ import resource
 import sys
 
 from pypdf import PdfReader, PdfWriter
-from pypdf.generic import ArrayObject, NameObject, TextStringObject
+from pypdf.generic import ArrayObject, DictionaryObject, NameObject, NumberObject, TextStringObject
 
 logging.disable(logging.CRITICAL)  # Parser warnings can contain private document data.
 
@@ -134,6 +134,9 @@ def compose(manifest_path, output):
             repaired.add(marker)
     if len(repaired) != len(repairs):
         raise ValueError("Lost internal link")
+    # An explicit empty form dictionary supports conservative incremental signature validation.
+    if "/AcroForm" not in writer._root_object:
+        writer._root_object[NameObject("/AcroForm")] = writer._add_object(DictionaryObject({NameObject("/Fields"): ArrayObject(), NameObject("/SigFlags"): NumberObject(3)}))
     writer.add_metadata({"/Title": "Bewerbung", "/Producer": "Portfolio application export"})
     with open(output, "xb") as target:
         writer.write(target)
