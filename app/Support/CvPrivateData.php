@@ -26,7 +26,15 @@ final class CvPrivateData
 
         foreach (self::FIELDS as $handle) {
             $ciphertext = $variables->value($handle);
-            if (! is_string($ciphertext) || $ciphertext === '') {
+            if ($ciphertext === null || $ciphertext === '') {
+                continue;
+            }
+            if (! is_string($ciphertext)) {
+                if ($strict) {
+                    throw new \RuntimeException('Configured private CV data is malformed.');
+                }
+                report(new \RuntimeException("The CV field [{$handle}] is not encrypted string data."));
+
                 continue;
             }
 

@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use Illuminate\Validation\ValidationException;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use RuntimeException;
@@ -103,7 +104,7 @@ class CvPdfRenderer
     }
 
     /** Shared LuaLaTeX pipeline for CVs and application letters. Never log source/output. */
-    public function compile(string $tex, int $passes = 1, ?float $deadline = null): string
+    public function compile(string $tex, int $passes = 1, ?float $deadline = null, array $validationMarkers = []): string
     {
         $root = config('cv.private_pdf_root', storage_path('app/private')).'/cv-latex/'.bin2hex(random_bytes(12));
         $this->ensurePrivateDirectory($root);
@@ -133,6 +134,12 @@ class CvPdfRenderer
                 $process->setTimeout(min((float) config('cv.pdf_timeout', 60), $remaining));
                 $process->run();
                 if (! $process->isSuccessful()) {
+                    $log = @file_get_contents($root.'/cv.log') ?: '';
+                    foreach ($validationMarkers as $marker => $error) {
+                        if (str_contains($log, $marker)) {
+                            throw ValidationException::withMessages([$error['field'] => $error['message']]);
+                        }
+                    }
                     throw new RuntimeException('PDF compilation failed. Compiler output is suppressed to protect private fields.');
                 }
             }

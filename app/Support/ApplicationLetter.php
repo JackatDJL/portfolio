@@ -18,21 +18,16 @@ final class ApplicationLetter
         $signature = ApplicationData::group($entry, 'signature');
         $body = ApplicationData::coverLetter($entry);
         $this->documentCount = count($documents);
-        $bodyText = [];
-        array_walk_recursive($body, function ($value, $key) use (&$bodyText) {
-            if ($key === 'text') {
-                $bodyText[] = (string) $value;
-            }
-        });
+        $bodyText = $this->renderedText($body);
         $required = [
             'recipient.organisation' => $recipient['organisation'] ?? '',
             'recipient.address' => $recipient['address'] ?? '',
             'letter.subject' => $letter['subject'] ?? '',
             'letter.salutation' => $letter['salutation'] ?? '',
-            'letter.body' => trim(implode(' ', $bodyText)),
+            'letter.body' => trim($bodyText),
             'letter.closing' => $letter['closing'] ?? '',
             'sender.name' => $cv['name'] ?? '',
-            'sender.address' => $cv['contact']['address'] ?? '',
+            'sender.address' => $this->postalAddress(),
         ];
         $labels = ['recipient.organisation' => 'Organisation', 'recipient.address' => 'Empfängeranschrift', 'letter.subject' => 'Betreff', 'letter.salutation' => 'Anrede', 'letter.body' => 'Anschreiben', 'letter.closing' => 'Grußformel', 'sender.name' => 'Absendername im Globalset', 'sender.address' => 'Absenderanschrift im CV-Globalset'];
         foreach ($required as $field => $value) {
@@ -57,7 +52,7 @@ final class ApplicationLetter
                 ...preg_split('/\R/u', $recipient['address']),
             ])),
             'sender' => $cv['name'],
-            'sender_address_lines' => $senderLines ?: preg_split('/,\s*/u', $cv['contact']['address']),
+            'sender_address_lines' => $senderLines,
             'date_line' => ($place !== '' ? $place.', den ' : '').$date->translatedFormat('j. F Y'),
             'address' => $cv['contact']['address'],
             'return_address' => $cv['sender_return_address'],
@@ -70,6 +65,39 @@ final class ApplicationLetter
             'signature' => ($signature['mode'] ?? 'none') === 'typed' ? ($signature['name'] ?? '') : '',
             'documents' => array_column($documents, 'label'),
         ];
+    }
+
+    private function postalAddress(): string
+    {
+        $private = CvPrivateData::reveal(GlobalSet::find('cv')->inDefaultSite(), strict: true);
+        $street = trim(($private['street'] ?? '').' '.($private['house_number'] ?? ''));
+        $city = trim(($private['postal_code'] ?? '').' '.($private['city'] ?? ''));
+
+        return $street !== '' && trim($private['postal_code'] ?? '') !== '' && trim($private['city'] ?? '') !== ''
+            ? $street.', '.$city
+            : '';
+    }
+
+    private function renderedText(array $nodes): string
+    {
+        $text = '';
+        foreach ($nodes as $node) {
+            if (! is_array($node)) {
+                throw ValidationException::withMessages(['letter.body' => 'Ungültiger Inhalt im Anschreiben. Bitte den betroffenen Block neu speichern.']);
+            }
+            $type = $node['type'] ?? '';
+            if ($type === 'text') {
+                $text .= (string) ($node['text'] ?? '');
+
+                continue;
+            }
+            if (! in_array($type, ['paragraph', 'hardBreak', 'bulletList', 'orderedList', 'listItem'], true)) {
+                throw ValidationException::withMessages(['letter.body' => 'Nicht unterstützter Textbaustein im Anschreiben.']);
+            }
+            $text .= $this->renderedText($node['content'] ?? []);
+        }
+
+        return $text;
     }
 
     /** A deliberately small Bard-to-LaTeX vocabulary; user content is always escaped. */
@@ -124,6 +152,16 @@ final class ApplicationLetter
     {
         if (! preg_match('#^(https?://|mailto:|tel:)#i', $url) || preg_match('/[\x00-\x20]/', $url) || strpbrk($url, chr(92).'{}') !== false) {
             throw ValidationException::withMessages(['letter.body' => 'Links müssen gültige HTTP(S)-, mailto- oder tel-URLs sein.']);
+        }
+
+        if (str_starts_with(strtolower($url), 'mailto:')) {
+            $mail = explode('?', substr($url, 7), 2)[0];
+            if (filter_var($mail, FILTER_VALIDATE_EMAIL) === false) {
+                throw ValidationException::withMessages(['letter.body' => 'Die E-Mail-Adresse in einem Anschreiben-Link ist ungültig.']);
+            }
+        }
+        if (str_starts_with(strtolower($url), 'tel:') && (! preg_match('/^tel:\+?[0-9().-]{3,}$/i', $url) || preg_match_all('/[0-9]/', substr($url, 4)) < 3)) {
+            throw ValidationException::withMessages(['letter.body' => 'Die Telefonnummer in einem Anschreiben-Link ist ungültig.']);
         }
 
         if (preg_match('#^https?://#i', $url) && filter_var($url, FILTER_VALIDATE_URL) === false) {

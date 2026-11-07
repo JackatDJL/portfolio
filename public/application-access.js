@@ -5,12 +5,22 @@
     if (location.hash) history.replaceState(null, '', location.pathname);
     if (!token) return;
     const status = document.querySelector('[data-application-access-status]');
+    const id = document.body.dataset.applicationId;
+    const exchange = (csrf) => fetch('/applications/token-exchange', {
+        method: 'POST', credentials: 'same-origin', referrerPolicy: 'no-referrer',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': csrf },
+        body: JSON.stringify({ id, token }),
+    });
     try {
-        const response = await fetch('/applications/token-exchange', {
-            method: 'POST', credentials: 'same-origin', referrerPolicy: 'no-referrer',
-            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content },
-            body: JSON.stringify({ id: document.body.dataset.applicationId, token }),
-        });
+        let response = await exchange(document.querySelector('meta[name="csrf-token"]').content);
+        if (response.status === 419) {
+            const refreshed = await fetch('/applications/' + encodeURIComponent(id), { credentials: 'same-origin', cache: 'no-store', referrerPolicy: 'no-referrer' });
+            if (!refreshed.ok) throw new Error('session refresh failed');
+            const documentCopy = new DOMParser().parseFromString(await refreshed.text(), 'text/html');
+            const freshToken = documentCopy.querySelector('meta[name="csrf-token"]')?.content;
+            if (!freshToken) throw new Error('session refresh failed');
+            response = await exchange(freshToken);
+        }
         if (!response.ok) throw new Error('exchange failed');
         const link = document.querySelector('[data-application-pdf]');
         link.hidden = false;

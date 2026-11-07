@@ -63,7 +63,12 @@ final class ApplicationPdfExporter
                 }
             }
             $stage = 'Anschreiben';
-            $compiled[] = $this->renderer->compile($source, passes: 2, deadline: $deadline);
+            $compiled[] = $this->renderer->compile($source, passes: 2, deadline: $deadline, validationMarkers: [
+                'APPLICATION_RECIPIENT_ADDRESS_OVERFLOW' => [
+                    'field' => 'recipient.address',
+                    'message' => 'Die Empfängeranschrift ist zu hoch für den vorgesehenen Bereich. Bitte kürzen oder die Anschrift auf weniger Zeilen verteilen.',
+                ],
+            ]);
             $stage = 'Lebenslauf';
             $compiled[] = $this->renderer->renderViewModel($cv, deadline: $deadline);
             $parts = [
@@ -155,14 +160,13 @@ final class ApplicationPdfExporter
                 throw new ApplicationPdfException;
             }
             $size = filesize($path);
-            $total += $size;
-            if ($size > config('applications.max_document_bytes') || $total > config('applications.max_total_bytes')) {
+            if ($size > config('applications.max_document_bytes') || $total + $size > config('applications.max_total_bytes')) {
                 throw new ApplicationPdfException;
             }
             $copy = $work.'/document-'.count($documents).'.pdf';
-            if (! copy($path, $copy)) {
-                throw new ApplicationPdfException;
-            }
+            $remaining = min((int) config('applications.max_document_bytes'), (int) config('applications.max_total_bytes') - $total);
+            $copied = $this->copySnapshot($path, $copy, $remaining);
+            $total += $copied;
             chmod($copy, 0600);
             if (! $this->valid($copy)) {
                 throw new ApplicationPdfException;
@@ -171,6 +175,48 @@ final class ApplicationPdfExporter
         }
 
         return $documents;
+    }
+
+    /** Copy a bounded snapshot so concurrent asset growth cannot bypass export limits. */
+    private function copySnapshot(string $source, string $destination, int $limit): int
+    {
+        $input = @fopen($source, 'rb');
+        $output = @fopen($destination, 'xb');
+        if (! $input || ! $output) {
+            if ($input) {
+                fclose($input);
+            }
+            if ($output) {
+                fclose($output);
+            }
+            throw new ApplicationPdfException;
+        }
+        chmod($destination, 0600);
+        $copied = 0;
+        try {
+            while (! feof($input)) {
+                $chunk = fread($input, min(1024 * 1024, $limit - $copied + 1));
+                if ($chunk === false || ($chunk === '' && ! feof($input))) {
+                    throw new ApplicationPdfException;
+                }
+                $length = strlen($chunk);
+                if ($length === 0) {
+                    break;
+                }
+                if ($copied + $length > $limit || fwrite($output, $chunk) !== $length) {
+                    throw new ApplicationPdfException;
+                }
+                $copied += $length;
+            }
+        } catch (Throwable $exception) {
+            @unlink($destination);
+            throw $exception;
+        } finally {
+            fclose($input);
+            fclose($output);
+        }
+
+        return $copied;
     }
 
     private function key(Entry $entry, array $cv, string $source, array $documents): string
