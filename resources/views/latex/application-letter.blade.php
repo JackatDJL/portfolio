@@ -19,7 +19,18 @@ $subject = new \Illuminate\Support\HtmlString(implode('\\\\', array_map(fn ($lin
 \emergencystretch=2em
 \raggedright
 \pagestyle{empty}
+\newsavebox{\applicationrecipientbox}
 \begin{document}
+% Measure the actual typeset recipient block, including automatic line wrapping.
+\sbox{\applicationrecipientbox}{\begin{minipage}{85mm}\setlength{\parskip}{0pt}
+@foreach($letter['recipient'] as $line)
+{{ $e($line) }}@if(!$loop->last)\\@endif
+@endforeach
+\end{minipage}}
+\ifdim\dimexpr\ht\applicationrecipientbox+\dp\applicationrecipientbox\relax>24mm
+\typeout{APPLICATION_RECIPIENT_ADDRESS_OVERFLOW}
+\PackageError{Application letter}{Recipient address exceeds its DIN 5008 address zone}{Shorten the address or move some lines to a separate field.}
+\fi
 \begin{tikzpicture}[remember picture,overlay]
 \node[anchor=north east,inner sep=0pt,outer sep=0pt,text width=80mm,align=right,font=\small] at ([xshift=-25mm,yshift=-26.2mm]current page.north east) { {{ $e($letter['sender']) }}
 @foreach($letter['sender_address_lines'] as $line)
@@ -32,14 +43,7 @@ $subject = new \Illuminate\Support\HtmlString(implode('\\\\', array_map(fn ($lin
 \\\href{ {{ $u('mailto:'.$letter['email']) }} }{ {{ $e($letter['email']) }} }
 @endif
 };
-\node[anchor=north west,inner sep=0pt,outer sep=0pt,text width=85mm,align=left] at ([xshift=25mm,yshift=-57.4mm]current page.north west) {
-@foreach($letter['recipient'] as $line)
-{{ $e($line) }}
-@if(!$loop->last)
-\\
-@endif
-@endforeach
-};
+\node[anchor=north west,inner sep=0pt,outer sep=0pt] at ([xshift=25mm,yshift=-57.4mm]current page.north west) {\usebox{\applicationrecipientbox}};
 \node[anchor=base east,inner sep=0pt,outer sep=0pt] at ([xshift=-25mm,yshift=-84.73mm]current page.north east) { {{ $e($letter['date_line']) }} };
 \end{tikzpicture}
 % Destinations stay available for author-created Bard links and composite retargeting.

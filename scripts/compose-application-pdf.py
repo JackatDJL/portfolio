@@ -12,6 +12,42 @@ from pypdf.generic import ArrayObject, DictionaryObject, NameObject, NumberObjec
 logging.disable(logging.CRITICAL)  # Parser warnings can contain private document data.
 
 
+def normalize_outline_destinations(reader):
+    """Resolve named GoTo targets before importing each attachment's outline."""
+    root = reader.trailer["/Root"].get("/Outlines")
+    if root is None:
+        return
+
+    page_ids = {page.indirect_reference.idnum: index for index, page in enumerate(reader.pages)}
+
+    def walk(first):
+        while first is not None:
+            item = first.get_object()
+            action = item.get("/A")
+            if hasattr(action, "get_object"):
+                action = action.get_object()
+            destination = action.get("/D") if action and action.get("/S") == "/GoTo" else item.get("/Dest")
+            if isinstance(destination, (str, bytes)):
+                named = reader.named_destinations.get(str(destination))
+                if named is None:
+                    raise ValueError("Unknown outline destination")
+                target = named[0]
+                target_index = page_ids.get(getattr(target, "idnum", None))
+                if target_index is None:
+                    raise ValueError("Invalid outline destination")
+                explicit = ArrayObject([reader.pages[target_index].indirect_reference, *list(named[1:])])
+                if action and action.get("/S") == "/GoTo":
+                    action[NameObject("/D")] = explicit
+                else:
+                    item[NameObject("/Dest")] = explicit
+            child = item.get("/First")
+            if child is not None:
+                walk(child)
+            first = item.get("/Next")
+
+    walk(root.get_object().get("/First"))
+
+
 def compose(manifest_path, output):
     resource.setrlimit(resource.RLIMIT_AS, (768 * 1024 * 1024, 768 * 1024 * 1024))
     with open(manifest_path, encoding="utf-8") as source:
@@ -30,6 +66,7 @@ def compose(manifest_path, output):
     # Normalize named destinations to explicit source page references before import.
     # This also prevents equal destination names in different attachments colliding.
     for part_index, reader in enumerate(readers):
+        normalize_outline_destinations(reader)
         page_ids = {page.indirect_reference.idnum: i for i, page in enumerate(reader.pages)}
         for page_index, page in enumerate(reader.pages):
             for annotation_index, ref in enumerate(page.get("/Annots", [])):

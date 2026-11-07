@@ -19,6 +19,9 @@ permissions:
   contents: read
 jobs:
   pdf:
+    strategy:
+      matrix:
+        php-version: ['8.4', '8.5']
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
@@ -29,7 +32,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.5'
+          php-version: ${{ matrix.php-version }}
           extensions: gd, intl, mbstring, pdo_sqlite
           coverage: none
       - uses: actions/setup-python@v5
@@ -60,7 +63,7 @@ jobs:
           php scripts/render-application-pdf-evidence.php "$RUNNER_TEMP/application-pdf-evidence"
       - uses: actions/upload-artifact@v4
         with:
-          name: application-pdf-rendered-pages
+          name: application-pdf-rendered-pages-php-${{ matrix.php-version }}
           path: |
             ${{ runner.temp }}/application-pdf-evidence/bewerbung.pdf
             ${{ runner.temp }}/application-pdf-evidence/page-*.png
