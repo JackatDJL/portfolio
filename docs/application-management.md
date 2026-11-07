@@ -32,3 +32,5 @@ This workflow manages the cover letter and ordered attachments; it does not comb
 ## Verification
 
 Run `STATAMIC_PRO_ENABLED=true php artisan test --compact`. Pro is enabled for the test process because tests create temporary users. `ApplicationManagementTest` exercises actual CP create/edit/update requests, validation, encryption, date reset, access denial, attachment inheritance/order, reusable blocks and public-output leakage. Existing CV resolution and PDF tests cover the shared pipeline. No production data or raw signature is needed for these checks.
+
+PDFs already selected by an application or the attachment defaults cannot be deleted from the private asset container. Remove the reference, save the record, then delete the asset. This prevents a later upload using the same path from silently replacing the selected document.
