@@ -1,0 +1,91 @@
+title: Bewerbungsvorgaben
+tabs:
+  main:
+    display: Anlagen
+    sections:
+    - fields:
+      - handle: documents
+        field:
+          type: application_private_grid
+          display: Standardanlagen
+          fields:
+          - handle: items
+            field:
+              type: grid
+              display: Dokumente in Versand-Reihenfolge
+              fields:
+              - handle: label
+                field:
+                  type: text
+                  display: Bezeichnung
+                  validate:
+                  - required
+                  - max:200
+              - handle: category
+                field:
+                  type: select
+                  display: Art
+                  options:
+                    certificate: Schulzeugnis
+                    internship: Praktikumsbestätigung
+                    award: Wettbewerb
+                    qualification: Qualifikation
+                    other: Sonstiges
+                  validate:
+                  - in:certificate,internship,award,qualification,other
+              - handle: file
+                field:
+                  type: assets
+                  display: PDF
+                  container: application_documents
+                  max_files: 1
+                  min_files: 1
+                  validate:
+                  - required
+                  restrict: true
+                  allow_uploads: true
+              add_row: Dokument hinzufügen
+              reorderable: true
+          mode: stacked
+          max_rows: 1
+  texts:
+    display: Textbausteine
+    sections:
+    - fields:
+      - handle: text_components
+        field:
+          type: application_private_grid
+          display: Wiederverwendbare Texte
+          mode: stacked
+          max_rows: 1
+          fields:
+          - handle: items
+            field:
+              type: grid
+              display: Textbausteine
+              fields:
+              - handle: key
+                field:
+                  type: text
+                  display: Stabiler Schlüssel
+                  validate:
+                  - required
+                  - alpha_dash
+              - handle: label
+                field:
+                  type: text
+                  display: Bezeichnung
+                  validate:
+                  - required
+              - handle: body
+                field:
+                  type: bard
+                  display: Text
+                  buttons:
+                  - bold
+                  - italic
+                  - unorderedlist
+                  - orderedlist
+                  - removeformat
+                  sets: {}
+                  save_html: false

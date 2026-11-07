@@ -2,16 +2,19 @@
 
 namespace App\Providers;
 
+use App\Fieldtypes\ApplicationPrivateGrid;
+use App\Fieldtypes\ApplicationTextComponent;
 use App\Fieldtypes\ProtectedText;
+use App\Support\ApplicationPrivacy;
+use App\Support\SearchPath;
 use App\Tags\CvTitle;
 use App\Tags\HomepageProjects;
 use App\Tags\SearchMetadata;
-use App\Support\SearchPath;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\URL;
-use Statamic\Facades\CP\Nav;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\ServiceProvider;
+use Statamic\Facades\CP\Nav;
 use Statamic\Statamic;
 
 class AppServiceProvider extends ServiceProvider
@@ -34,6 +37,9 @@ class AppServiceProvider extends ServiceProvider
         }
 
         ProtectedText::register();
+        ApplicationPrivateGrid::register();
+        ApplicationTextComponent::register();
+        ApplicationPrivacy::boot();
         CvTitle::register();
         HomepageProjects::register();
         SearchMetadata::register();
@@ -58,6 +64,7 @@ class AppServiceProvider extends ServiceProvider
             return true;
         }, ':attribute darf nur gültige öffentliche HTTPS-URLs enthalten.');
         Statamic::externalScript(asset('/cp-cv-profile-access.js'));
+        Statamic::externalScript(asset('/cp-applications.js'));
 
         Statamic::pushCpRoutes(function () {
             Route::namespace('App\\Http\\Controllers')->group(function () {

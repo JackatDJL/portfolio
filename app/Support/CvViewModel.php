@@ -11,9 +11,9 @@ final class CvViewModel
 {
     public function __construct(private readonly CvProfileContentResolver $resolver) {}
 
-    public function make(?string $profileSlug = null, bool $authorized = false, ?string $capabilityToken = null): array
+    public function make(?string $profileSlug = null, bool $authorized = false, ?string $capabilityToken = null, ?array $resolved = null): array
     {
-        $resolved = $this->resolver->resolve($profileSlug);
+        $resolved ??= $this->resolver->resolve($profileSlug);
         $identity = $resolved['public_identity'];
         $profile = $resolved['profile'];
         $canonicalUrl = rtrim((string) config('cv.canonical_base_url'), '/')
@@ -26,7 +26,7 @@ final class CvViewModel
             'location' => $identity['location'],
             'profile' => $profile,
             'template' => $resolved['template'],
-            'accent' => $profile['accent'] ?? '#5adbbd',
+            'accent' => $resolved['application_accent'] ?? $profile['accent'] ?? '#5adbbd',
             'canonical_url' => $canonicalUrl,
             'interactive_url' => $interactiveUrl,
             'photo' => $this->assetPath($identity['profile_image_path']),
