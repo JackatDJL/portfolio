@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Validation\ValidationException;
 use Statamic\Contracts\Entries\Entry;
 use Statamic\Facades\GlobalSet;
 
@@ -59,7 +60,7 @@ final class ApplicationData
             }
             $values = $node['attrs']['values'] ?? [];
             if (($values['type'] ?? null) !== 'component') {
-                return [];
+                throw ValidationException::withMessages(['letter.body' => 'Nicht unterstützter Textbaustein im Anschreiben. Bitte den Block entfernen oder einen gespeicherten Textbaustein wählen.']);
             }
             $component = $components->get($values['component'] ?? '');
             if (! $component) {

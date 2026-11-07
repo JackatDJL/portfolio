@@ -8,14 +8,34 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Statamic\Contracts\Entries\Entry;
+use Statamic\Events\AssetDeleting;
 use Statamic\Events\EntrySaving;
 use Statamic\Events\GlobalVariablesSaving;
+use Statamic\Facades\Entry as Entries;
+use Statamic\Facades\GlobalSet;
 use Statamic\Facades\User;
 
 final class ApplicationPrivacy
 {
     public static function boot(): void
     {
+        Event::listen(AssetDeleting::class, function (AssetDeleting $event): void {
+            $asset = $event->asset;
+            if ($asset->containerHandle() !== 'application_documents') {
+                return;
+            }
+            $path = ltrim($asset->path(), '/');
+            $entries = Entries::query()->where('collection', 'applications')->whereStatus('any')->get();
+            foreach ($entries as $entry) {
+                if (self::referencesDocument($entry->get('documents'), $path)) {
+                    throw ValidationException::withMessages(['file' => 'Dieses PDF ist einer Bewerbung zugeordnet. Entfernen Sie die Anlage aus der Bewerbung, speichern Sie sie und löschen Sie das PDF danach.']);
+                }
+            }
+            $defaults = GlobalSet::find('application_defaults')?->inDefaultSite();
+            if ($defaults && self::referencesDocument($defaults->get('documents'), $path)) {
+                throw ValidationException::withMessages(['file' => 'Dieses PDF ist als Standardanlage ausgewählt. Entfernen Sie es aus den Bewerbungsstandards, bevor Sie es löschen.']);
+            }
+        });
         // Run before Statamic policies, whose configure-* permissions otherwise bypass checks.
         Gate::before(function ($user, $ability, $arguments) {
             foreach ($arguments as $resource) {
@@ -108,5 +128,24 @@ final class ApplicationPrivacy
                 throw ValidationException::withMessages(['application' => 'Unbekannte ungeschützte Bewerbungsfelder.']);
             }
         });
+    }
+
+    private static function referencesDocument(mixed $encrypted, string $path): bool
+    {
+        foreach (ApplicationData::decrypt($encrypted)[0]['items'] ?? [] as $item) {
+            $reference = $item['file'] ?? null;
+            if (is_array($reference)) {
+                $reference = reset($reference);
+            }
+            if (! is_string($reference) || $reference === '') {
+                continue;
+            }
+            $reference = ltrim((string) (str_contains($reference, '::') ? substr($reference, strrpos($reference, '::') + 2) : $reference), '/');
+            if (hash_equals($path, $reference)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
