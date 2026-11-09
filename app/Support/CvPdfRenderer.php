@@ -31,8 +31,7 @@ class CvPdfRenderer
 
     public function renderApplication(Entry $application): string
     {
-        $resolved = app(CvProfileContentResolver::class)->resolveForApplication($application);
-        $cv = $this->viewModel->make(null, true, null, $resolved);
+        $cv = $this->viewModel->forApplication($application);
 
         return $this->compile(view('latex.cv', compact('cv'))->render());
     }

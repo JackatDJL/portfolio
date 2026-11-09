@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Support\ApplicationData;
 use App\Support\CvPdfRenderer;
+use App\Support\CvPrivateData;
 use App\Support\CvProfileContentResolver;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Gate;
@@ -205,22 +206,54 @@ class ApplicationManagementTest extends TestCase
             $this->actingAs($this->user(false));
             $this->getJson($url)->assertForbidden();
         } finally {
-            $asset->delete();
+            $asset->deleteQuietly();
         }
     }
 
     public function test_application_cv_compiles_through_existing_private_pipeline(): void
     {
+        $variables = GlobalSet::find('cv')->inDefaultSite();
+        $original = [];
+        foreach (CvPrivateData::FIELDS as $field) {
+            $original[$field] = $variables->value($field);
+            $variables->set($field, '');
+        }
+
         $entry = Entry::make()->collection('applications')->data([
             'cv' => ApplicationData::encrypt([['introduction' => 'Application specific introduction', 'accent_color' => '#123456']]),
         ]);
-        $file = app(CvPdfRenderer::class)->renderApplication($entry);
+
         try {
+            $file = app(CvPdfRenderer::class)->renderApplication($entry);
             $this->assertStringStartsWith(storage_path('app/private/'), $file);
             $this->assertStringStartsWith('%PDF-', file_get_contents($file));
             $this->assertSame(0600, fileperms($file) & 0777);
         } finally {
-            @unlink($file);
+            if (isset($file)) {
+                @unlink($file);
+            }
+            foreach ($original as $field => $value) {
+                $variables->set($field, $value);
+            }
+        }
+    }
+
+    public function test_application_cv_export_fails_closed_on_corrupt_private_cv_data(): void
+    {
+        $variables = GlobalSet::find('cv')->inDefaultSite();
+        $original = $variables->value('private_email');
+        $variables->set('private_email', 'configured-but-not-encrypted');
+
+        try {
+            $entry = Entry::make()->collection('applications')->data([
+                'cv' => ApplicationData::encrypt([[]]),
+            ]);
+
+            $this->expectException(\RuntimeException::class);
+            $this->expectExceptionMessage('Configured private CV data cannot be decrypted.');
+            app(CvPdfRenderer::class)->renderApplication($entry);
+        } finally {
+            $variables->set('private_email', $original);
         }
     }
 
