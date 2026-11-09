@@ -6,6 +6,8 @@ on:
       - 'bootstrap/**'
       - 'config/**'
       - 'database/**'
+      - 'resources/fonts/**'
+      - 'resources/application-fonts/**'
       - 'resources/views/latex/**'
       - 'resources/blueprints/collections/applications/**'
       - 'routes/**'
