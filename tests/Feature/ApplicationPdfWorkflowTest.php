@@ -122,7 +122,9 @@ class ApplicationPdfWorkflowTest extends TestCase
         }
         $this->assertSame('Anschreiben', $inspection['outline'][0]);
         $this->assertSame('Lebenslauf', $inspection['outline'][1]);
-        $this->assertSame(['Erste Anlage', 'Zweite Anlage'], array_slice($inspection['outline'], -2));
+        $this->assertContains('Erste Anlage', $inspection['outline']);
+        $this->assertContains('Zweite Anlage', $inspection['outline']);
+        $this->assertLessThan(array_search('Zweite Anlage', $inspection['outline'], true), array_search('Erste Anlage', $inspection['outline'], true));
         foreach ($inspection['sizes'] as [$width, $height]) {
             $this->assertEqualsWithDelta(595.28, $width, 1);
             $this->assertEqualsWithDelta(841.89, $height, 1);
@@ -142,6 +144,9 @@ class ApplicationPdfWorkflowTest extends TestCase
         $last = count($inspection['texts']) - 1;
         $this->assertContains($last - 2, $inspection['destinations'][$last - 3]);
         $this->assertContains($last, $inspection['destinations'][$last - 1]);
+        $bookmarkTargets = array_column($inspection['outline_targets'], 1, 0);
+        $this->assertSame($last - 3, $bookmarkTargets['Attachment bookmark 0']);
+        $this->assertSame($last, $bookmarkTargets['Attachment bookmark 1']);
         $this->assertSame(0600, fileperms($pdf) & 0777);
     }
 
