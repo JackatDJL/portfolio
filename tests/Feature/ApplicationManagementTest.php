@@ -206,7 +206,7 @@ class ApplicationManagementTest extends TestCase
             $this->actingAs($this->user(false));
             $this->getJson($url)->assertForbidden();
         } finally {
-            $asset->delete();
+            $asset->deleteQuietly();
         }
     }
 
@@ -223,6 +223,23 @@ class ApplicationManagementTest extends TestCase
             if ($file) {
                 @unlink($file);
             }
+            $fixture->cleanup();
+        }
+    }
+
+    public function test_application_cv_export_fails_closed_on_corrupt_private_cv_data(): void
+    {
+        $fixture = new ApplicationPdfFixture;
+        $variables = GlobalSet::find('cv')->inDefaultSite();
+        $original = $variables->value('private_email');
+        $variables->set('private_email', 'configured-but-not-encrypted');
+
+        try {
+            $this->expectException(\RuntimeException::class);
+            $this->expectExceptionMessage('Configured private CV data cannot be decrypted.');
+            app(CvPdfRenderer::class)->renderApplication($fixture->entry);
+        } finally {
+            $variables->set('private_email', $original);
             $fixture->cleanup();
         }
     }
