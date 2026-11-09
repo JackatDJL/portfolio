@@ -102,6 +102,9 @@ final class CvProfileContentResolver
         $resolved = $this->resolve($reference?->slug(), allowUnpublishedProfile: true);
         if ($resolved['profile']) {
             $resolved['profile']['title'] = 'Lebenslauf zur Bewerbung';
+            // A personalized application PDF must not link to the source profile's
+            // public employer-specific page. The PDF links to the general public CV.
+            $resolved['profile']['slug'] = null;
         }
         $overlay = Entries::make()->collection('cv_profiles')->data($settings);
         foreach (self::SECTIONS as $handle) {

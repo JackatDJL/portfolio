@@ -277,4 +277,80 @@ class ApplicationManagementTest extends TestCase
         $this->assertSame('#123456', $resolved['application_accent']);
         $this->assertEquals($before, $resolver->resolve());
     }
+
+    public function test_application_cv_suppresses_source_profile_title_and_respects_hidden_about_section(): void
+    {
+        $profile = Entry::make()->collection('cv_profiles')->slug('application-title-'.bin2hex(random_bytes(5)))->published(true)->data([
+            'title' => 'Lufthansa Technik Praktikum 2027',
+            'source_mode' => 'custom',
+        ]);
+        $profile->save();
+
+        try {
+            $entry = Entry::make()->collection('applications')->data([
+                'cv' => ApplicationData::encrypt([[
+                    'profile' => [$profile->id()],
+                    'about_source' => 'hide',
+                    'introduction' => 'PRIVATE-INTRO-MUST-STAY-HIDDEN',
+                ]]),
+            ]);
+
+            $resolved = app(CvProfileContentResolver::class)->resolveForApplication($entry);
+
+            $this->assertSame('Lebenslauf zur Bewerbung', $resolved['profile']['title']);
+            $this->assertNull($resolved['profile']['slug']);
+            $this->assertSame([], $resolved['sections']['about']['value']);
+            $this->assertSame('Lufthansa Technik Praktikum 2027', $profile->value('title'));
+        } finally {
+            Entry::delete($profile);
+        }
+    }
+
+    public function test_private_asset_rename_updates_application_and_default_document_references(): void
+    {
+        $this->actingAs($this->user());
+        $response = $this->post('/cp/assets', [
+            'container' => 'application_documents',
+            'folder' => '/',
+            'file' => UploadedFile::fake()->createWithContent('rename-source-'.bin2hex(random_bytes(5)).'.pdf', "%PDF-1.4\n1 0 obj<</Type/Catalog>>endobj\n%%EOF"),
+        ], ['Accept' => 'application/json'])->assertOk();
+        $asset = Asset::find($response->json('data.id'));
+        $this->assertNotNull($asset);
+
+        $defaults = GlobalSet::find('application_defaults')->inDefaultSite();
+        $originalDefaults = $defaults->data()->all();
+        $hadDefaultsFile = is_file($defaults->path());
+        $application = Entry::make()->collection('applications')->data([
+            'title' => 'Private asset reference test',
+            'documents' => ApplicationData::encrypt([['mode' => 'override', 'items' => [
+                ['label' => 'Application document', 'file' => [$asset->path()]],
+            ]]]),
+        ]);
+        $application->save();
+        $this->entries[] = $application;
+        $defaults->set('documents', ApplicationData::encrypt([['items' => [
+            ['label' => 'Default document', 'file' => ['application_documents::'.$asset->path()]],
+        ]]]));
+        $defaults->save();
+        $newName = 'renamed-private-'.bin2hex(random_bytes(5));
+
+        try {
+            $asset->rename($newName);
+
+            $this->assertSame($newName.'.pdf', ApplicationData::documents(Entry::find($application->id()))[0]['file'][0]);
+            $inheritingApplication = Entry::make()->collection('applications')->data([
+                'documents' => ApplicationData::encrypt([['mode' => 'inherit']]),
+            ]);
+            $this->assertSame('application_documents::'.$newName.'.pdf', ApplicationData::documents($inheritingApplication)[0]['file'][0]);
+        } finally {
+            $defaults->data($originalDefaults);
+            if ($hadDefaultsFile) {
+                $defaults->save();
+            } else {
+                $defaults->delete();
+            }
+            Entry::delete($application);
+            $asset->deleteQuietly();
+        }
+    }
 }
