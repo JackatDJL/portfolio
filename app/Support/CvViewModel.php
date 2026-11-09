@@ -17,7 +17,7 @@ final class CvViewModel
         $identity = $resolved['public_identity'];
         $profile = $resolved['profile'];
         $canonicalUrl = rtrim((string) config('cv.canonical_base_url'), '/')
-            .'/cv'.($profile ? '/'.$profile['slug'] : '');
+            .'/cv'.($profile && ! empty($profile['slug']) ? '/'.$profile['slug'] : '');
         $interactiveUrl = $canonicalUrl.($authorized && $capabilityToken ? '#cv='.$capabilityToken : '');
         $private = $authorized ? CvPrivateData::reveal(GlobalSet::find('cv')->inDefaultSite()) : [];
 
@@ -56,9 +56,16 @@ final class CvViewModel
         // Corrupt configured private data must stop the export, never become public masks.
         $private = CvPrivateData::reveal(GlobalSet::find('cv')->inDefaultSite(), strict: true);
         $resolved = $this->resolver->resolveForApplication($application);
+        $cv = $this->make(null, true, null, $resolved);
+        $addressParts = array_values(array_filter([
+            CvPrivateData::streetLine($private),
+            trim(($private['postal_code'] ?? '').' '.($private['city'] ?? '')),
+            $private['country'] ?? null,
+        ]));
+        $cv['contact']['address'] = implode(', ', $addressParts);
 
-        return [...$this->make(null, true, null, $resolved), 'private_export' => true,
-            'sender_return_address' => implode(', ', array_filter([trim(($private['street'] ?? '').' '.($private['house_number'] ?? '')), trim(($private['postal_code'] ?? '').' '.($private['city'] ?? ''))])),
+        return [...$cv, 'private_export' => true,
+            'sender_return_address' => implode(', ', array_slice($addressParts, 0, 2)),
         ];
     }
 

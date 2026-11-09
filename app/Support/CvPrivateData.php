@@ -50,4 +50,21 @@ final class CvPrivateData
 
         return $revealed;
     }
+
+    /** Format existing address fields without duplicating a number already in street. */
+    public static function streetLine(array $private): string
+    {
+        $street = trim((string) ($private['street'] ?? ''));
+        $houseNumber = trim((string) ($private['house_number'] ?? ''));
+
+        if ($street === '') {
+            return $houseNumber;
+        }
+
+        if ($houseNumber === '' || preg_match('/(?:^|\s)'.preg_quote($houseNumber, '/').'$/u', $street)) {
+            return $street;
+        }
+
+        return trim($street.' '.$houseNumber);
+    }
 }
