@@ -1,0 +1,12 @@
+title: Private Bewerbungsdokumente
+disk: application_documents
+allow_uploads: true
+allow_downloading: true
+allow_moving: false
+allow_renaming: false
+allow_create_folders: false
+validate:
+  - 'mimes:pdf'
+  - 'mimetypes:application/pdf'
+  - 'extensions:pdf'
+  - 'max:20480'

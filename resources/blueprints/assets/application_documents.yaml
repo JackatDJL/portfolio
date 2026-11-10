@@ -1,0 +1,6 @@
+title: Private PDF-Dokumente
+tabs:
+  main:
+    display: Dokument
+    sections:
+      - fields: []

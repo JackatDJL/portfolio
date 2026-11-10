@@ -1,0 +1,553 @@
+title: Bewerbung
+tabs:
+  overview:
+    display: Übersicht
+    sections:
+    - fields:
+      - handle: title
+        field:
+          type: text
+          display: Interne Referenz
+          instructions: Nur neutrale Referenz verwenden, keine Namen oder Kontaktdaten.
+          validate:
+          - required
+          - max:80
+      - handle: application_status
+        field:
+          type: select
+          display: Status
+          options:
+            draft: Entwurf
+            ready: Bereit
+            sent: Versendet
+            interview: Gespräch
+            accepted: Zusage
+            rejected: Absage
+            withdrawn: Zurückgezogen
+          default: draft
+          validate:
+          - in:draft,ready,sent,interview,accepted,rejected,withdrawn
+      - handle: workflow
+        field:
+          type: html
+          display: Aktionen
+          html: <div data-application-actions><button type="button" class="btn" data-reset-application-date>Datum
+            auf heute setzen</button><button type="button" class="btn" data-application-cv>Privaten
+            CV herunterladen</button><p role="status" data-application-status></p></div>
+          sanitize: false
+  recipient:
+    display: Empfänger
+    sections:
+    - fields:
+      - handle: recipient
+        field:
+          type: application_private_grid
+          display: Empfänger
+          fields:
+          - handle: organisation
+            field:
+              type: text
+              display: Organisation
+              validate:
+              - required
+              - max:200
+          - handle: recipient
+            field:
+              type: text
+              display: Ansprechperson
+          - handle: email
+            field:
+              type: text
+              display: E-Mail
+              validate:
+              - nullable
+              - email
+          - handle: phone
+            field:
+              type: text
+              display: Telefon
+          - handle: address
+            field:
+              type: textarea
+              display: Anschrift
+          - handle: position
+            field:
+              type: text
+              display: Position
+              validate:
+              - required
+              - max:200
+          - handle: year
+            field:
+              type: integer
+              display: Bewerbungsjahr
+              validate:
+              - nullable
+              - integer
+              - between:1900,2200
+          - handle: location
+            field:
+              type: text
+              display: Ort
+          - handle: period_start
+            field:
+              type: date
+              display: Zeitraum von
+              format: Y-m-d
+              mode: single
+              time_enabled: false
+          - handle: period_end
+            field:
+              type: date
+              display: Zeitraum bis
+              validate:
+              - nullable
+              format: Y-m-d
+              mode: single
+              time_enabled: false
+          mode: stacked
+          max_rows: 1
+          min_rows: 1
+          default:
+          - {}
+          add_row: Empfänger
+          validate:
+          - required
+          - array
+          - size:1
+  letter:
+    display: Anschreiben
+    sections:
+    - fields:
+      - handle: letter
+        field:
+          type: application_private_grid
+          display: Anschreiben
+          fields:
+          - handle: subject
+            field:
+              type: text
+              display: Betreff
+          - handle: salutation
+            field:
+              type: text
+              display: Anrede
+          - handle: body
+            field:
+              type: bard
+              display: Anschreiben
+              buttons:
+              - bold
+              - italic
+              - unorderedlist
+              - orderedlist
+              - removeformat
+              save_html: false
+              sets:
+                text:
+                  display: Textbausteine
+                  sets:
+                    component:
+                      display: Wiederverwendbarer Text
+                      fields:
+                      - handle: component
+                        field:
+                          type: application_text_component
+                          display: Textbaustein
+                          validate:
+                          - required
+                          instructions: Verwaltet unter Bewerbungsvorgaben. Änderungen
+                            am Baustein wirken auf alle Verwendungen.
+          - handle: closing
+            field:
+              type: text
+              display: Grußformel
+          mode: stacked
+          max_rows: 1
+          min_rows: 1
+          default:
+          - {}
+          add_row: Anschreiben
+          validate:
+          - required
+          - array
+          - size:1
+  cv:
+    display: Lebenslauf
+    sections:
+    - fields:
+      - handle: cv
+        field:
+          type: application_private_grid
+          display: Lebenslauf
+          fields:
+          - handle: profile
+            field:
+              type: entries
+              display: Bestehendes CV-Profil
+              collections:
+              - cv_profiles
+              max_items: 1
+              instructions: 'Leer: Standard-CV. Das referenzierte Profil wird nie
+                verändert.'
+          - handle: introduction
+            field:
+              type: textarea
+              display: Einleitung überschreiben
+              instructions: 'Leer: Einleitung des Profils übernehmen.'
+          - handle: accent_color
+            field:
+              type: color
+              display: Akzentfarbe
+              validate:
+              - nullable
+              - regex:/^#[0-9a-fA-F]{6}$/
+          - handle: about_source
+            field:
+              type: select
+              display: Über mich
+              default: inherit
+              options:
+                inherit: Übernehmen
+                override: Eigene Inhalte
+                hide: Ausblenden
+          - handle: knowledge_source
+            field:
+              type: select
+              display: Kenntnisse
+              default: inherit
+              options:
+                inherit: Übernehmen
+                override: Eigene Inhalte
+                hide: Ausblenden
+          - handle: soft_skills_source
+            field:
+              type: select
+              display: Soft Skills
+              default: inherit
+              options:
+                inherit: Übernehmen
+                override: Eigene Inhalte
+                hide: Ausblenden
+          - handle: projects_source
+            field:
+              type: select
+              display: Projekte
+              default: inherit
+              options:
+                inherit: Übernehmen
+                override: Eigene Inhalte
+                hide: Ausblenden
+          - handle: publications_source
+            field:
+              type: select
+              display: Veröffentlichungen
+              default: inherit
+              options:
+                inherit: Übernehmen
+                override: Eigene Inhalte
+                hide: Ausblenden
+          - handle: milestones_source
+            field:
+              type: select
+              display: Meilensteine
+              default: inherit
+              options:
+                inherit: Übernehmen
+                override: Eigene Inhalte
+                hide: Ausblenden
+          - handle: about
+            field:
+              type: bard
+              display: Über mich
+              buttons:
+              - bold
+              - italic
+              - removeformat
+              - anchor
+              smart_typography: true
+              link_collections:
+              - pages
+              - projects
+              - publications
+              select_across_sites: true
+              remove_empty_nodes: true
+              sets: {}
+              if:
+                about_source: equals override
+          - handle: knowledge
+            field:
+              type: grid
+              display: Kenntnisse
+              add_row: Bereich hinzufügen
+              fields:
+              - handle: category
+                field:
+                  type: text
+                  display: Bereich
+                  validate:
+                  - required
+                  width: 33
+              - handle: items
+                field:
+                  type: grid
+                  display: Einträge
+                  add_row: Eintrag hinzufügen
+                  width: 67
+                  fields:
+                  - handle: label
+                    field:
+                      type: text
+                      display: Bezeichnung
+                      validate:
+                      - required
+                      width: 50
+                  - handle: context
+                    field:
+                      type: text
+                      display: Niveau oder Kontext (optional)
+                      width: 50
+              if:
+                knowledge_source: equals override
+          - handle: soft_skills
+            field:
+              type: grid
+              display: Soft Skills
+              add_row: Soft Skill hinzufügen
+              fields:
+              - handle: label
+                field:
+                  type: text
+                  display: Bezeichnung
+                  validate:
+                  - required
+                  width: 40
+              - handle: context
+                field:
+                  type: text
+                  display: Kurzer Kontext (optional)
+                  width: 60
+              if:
+                soft_skills_source: equals override
+          - handle: projects
+            field:
+              type: entries
+              collections:
+              - projects
+              display: Projekte
+              if:
+                projects_source: equals override
+          - handle: publications
+            field:
+              type: entries
+              collections:
+              - publications
+              display: Veröffentlichungen
+              if:
+                publications_source: equals override
+          - handle: milestones
+            field:
+              type: entries
+              collections:
+              - cv_milestones
+              display: Interaktive Meilensteine
+              instructions: Verweist auf gemeinsame Meilensteine. Einträge nicht pro
+                Profil duplizieren.
+              if:
+                milestones_source: equals override
+          mode: stacked
+          max_rows: 1
+          min_rows: 1
+          default:
+          - {}
+          add_row: Lebenslauf
+          validate:
+          - required
+          - array
+          - size:1
+  documents:
+    display: Anlagen
+    sections:
+    - fields:
+      - handle: documents
+        field:
+          type: application_private_grid
+          display: Anlagen
+          fields:
+          - handle: mode
+            field:
+              type: select
+              display: Anlagenquelle
+              options:
+                inherit: Globale Vorgaben
+                override: Eigene Auswahl, auch leer
+              default: inherit
+              validate:
+              - in:inherit,override
+          - handle: items
+            field:
+              type: grid
+              display: Dokumente in Versand-Reihenfolge
+              fields:
+              - handle: label
+                field:
+                  type: text
+                  display: Bezeichnung
+                  validate:
+                  - required
+                  - max:200
+              - handle: category
+                field:
+                  type: select
+                  display: Art
+                  options:
+                    certificate: Schulzeugnis
+                    internship: Praktikumsbestätigung
+                    award: Wettbewerb
+                    qualification: Qualifikation
+                    other: Sonstiges
+                  validate:
+                  - in:certificate,internship,award,qualification,other
+              - handle: file
+                field:
+                  type: assets
+                  display: PDF
+                  container: application_documents
+                  max_files: 1
+                  min_files: 1
+                  validate:
+                  - required
+                  restrict: true
+                  allow_uploads: true
+              add_row: Dokument hinzufügen
+              reorderable: true
+          mode: stacked
+          max_rows: 1
+          min_rows: 1
+          default:
+          - {}
+          add_row: Anlagen
+          validate:
+          - required
+          - array
+          - size:1
+  signature:
+    display: Unterschrift
+    sections:
+    - fields:
+      - handle: signature
+        field:
+          type: application_private_grid
+          display: Unterschrift
+          fields:
+          - handle: mode
+            field:
+              type: select
+              display: Unterschrift
+              options:
+                none: Keine
+                typed: Getippter Name
+              default: none
+              validate:
+              - in:none,typed
+          - handle: name
+            field:
+              type: text
+              display: Getippter Name
+              validate:
+              - required_if:signature.0.mode,typed
+              - max:200
+          mode: stacked
+          max_rows: 1
+          min_rows: 1
+          default:
+          - {}
+          add_row: Unterschrift
+          validate:
+          - required
+          - array
+          - size:1
+  tracking:
+    display: Verlauf
+    sections:
+    - fields:
+      - handle: tracking
+        field:
+          type: application_private_grid
+          display: Verlauf
+          fields:
+          - handle: application_date
+            field:
+              type: date
+              display: Bewerbungsdatum
+              default: now
+              format: Y-m-d
+              mode: single
+              time_enabled: false
+          - handle: date_override
+            field:
+              type: date
+              display: Manuelles Datum
+              instructions: Hat Vorrang. Zurücksetzen setzt beide Daten auf heute.
+              format: Y-m-d
+              mode: single
+              time_enabled: false
+          - handle: notes
+            field:
+              type: textarea
+              display: Private Notizen
+          - handle: correspondence
+            field:
+              type: grid
+              display: Korrespondenz
+              fields:
+              - handle: date
+                field:
+                  type: date
+                  display: Datum
+                  validate:
+                  - required
+                  format: Y-m-d
+                  mode: single
+                  time_enabled: false
+              - handle: direction
+                field:
+                  type: select
+                  display: Richtung
+                  options:
+                    incoming: Eingang
+                    outgoing: Ausgang
+                  validate:
+                  - in:incoming,outgoing
+              - handle: summary
+                field:
+                  type: textarea
+                  display: Notiz
+          - handle: follow_up_status
+            field:
+              type: select
+              display: Nachfassen
+              options:
+                none: Nicht geplant
+                planned: Geplant
+                done: Erledigt
+              default: none
+              validate:
+              - in:none,planned,done
+          - handle: follow_up_date
+            field:
+              type: date
+              display: Wiedervorlage
+              format: Y-m-d
+              mode: single
+              time_enabled: false
+          mode: stacked
+          max_rows: 1
+          min_rows: 1
+          default:
+          - {}
+          add_row: Verlauf
+          validate:
+          - required
+          - array
+          - size:1

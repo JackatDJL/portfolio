@@ -5,6 +5,7 @@ namespace App\Support;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use RuntimeException;
+use Statamic\Contracts\Entries\Entry;
 use Symfony\Component\Process\Process;
 
 class CvPdfRenderer
@@ -26,6 +27,13 @@ class CvPdfRenderer
         }
 
         return $this->cachedPublicPdf($cv, $tex);
+    }
+
+    public function renderApplication(Entry $application): string
+    {
+        $cv = $this->viewModel->forApplication($application);
+
+        return $this->compile(view('latex.cv', compact('cv'))->render());
     }
 
     private function cachedPublicPdf(array $cv, string $tex): string
@@ -102,7 +110,7 @@ class CvPdfRenderer
             $environment['HOME'] = $userHome;
             $environment['USER'] ??= $userHome ? basename($userHome) : null;
             $process = new Process(
-                [$binary, '--interaction=nonstopmode', '--halt-on-error', '--output-directory='.$root, $texFile],
+                [$binary, '--no-shell-escape', '--interaction=nonstopmode', '--halt-on-error', '--output-directory='.$root, $texFile],
                 base_path(),
                 $environment,
             );
