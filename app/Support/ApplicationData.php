@@ -28,7 +28,19 @@ final class ApplicationData
 
     public static function group(Entry $entry, string $handle): array
     {
-        return self::decrypt($entry->get($handle))[0] ?? [];
+        return self::groupValue($entry->get($handle));
+    }
+
+    /** Read encrypted one-row Grid records and new Group records with one contract. */
+    public static function groupValue(mixed $value): array
+    {
+        $data = is_array($value) ? $value : self::decrypt($value);
+
+        if (array_is_list($data)) {
+            $data = $data[0] ?? [];
+        }
+
+        return is_array($data) ? $data : [];
     }
 
     public static function documents(Entry $entry): array
@@ -39,14 +51,14 @@ final class ApplicationData
         }
         $defaults = GlobalSet::find('application_defaults')?->inDefaultSite();
 
-        return self::decrypt($defaults?->get('documents'))[0]['items'] ?? [];
+        return self::groupValue($defaults?->get('documents'))['items'] ?? [];
     }
 
     public static function textComponents(): array
     {
         $defaults = GlobalSet::find('application_defaults')?->inDefaultSite();
 
-        return self::decrypt($defaults?->get('text_components'))[0]['items'] ?? [];
+        return self::groupValue($defaults?->get('text_components'))['items'] ?? [];
     }
 
     /** References remain live: changes to a reusable component affect its uses. */
