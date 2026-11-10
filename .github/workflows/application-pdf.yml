@@ -1,0 +1,74 @@
+name: Application PDF integration
+on:
+  pull_request:
+    paths:
+      - 'app/**'
+      - 'bootstrap/**'
+      - 'config/**'
+      - 'database/**'
+      - 'resources/fonts/**'
+      - 'resources/application-fonts/**'
+      - 'resources/views/latex/**'
+      - 'resources/blueprints/collections/applications/**'
+      - 'routes/**'
+      - 'scripts/*application*pdf*'
+      - 'scripts/application-signatures.py'
+      - 'tests/**'
+      - 'requirements-pdf.txt'
+      - 'composer.*'
+      - '.github/workflows/application-pdf.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  pdf:
+    strategy:
+      matrix:
+        php-version: ['8.4', '8.5']
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      APP_ENV: testing
+      STATAMIC_PRO_ENABLED: 'true'
+      APPLICATION_PDF_PYTHON: python
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-version }}
+          extensions: gd, intl, mbstring, pdo_sqlite
+          coverage: none
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install PDF tooling
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends texlive-luatex texlive-latex-extra texlive-lang-german texlive-pictures texlive-fonts-recommended poppler-utils
+          python -m pip install -r requirements-pdf.txt
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.4.2'
+      - name: Install application
+        run: |
+          composer install --no-interaction --prefer-dist
+          cp .env.example .env
+          php artisan key:generate
+      - name: Build frontend assets
+        run: |
+          bun install --frozen-lockfile
+          bun run build
+      - name: Run application PDF integration tests
+        run: php artisan test --compact --filter='ApplicationPdfWorkflowTest|ApplicationManagementTest|ApplicationSignatureWorkflowTest'
+      - name: Render synthetic review evidence
+        run: |
+          mkdir -p "$RUNNER_TEMP/application-pdf-evidence"
+          php scripts/render-application-pdf-evidence.php "$RUNNER_TEMP/application-pdf-evidence"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: application-pdf-rendered-pages-php-${{ matrix.php-version }}
+          path: |
+            ${{ runner.temp }}/application-pdf-evidence/bewerbung.pdf
+            ${{ runner.temp }}/application-pdf-evidence/page-*.png
+            ${{ runner.temp }}/application-pdf-evidence/validation.json
+          retention-days: 14

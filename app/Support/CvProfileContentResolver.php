@@ -11,7 +11,7 @@ final class CvProfileContentResolver
 {
     private const SECTIONS = ['about', 'knowledge', 'soft_skills', 'projects', 'publications', 'milestones'];
 
-    public function resolve(?string $profileSlug = null): array
+    public function resolve(?string $profileSlug = null, bool $allowUnpublishedProfile = false): array
     {
         $cv = GlobalSet::find('cv')?->inDefaultSite();
         $site = GlobalSet::find('site')?->inDefaultSite();
@@ -21,8 +21,8 @@ final class CvProfileContentResolver
 
         $profile = $profileSlug === null
             ? null
-            : Entries::query()->where('collection', 'cv_profiles')->where('slug', $profileSlug)->first();
-        if ($profileSlug !== null && (! $profile instanceof Entry || ! $profile->published())) {
+            : Entries::query()->where('collection', 'cv_profiles')->when(! $allowUnpublishedProfile, fn ($query) => $query->whereStatus('published'))->where('slug', $profileSlug)->first();
+        if ($profileSlug !== null && (! $profile instanceof Entry || (! $allowUnpublishedProfile && ! $profile->published()))) {
             abort(404);
         }
 
@@ -91,6 +91,39 @@ final class CvProfileContentResolver
                 'signature' => $this->augmentedValue($cv, 'signature'),
             ],
         ];
+    }
+
+    /** Resolve on a detached entry; never save changes to a shared CV profile. */
+    public function resolveForApplication(\Statamic\Contracts\Entries\Entry $application): array
+    {
+        $settings = ApplicationData::group($application, 'cv');
+        $reference = $this->referencedEntry($settings['profile'] ?? null);
+        abort_if(! empty($settings['profile']) && (! $reference || $reference->collectionHandle() !== 'cv_profiles'), 422);
+        $resolved = $this->resolve($reference?->slug(), allowUnpublishedProfile: true);
+        if ($resolved['profile']) {
+            $resolved['profile']['title'] = 'Lebenslauf zur Bewerbung';
+            // A personalized application PDF must not link to the source profile's
+            // public employer-specific page. The PDF links to the general public CV.
+            $resolved['profile']['slug'] = null;
+        }
+        $overlay = Entries::make()->collection('cv_profiles')->data($settings);
+        foreach (self::SECTIONS as $handle) {
+            $mode = $settings[$handle.'_source'] ?? 'inherit';
+            if ($mode === 'hide') {
+                $resolved['sections'][$handle] = $this->section(null, $handle);
+            }
+            if ($mode === 'override') {
+                $resolved['sections'][$handle] = $this->section($overlay, $handle);
+            }
+        }
+        if (($settings['about_source'] ?? 'inherit') !== 'hide' && ! empty($settings['introduction'])) {
+            $resolved['sections']['about'] = ['source' => 'application', 'value' => $settings['introduction'], 'display' => null];
+        }
+        if (! empty($settings['accent_color'])) {
+            $resolved['application_accent'] = $settings['accent_color'];
+        }
+
+        return $resolved;
     }
 
     private function sectionSelection(?Entry $profile, string $sourceMode, string $handle): string

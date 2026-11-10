@@ -29,3 +29,9 @@ _ide_helper.php
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Private application records and asset metadata must never enter Git.
+/content/collections/applications/
+/content/collections/*/applications/
+/content/assets/application_documents/
+/content/globals/*/application_defaults.yaml

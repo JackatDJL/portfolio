@@ -30,9 +30,11 @@ RUN apt-get update \
         nginx \
         openssh-client \
         supervisor \
+        python3-venv \
         sqlite3 \
         texlive-fonts-recommended \
         texlive-latex-extra \
+        texlive-lang-german \
         texlive-latex-recommended \
         texlive-luatex \
         texlive-pictures \
@@ -53,6 +55,8 @@ RUN apt-get update \
 
 COPY --from=composer-bin /usr/bin/composer /usr/local/bin/composer
 COPY . .
+RUN python3 -m venv /opt/portfolio-pdf \
+    && /opt/portfolio-pdf/bin/pip install --no-cache-dir -r requirements-pdf.txt
 RUN mkdir -p /var/www/html/storage/app /var/www/html/storage/framework/cache/data \
         /var/www/html/storage/framework/sessions /var/www/html/storage/framework/views \
         /var/www/html/storage/logs /var/www/html/users /run/php \
