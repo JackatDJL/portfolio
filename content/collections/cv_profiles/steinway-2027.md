@@ -8,11 +8,11 @@ accent_color: '#000000'
 source_mode: template_override
 content_template: 38efbb23-a19d-44bf-80e7-50684ac4660f
 interactive_timeline: inherit
-about_source: inherit
-knowledge_source: inherit
-soft_skills_source: inherit
-projects_source: inherit
-publications_source: inherit
+about_source: override
+knowledge_source: override
+soft_skills_source: override
+projects_source: hide
+publications_source: hide
 milestones_source: override
 milestones:
   - 14c158d2-8a79-411c-8d62-a413e6ae5c16
@@ -38,5 +38,57 @@ milestones:
   - e825ba07-77cf-4c83-ab0d-173c9352f7f7
   - 8dc916fd-bf8d-4a9e-9634-786f499b0db0
 updated_by: 7098a585-4701-4963-95aa-52c0d85d3e7d
-updated_at: 1793822755
+updated_at: 1793828726
+about:
+  -
+    type: paragraph
+    content:
+      -
+        type: text
+        text: 'Ich spiele seit vielen Jahren Saxophon und Klavier und interessiere mich besonders für die handwerkliche und technische Seite von Musikinstrumenten. Bei der Reparatur meines historischen Klaviers habe ich mich eigenständig mit der Mechanik, Ersatzteilbeschaffung und geeigneten Materialien beschäftigt. Im Praktikum möchte ich kennenlernen, wie hochwertige Klaviere und Flügel gebaut, reguliert und gestimmt werden.'
+knowledge:
+  -
+    id: 8gHvoRet7OGy6e-YGZpsP
+    category: Klavier
+    items:
+      -
+        id: bjQcA1TpH_d3VTRJmhU_y
+        label: 'Mehrjährige Spielpraxis, teilweise autodidaktisch'
+  -
+    id: sRYGDp-_5pf45bgL01Am7
+    category: Instrumententechnik
+    items:
+      -
+        id: f0isYqW972CqgEEBgTiyB
+        label: 'Eigene Reparaturarbeiten an der Klaviermechanik, Ersatzteilbeschaffung'
+  -
+    id: A24ditUP_Unj1W5wphiyC
+    category: 'Saxophon und Ensemble'
+    items:
+      -
+        id: Hzr1fU0yVvUVAt3l9HDcq
+        label: 'Seit Klasse 5, mehrjährige Orchester- und Ensembleerfahrung'
+  -
+    id: nw6YDyHFkdqb3ySEiOyvR
+    category: 'Weitere musikalische Praxis'
+    items:
+      -
+        id: 60_RiOtxzW-XgCvQnH9Js
+        label: 'Chorgesang (Bass), Ton- und Veranstaltungstechnik'
+soft_skills:
+  -
+    id: 6GK5iN827NHjsjDUVn2Vo
+    label: Eigeninitiative
+    context: Klavierreparatur
+  -
+    id: DNHLBUsYXrBEVHtGDOUxi
+    label: 'sorgfältiges Arbeiten'
+    context: 'Mechanik und Ersatzteile'
+  -
+    id: rYdW1glu9bDub7o2fxl5r
+    label: Teamarbeit
+    context: 'Ensembles und Robotik'
+  -
+    id: tyr04jp0McP6J_xE_sK0s
+    label: 'selbstständiges Lernen'
 ---

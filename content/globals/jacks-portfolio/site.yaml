@@ -4,26 +4,33 @@ email: jack@djl.foundation
 location: 'Stade, Niedersachsen, Deutschland'
 website_url: 'https://jack.djl.foundation'
 short_bio: 'Schüler aus Stade mit Projekten in Softwareentwicklung, Robotik, politischer Bildung und Musik. Ich entwickle Open-Source-Software, organisiere Veranstaltungen und arbeite an technischen und kommunikativen Projekten.'
+content_license_name: 'CC BY-SA 4.0'
+content_license_url: 'https://creativecommons.org/licenses/by-sa/4.0/deed.de'
 github_url: 'https://github.com/JackatDJL'
 codeberg_url: 'https://codeberg.org/jkxrx'
 social_links:
-  - label: Mastodon
-    url: null
+  -
+    id: zOWp96ra
+    label: Mastodon
+    url: 'https://chaos.social/jkxrx'
     schema_same_as: true
-  - label: Instagram
-    url: null
+  -
+    id: wbIzBkAJ
+    label: Matrix
+    url: 'https://matrix.to/#/!moin:matrix.djl.foundation'
     schema_same_as: true
-  - label: Twitter
-    url: null
-    schema_same_as: true
-  - label: 'Matrix (@jkxrx:djl.foundation)'
-    url: 'https://matrix.to/#/@jkxrx:djl.foundation'
-    schema_same_as: true
-  - label: 'Matrix-Raum (#moin:djl.foundation)'
-    url: 'https://matrix.to/#/#moin:djl.foundation'
+  -
+    id: XzmdcLdR
+    label: Instagram
+    url: 'https://www.instagram.com/jackatdjl/'
     schema_same_as: false
-  - label: LinkedIn
-    url: null
+  -
+    id: PVWI8Xqq
+    label: LinkedIn
+    url: 'https://www.linkedin.com/in/jkxrx/'
     schema_same_as: true
-content_license_name: 'CC BY-SA 4.0'
-content_license_url: 'https://creativecommons.org/licenses/by-sa/4.0/deed.de'
+  -
+    id: tyiD0Cjy
+    label: Twitter
+    url: 'https://x.com/jackatdjl'
+    schema_same_as: false

@@ -1,6 +1,5 @@
 site_description: 'Jack Ruder ist Schüler und Entwickler aus Stade. Auf seiner persönlichen Website schreibt er über Softwareentwicklung, Robotik, Open Source und politische Bildung.'
 default_og_image: 'https://jack.djl.foundation/assets/jack/profile_pictures/jack-20251020.jpg'
-noindex_routes: []
 llms: |-
   # Jack Ruder
 
@@ -12,9 +11,9 @@ llms: |-
 
   ## Ausgewählte Projekte
 
-  - [Erstwählerforum Stade](/projekte/erstwaehlerforum-stade): von Jack Ruder angestoßenes, schulübergreifendes Projekt politischer Bildung.
+  - [Erstwählerforum Stade](/projekte/erstwaehlerforum-stade): von Jack Ruder gegründetes, medienbekanntes und schulübergreifendes Projekt politischer Bildung.
   - [prtop](/projekte/prtop): Rust-Terminaloberfläche für Pull Requests aus GitHub, GitLab und Codeberg, noch in Entwicklung.
-  - [AtheBlues](/projekte/atheblues): Robotikteam, bei dem Jack 2024 die OnStage-Roboter programmierte.
+  - [AtheBlues](/projekte/atheblues): Robotikteam des Robocup Junior, bei dem Jack 2024 die OnStage-Roboter programmierte und die Europameisterschaft erreichte.
 
   ## Weitere Bereiche
 
@@ -95,6 +94,6 @@ schema_same_as:
 person_topics:
   - Softwareentwicklung
   - Robotik
-  - Politische Bildung
+  - 'Politische Bildung'
   - Open-Source-Software
-  - Digitale Souveränität
+  - 'Digitale Souveränität'
