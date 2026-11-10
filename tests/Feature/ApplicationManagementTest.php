@@ -4,9 +4,11 @@ namespace Tests\Feature;
 
 use App\Support\ApplicationData;
 use App\Support\CvPdfRenderer;
+use App\Support\CvPrivateData;
 use App\Support\CvProfileContentResolver;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\ValidationException;
 use Statamic\Facades\Asset;
 use Statamic\Facades\AssetContainer;
 use Statamic\Facades\Collection;
@@ -14,7 +16,6 @@ use Statamic\Facades\Entry;
 use Statamic\Facades\GlobalSet;
 use Statamic\Facades\Site;
 use Statamic\Facades\User;
-use Tests\Support\ApplicationPdfFixture;
 use Tests\TestCase;
 
 class ApplicationManagementTest extends TestCase
@@ -187,6 +188,24 @@ class ApplicationManagementTest extends TestCase
         }
     }
 
+    public function test_missing_reusable_text_component_is_reported_as_cover_letter_validation_error(): void
+    {
+        $entry = Entry::make()->collection('applications')->data([
+            'letter' => ApplicationData::encrypt([['body' => [[
+                'type' => 'set',
+                'attrs' => ['values' => ['type' => 'component', 'component' => 'missing-'.bin2hex(random_bytes(8))]],
+            ]]]]),
+        ]);
+
+        try {
+            ApplicationData::coverLetter($entry);
+            $this->fail('A missing reusable text component must fail validation.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('letter.body', $exception->errors());
+            $this->assertStringContainsString('Textbaustein', $exception->errors()['letter.body'][0]);
+        }
+    }
+
     public function test_document_upload_rejects_non_pdf_files(): void
     {
         $this->actingAs($this->user());
@@ -206,24 +225,54 @@ class ApplicationManagementTest extends TestCase
             $this->actingAs($this->user(false));
             $this->getJson($url)->assertForbidden();
         } finally {
-            $asset->delete();
+            $asset->deleteQuietly();
         }
     }
 
     public function test_application_cv_compiles_through_existing_private_pipeline(): void
     {
-        $fixture = new ApplicationPdfFixture;
-        $file = null;
+        $variables = GlobalSet::find('cv')->inDefaultSite();
+        $original = [];
+        foreach (CvPrivateData::FIELDS as $field) {
+            $original[$field] = $variables->value($field);
+            $variables->set($field, '');
+        }
+
+        $entry = Entry::make()->collection('applications')->data([
+            'cv' => ApplicationData::encrypt([['introduction' => 'Application specific introduction', 'accent_color' => '#123456']]),
+        ]);
+
         try {
-            $file = app(CvPdfRenderer::class)->renderApplication($fixture->entry);
-            $this->assertStringStartsWith($fixture->root.'/compiler/', $file);
+            $file = app(CvPdfRenderer::class)->renderApplication($entry);
+            $this->assertStringStartsWith(storage_path('app/private/'), $file);
             $this->assertStringStartsWith('%PDF-', file_get_contents($file));
             $this->assertSame(0600, fileperms($file) & 0777);
         } finally {
-            if ($file) {
+            if (isset($file)) {
                 @unlink($file);
             }
-            $fixture->cleanup();
+            foreach ($original as $field => $value) {
+                $variables->set($field, $value);
+            }
+        }
+    }
+
+    public function test_application_cv_export_fails_closed_on_corrupt_private_cv_data(): void
+    {
+        $variables = GlobalSet::find('cv')->inDefaultSite();
+        $original = $variables->value('private_email');
+        $variables->set('private_email', 'configured-but-not-encrypted');
+
+        try {
+            $entry = Entry::make()->collection('applications')->data([
+                'cv' => ApplicationData::encrypt([[]]),
+            ]);
+
+            $this->expectException(\RuntimeException::class);
+            $this->expectExceptionMessage('Configured private CV data cannot be decrypted.');
+            app(CvPdfRenderer::class)->renderApplication($entry);
+        } finally {
+            $variables->set('private_email', $original);
         }
     }
 
@@ -279,5 +328,81 @@ class ApplicationManagementTest extends TestCase
         $this->assertSame([], $resolved['sections']['projects']['value']);
         $this->assertSame('#123456', $resolved['application_accent']);
         $this->assertEquals($before, $resolver->resolve());
+    }
+
+    public function test_application_cv_suppresses_source_profile_title_and_respects_hidden_about_section(): void
+    {
+        $profile = Entry::make()->collection('cv_profiles')->slug('application-title-'.bin2hex(random_bytes(5)))->published(true)->data([
+            'title' => 'Lufthansa Technik Praktikum 2027',
+            'source_mode' => 'custom',
+        ]);
+        $profile->save();
+
+        try {
+            $entry = Entry::make()->collection('applications')->data([
+                'cv' => ApplicationData::encrypt([[
+                    'profile' => [$profile->id()],
+                    'about_source' => 'hide',
+                    'introduction' => 'PRIVATE-INTRO-MUST-STAY-HIDDEN',
+                ]]),
+            ]);
+
+            $resolved = app(CvProfileContentResolver::class)->resolveForApplication($entry);
+
+            $this->assertSame('Lebenslauf zur Bewerbung', $resolved['profile']['title']);
+            $this->assertNull($resolved['profile']['slug']);
+            $this->assertSame([], $resolved['sections']['about']['value']);
+            $this->assertSame('Lufthansa Technik Praktikum 2027', $profile->value('title'));
+        } finally {
+            Entry::delete($profile);
+        }
+    }
+
+    public function test_private_asset_rename_updates_application_and_default_document_references(): void
+    {
+        $this->actingAs($this->user());
+        $response = $this->post('/cp/assets', [
+            'container' => 'application_documents',
+            'folder' => '/',
+            'file' => UploadedFile::fake()->createWithContent('rename-source-'.bin2hex(random_bytes(5)).'.pdf', "%PDF-1.4\n1 0 obj<</Type/Catalog>>endobj\n%%EOF"),
+        ], ['Accept' => 'application/json'])->assertOk();
+        $asset = Asset::find($response->json('data.id'));
+        $this->assertNotNull($asset);
+
+        $defaults = GlobalSet::find('application_defaults')->inDefaultSite();
+        $originalDefaults = $defaults->data()->all();
+        $hadDefaultsFile = is_file($defaults->path());
+        $application = Entry::make()->collection('applications')->data([
+            'title' => 'Private asset reference test',
+            'documents' => ApplicationData::encrypt([['mode' => 'override', 'items' => [
+                ['label' => 'Application document', 'file' => [$asset->path()]],
+            ]]]),
+        ]);
+        $application->save();
+        $this->entries[] = $application;
+        $defaults->set('documents', ApplicationData::encrypt([['items' => [
+            ['label' => 'Default document', 'file' => ['application_documents::'.$asset->path()]],
+        ]]]));
+        $defaults->save();
+        $newName = 'renamed-private-'.bin2hex(random_bytes(5));
+
+        try {
+            $asset->rename($newName);
+
+            $this->assertSame($newName.'.pdf', ApplicationData::documents(Entry::find($application->id()))[0]['file'][0]);
+            $inheritingApplication = Entry::make()->collection('applications')->data([
+                'documents' => ApplicationData::encrypt([['mode' => 'inherit']]),
+            ]);
+            $this->assertSame('application_documents::'.$newName.'.pdf', ApplicationData::documents($inheritingApplication)[0]['file'][0]);
+        } finally {
+            $defaults->data($originalDefaults);
+            if ($hadDefaultsFile) {
+                $defaults->save();
+            } else {
+                $defaults->delete();
+            }
+            Entry::delete($application);
+            $asset->deleteQuietly();
+        }
     }
 }

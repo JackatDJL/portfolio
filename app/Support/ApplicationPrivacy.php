@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Foundation\Http\Events\RequestHandled;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
@@ -9,6 +10,7 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Statamic\Contracts\Entries\Entry;
 use Statamic\Events\AssetDeleting;
+use Statamic\Events\AssetSaved;
 use Statamic\Events\EntrySaving;
 use Statamic\Events\GlobalVariablesSaving;
 use Statamic\Facades\Entry as Entries;
@@ -34,6 +36,48 @@ final class ApplicationPrivacy
             $defaults = GlobalSet::find('application_defaults')?->inDefaultSite();
             if ($defaults && self::referencesDocument($defaults->get('documents'), $path)) {
                 throw ValidationException::withMessages(['file' => 'Dieses PDF ist als Standardanlage ausgewählt. Entfernen Sie es aus den Bewerbungsstandards, bevor Sie es löschen.']);
+            }
+        });
+        // Statamic updates ordinary asset fields when an asset is renamed or moved,
+        // but application references are encrypted and therefore need this private
+        // path update before a generated export can resolve its selected documents.
+        Event::listen(AssetSaved::class, function (AssetSaved $event): void {
+            $asset = $event->asset;
+            if ($asset->containerHandle() !== 'application_documents') {
+                return;
+            }
+
+            $oldPath = $asset->getOriginal('path');
+            $newPath = $asset->path();
+            if (! $oldPath || $oldPath === $newPath) {
+                return;
+            }
+
+            foreach (Entries::query()->where('collection', 'applications')->whereStatus('any')->get() as $entry) {
+                try {
+                    $groups = ApplicationData::decrypt($entry->get('documents'));
+                } catch (DecryptException) {
+                    // Already-unreadable records cannot be made usable by renaming an asset.
+                    continue;
+                }
+                if (self::replaceDocumentPaths($groups, $oldPath, $newPath)) {
+                    $entry->set('documents', ApplicationData::encrypt($groups));
+                    $entry->save();
+                }
+            }
+
+            $defaults = GlobalSet::find('application_defaults')?->inDefaultSite();
+            if (! $defaults) {
+                return;
+            }
+            try {
+                $groups = ApplicationData::decrypt($defaults->get('documents'));
+            } catch (DecryptException) {
+                return;
+            }
+            if (self::replaceDocumentPaths($groups, $oldPath, $newPath)) {
+                $defaults->set('documents', ApplicationData::encrypt($groups));
+                $defaults->save();
             }
         });
         // Run before Statamic policies, whose configure-* permissions otherwise bypass checks.
@@ -147,5 +191,54 @@ final class ApplicationPrivacy
         }
 
         return false;
+    }
+
+    private static function replaceDocumentPaths(array &$groups, string $oldPath, string $newPath): bool
+    {
+        $changed = false;
+        foreach ($groups as &$group) {
+            if (! is_array($group) || ! is_array($group['items'] ?? null)) {
+                continue;
+            }
+            foreach ($group['items'] as &$item) {
+                if (! is_array($item)) {
+                    continue;
+                }
+                $reference = $item['file'] ?? null;
+                $multiple = is_array($reference);
+                $references = $multiple ? $reference : [$reference];
+                $itemChanged = false;
+
+                foreach ($references as &$value) {
+                    if (! is_string($value) || $value === '') {
+                        continue;
+                    }
+                    $prefix = '';
+                    $path = $value;
+                    if (str_contains($value, '::')) {
+                        [$container, $path] = explode('::', $value, 2);
+                        if ($container !== 'application_documents') {
+                            continue;
+                        }
+                        $prefix = $container.'::';
+                    }
+                    $leadingSlash = str_starts_with($path, '/') ? '/' : '';
+                    if (hash_equals($oldPath, ltrim($path, '/'))) {
+                        $value = $prefix.$leadingSlash.$newPath;
+                        $changed = true;
+                        $itemChanged = true;
+                    }
+                }
+                unset($value);
+
+                if ($itemChanged) {
+                    $item['file'] = $multiple ? $references : $references[0];
+                }
+            }
+            unset($item);
+        }
+        unset($group);
+
+        return $changed;
     }
 }

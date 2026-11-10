@@ -122,7 +122,9 @@ class ApplicationPdfWorkflowTest extends TestCase
         }
         $this->assertSame('Anschreiben', $inspection['outline'][0]);
         $this->assertSame('Lebenslauf', $inspection['outline'][1]);
-        $this->assertSame(['Erste Anlage', 'Zweite Anlage'], array_slice($inspection['outline'], -2));
+        $this->assertContains('Erste Anlage', $inspection['outline']);
+        $this->assertContains('Zweite Anlage', $inspection['outline']);
+        $this->assertLessThan(array_search('Zweite Anlage', $inspection['outline'], true), array_search('Erste Anlage', $inspection['outline'], true));
         foreach ($inspection['sizes'] as [$width, $height]) {
             $this->assertEqualsWithDelta(595.28, $width, 1);
             $this->assertEqualsWithDelta(841.89, $height, 1);
@@ -142,6 +144,9 @@ class ApplicationPdfWorkflowTest extends TestCase
         $last = count($inspection['texts']) - 1;
         $this->assertContains($last - 2, $inspection['destinations'][$last - 3]);
         $this->assertContains($last, $inspection['destinations'][$last - 1]);
+        $bookmarkTargets = array_column($inspection['outline_targets'], 1, 0);
+        $this->assertSame($last - 3, $bookmarkTargets['Attachment bookmark 0']);
+        $this->assertSame($last, $bookmarkTargets['Attachment bookmark 1']);
         $this->assertSame(0600, fileperms($pdf) & 0777);
     }
 
@@ -156,6 +161,32 @@ class ApplicationPdfWorkflowTest extends TestCase
         $text = $this->text($pdf);
         $this->assertSame(24, substr_count($text, 'Längerer synthetischer'));
         $this->assertStringContainsString('Mit freundlichen', $text);
+    }
+
+    public function test_unsupported_bard_set_block_returns_actionable_cp_validation_error(): void
+    {
+        $letter = ApplicationData::group($this->fixture->entry, 'letter');
+        $letter['body'] = [['type' => 'set', 'attrs' => ['values' => ['type' => 'unavailable-block']]]];
+        $this->fixture->entry->set('letter', ApplicationData::encrypt([$letter]));
+        $id = $this->save();
+        $this->actingAs($this->user());
+
+        $this->get('/cp/applications/'.$id.'/preview.pdf')
+            ->assertStatus(422)
+            ->assertSee('Nicht unterstützter Textbaustein im Anschreiben');
+    }
+
+    public function test_overheight_recipient_address_returns_actionable_cp_validation_error(): void
+    {
+        $recipient = ApplicationData::group($this->fixture->entry, 'recipient');
+        $recipient['address'] = implode("\n", array_fill(0, 10, 'Lange Adresszeile'));
+        $this->fixture->entry->set('recipient', ApplicationData::encrypt([$recipient]));
+        $id = $this->save();
+        $this->actingAs($this->user());
+
+        $this->get('/cp/applications/'.$id.'/preview.pdf')
+            ->assertStatus(422)
+            ->assertSee('Empfängeranschrift ist zu hoch');
     }
 
     public function test_canonical_cache_is_reused_and_invalidates_on_application_cv_photo_and_document_changes(): void
@@ -205,9 +236,13 @@ class ApplicationPdfWorkflowTest extends TestCase
             $exporter = app(ApplicationPdfExporter::class);
             $first = $exporter->render($this->fixture->entry);
             $this->assertSame($first, $exporter->render($this->fixture->entry));
+            $firstImages = $this->inspect($first)['images'];
+            $this->assertNotEmpty(array_merge(...$firstImages));
             imagefill($image, 0, 0, imagecolorallocate($image, 45, 90, 120));
             imagepng($image, $photo);
-            $this->assertNotSame($first, $exporter->render($this->fixture->entry));
+            $second = $exporter->render($this->fixture->entry);
+            $this->assertNotSame($first, $second);
+            $this->assertNotSame($firstImages, $this->inspect($second)['images']);
         } finally {
             unlink($path);
         }
@@ -289,6 +324,20 @@ class ApplicationPdfWorkflowTest extends TestCase
         }
         $request->headers->set('X-CSRF-TOKEN', $session->token());
         $this->assertSame(200, $middleware->handle($request, fn () => response('ok'))->getStatusCode());
+    }
+
+    public function test_application_token_exchange_route_rejects_a_missing_csrf_token(): void
+    {
+        $id = $this->save();
+        $previousEnvironment = $this->app['env'];
+        $this->app['env'] = 'local';
+
+        try {
+            $this->postJson('/applications/token-exchange', ['id' => $id, 'token' => str_repeat('x', 64)])
+                ->assertStatus(419);
+        } finally {
+            $this->app['env'] = $previousEnvironment;
+        }
     }
 
     public function test_expired_or_other_application_grants_cannot_authorize_and_only_hashes_enter_the_session(): void
@@ -394,6 +443,22 @@ class ApplicationPdfWorkflowTest extends TestCase
         $this->app['auth']->logout();
         $this->postJson('/applications/token-exchange', ['id' => $id, 'token' => $token])->assertOk();
         $this->get('/applications/'.$id.'/pdf')->assertStatus(503)->assertDontSee('private-export@example.invalid')->assertDontSee('Beispiel GmbH');
+    }
+
+    public function test_missing_reusable_text_component_returns_actionable_cp_validation_error(): void
+    {
+        $letter = ApplicationData::group($this->fixture->entry, 'letter');
+        $letter['body'] = [[
+            'type' => 'set',
+            'attrs' => ['values' => ['type' => 'component', 'component' => 'missing-'.bin2hex(random_bytes(8))]],
+        ]];
+        $this->fixture->entry->set('letter', ApplicationData::encrypt([$letter]));
+        $id = $this->save();
+
+        $this->actingAs($this->user());
+        $this->get('/cp/applications/'.$id.'/preview.pdf')
+            ->assertStatus(422)
+            ->assertSee('Textbaustein');
     }
 
     public function test_invalid_private_ciphertext_or_bad_documents_never_publish_a_partial_export(): void

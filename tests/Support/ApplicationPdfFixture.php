@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Statamic\Facades\Entry;
 use Statamic\Facades\GlobalSet;
+use Symfony\Component\Process\Process;
 
 /** Synthetic layout data only. Never seeds an actual application or credential. */
 final class ApplicationPdfFixture
@@ -74,6 +75,14 @@ final class ApplicationPdfFixture
         foreach (['Erste Anlage', 'Zweite Anlage'] as $index => $label) {
             $source = '\\documentclass[a4paper]{article}\\usepackage{hyperref}\\begin{document}'.$label.'\\par\\href{https://example.org/document-'.$index.'}{External link}\\par\\hyperlink{shared-destination}{Internal link}\\newpage\\hypertarget{shared-destination}{Target '.$index.'}\\end{document}';
             $pdf = app(CvPdfRenderer::class)->compile($source);
+            $bookmarked = $this->root.'/bookmarked-'.$index.'.pdf';
+            $bookmark = new Process([
+                config('applications.python'), base_path('tests/Support/add_named_outline.py'),
+                $pdf, $bookmarked, 'Attachment bookmark '.$index, (string) $index,
+            ]);
+            $bookmark->mustRun();
+            @unlink($pdf);
+            $pdf = $bookmarked;
             $name = 'document-'.$index.'.pdf';
             rename($pdf, $this->root.'/documents/'.$name);
             $items[] = ['label' => $label, 'file' => [$name]];

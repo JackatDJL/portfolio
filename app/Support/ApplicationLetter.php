@@ -39,7 +39,7 @@ final class ApplicationLetter
         $private = CvPrivateData::reveal(GlobalSet::find('cv')->inDefaultSite(), strict: true);
         $country = trim($private['country'] ?? '');
         $senderLines = array_values(array_filter([
-            trim(($private['street'] ?? '').' '.($private['house_number'] ?? '')),
+            CvPrivateData::streetLine($private),
             trim(($private['postal_code'] ?? '').' '.($private['city'] ?? '')),
             in_array(mb_strtolower($country), ['', 'de', 'deutschland', 'germany'], true) ? '' : $country,
         ]));
@@ -70,7 +70,7 @@ final class ApplicationLetter
     private function postalAddress(): string
     {
         $private = CvPrivateData::reveal(GlobalSet::find('cv')->inDefaultSite(), strict: true);
-        $street = trim(($private['street'] ?? '').' '.($private['house_number'] ?? ''));
+        $street = CvPrivateData::streetLine($private);
         $city = trim(($private['postal_code'] ?? '').' '.($private['city'] ?? ''));
 
         return $street !== '' && trim($private['postal_code'] ?? '') !== '' && trim($private['city'] ?? '') !== ''
