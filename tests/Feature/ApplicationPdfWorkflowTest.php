@@ -445,6 +445,22 @@ class ApplicationPdfWorkflowTest extends TestCase
         $this->get('/applications/'.$id.'/pdf')->assertStatus(503)->assertDontSee('private-export@example.invalid')->assertDontSee('Beispiel GmbH');
     }
 
+    public function test_missing_reusable_text_component_returns_actionable_cp_validation_error(): void
+    {
+        $letter = ApplicationData::group($this->fixture->entry, 'letter');
+        $letter['body'] = [[
+            'type' => 'set',
+            'attrs' => ['values' => ['type' => 'component', 'component' => 'missing-'.bin2hex(random_bytes(8))]],
+        ]];
+        $this->fixture->entry->set('letter', ApplicationData::encrypt([$letter]));
+        $id = $this->save();
+
+        $this->actingAs($this->user());
+        $this->get('/cp/applications/'.$id.'/preview.pdf')
+            ->assertStatus(422)
+            ->assertSee('Textbaustein');
+    }
+
     public function test_invalid_private_ciphertext_or_bad_documents_never_publish_a_partial_export(): void
     {
         $global = GlobalSet::find('cv')->inDefaultSite();

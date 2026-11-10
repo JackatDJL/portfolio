@@ -13,7 +13,7 @@ Save edits before using the PDF actions:
 
 Only super users may use CP generation and link-management actions. The existing CV-only download remains available. No action sends email.
 
-A full export requires recipient organisation/address, subject, salutation, non-empty body, closing and configured sender name/address. Drafts can still be saved without these export requirements. Sender identity comes from the site globals and private contacts from the encrypted CV globals. A malformed configured private field stops the export; it never becomes a public placeholder. Unconfigured optional contacts are omitted. CV profiles/templates are resolved on a detached overlay and never saved.
+A full export requires recipient organisation/address, subject, salutation, non-empty body, closing and configured sender name/address. Drafts can still be saved without these export requirements. Sender identity comes from the site globals and private contacts from the encrypted CV globals. A malformed configured private field stops the export; it never becomes a public placeholder. Unconfigured optional contacts are omitted, except that `ApplicationLetter::make()` uses the CV's public email when its private email is empty. Review the preview to confirm which address will appear before sharing. CV profiles/templates are resolved on a detached overlay and never saved.
 
 ## German letter and composition
 
