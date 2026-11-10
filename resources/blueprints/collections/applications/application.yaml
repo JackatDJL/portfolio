@@ -40,6 +40,12 @@ tabs:
             widerrufen</button><input type="url" readonly hidden data-application-recipient-link
             aria-label="Einmalig angezeigter Empfängerlink"><p role="status" data-application-status></p></div>
           sanitize: false
+      - handle: electronic_signatures
+        field:
+          type: html
+          display: Elektronische Signaturen
+          html: '<div data-application-signatures data-application-actions><p>Externe Signaturen werden lokal auf Integrität geprüft. Zertifikatsvertrauen, Widerruf und QES-Qualifikation sind getrennt zu bewerten. Keine automatische Signierung.</p><button type="button" data-signature-action="status">Status laden</button> <button type="button" data-signature-action="prepare">Endgültige PDF einfrieren</button> <button type="button" data-signature-action="unsigned">Unsigniert ausliefern</button><div data-signature-versions></div><p role="status" data-signature-status></p></div>'
+          sanitize: false
   recipient:
     display: Empfänger
     sections:

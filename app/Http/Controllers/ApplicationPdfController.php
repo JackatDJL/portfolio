@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Signatures\ApplicationSignatureWorkflow;
+use App\Signatures\SignatureWorkflowException;
 use App\Support\ApplicationCapabilities;
 use App\Support\ApplicationPdfException;
 use App\Support\ApplicationPdfExporter;
@@ -33,7 +35,7 @@ final class ApplicationPdfController extends Controller
     {
         abort_unless(ApplicationCapabilities::sessionAllows($request, $id), 404);
 
-        $response = $this->pdf($exporter, $this->application($id));
+        $response = $this->pdf($exporter, $this->application($id), recipient: true);
         $this->application($id);
         // A revocation during a slow compile must stop the pending response too.
         abort_unless(ApplicationCapabilities::sessionAllows($request, $id), 404);
@@ -41,14 +43,19 @@ final class ApplicationPdfController extends Controller
         return $response;
     }
 
-    private function pdf(ApplicationPdfExporter $exporter, $entry, bool $preview = false, bool $download = false)
+    private function pdf(ApplicationPdfExporter $exporter, $entry, bool $preview = false, bool $download = false, bool $recipient = false)
     {
         try {
             $path = $exporter->render($entry, cached: ! $preview);
+            if (! $preview) {
+                $path = app(ApplicationSignatureWorkflow::class)->delivery($entry, $path, $recipient);
+            }
         } catch (ValidationException $exception) {
             $message = ($preview || $download) ? implode("\n", Arr::flatten($exception->errors())) : 'Die Bewerbung ist derzeit nicht verfügbar. Bitte die absendende Person kontaktieren.';
 
             return response($message, ($preview || $download) ? 422 : 503, ['Content-Type' => 'text/plain; charset=UTF-8']);
+        } catch (SignatureWorkflowException $exception) {
+            return response($recipient ? 'Die Bewerbung ist derzeit nicht verfügbar.' : $exception->getMessage(), 409);
         } catch (ApplicationPdfException $exception) {
             // Do not report underlying parser/compiler exceptions or source documents.
             return response($exception->getMessage(), 503);

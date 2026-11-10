@@ -106,7 +106,7 @@ class CvPdfRenderer
     /** Shared LuaLaTeX pipeline for CVs and application letters. Never log source/output. */
     public function compile(string $tex, int $passes = 1, ?float $deadline = null, array $validationMarkers = []): string
     {
-        $root = storage_path('app/private/cv-latex/'.bin2hex(random_bytes(12)));
+        $root = config('cv.private_pdf_root', storage_path('app/private')).'/cv-latex/'.bin2hex(random_bytes(12));
         $this->ensurePrivateDirectory($root);
 
         try {
@@ -149,7 +149,7 @@ class CvPdfRenderer
                 throw new RuntimeException('LuaLaTeX did not produce a valid PDF.');
             }
 
-            $directory = storage_path('app/private/cv-pdf');
+            $directory = config('cv.private_pdf_root', storage_path('app/private')).'/cv-pdf';
             $this->ensurePrivateDirectory($directory);
             $final = $directory.'/'.bin2hex(random_bytes(16)).'.pdf';
             chmod($output, 0600);
@@ -267,7 +267,7 @@ class CvPdfRenderer
 
     private function ensurePrivateDirectory(string $path): void
     {
-        if (! is_dir($path) && ! mkdir($path, 0700, true) && ! is_dir($path)) {
+        if (! is_dir($path) && ! @mkdir($path, 0700, true) && ! is_dir($path)) {
             throw new RuntimeException('Could not create a private CV PDF directory.');
         }
 

@@ -69,3 +69,5 @@ APPLICATION_PDF_PYTHON=/tmp/portfolio-pdf-venv/bin/python php scripts/render-app
 ```
 
 The PDF and rendered pages use explicitly synthetic contact/recipient data. The CV otherwise uses existing public content. GitHub Actions runs the application tests and uploads rendered-page/PDF artifacts for 14 days. No PR-only evidence belongs in Git.
+
+Electronic signing is a separate explicit operation on the final composite. See [private signature workflow and validation limits](application-signatures.md) and [official provider research](application-signature-provider-research.md). Rendering never initiates signing.

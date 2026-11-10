@@ -12,6 +12,7 @@ on:
       - 'resources/blueprints/collections/applications/**'
       - 'routes/**'
       - 'scripts/*application*pdf*'
+      - 'scripts/application-signatures.py'
       - 'tests/**'
       - 'requirements-pdf.txt'
       - 'composer.*'
@@ -58,7 +59,7 @@ jobs:
           bun install --frozen-lockfile
           bun run build
       - name: Run application PDF integration tests
-        run: php artisan test --compact --filter='ApplicationPdfWorkflowTest|ApplicationManagementTest'
+        run: php artisan test --compact --filter='ApplicationPdfWorkflowTest|ApplicationManagementTest|ApplicationSignatureWorkflowTest'
       - name: Render synthetic review evidence
         run: |
           mkdir -p "$RUNNER_TEMP/application-pdf-evidence"

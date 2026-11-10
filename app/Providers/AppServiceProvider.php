@@ -5,6 +5,14 @@ namespace App\Providers;
 use App\Fieldtypes\ApplicationPrivateGrid;
 use App\Fieldtypes\ApplicationTextComponent;
 use App\Fieldtypes\ProtectedText;
+use App\Signatures\ApplicationCompositeSource;
+use App\Signatures\LocalPdfSignatureValidator;
+use App\Signatures\SandboxSignatureProvider;
+use App\Signatures\SignatureProvider;
+use App\Signatures\SignatureValidator;
+use App\Signatures\SignatureWorkflowException;
+use App\Signatures\UnavailableSignatureProvider;
+use App\Support\ApplicationPdfExporter;
 use App\Support\ApplicationPdfPostProcessor;
 use App\Support\ApplicationPrivacy;
 use App\Support\SearchPath;
@@ -30,6 +38,15 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(ApplicationPdfPostProcessor::class, UnmodifiedApplicationPdf::class);
+        $this->app->bind(ApplicationCompositeSource::class, ApplicationPdfExporter::class);
+        $this->app->bind(SignatureValidator::class, LocalPdfSignatureValidator::class);
+        $this->app->bind(SignatureProvider::class, function () {
+            return match (config('signatures.provider')) {
+                'unavailable' => new UnavailableSignatureProvider,
+                'sandbox' => new SandboxSignatureProvider,
+                default => throw new SignatureWorkflowException('Unbekannter Signaturanbieter.'),
+            };
+        });
     }
 
     /**
