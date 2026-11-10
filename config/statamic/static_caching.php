@@ -61,6 +61,7 @@ return [
         'class' => null,
 
         'urls' => [
+            '/applications*',
             //
         ],
 

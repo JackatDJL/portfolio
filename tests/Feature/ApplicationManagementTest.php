@@ -8,6 +8,7 @@ use App\Support\CvPrivateData;
 use App\Support\CvProfileContentResolver;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\ValidationException;
 use Statamic\Facades\Asset;
 use Statamic\Facades\AssetContainer;
 use Statamic\Facades\Collection;
@@ -184,6 +185,24 @@ class ApplicationManagementTest extends TestCase
             } else {
                 $defaults->delete();
             }
+        }
+    }
+
+    public function test_missing_reusable_text_component_is_reported_as_cover_letter_validation_error(): void
+    {
+        $entry = Entry::make()->collection('applications')->data([
+            'letter' => ApplicationData::encrypt([['body' => [[
+                'type' => 'set',
+                'attrs' => ['values' => ['type' => 'component', 'component' => 'missing-'.bin2hex(random_bytes(8))]],
+            ]]]]),
+        ]);
+
+        try {
+            ApplicationData::coverLetter($entry);
+            $this->fail('A missing reusable text component must fail validation.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('letter.body', $exception->errors());
+            $this->assertStringContainsString('Textbaustein', $exception->errors()['letter.body'][0]);
         }
     }
 

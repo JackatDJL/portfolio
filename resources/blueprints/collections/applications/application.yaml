@@ -33,7 +33,12 @@ tabs:
           display: Aktionen
           html: <div data-application-actions><button type="button" class="btn" data-reset-application-date>Datum
             auf heute setzen</button><button type="button" class="btn" data-application-cv>Privaten
-            CV herunterladen</button><p role="status" data-application-status></p></div>
+            CV herunterladen</button><button type="button" data-application-preview>Vollständige
+            PDF prüfen</button> <button type="button" data-application-export>PDF
+            exportieren</button> <button type="button" data-application-link>Empfängerlink
+            erstellen / ersetzen</button> <button type="button" data-application-revoke>Empfängerlink
+            widerrufen</button><input type="url" readonly hidden data-application-recipient-link
+            aria-label="Einmalig angezeigter Empfängerlink"><p role="status" data-application-status></p></div>
           sanitize: false
   recipient:
     display: Empfänger
@@ -126,7 +131,7 @@ tabs:
           fields:
           - handle: subject
             field:
-              type: text
+              type: textarea
               display: Betreff
           - handle: salutation
             field:
@@ -142,6 +147,7 @@ tabs:
               - unorderedlist
               - orderedlist
               - removeformat
+              - anchor
               save_html: false
               sets:
                 text:

@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use Illuminate\Validation\ValidationException;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use RuntimeException;
@@ -34,6 +35,16 @@ class CvPdfRenderer
         $cv = $this->viewModel->forApplication($application);
 
         return $this->compile(view('latex.cv', compact('cv'))->render());
+    }
+
+    public function renderViewModel(array $cv, ?float $deadline = null): string
+    {
+        return $this->compile(view('latex.cv', compact('cv'))->render(), deadline: $deadline);
+    }
+
+    public function fingerprint(array $cv): string
+    {
+        return $this->publicCacheKey($cv, view('latex.cv', compact('cv'))->render());
     }
 
     private function cachedPublicPdf(array $cv, string $tex): string
@@ -92,7 +103,8 @@ class CvPdfRenderer
         }
     }
 
-    private function compile(string $tex): string
+    /** Shared LuaLaTeX pipeline for CVs and application letters. Never log source/output. */
+    public function compile(string $tex, int $passes = 1, ?float $deadline = null, array $validationMarkers = []): string
     {
         $root = storage_path('app/private/cv-latex/'.bin2hex(random_bytes(12)));
         $this->ensurePrivateDirectory($root);
@@ -114,10 +126,22 @@ class CvPdfRenderer
                 base_path(),
                 $environment,
             );
-            $process->setTimeout((float) config('cv.pdf_timeout', 60));
-            $process->run();
-            if (! $process->isSuccessful()) {
-                throw new RuntimeException('CV PDF compilation failed. Compiler output is suppressed to protect private fields.');
+            for ($pass = 0; $pass < $passes; $pass++) {
+                $remaining = $deadline === null ? (float) config('cv.pdf_timeout', 60) : $deadline - microtime(true);
+                if ($remaining <= 0) {
+                    throw new RuntimeException('PDF generation timed out.');
+                }
+                $process->setTimeout(min((float) config('cv.pdf_timeout', 60), $remaining));
+                $process->run();
+                if (! $process->isSuccessful()) {
+                    $log = @file_get_contents($root.'/cv.log') ?: '';
+                    foreach ($validationMarkers as $marker => $error) {
+                        if (str_contains($log, $marker)) {
+                            throw ValidationException::withMessages([$error['field'] => $error['message']]);
+                        }
+                    }
+                    throw new RuntimeException('PDF compilation failed. Compiler output is suppressed to protect private fields.');
+                }
             }
 
             $output = $root.'/cv.pdf';

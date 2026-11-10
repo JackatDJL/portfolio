@@ -64,7 +64,7 @@ final class ApplicationData
             }
             $component = $components->get($values['component'] ?? '');
             if (! $component) {
-                throw new \RuntimeException('Referenced application text component is missing.');
+                throw ValidationException::withMessages(['letter.body' => 'Der referenzierte Textbaustein wurde nicht gefunden. Bitte wählen Sie einen gespeicherten Textbaustein oder entfernen Sie den Block.']);
             }
 
             return $component['body'] ?? [];
