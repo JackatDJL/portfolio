@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Support\ApplicationData;
 use App\Support\CvPdfRenderer;
+use App\Support\CvPrivateData;
 use App\Support\CvProfileContentResolver;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Gate;
@@ -14,7 +15,6 @@ use Statamic\Facades\Entry;
 use Statamic\Facades\GlobalSet;
 use Statamic\Facades\Site;
 use Statamic\Facades\User;
-use Tests\Support\ApplicationPdfFixture;
 use Tests\TestCase;
 
 class ApplicationManagementTest extends TestCase
@@ -212,35 +212,48 @@ class ApplicationManagementTest extends TestCase
 
     public function test_application_cv_compiles_through_existing_private_pipeline(): void
     {
-        $fixture = new ApplicationPdfFixture;
-        $file = null;
+        $variables = GlobalSet::find('cv')->inDefaultSite();
+        $original = [];
+        foreach (CvPrivateData::FIELDS as $field) {
+            $original[$field] = $variables->value($field);
+            $variables->set($field, '');
+        }
+
+        $entry = Entry::make()->collection('applications')->data([
+            'cv' => ApplicationData::encrypt([['introduction' => 'Application specific introduction', 'accent_color' => '#123456']]),
+        ]);
+
         try {
-            $file = app(CvPdfRenderer::class)->renderApplication($fixture->entry);
-            $this->assertStringStartsWith($fixture->root.'/compiler/', $file);
+            $file = app(CvPdfRenderer::class)->renderApplication($entry);
+            $this->assertStringStartsWith(storage_path('app/private/'), $file);
             $this->assertStringStartsWith('%PDF-', file_get_contents($file));
             $this->assertSame(0600, fileperms($file) & 0777);
         } finally {
-            if ($file) {
+            if (isset($file)) {
                 @unlink($file);
             }
-            $fixture->cleanup();
+            foreach ($original as $field => $value) {
+                $variables->set($field, $value);
+            }
         }
     }
 
     public function test_application_cv_export_fails_closed_on_corrupt_private_cv_data(): void
     {
-        $fixture = new ApplicationPdfFixture;
         $variables = GlobalSet::find('cv')->inDefaultSite();
         $original = $variables->value('private_email');
         $variables->set('private_email', 'configured-but-not-encrypted');
 
         try {
+            $entry = Entry::make()->collection('applications')->data([
+                'cv' => ApplicationData::encrypt([[]]),
+            ]);
+
             $this->expectException(\RuntimeException::class);
             $this->expectExceptionMessage('Configured private CV data cannot be decrypted.');
-            app(CvPdfRenderer::class)->renderApplication($fixture->entry);
+            app(CvPdfRenderer::class)->renderApplication($entry);
         } finally {
             $variables->set('private_email', $original);
-            $fixture->cleanup();
         }
     }
 
