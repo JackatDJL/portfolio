@@ -8,14 +8,20 @@
     const csrf = () => document.querySelector('meta[name="csrf-token"]')?.content || '';
     const showDate = value => value ? new Date(value).toLocaleString('de-DE') : '–';
 
+    let overviewRequest = 0;
     async function loadOverview(base) {
+        const request = ++overviewRequest;
         const summary = document.querySelector('[data-application-summary]');
         const grants = document.querySelector('[data-application-grants]');
         if (!summary || !base) return;
+        const isCurrent = () => request === overviewRequest
+            && base === appBase()
+            && summary === document.querySelector('[data-application-summary]');
         try {
             const response = await fetch(base + '/summary', { headers: { Accept: 'application/json' } });
             if (!response.ok) throw new Error('Übersicht nicht verfügbar.');
             const data = await response.json();
+            if (!isCurrent()) return;
             const statusLabels = { draft: 'Entwurf', ready: 'Bereit', sent: 'Versendet', interview: 'Gespräch', accepted: 'Zusage', rejected: 'Absage', withdrawn: 'Zurückgezogen' };
             const heading = document.createElement('h2');
             heading.textContent = [data.organisation, data.position].filter(Boolean).join(' · ') || 'Bewerbung';
@@ -31,20 +37,21 @@
             notes.textContent = 'Private Notizen: ' + (data.notes || 'keine');
             summary.replaceChildren(heading, status, latest, followUp, notes);
         } catch (error) {
-            summary.textContent = error.message;
+            if (isCurrent()) summary.textContent = error.message;
         }
 
-        if (!grants) return;
+        if (!isCurrent() || !grants) return;
         try {
             const response = await fetch(base + '/recipient-grants', { headers: { Accept: 'application/json' } });
             if (!response.ok) throw new Error('Empfängerzugriffe konnten nicht geladen werden.');
             const data = await response.json();
+            if (!isCurrent() || grants !== document.querySelector('[data-application-grants]')) return;
             grants.replaceChildren();
             for (const grant of data.grants) {
                 const row = document.createElement('div');
                 const details = document.createElement('p');
                 const state = grant.revoked_at ? 'widerrufen' : (grant.expires_at && new Date(grant.expires_at) < new Date() ? 'abgelaufen' : 'aktiv');
-                details.textContent = grant.label + ' · ' + state + ' · erstellt ' + showDate(grant.created_at) + ' · zuletzt geöffnet ' + showDate(grant.last_accessed_at) + (grant.expires_at ? ' · Ablauf ' + showDate(grant.expires_at) : '');
+                details.textContent = grant.label + ' · ' + state + ' · erstellt ' + showDate(grant.created_at) + ' · zuletzt freigeschaltet ' + showDate(grant.last_accessed_at) + (grant.expires_at ? ' · Ablauf ' + showDate(grant.expires_at) : '');
                 row.append(details);
                 if (!grant.revoked_at) {
                     const revoke = document.createElement('button');
@@ -63,7 +70,7 @@
                 grants.append(revokeAll);
             }
         } catch (error) {
-            grants.textContent = error.message;
+            if (isCurrent() && grants === document.querySelector('[data-application-grants]')) grants.textContent = error.message;
         }
     }
 
@@ -209,11 +216,27 @@
         } catch (error) { if (status) status.textContent = error.message; button.disabled = false; }
     });
 
-    const base = appBase();
-    if (base) {
+    let loadedOverviewEntry = null;
+    let loadedOverviewElement = null;
+    const refreshApplicationOverview = () => {
+        const id = entryId();
+        const base = appBase();
+        const summary = document.querySelector('[data-application-summary]');
+        if (!id || id === 'create' || !base || !summary) {
+            loadedOverviewEntry = null;
+            loadedOverviewElement = null;
+            return;
+        }
+        if (id === loadedOverviewEntry && summary === loadedOverviewElement) return;
+        loadedOverviewEntry = id;
+        loadedOverviewElement = summary;
         loadOverview(base);
         refreshProfileSummary();
-    }
+    };
+    const overviewObserver = new MutationObserver(refreshApplicationOverview);
+    overviewObserver.observe(document.documentElement, { childList: true, subtree: true });
+    window.addEventListener('popstate', refreshApplicationOverview);
+    refreshApplicationOverview();
 })();
 
 // Use the same Statamic 6 button utilities as the existing CV profile actions.

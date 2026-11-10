@@ -90,7 +90,7 @@ final class ApplicationPdfController extends Controller
 
         return response()->json([
             'url' => url('/applications/'.$id).'#application='.$issued['token'],
-            'grant' => collect(ApplicationCapabilities::grants($id))->firstWhere('id', $issued['id']),
+            'grant' => Arr::except($issued, ['token']),
         ])->header('Cache-Control', 'private, no-store');
     }
 

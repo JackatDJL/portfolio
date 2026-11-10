@@ -132,7 +132,10 @@ class ApplicationManagementTest extends TestCase
         $this->actingAs($this->user());
         $values = $this->values();
         $values['signature'] = ['mode' => 'typed', 'name' => ''];
-        $this->postJson('/cp/collections/applications/entries/'.Site::default()->handle(), $values)->assertUnprocessable();
+        $values['recipient']['email'] = 'not-an-email';
+        $this->postJson('/cp/collections/applications/entries/'.Site::default()->handle(), $values)
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['signature.name', 'recipient.email']);
     }
 
     public function test_private_document_disk_has_no_public_url_or_serving(): void

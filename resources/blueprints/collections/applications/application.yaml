@@ -452,7 +452,7 @@ tabs:
               type: text
               display: Getippter Name
               validate:
-              - required_if:signature.0.mode,typed
+              - required_if:signature.mode,typed
               - max:200
 
   tracking:

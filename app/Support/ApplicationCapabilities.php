@@ -2,7 +2,9 @@
 
 namespace App\Support;
 
+use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -15,11 +17,15 @@ final class ApplicationCapabilities
         $token = Str::random(64);
         $grantId = (string) Str::uuid();
         $now = now();
+        $expiresAt = $expiresAt === null
+            ? null
+            : Carbon::parse($expiresAt)->setTimezone(config('app.timezone'))->toDateTimeString();
+        $label = trim($label);
 
         DB::table('application_recipient_grants')->insert([
             'id' => $grantId,
             'application_id' => $id,
-            'label' => Crypt::encryptString(trim($label)),
+            'label' => Crypt::encryptString($label),
             'token_hash' => hash('sha256', $token),
             'created_at' => $now,
             'updated_at' => $now,
@@ -28,7 +34,15 @@ final class ApplicationCapabilities
             'revoked_at' => null,
         ]);
 
-        return ['id' => $grantId, 'token' => $token];
+        return [
+            'id' => $grantId,
+            'token' => $token,
+            'label' => $label,
+            'created_at' => $now->toDateTimeString(),
+            'expires_at' => $expiresAt,
+            'last_accessed_at' => null,
+            'revoked_at' => null,
+        ];
     }
 
     public static function revoke(string $id, string $grantId): bool
@@ -54,14 +68,22 @@ final class ApplicationCapabilities
             ->where('application_id', $id)
             ->orderByDesc('created_at')
             ->get(['id', 'label', 'created_at', 'expires_at', 'last_accessed_at', 'revoked_at'])
-            ->map(fn (object $grant): array => [
-                'id' => $grant->id,
-                'label' => Crypt::decryptString($grant->label),
-                'created_at' => $grant->created_at,
-                'expires_at' => $grant->expires_at,
-                'last_accessed_at' => $grant->last_accessed_at,
-                'revoked_at' => $grant->revoked_at,
-            ])->all();
+            ->map(function (object $grant): array {
+                try {
+                    $label = Crypt::decryptString($grant->label);
+                } catch (DecryptException) {
+                    $label = 'Bezeichnung nicht lesbar';
+                }
+
+                return [
+                    'id' => $grant->id,
+                    'label' => $label,
+                    'created_at' => $grant->created_at,
+                    'expires_at' => $grant->expires_at,
+                    'last_accessed_at' => $grant->last_accessed_at,
+                    'revoked_at' => $grant->revoked_at,
+                ];
+            })->all();
     }
 
     public static function allowsHash(string $id, string $hash): bool
@@ -125,11 +147,6 @@ final class ApplicationCapabilities
         if (! $record || ($record->expires_at && ! now()->isBefore($record->expires_at))) {
             return false;
         }
-
-        DB::table('application_recipient_grants')
-            ->where('id', $record->id)
-            ->whereNull('revoked_at')
-            ->update(['last_accessed_at' => now(), 'updated_at' => now()]);
 
         return true;
     }

@@ -13,6 +13,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Middleware\ThrottleRequests;
 use Illuminate\Session\TokenMismatchException;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -436,13 +437,19 @@ class ApplicationPdfWorkflowTest extends TestCase
         $id = $this->save();
         $editor = $this->user();
         $this->actingAs($editor);
+        $expiresAt = now()->addDays(3)->utc()->toIso8601String();
+        $normalizedExpiry = Carbon::parse($expiresAt)
+            ->setTimezone(config('app.timezone'))
+            ->toDateTimeString();
         $first = $this->postJson('/cp/applications/'.$id.'/recipient-grants', [
             'label' => 'TUHH Personalabteilung',
-            'expires_at' => now()->addDays(3)->toIso8601String(),
+            'expires_at' => $expiresAt,
         ])->assertOk();
         $firstToken = explode('#application=', $first->json('url'))[1];
         $firstId = $first->json('grant.id');
         $this->assertSame('TUHH Personalabteilung', $first->json('grant.label'));
+        $this->assertSame($normalizedExpiry, $first->json('grant.expires_at'));
+        $this->assertSame($normalizedExpiry, DB::table('application_recipient_grants')->where('id', $firstId)->value('expires_at'));
         $this->assertMatchesRegularExpression('/^[A-Za-z0-9]{64}$/', $firstToken);
         $this->assertStringContainsString('/applications/'.$id.'#application=', $first->json('url'));
         $encryptedLabel = DB::table('application_recipient_grants')->where('id', $firstId)->value('label');
@@ -467,7 +474,10 @@ class ApplicationPdfWorkflowTest extends TestCase
         $this->assertSame($firstId, session('application_grants.'.hash('sha256', $id)));
         $this->get('/cv')->assertDontSee($firstToken);
         $this->assertNotNull(DB::table('application_recipient_grants')->where('id', $firstId)->value('last_accessed_at'));
+        $lastExchange = now()->subDay()->toDateTimeString();
+        DB::table('application_recipient_grants')->where('id', $firstId)->update(['last_accessed_at' => $lastExchange]);
         $pdf = $this->get('/applications/'.$id.'/pdf')->assertOk();
+        $this->assertSame($lastExchange, DB::table('application_recipient_grants')->where('id', $firstId)->value('last_accessed_at'), 'Authorized requests must not write audit state.');
         $this->assertStringNotContainsString($firstToken, $this->text($pdf->baseResponse->getFile()->getPathname()));
 
         $this->actingAs($editor);
@@ -481,6 +491,24 @@ class ApplicationPdfWorkflowTest extends TestCase
         $this->app['auth']->logout();
         $this->get('/applications/'.$id.'/pdf')->assertNotFound();
         $this->assertNotNull(DB::table('application_recipient_grants')->where('id', $secondId)->value('revoked_at'));
+    }
+
+    public function test_unreadable_grant_labels_do_not_block_listing_or_issuing_new_links(): void
+    {
+        $id = $this->save();
+        $legacy = ApplicationCapabilities::issue($id, 'Vorhandener Zugriff');
+        DB::table('application_recipient_grants')->where('id', $legacy['id'])->update(['label' => 'invalid-ciphertext']);
+        $this->actingAs($this->user());
+
+        $this->getJson('/cp/applications/'.$id.'/recipient-grants')
+            ->assertOk()
+            ->assertJsonFragment(['label' => 'Bezeichnung nicht lesbar']);
+
+        $issued = $this->postJson('/cp/applications/'.$id.'/recipient-grants', ['label' => 'Neuer Zugriff'])
+            ->assertOk();
+        $this->assertSame('Neuer Zugriff', $issued->json('grant.label'));
+        $this->assertNotEmpty($issued->json('url'));
+        $this->assertSame(2, DB::table('application_recipient_grants')->where('application_id', $id)->count());
     }
 
     public function test_recipient_grant_migration_preserves_existing_hash_expiration_and_revocation(): void
