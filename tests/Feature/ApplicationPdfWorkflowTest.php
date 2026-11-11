@@ -146,6 +146,27 @@ class ApplicationPdfWorkflowTest extends TestCase
         $this->assertSame(0600, fileperms($pdf) & 0777);
     }
 
+    public function test_application_export_still_works_after_a_control_panel_edit_and_save(): void
+    {
+        $id = $this->save();
+        $entry = Entry::find($id);
+        $this->actingAs($this->user());
+        $payload = [
+            'title' => 'Edited synthetic reference',
+            'application_status' => 'draft',
+        ];
+        foreach (ApplicationData::GROUPS as $group) {
+            $payload[$group] = ApplicationData::group($entry, $group);
+        }
+        $payload['recipient']['position'] = 'Synthetic internship';
+
+        $this->patchJson('/cp/collections/applications/entries/'.$id, $payload)->assertOk();
+
+        $this->get('/cp/applications/'.$id.'/export.pdf')
+            ->assertOk()
+            ->assertHeader('Content-Type', 'application/pdf');
+    }
+
     public function test_long_letter_paginates_on_a4_without_missing_closing(): void
     {
         $letter = ApplicationData::group($this->fixture->entry, 'letter');
@@ -618,6 +639,7 @@ class ApplicationPdfWorkflowTest extends TestCase
             $this->fail('Corrupt private data must fail.');
         } catch (ApplicationPdfException $exception) {
             $this->assertStringNotContainsString('INVALID-PRIVATE', $exception->getMessage());
+            $this->assertMatchesRegularExpression('/Fehlerreferenz: [a-f0-9]{12}\./', $exception->getMessage());
         } finally {
             $global->set('private_email', $original);
         }

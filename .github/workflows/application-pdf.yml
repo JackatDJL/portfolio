@@ -65,6 +65,10 @@ jobs:
           bun run build
       - name: Run application PDF integration tests
         run: php artisan test --compact --filter='ApplicationPdfWorkflowTest|ApplicationManagementTest|ApplicationSignatureWorkflowTest|ApplicationHandwrittenSignatureTest'
+      - name: Install Playwright Chromium
+        run: bunx playwright install --with-deps chromium
+      - name: Run handwritten signature CP browser regression
+        run: bun run test:browser -- tests/browser/handwritten-signature.spec.js
       - name: Render synthetic review evidence
         run: |
           mkdir -p "$RUNNER_TEMP/application-pdf-evidence"

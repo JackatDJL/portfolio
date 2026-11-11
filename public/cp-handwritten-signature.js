@@ -1,14 +1,26 @@
 (() => {
-    const root = document.querySelector('[data-handwritten-signature]');
-    if (!root) return;
+    const selector = '[data-handwritten-signature]';
+    const initializedRoots = new WeakMap();
+    const initialize = root => {
+        const canvas = root.querySelector('[data-handwritten-signature-canvas]');
+        const status = root.querySelector('[data-handwritten-status]');
+        const preview = root.querySelector('[data-handwritten-preview]');
+        const previewStatus = root.querySelector('[data-handwritten-preview-status]');
+        const saveButton = root.querySelector('[data-handwritten-save]');
+        const removeBackground = root.querySelector('[data-handwritten-remove-background]');
+        const clearButton = root.querySelector('[data-handwritten-clear]');
+        const uploadInput = root.querySelector('[data-handwritten-upload]');
+        const cropButton = root.querySelector('[data-handwritten-crop]');
+        const deleteButton = root.querySelector('[data-handwritten-delete]');
+        if ([canvas, status, preview, previewStatus, saveButton, removeBackground, clearButton, uploadInput, cropButton, deleteButton].some(element => !element)) {
+            return false;
+        }
+        const controls = [canvas, status, preview, previewStatus, saveButton, removeBackground, clearButton, uploadInput, cropButton, deleteButton];
+        const initializedControls = initializedRoots.get(root);
+        if (initializedControls?.every((element, index) => element === controls[index])) return true;
+        initializedRoots.set(root, controls);
 
-    const canvas = root.querySelector('[data-handwritten-signature-canvas]');
-    const context = canvas.getContext('2d', { willReadFrequently: true });
-    const status = root.querySelector('[data-handwritten-status]');
-    const preview = root.querySelector('[data-handwritten-preview]');
-    const previewStatus = root.querySelector('[data-handwritten-preview-status]');
-    const saveButton = root.querySelector('[data-handwritten-save]');
-    const removeBackground = root.querySelector('[data-handwritten-remove-background]');
+        const context = canvas.getContext('2d', { willReadFrequently: true });
     let strokes = [];
     let activeStroke = null;
     let savedSource = false;
@@ -123,12 +135,12 @@
         preview.replaceChildren(heading, image);
     };
 
-    root.querySelector('[data-handwritten-clear]').addEventListener('click', () => {
+    clearButton.addEventListener('click', () => {
         clearCanvas();
         status.textContent = 'Aktuelle Zeichnung geleert. Eine gespeicherte Vorlage bleibt bis zum Speichern unverändert.';
     });
 
-    root.querySelector('[data-handwritten-upload]').addEventListener('change', event => {
+    uploadInput.addEventListener('change', event => {
         const file = event.target.files?.[0];
         if (!file) return;
         if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type) || file.size > 10 * 1024 * 1024) {
@@ -155,7 +167,7 @@
         markPreviewStale('Hintergrundoption geändert. Erstelle die Vorschau erneut, bevor du speicherst.');
     });
 
-    root.querySelector('[data-handwritten-crop]').addEventListener('click', () => {
+    cropButton.addEventListener('click', () => {
         try {
             previewDataUrl = processCanvas(true);
             showPreview(previewDataUrl);
@@ -196,7 +208,7 @@
         finally { button.disabled = !previewDataUrl; }
     });
 
-    root.querySelector('[data-handwritten-delete]').addEventListener('click', async event => {
+    deleteButton.addEventListener('click', async event => {
         if (!savedSource || !window.confirm('Private Signaturvorlage endgültig löschen? Bewerbungen mit aktiver Handschrift verhindern das Löschen.')) return;
         const button = event.currentTarget;
         button.disabled = true;
@@ -233,4 +245,25 @@
             status.textContent = 'Noch keine private Signaturvorlage gespeichert.';
         }
     }).catch(error => { status.textContent = error.message; });
+        return true;
+    };
+
+    const initializeTree = node => {
+        const roots = new Set();
+        if (node === document) {
+            document.querySelectorAll(selector).forEach(root => roots.add(root));
+        } else if (node instanceof Element) {
+            if (node.matches(selector)) roots.add(node);
+            const parent = node.closest(selector);
+            if (parent) roots.add(parent);
+            node.querySelectorAll(selector).forEach(root => roots.add(root));
+        }
+        roots.forEach(initialize);
+    };
+
+    initializeTree(document);
+    const observer = new MutationObserver(records => {
+        records.forEach(record => record.addedNodes.forEach(initializeTree));
+    });
+    observer.observe(document.documentElement, { childList: true, subtree: true });
 })();

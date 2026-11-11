@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use App\Signatures\ApplicationCompositeSource;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Statamic\Contracts\Entries\Entry;
 use Statamic\Facades\Asset;
@@ -122,8 +123,15 @@ final class ApplicationPdfExporter implements ApplicationCompositeSource
             return $destination;
         } catch (ValidationException $exception) {
             throw $exception;
-        } catch (Throwable) {
-            throw new ApplicationPdfException($stage);
+        } catch (Throwable $exception) {
+            $diagnosticId = bin2hex(random_bytes(6));
+            Log::error('Private application PDF generation failed.', [
+                'reference' => $diagnosticId,
+                'stage' => $stage,
+                'exception' => $exception::class,
+                'source' => basename($exception->getFile()).':'.$exception->getLine(),
+            ]);
+            throw new ApplicationPdfException($stage, $diagnosticId);
         } finally {
             foreach ($compiled as $file) {
                 @unlink($file);

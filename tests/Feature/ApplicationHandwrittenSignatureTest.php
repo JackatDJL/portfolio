@@ -8,6 +8,7 @@ use App\Support\CvViewModel;
 use App\Support\PrivateHandwrittenSignature;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\ValidationException;
+use Statamic\Facades\Entry;
 use Statamic\Facades\GlobalSet;
 use Statamic\Facades\User;
 use Symfony\Component\Process\Process;
@@ -119,6 +120,54 @@ class ApplicationHandwrittenSignatureTest extends TestCase
         $this->fixture->entry->set('signature', ApplicationData::encrypt([['mode' => 'handwritten', 'width_mm' => 46, 'baseline_mm' => 0]]));
         $this->expectException(ValidationException::class);
         $this->fixture->entry->save();
+    }
+
+    public function test_handwritten_signature_mode_can_be_saved_through_the_application_cp_editor(): void
+    {
+        $this->saveSource();
+        $entry = $this->fixture->entry;
+        $entry->save();
+        $this->actingAs($this->user());
+
+        $payload = [
+            'title' => 'Synthetic PDF integration fixture',
+            'application_status' => 'draft',
+        ];
+        foreach (ApplicationData::GROUPS as $group) {
+            $payload[$group] = ApplicationData::group($entry, $group);
+        }
+        $payload['recipient']['position'] = 'Synthetic internship';
+        $payload['signature'] = [
+            'mode' => 'handwritten',
+            'width_mm' => 46,
+            'baseline_mm' => 0,
+        ];
+
+        $this->patchJson('/cp/collections/applications/entries/'.$entry->id(), $payload)->assertOk();
+
+        $saved = Entry::find($entry->id());
+        $this->assertSame('handwritten', ApplicationData::group($saved, 'signature')['mode']);
+    }
+
+    public function test_missing_handwriting_source_shows_the_error_on_the_signature_mode_field(): void
+    {
+        $entry = $this->fixture->entry;
+        $entry->save();
+        $this->actingAs($this->user());
+
+        $payload = [
+            'title' => 'Synthetic signature validation fixture',
+            'application_status' => 'draft',
+        ];
+        foreach (ApplicationData::GROUPS as $group) {
+            $payload[$group] = ApplicationData::group($entry, $group);
+        }
+        $payload['recipient']['position'] = 'Synthetic internship';
+        $payload['signature'] = ['mode' => 'handwritten', 'width_mm' => 46, 'baseline_mm' => 0];
+
+        $this->patchJson('/cp/collections/applications/entries/'.$entry->id(), $payload)
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['signature.mode']);
     }
 
     public function test_public_cv_does_not_augment_or_render_legacy_signature_data(): void
