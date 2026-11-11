@@ -16,6 +16,7 @@ use Illuminate\Session\TokenMismatchException;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Statamic\Facades\Entry;
@@ -654,6 +655,25 @@ class ApplicationPdfWorkflowTest extends TestCase
             $this->assertSame([], glob($this->fixture->root.'/cache/*/*.pdf'));
         }
         $this->assertSame([], glob($this->fixture->root.'/work/*'));
+    }
+
+    public function test_logging_failure_does_not_replace_the_redacted_pdf_exception(): void
+    {
+        $global = GlobalSet::find('cv')->inDefaultSite();
+        $original = $global->get('private_email');
+        $global->set('private_email', 'INVALID-PRIVATE-CIPHERTEXT');
+        Log::shouldReceive('error')->once()->andThrow(new \RuntimeException('log backend unavailable'));
+
+        try {
+            app(ApplicationPdfExporter::class)->render($this->fixture->entry);
+            $this->fail('The export must fail with a redacted application PDF exception.');
+        } catch (ApplicationPdfException $exception) {
+            $this->assertStringContainsString('PDF-Schritt [Datenprüfung]', $exception->getMessage());
+            $this->assertStringNotContainsString('log backend unavailable', $exception->getMessage());
+            $this->assertMatchesRegularExpression('/Fehlerreferenz: [a-f0-9]{12}\./', $exception->getMessage());
+        } finally {
+            $global->set('private_email', $original);
+        }
     }
 
     public function test_latex_injection_is_escaped_and_compile_failure_is_redacted(): void

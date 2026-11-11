@@ -16,9 +16,12 @@
             return false;
         }
         const controls = [canvas, status, preview, previewStatus, saveButton, removeBackground, clearButton, uploadInput, cropButton, deleteButton];
-        const initializedControls = initializedRoots.get(root);
-        if (initializedControls?.every((element, index) => element === controls[index])) return true;
-        initializedRoots.set(root, controls);
+        const previous = initializedRoots.get(root);
+        if (previous?.controls.every((element, index) => element === controls[index])) return true;
+        previous?.abort.abort();
+        const abort = new AbortController();
+        const { signal } = abort;
+        initializedRoots.set(root, { controls, abort });
 
         const context = canvas.getContext('2d', { willReadFrequently: true });
     let strokes = [];
@@ -78,7 +81,7 @@
         context.strokeStyle = '#17231f';
         context.lineTo(point.x * canvas.width + 0.01, point.y * canvas.height + 0.01);
         context.stroke();
-    });
+    }, { signal });
     canvas.addEventListener('pointermove', event => {
         if (!activeStroke) return;
         event.preventDefault();
@@ -86,10 +89,10 @@
         activeStroke.push(point);
         context.lineTo(point.x * canvas.width, point.y * canvas.height);
         context.stroke();
-    });
+    }, { signal });
     const endStroke = () => { activeStroke = null; };
-    canvas.addEventListener('pointerup', endStroke);
-    canvas.addEventListener('pointercancel', endStroke);
+    canvas.addEventListener('pointerup', endStroke, { signal });
+    canvas.addEventListener('pointercancel', endStroke, { signal });
 
     const processCanvas = trim => {
         const image = context.getImageData(0, 0, canvas.width, canvas.height);
@@ -138,7 +141,7 @@
     clearButton.addEventListener('click', () => {
         clearCanvas();
         status.textContent = 'Aktuelle Zeichnung geleert. Eine gespeicherte Vorlage bleibt bis zum Speichern unverändert.';
-    });
+    }, { signal });
 
     uploadInput.addEventListener('change', event => {
         const file = event.target.files?.[0];
@@ -161,11 +164,11 @@
         };
         image.onerror = () => { status.textContent = 'Das Bild konnte nicht geöffnet werden.'; };
         image.src = URL.createObjectURL(file);
-    });
+    }, { signal });
 
     removeBackground.addEventListener('change', () => {
         markPreviewStale('Hintergrundoption geändert. Erstelle die Vorschau erneut, bevor du speicherst.');
-    });
+    }, { signal });
 
     cropButton.addEventListener('click', () => {
         try {
@@ -177,7 +180,7 @@
             markPreviewStale('Keine aktuelle Vorschau. Zeichne oder lade eine Signatur und erstelle die Vorschau erneut.');
             status.textContent = error.message;
         }
-    });
+    }, { signal });
 
     saveButton.addEventListener('click', async event => {
         const button = event.currentTarget;
@@ -206,7 +209,7 @@
             }
         } catch (error) { status.textContent = error.message; }
         finally { button.disabled = !previewDataUrl; }
-    });
+    }, { signal });
 
     deleteButton.addEventListener('click', async event => {
         if (!savedSource || !window.confirm('Private Signaturvorlage endgültig löschen? Bewerbungen mit aktiver Handschrift verhindern das Löschen.')) return;
@@ -221,15 +224,17 @@
             status.textContent = 'Private Signaturvorlage gelöscht.';
         } catch (error) { status.textContent = error.message; }
         finally { button.disabled = false; }
-    });
+    }, { signal });
 
-    fetch(endpoint(), { headers: { Accept: 'application/json' } }).then(async response => {
+    fetch(endpoint(), { headers: { Accept: 'application/json' }, signal }).then(async response => {
         if (!response.ok) throw new Error('Private Signaturvorlage konnte nicht geladen werden.');
         const data = await response.json();
+        if (signal.aborted) return;
         savedSource = Boolean(data.available);
         if (data.source?.image) {
             const image = new Image();
             image.onload = () => {
+                if (signal.aborted) return;
                 context.clearRect(0, 0, canvas.width, canvas.height);
                 const scale = Math.min((canvas.width - 32) / image.width, (canvas.height - 32) / image.height);
                 const width = image.width * scale, height = image.height * scale;
@@ -244,7 +249,7 @@
         } else {
             status.textContent = 'Noch keine private Signaturvorlage gespeichert.';
         }
-    }).catch(error => { status.textContent = error.message; });
+    }).catch(error => { if (!signal.aborted) status.textContent = error.message; });
         return true;
     };
 

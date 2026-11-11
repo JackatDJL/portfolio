@@ -4,12 +4,14 @@ import { fileURLToPath } from 'node:url';
 
 const script = readFileSync(fileURLToPath(new URL('../../public/cp-handwritten-signature.js', import.meta.url)), 'utf8');
 
-test('initializes the handwritten editor when Statamic inserts its CP page after script load', async ({ page }) => {
+test('initializes inserted CP content and replaces retained-control listeners safely', async ({ page }) => {
     await page.goto('/cp/globals/application_defaults#signature');
     await page.setContent('<main id="cp-page"></main>');
     let savedPayload;
+    let saveRequests = 0;
     await page.route('**/applications/handwritten-signature', route => {
         if (route.request().method() === 'POST') {
+            saveRequests++;
             savedPayload = route.request().postDataJSON();
             return route.fulfill({ json: { saved: true } });
         }
@@ -33,8 +35,13 @@ test('initializes the handwritten editor when Statamic inserts its CP page after
     ].join('');
     await page.locator('#cp-page').evaluate((element, markup) => { element.innerHTML = markup; }, editorMarkup);
     await expect(page.locator('[data-handwritten-status]')).toContainText('Noch keine private Signaturvorlage');
-    // Statamic may replace the tab content while retaining the surrounding page root.
-    await page.locator('#cp-page').evaluate((element, markup) => { element.innerHTML = markup; }, editorMarkup);
+    // Statamic can replace a control while retaining the editor root and its other listeners.
+    await page.locator('[data-handwritten-preview-status]').evaluate(element => {
+        const replacement = document.createElement('p');
+        replacement.dataset.handwrittenPreviewStatus = '';
+        replacement.setAttribute('aria-live', 'polite');
+        element.replaceWith(replacement);
+    });
     await expect(page.locator('[data-handwritten-status]')).toContainText('Noch keine private Signaturvorlage');
 
     const canvas = page.locator('[data-handwritten-signature-canvas]');
@@ -72,6 +79,7 @@ test('initializes the handwritten editor when Statamic inserts its CP page after
     await page.getByRole('button', { name: 'Preview' }).click();
     await page.getByRole('button', { name: 'Save' }).click();
     await expect(page.locator('[data-handwritten-status]')).toContainText('verschlüsselt gespeichert');
+    expect(saveRequests).toBe(1);
     expect(savedPayload.image).toMatch(/^data:image\/png;base64,/);
     expect(savedPayload.strokes).toEqual([]);
 });

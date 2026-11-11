@@ -125,12 +125,16 @@ final class ApplicationPdfExporter implements ApplicationCompositeSource
             throw $exception;
         } catch (Throwable $exception) {
             $diagnosticId = bin2hex(random_bytes(6));
-            Log::error('Private application PDF generation failed.', [
-                'reference' => $diagnosticId,
-                'stage' => $stage,
-                'exception' => $exception::class,
-                'source' => basename($exception->getFile()).':'.$exception->getLine(),
-            ]);
+            try {
+                Log::error('Private application PDF generation failed.', [
+                    'reference' => $diagnosticId,
+                    'stage' => $stage,
+                    'exception' => $exception::class,
+                    'source' => basename($exception->getFile()).':'.$exception->getLine(),
+                ]);
+            } catch (Throwable) {
+                // A failed log write must not replace the redacted export failure.
+            }
             throw new ApplicationPdfException($stage, $diagnosticId);
         } finally {
             foreach ($compiled as $file) {
