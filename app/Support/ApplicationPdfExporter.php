@@ -16,6 +16,7 @@ final class ApplicationPdfExporter implements ApplicationCompositeSource
         private CvPdfRenderer $renderer,
         private ApplicationLetter $letter,
         private ApplicationPdfPostProcessor $postProcessor,
+        private PrivateHandwrittenSignature $handwrittenSignature,
     ) {}
 
     /** Caller must authorize the application before invoking this private-only renderer. */
@@ -29,7 +30,11 @@ final class ApplicationPdfExporter implements ApplicationCompositeSource
         try {
             $work = $this->directory(config('applications.work_path')).'/'.bin2hex(random_bytes(16));
             $this->directory($work);
-            $cv = $this->viewModel->forApplication($entry);
+            $signatureSettings = ApplicationData::group($entry, 'signature');
+            $signatureSource = ($signatureSettings['mode'] ?? 'none') === 'handwritten'
+                ? $this->handwrittenSignature->materialize($work.'/signature.png')
+                : null;
+            $cv = $this->viewModel->forApplication($entry, $signatureSource);
             if ($cv['photo']) {
                 $copy = $work.'/photo.'.pathinfo($cv['photo'], PATHINFO_EXTENSION);
                 if (! copy($cv['photo'], $copy)) {
@@ -225,14 +230,19 @@ final class ApplicationPdfExporter implements ApplicationCompositeSource
         $process = new Process([config('applications.python'), base_path('scripts/compose-application-pdf.py'), '--version']);
         $process->setTimeout(5);
         $process->mustRun();
-        $files = [__FILE__, base_path('app/Support/ApplicationLetter.php'), base_path('app/Support/ApplicationData.php'), base_path('app/Support/CvPrivateData.php'), base_path('scripts/compose-application-pdf.py'), base_path('requirements-pdf.txt'), (new \ReflectionClass($this->postProcessor))->getFileName()];
+        $files = [__FILE__, base_path('app/Support/ApplicationLetter.php'), base_path('app/Support/ApplicationData.php'), base_path('app/Support/CvPrivateData.php'), base_path('app/Support/PrivateHandwrittenSignature.php'), base_path('scripts/compose-application-pdf.py'), base_path('requirements-pdf.txt'), (new \ReflectionClass($this->postProcessor))->getFileName()];
         $files = [...$files, ...glob(base_path('resources/application-fonts/*.ttf'))];
         $fingerprintCv = $cv;
         $fingerprintCv['photo'] = null; // The immutable photo snapshot is covered by photo_digest.
+        $fingerprintCv['signature_image'] = null; // The source bytes are covered by the stable signature digest.
+        $stableSource = $source;
+        if (is_string($cv['signature_image'] ?? null)) {
+            $stableSource = str_replace($cv['signature_image'], '__PRIVATE_HANDWRITTEN_SIGNATURE__', $stableSource);
+        }
         $fingerprint = [
             'schema' => 1, 'id' => $entry->id(), 'status' => $entry->get('application_status'),
             'application' => array_map(fn ($group) => ApplicationData::group($entry, $group), ApplicationData::GROUPS),
-            'cv' => $this->renderer->fingerprint($fingerprintCv), 'letter' => $source,
+            'cv' => $this->renderer->fingerprint($fingerprintCv), 'letter' => $stableSource,
             'documents' => array_map(fn ($document) => [$document['label'], $document['sha256']], $documents),
             'code' => array_map(fn ($file) => hash_file('sha256', $file), $files),
             'composer' => trim($process->getOutput()), 'limits' => [config('applications.max_pages'), config('applications.max_total_bytes')],

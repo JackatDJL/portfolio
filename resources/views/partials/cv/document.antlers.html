@@ -105,7 +105,7 @@
             </div></section>{{ /if }}
         </div>
     </div>
-    {{ if cv:print_date || cv:signature }}
-        <footer class="cv-document__print-footer" aria-label="Ort, Datum und Unterschrift">{{ if cv:print_place || cv:print_date }}<p>{{ cv:print_place }}{{ if cv:print_place && cv:print_date }}, {{ /if }}{{ cv:print_date }}</p>{{ /if }}{{ if cv:signature }}<img src="{{ cv:signature:url }}" alt="Unterschrift von {{ cv_resolved:public_identity:name }}">{{ /if }}</footer>
+    {{ if cv:print_place || cv:print_date }}
+        <footer class="cv-document__print-footer" aria-label="Ort und Datum"><p>{{ cv:print_place }}{{ if cv:print_place && cv:print_date }}, {{ /if }}{{ cv:print_date }}</p></footer>
     {{ /if }}
 </article>

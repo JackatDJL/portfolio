@@ -94,4 +94,16 @@ $v = function ($value) use ($u) {
 @foreach($cv['publications'] as $item)\entry{ {{ $e($item['title']) }} }{ {{ $e($item['period']) }} }{ {{ $e($item['type']) }} }{ {{ $u($item['url']) }} }{}@endforeach
 @endif
 \end{paracol}
+@if(!empty($cv['signature_image']))
+\Needspace{28mm}
+\par\vspace{2mm}\noindent\begin{minipage}{\textwidth}
+\begingroup\fontsize{7.5}{9}\selectfont\color{muted}
+@if($cv['signed_place']){{ $e($cv['signed_place']) }}, @endif{{ $e($cv['signed_date']) }}\par
+\endgroup
+\vspace{1mm}
+\raisebox{ {{ (int) $cv['signature_baseline_mm'] }}mm }{\includegraphics[width={{ (int) $cv['signature_width_mm'] }}mm,height=16mm,keepaspectratio]{ {{ $e($cv['signature_image']) }} }}\par
+\vspace{-1mm}
+{{ $e($cv['signed_by']) }}
+\end{minipage}
+@endif
 \end{document}

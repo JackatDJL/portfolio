@@ -444,9 +444,10 @@ tabs:
               options:
                 none: Keine
                 typed: Getippter Name
+                handwritten: Handschriftliche Grafik
               default: none
               validate:
-              - in:none,typed
+              - in:none,typed,handwritten
           - handle: name
             field:
               type: text
@@ -454,6 +455,29 @@ tabs:
               validate:
               - required_if:signature.mode,typed
               - max:200
+              always_save: true
+          - handle: width_mm
+            field:
+              type: integer
+              display: Breite im PDF (mm)
+              instructions: 'Die Grafik bleibt eine kopierbare visuelle Unterschrift und ist keine QES.'
+              default: 46
+              min: 30
+              max: 75
+              if:
+                mode: handwritten
+              always_save: true
+          - handle: baseline_mm
+            field:
+              type: integer
+              display: Grundlinien-Versatz (mm)
+              instructions: Positiv hebt die Grafik leicht an.
+              default: 0
+              min: -3
+              max: 3
+              if:
+                mode: handwritten
+              always_save: true
 
   tracking:
     display: Verlauf

@@ -63,6 +63,9 @@ final class ApplicationLetter
             'subject' => $letter['subject'], 'salutation' => $letter['salutation'],
             'body' => $this->nodes($body), 'closing' => $letter['closing'],
             'signature' => ($signature['mode'] ?? 'none') === 'typed' ? ($signature['name'] ?? '') : '',
+            'signature_image' => ($signature['mode'] ?? 'none') === 'handwritten' ? ($cv['signature_image'] ?? null) : null,
+            'signature_width_mm' => ($signature['mode'] ?? 'none') === 'handwritten' ? (int) ($cv['signature_width_mm'] ?? 46) : null,
+            'signature_baseline_mm' => ($signature['mode'] ?? 'none') === 'handwritten' ? (int) ($cv['signature_baseline_mm'] ?? 0) : null,
             'documents' => array_column($documents, 'label'),
         ];
     }

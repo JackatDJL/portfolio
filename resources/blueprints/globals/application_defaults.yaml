@@ -89,3 +89,13 @@ tabs:
                   - removeformat
                   sets: {}
                   save_html: false
+  signature:
+    display: Handschrift
+    sections:
+    - fields:
+      - handle: handwritten_signature_editor
+        field:
+          type: html
+          display: Private Handschrift
+          sanitize: false
+          html: '<div data-handwritten-signature><p>Die Handschrift wird verschlüsselt unter storage/app/private gespeichert und nie in öffentliche Assets oder Git übernommen.</p><div><canvas data-handwritten-signature-canvas width="900" height="260" aria-label="Unterschrift zeichnen" style="display:block;width:100%;max-width:760px;height:auto;touch-action:none;border:1px solid #9ca3af;border-radius:6px;background:#fff"></canvas></div><p><button type="button" data-handwritten-clear>Zeichenfläche leeren</button> <label>Bilddatei auswählen <input type="file" accept="image/png,image/jpeg,image/webp" data-handwritten-upload></label> <label><input type="checkbox" data-handwritten-remove-background> Hellen Hintergrund beim Speichern transparent machen</label></p><p><button type="button" data-handwritten-crop>Zuschneiden und Vorschau aktualisieren</button> <button type="button" data-handwritten-save>Private Signatur speichern</button> <button type="button" data-handwritten-delete>Vorlage löschen</button></p><div data-handwritten-preview aria-live="polite"></div><p role="status" data-handwritten-status></p><p>Die Grafik ist eine visuelle Unterschrift, keine QES. Empfänger können das sichtbare Bild kopieren. Signierte Bewerbungen werden weiterhin erst nach dem vollständigen PDF-Export extern kryptografisch signiert.</p></div>'

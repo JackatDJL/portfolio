@@ -51,7 +51,7 @@ final class CvViewModel
         ];
     }
 
-    public function forApplication(\Statamic\Contracts\Entries\Entry $application): array
+    public function forApplication(\Statamic\Contracts\Entries\Entry $application, ?array $signatureSource = null): array
     {
         // Corrupt configured private data must stop the export, never become public masks.
         $private = CvPrivateData::reveal(GlobalSet::find('cv')->inDefaultSite(), strict: true);
@@ -63,6 +63,18 @@ final class CvViewModel
             $private['country'] ?? null,
         ]));
         $cv['contact']['address'] = implode(', ', $addressParts);
+        $signature = ApplicationData::group($application, 'signature');
+        $handwritten = ($signature['mode'] ?? 'none') === 'handwritten';
+        if ($handwritten && (! is_array($signatureSource) || ! is_file($signatureSource['path'] ?? ''))) {
+            throw new \RuntimeException('Die gespeicherte private Handschrift ist für diesen Export nicht verfügbar.');
+        }
+        $cv['signature_image'] = $handwritten ? $signatureSource['path'] : null;
+        $cv['signature_digest'] = $handwritten ? $signatureSource['sha256'] : null;
+        $cv['signature_width_mm'] = $handwritten ? (int) ($signature['width_mm'] ?? 46) : null;
+        $cv['signature_baseline_mm'] = $handwritten ? (int) ($signature['baseline_mm'] ?? 0) : null;
+        $cv['signed_by'] = $handwritten ? $cv['name'] : null;
+        $cv['signed_date'] = $handwritten ? Carbon::parse(ApplicationData::date($application))->locale('de')->translatedFormat('j. F Y') : null;
+        $cv['signed_place'] = $handwritten ? trim((string) ($private['city'] ?? '')) : null;
 
         return [...$cv, 'private_export' => true,
             'sender_return_address' => implode(', ', array_slice($addressParts, 0, 2)),

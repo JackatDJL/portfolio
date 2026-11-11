@@ -10,6 +10,9 @@ on:
       - 'resources/application-fonts/**'
       - 'resources/views/latex/**'
       - 'resources/blueprints/collections/applications/**'
+      - 'resources/blueprints/globals/**'
+      - 'resources/views/partials/cv/**'
+      - 'public/cp-handwritten-signature.js'
       - 'routes/**'
       - 'scripts/*application*pdf*'
       - 'scripts/application-signatures.py'
@@ -59,7 +62,7 @@ jobs:
           bun install --frozen-lockfile
           bun run build
       - name: Run application PDF integration tests
-        run: php artisan test --compact --filter='ApplicationPdfWorkflowTest|ApplicationManagementTest|ApplicationSignatureWorkflowTest'
+        run: php artisan test --compact --filter='ApplicationPdfWorkflowTest|ApplicationManagementTest|ApplicationSignatureWorkflowTest|ApplicationHandwrittenSignatureTest'
       - name: Render synthetic review evidence
         run: |
           mkdir -p "$RUNNER_TEMP/application-pdf-evidence"

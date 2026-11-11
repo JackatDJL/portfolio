@@ -88,7 +88,6 @@ final class CvProfileContentResolver
             'print' => [
                 'place' => (string) $cv->value('print_place', ''),
                 'date' => (string) $cv->value('print_date', ''),
-                'signature' => $this->augmentedValue($cv, 'signature'),
             ],
         ];
     }

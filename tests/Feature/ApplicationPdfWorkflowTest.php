@@ -33,8 +33,6 @@ class ApplicationPdfWorkflowTest extends TestCase
 
     private array $users = [];
 
-    private bool $saved = false;
-
     protected function setUp(): void
     {
         parent::setUp();
@@ -44,9 +42,6 @@ class ApplicationPdfWorkflowTest extends TestCase
 
     protected function tearDown(): void
     {
-        if ($this->saved) {
-            $this->fixture->entry->delete();
-        }
         foreach ($this->users as $user) {
             $user->delete();
         }
@@ -69,8 +64,6 @@ class ApplicationPdfWorkflowTest extends TestCase
     private function save(): string
     {
         $this->fixture->entry->save();
-        $this->saved = true;
-
         return $this->fixture->entry->id();
     }
 

@@ -9,7 +9,7 @@ $subject = new \Illuminate\Support\HtmlString(implode('\\\\', array_map(fn ($lin
 \documentclass[11pt,a4paper]{article}
 \usepackage[a4paper,left=25mm,right=25mm,top=25mm,bottom=25mm]{geometry}
 \usepackage[ngerman]{babel}
-\usepackage{fontspec,xcolor,hyperref,tikz,needspace}
+\usepackage{fontspec,xcolor,hyperref,tikz,needspace,graphicx}
 \setmainfont{Noto Sans SemiCondensed}[Path=resources/application-fonts/,Extension=.ttf,UprightFont=NotoSans-SemiCondensed,BoldFont=NotoSans-SemiCondensedBold,ItalicFont=NotoSans-SemiCondensedItalic]
 \color{black}
 \hypersetup{colorlinks=true,urlcolor=blue,linkcolor=black,pdfauthor={ {{ $e($letter['sender']) }} },pdftitle={ {{ $e($letter['subject']) }} }}
@@ -59,5 +59,9 @@ $subject = new \Illuminate\Support\HtmlString(implode('\\\\', array_map(fn ($lin
 @if($letter['signature'])
 \vspace{11mm}
 {{ $e($letter['signature']) }}\par
+@elseif($letter['signature_image'])
+\vspace{7mm}
+\raisebox{ {{ (int) $letter['signature_baseline_mm'] }}mm }{\includegraphics[width={{ (int) $letter['signature_width_mm'] }}mm,height=16mm,keepaspectratio]{ {{ $e($letter['signature_image']) }} }}\par
+{{ $e($letter['sender']) }}\par
 @endif
 \end{document}
