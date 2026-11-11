@@ -434,6 +434,7 @@ class ApplicationPdfWorkflowTest extends TestCase
         $normalizedExpiry = Carbon::parse($expiresAt)
             ->setTimezone(config('app.timezone'))
             ->toDateTimeString();
+        $apiExpiry = Carbon::parse($normalizedExpiry, config('app.timezone'))->toIso8601String();
         $first = $this->postJson('/cp/applications/'.$id.'/recipient-grants', [
             'label' => 'TUHH Personalabteilung',
             'expires_at' => $expiresAt,
@@ -441,7 +442,8 @@ class ApplicationPdfWorkflowTest extends TestCase
         $firstToken = explode('#application=', $first->json('url'))[1];
         $firstId = $first->json('grant.id');
         $this->assertSame('TUHH Personalabteilung', $first->json('grant.label'));
-        $this->assertSame($normalizedExpiry, $first->json('grant.expires_at'));
+        $this->assertSame($apiExpiry, $first->json('grant.expires_at'));
+        $this->assertMatchesRegularExpression('/(?:Z|[+-]\d{2}:\d{2})$/', $first->json('grant.expires_at'));
         $this->assertSame($normalizedExpiry, DB::table('application_recipient_grants')->where('id', $firstId)->value('expires_at'));
         $this->assertMatchesRegularExpression('/^[A-Za-z0-9]{64}$/', $firstToken);
         $this->assertStringContainsString('/applications/'.$id.'#application=', $first->json('url'));
@@ -461,6 +463,7 @@ class ApplicationPdfWorkflowTest extends TestCase
         $this->assertStringNotContainsString($secondToken, $management->getContent());
         $this->assertStringNotContainsString('token_hash', $management->getContent());
         $this->assertSame(2, count($management->json('grants')));
+        $this->assertSame($apiExpiry, collect($management->json('grants'))->firstWhere('id', $firstId)['expires_at']);
 
         $this->app['auth']->logout();
         $this->postJson('/applications/token-exchange', ['id' => $id, 'token' => $firstToken])->assertOk();

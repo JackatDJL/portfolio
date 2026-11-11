@@ -66,7 +66,11 @@
                 notesWrap.hidden = false;
             }
         } catch (error) {
-            if (isCurrent()) summary.textContent = error.message;
+            if (isCurrent()) {
+                summary.textContent = error.message;
+                if (latest) latest.textContent = 'Nicht verfügbar.';
+                if (followUp) followUp.textContent = 'Nicht verfügbar.';
+            }
         }
 
         if (!isCurrent() || !grants) return;
@@ -85,7 +89,8 @@
                 heading.className = 'app-cp-grant-heading';
                 const label = document.createElement('strong');
                 label.textContent = grant.label;
-                const expired = grant.expires_at && new Date(grant.expires_at) < new Date();
+                const expiryTime = grant.expires_at ? Date.parse(grant.expires_at) : null;
+                const expired = expiryTime !== null && Number.isFinite(expiryTime) && expiryTime < Date.now();
                 const state = document.createElement('span');
                 state.className = 'app-cp-grant-state';
                 state.dataset.state = grant.revoked_at ? 'revoked' : expired ? 'expired' : 'active';

@@ -38,8 +38,8 @@ final class ApplicationCapabilities
             'id' => $grantId,
             'token' => $token,
             'label' => $label,
-            'created_at' => $now->toDateTimeString(),
-            'expires_at' => $expiresAt,
+            'created_at' => $now->toIso8601String(),
+            'expires_at' => self::isoTimestamp($expiresAt),
             'last_accessed_at' => null,
             'revoked_at' => null,
         ];
@@ -78,12 +78,20 @@ final class ApplicationCapabilities
                 return [
                     'id' => $grant->id,
                     'label' => $label,
-                    'created_at' => $grant->created_at,
-                    'expires_at' => $grant->expires_at,
-                    'last_accessed_at' => $grant->last_accessed_at,
-                    'revoked_at' => $grant->revoked_at,
+                    'created_at' => self::isoTimestamp($grant->created_at),
+                    'expires_at' => self::isoTimestamp($grant->expires_at),
+                    'last_accessed_at' => self::isoTimestamp($grant->last_accessed_at),
+                    'revoked_at' => self::isoTimestamp($grant->revoked_at),
                 ];
             })->all();
+    }
+
+    /** Return database timestamps with an explicit offset for browser-safe comparisons. */
+    private static function isoTimestamp(?string $timestamp): ?string
+    {
+        return $timestamp === null
+            ? null
+            : Carbon::parse($timestamp, config('app.timezone'))->toIso8601String();
     }
 
     public static function allowsHash(string $id, string $hash): bool

@@ -6,11 +6,28 @@
     const context = canvas.getContext('2d', { willReadFrequently: true });
     const status = root.querySelector('[data-handwritten-status]');
     const preview = root.querySelector('[data-handwritten-preview]');
+    const previewStatus = root.querySelector('[data-handwritten-preview-status]');
+    const saveButton = root.querySelector('[data-handwritten-save]');
     const removeBackground = root.querySelector('[data-handwritten-remove-background]');
     let strokes = [];
     let activeStroke = null;
     let savedSource = false;
     let uploadedImage = false;
+    let previewDataUrl = null;
+
+    const markPreviewStale = message => {
+        previewDataUrl = null;
+        saveButton.disabled = true;
+        previewStatus.textContent = message;
+        previewStatus.dataset.state = 'stale';
+    };
+
+    const markPreviewCurrent = image => {
+        previewDataUrl = image;
+        saveButton.disabled = false;
+        previewStatus.textContent = 'Vorschau entspricht den aktuellen Einstellungen.';
+        previewStatus.dataset.state = 'current';
+    };
 
     root.querySelectorAll('button').forEach(button => button.classList.add('app-cp-button'));
 
@@ -22,6 +39,7 @@
         strokes = [];
         uploadedImage = false;
         preview.replaceChildren();
+        markPreviewStale('Vorschau veraltet. Erstelle nach einer Änderung eine neue Vorschau.');
     };
 
     const coordinates = event => {
@@ -34,6 +52,7 @@
 
     canvas.addEventListener('pointerdown', event => {
         event.preventDefault();
+        markPreviewStale('Zeichnung geändert. Erstelle die Vorschau erneut, bevor du speicherst.');
         canvas.setPointerCapture(event.pointerId);
         uploadedImage = false;
         activeStroke = [coordinates(event)];
@@ -125,37 +144,56 @@
             context.drawImage(image, (canvas.width - width) / 2, (canvas.height - height) / 2, width, height);
             uploadedImage = true;
             URL.revokeObjectURL(image.src);
+            markPreviewStale('Bild geändert. Erstelle die Vorschau erneut, bevor du speicherst.');
             status.textContent = 'Bild geladen. Beim Zuschneiden werden leere Ränder entfernt.';
         };
         image.onerror = () => { status.textContent = 'Das Bild konnte nicht geöffnet werden.'; };
         image.src = URL.createObjectURL(file);
     });
 
-    root.querySelector('[data-handwritten-crop]').addEventListener('click', () => {
-        try {
-            showPreview(processCanvas(true));
-            status.textContent = 'Vorschau zugeschnitten. Speichern übernimmt die Änderung.';
-        } catch (error) { status.textContent = error.message; }
+    removeBackground.addEventListener('change', () => {
+        markPreviewStale('Hintergrundoption geändert. Erstelle die Vorschau erneut, bevor du speicherst.');
     });
 
-    root.querySelector('[data-handwritten-save]').addEventListener('click', async event => {
+    root.querySelector('[data-handwritten-crop]').addEventListener('click', () => {
+        try {
+            previewDataUrl = processCanvas(true);
+            showPreview(previewDataUrl);
+            markPreviewCurrent(previewDataUrl);
+            status.textContent = 'Vorschau zugeschnitten. Speichern übernimmt die Änderung.';
+        } catch (error) {
+            markPreviewStale('Keine aktuelle Vorschau. Zeichne oder lade eine Signatur und erstelle die Vorschau erneut.');
+            status.textContent = error.message;
+        }
+    });
+
+    saveButton.addEventListener('click', async event => {
         const button = event.currentTarget;
+        if (!previewDataUrl) {
+            status.textContent = 'Erstelle zuerst eine aktuelle Vorschau.';
+            return;
+        }
         if (savedSource && !window.confirm('Die gespeicherte private Signaturvorlage ersetzen?')) return;
+        const imageToSave = previewDataUrl;
         button.disabled = true;
         try {
-            const image = processCanvas(true);
             const response = await fetch(endpoint(), {
                 method: 'POST',
                 headers: { Accept: 'application/json', 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf() },
-                body: JSON.stringify({ image, strokes: uploadedImage ? [] : strokes }),
+                body: JSON.stringify({ image: imageToSave, strokes: uploadedImage ? [] : strokes }),
             });
             const data = await response.json();
             if (!response.ok) throw new Error(data.message || Object.values(data.errors || {}).flat().join(' ') || 'Speichern fehlgeschlagen.');
             savedSource = true;
-            showPreview(image);
-            status.textContent = 'Private Signaturvorlage verschlüsselt gespeichert.';
+            if (previewDataUrl === imageToSave) {
+                showPreview(imageToSave);
+                markPreviewCurrent(imageToSave);
+                status.textContent = 'Private Signaturvorlage verschlüsselt gespeichert.';
+            } else {
+                status.textContent = 'Die Vorschau wurde gespeichert. Eine zwischenzeitliche Änderung ist noch nicht gespeichert; erstelle dafür eine neue Vorschau.';
+            }
         } catch (error) { status.textContent = error.message; }
-        finally { button.disabled = false; }
+        finally { button.disabled = !previewDataUrl; }
     });
 
     root.querySelector('[data-handwritten-delete]').addEventListener('click', async event => {
@@ -186,6 +224,8 @@
                 context.drawImage(image, (canvas.width - width) / 2, (canvas.height - height) / 2, width, height);
                 URL.revokeObjectURL(image.src);
                 showPreview(data.source.image);
+                strokes = Array.isArray(data.source.strokes) ? data.source.strokes : [];
+                markPreviewCurrent(data.source.image);
                 status.textContent = 'Gespeicherte private Signatur geladen.';
             };
             image.src = data.source.image;

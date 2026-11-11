@@ -134,13 +134,14 @@ tabs:
                   <h4>Vorschau</h4>
                   <p>Noch keine Vorschau vorhanden.</p>
                 </div>
+                <p class="app-cp-status" role="status" data-handwritten-preview-status>Erstelle zuerst eine Vorschau, bevor du speicherst.</p>
               </section>
 
               <section class="app-handwriting-panel" aria-labelledby="handwriting-save-title">
                 <h3 id="handwriting-save-title">3. Private Vorlage</h3>
                 <p>Speichern ersetzt die wiederverwendbare private Vorlage. Sie wird verschlüsselt unter <code>storage/app/private</code> abgelegt. Zum Entfernen wählst du Vorlage löschen.</p>
                 <div class="app-cp-button-row">
-                  <button class="app-cp-button app-cp-button-primary" type="button" data-handwritten-save>Private Handschrift speichern</button>
+                  <button class="app-cp-button app-cp-button-primary" type="button" data-handwritten-save disabled>Private Handschrift speichern</button>
                   <button class="app-cp-button app-cp-button-danger" type="button" data-handwritten-delete>Vorlage löschen</button>
                 </div>
                 <p class="app-cp-status" role="status" data-handwritten-status>Private Signaturvorlage wird geladen …</p>
