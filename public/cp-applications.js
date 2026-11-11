@@ -7,10 +7,19 @@
     };
     const csrf = () => document.querySelector('meta[name="csrf-token"]')?.content || '';
     const showDate = value => value ? new Date(value).toLocaleString('de-DE') : '–';
+    const showDateOnly = value => {
+        if (!value) return '–';
+        const date = new Date(value + 'T12:00:00');
+        return Number.isNaN(date.getTime()) ? value : date.toLocaleDateString('de-DE', { day: '2-digit', month: 'long', year: 'numeric' });
+    };
 
     let overviewRequest = 0;
     async function loadOverview(base) {
         const summary = document.querySelector('[data-application-summary]');
+        const latest = document.querySelector('[data-application-latest]');
+        const followUp = document.querySelector('[data-application-follow-up]');
+        const notesWrap = document.querySelector('[data-application-notes-wrap]');
+        const notes = document.querySelector('[data-application-notes]');
         const grants = document.querySelector('[data-application-grants]');
         if (!summary || !base || base !== appBase()) return;
         const request = ++overviewRequest;
@@ -22,20 +31,40 @@
             if (!response.ok) throw new Error('Übersicht nicht verfügbar.');
             const data = await response.json();
             if (!isCurrent()) return;
-            const statusLabels = { draft: 'Entwurf', ready: 'Bereit', sent: 'Versendet', interview: 'Gespräch', accepted: 'Zusage', rejected: 'Absage', withdrawn: 'Zurückgezogen' };
-            const heading = document.createElement('h2');
-            heading.textContent = [data.organisation, data.position].filter(Boolean).join(' · ') || 'Bewerbung';
-            const status = document.createElement('p');
-            status.textContent = 'Status: ' + (statusLabels[data.status] || 'Entwurf');
-            const latest = document.createElement('p');
-            latest.textContent = data.latest_correspondence
-                ? 'Letzte Korrespondenz: ' + data.latest_correspondence.date + ' · ' + data.latest_correspondence.direction + (data.latest_correspondence.summary ? ' · ' + data.latest_correspondence.summary : '')
-                : 'Letzte Korrespondenz: keine erfasst';
-            const followUp = document.createElement('p');
-            followUp.textContent = 'Nächste Wiedervorlage: ' + (data.follow_up_date || 'keine geplant');
-            const notes = document.createElement('p');
-            notes.textContent = 'Private Notizen: ' + (data.notes || 'keine');
-            summary.replaceChildren(heading, status, latest, followUp, notes);
+            const title = document.createElement('h4');
+            title.className = 'app-cp-organisation';
+            title.textContent = data.organisation || 'Organisation noch nicht eingetragen';
+            const position = document.createElement('p');
+            position.className = 'app-cp-position';
+            position.textContent = data.position || 'Position noch nicht eingetragen';
+            const facts = document.createElement('dl');
+            facts.className = 'app-cp-facts';
+            const addFact = (label, value) => {
+                if (!value) return;
+                const group = document.createElement('div');
+                const term = document.createElement('dt'); term.textContent = label;
+                const detail = document.createElement('dd'); detail.textContent = value;
+                group.append(term, detail); facts.append(group);
+            };
+            addFact('Interne Referenz', data.reference);
+            addFact('Ansprechperson', data.recipient_name);
+            addFact('Bewerbungszeitraum', data.period_start || data.period_end
+                ? [showDateOnly(data.period_start), showDateOnly(data.period_end)].filter(value => value !== '–').join(' bis ')
+                : null);
+            addFact('Bewerbungsdatum', data.application_date ? showDateOnly(data.application_date) + (data.has_date_override ? ' · manuell festgelegt' : '') : null);
+            addFact('Ort', data.location);
+            addFact('Bewerbungsjahr', data.year ? String(data.year) : null);
+            summary.replaceChildren(title, position, facts);
+            if (latest) latest.textContent = data.latest_correspondence
+                ? [showDateOnly(data.latest_correspondence.date), data.latest_correspondence.direction, data.latest_correspondence.summary].filter(Boolean).join(' · ')
+                : 'Noch keine Korrespondenz erfasst.';
+            if (followUp) followUp.textContent = data.follow_up_date
+                ? showDateOnly(data.follow_up_date)
+                : data.follow_up_status === 'planned' ? 'Geplant, aber noch ohne Datum.' : 'Keine Wiedervorlage geplant.';
+            if (notesWrap && notes) {
+                notes.textContent = data.notes || 'Keine privaten Notizen erfasst.';
+                notesWrap.hidden = false;
+            }
         } catch (error) {
             if (isCurrent()) summary.textContent = error.message;
         }
@@ -49,23 +78,53 @@
             grants.replaceChildren();
             for (const grant of data.grants) {
                 const row = document.createElement('div');
-                const details = document.createElement('p');
-                const state = grant.revoked_at ? 'widerrufen' : (grant.expires_at && new Date(grant.expires_at) < new Date() ? 'abgelaufen' : 'aktiv');
-                details.textContent = grant.label + ' · ' + state + ' · erstellt ' + showDate(grant.created_at) + ' · zuletzt freigeschaltet ' + showDate(grant.last_accessed_at) + (grant.expires_at ? ' · Ablauf ' + showDate(grant.expires_at) : '');
-                row.append(details);
+                row.className = 'app-cp-grant';
+                const info = document.createElement('div');
+                info.className = 'app-cp-grant-info';
+                const heading = document.createElement('div');
+                heading.className = 'app-cp-grant-heading';
+                const label = document.createElement('strong');
+                label.textContent = grant.label;
+                const expired = grant.expires_at && new Date(grant.expires_at) < new Date();
+                const state = document.createElement('span');
+                state.className = 'app-cp-grant-state';
+                state.dataset.state = grant.revoked_at ? 'revoked' : expired ? 'expired' : 'active';
+                state.textContent = grant.revoked_at ? 'Widerrufen' : expired ? 'Abgelaufen' : 'Aktiv';
+                heading.append(label, state);
+                const meta = document.createElement('dl');
+                meta.className = 'app-cp-grant-meta';
+                const addGrantFact = (termText, value) => {
+                    const item = document.createElement('div');
+                    const term = document.createElement('dt'); term.textContent = termText;
+                    const detail = document.createElement('dd'); detail.textContent = value;
+                    item.append(term, detail); meta.append(item);
+                };
+                addGrantFact('Erstellt', showDate(grant.created_at));
+                addGrantFact('Zuletzt geöffnet', grant.last_accessed_at ? showDate(grant.last_accessed_at) : 'Noch nicht geöffnet');
+                if (grant.expires_at) addGrantFact('Läuft ab', showDate(grant.expires_at));
+                info.append(heading, meta);
+                row.append(info);
                 if (!grant.revoked_at) {
                     const revoke = document.createElement('button');
                     revoke.type = 'button';
-                    revoke.textContent = 'Diesen Zugriff widerrufen';
+                    revoke.className = 'app-cp-button app-cp-button-danger';
+                    revoke.textContent = 'Diesen Link widerrufen';
                     revoke.dataset.applicationGrantRevoke = grant.id;
                     row.append(revoke);
                 }
                 grants.append(row);
             }
+            if (!data.grants.length) {
+                const empty = document.createElement('p');
+                empty.className = 'app-cp-empty';
+                empty.textContent = 'Es gibt noch keine Empfängerlinks.';
+                grants.append(empty);
+            }
             if (data.grants.some(grant => !grant.revoked_at)) {
                 const revokeAll = document.createElement('button');
                 revokeAll.type = 'button';
-                revokeAll.textContent = 'Alle Empfängerzugriffe widerrufen';
+                revokeAll.className = 'app-cp-button app-cp-button-danger';
+                revokeAll.textContent = 'Alle aktiven Links widerrufen';
                 revokeAll.dataset.applicationGrantRevokeAll = '1';
                 grants.append(revokeAll);
             }
@@ -187,6 +246,8 @@
                 field.value = data.url;
                 labelField.hidden = false;
                 copy.hidden = false;
+                copy.closest('.app-cp-new-link')?.removeAttribute('hidden');
+                field.focus();
                 status.textContent = 'Der Link wird nur jetzt angezeigt. Kopiere und verwahre ihn sicher. Weitere Zugriffe widerrufen diesen Link nicht.';
                 await loadOverview(base);
             } catch (error) { status.textContent = error.message; }
@@ -252,13 +313,11 @@
     });
 })();
 
-// Use the same Statamic 6 button utilities as the existing CV profile actions.
+// Keep actions visually consistent with the Statamic CP while giving primary and
+// destructive actions a clear hierarchy in this custom HTML field.
 (() => {
-    const decorate = () => document.querySelectorAll('[data-application-actions] button').forEach(button => {
-        button.className = 'relative inline-flex items-center justify-center whitespace-nowrap font-medium antialiased cursor-pointer no-underline disabled:opacity-60 disabled:cursor-not-allowed bg-linear-to-b from-white to-gray-50 hover:to-gray-100 text-gray-900 border border-gray-300 shadow-ui-sm dark:from-gray-850 dark:to-gray-900 dark:border-gray-700/80 dark:text-gray-300 px-4 h-10 text-sm gap-2 rounded-lg';
-    });
-    decorate();
-    new MutationObserver(decorate).observe(document.documentElement, { childList: true, subtree: true });
+    document.querySelectorAll('[data-application-actions] button:not([class*="app-cp-button"])').forEach(button => button.classList.add('app-cp-button'));
+    document.querySelectorAll('[data-application-actions] button[data-signature-action="prepare"]').forEach(button => button.classList.add('app-cp-button-primary'));
 })();
 
 // Private, explicit signature operations. No action runs on publish, preview or autosave.
@@ -313,7 +372,8 @@ document.addEventListener('click', async event => {
                 row.append(report);
             }
             const add = (action, text, signed = false) => {
-                const control = document.createElement('button'); control.type = 'button'; control.textContent = text;
+                const control = document.createElement('button'); control.type = 'button'; control.className = 'app-cp-button'; control.textContent = text;
+                if (action === 'activate') control.classList.add('app-cp-button-primary');
                 Object.assign(control.dataset, { signatureAction: action, version: item.id, sha256: item.sha256 });
                 if (signed) control.dataset.signed = '1';
                 row.append(control);

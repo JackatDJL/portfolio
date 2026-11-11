@@ -12,9 +12,7 @@
     let savedSource = false;
     let uploadedImage = false;
 
-    root.querySelectorAll('button').forEach(button => {
-        button.className = 'relative inline-flex items-center justify-center whitespace-nowrap font-medium antialiased cursor-pointer no-underline disabled:opacity-60 disabled:cursor-not-allowed bg-linear-to-b from-white to-gray-50 hover:to-gray-100 text-gray-900 border border-gray-300 shadow-ui-sm dark:from-gray-850 dark:to-gray-900 dark:border-gray-700/80 dark:text-gray-300 px-4 h-10 text-sm gap-2 rounded-lg';
-    });
+    root.querySelectorAll('button').forEach(button => button.classList.add('app-cp-button'));
 
     const csrf = () => document.querySelector('meta[name="csrf-token"]')?.content || '';
     const endpoint = () => location.pathname.split('/globals/')[0] + '/applications/handwritten-signature';
@@ -97,14 +95,18 @@
     const showPreview = dataUrl => {
         const image = document.createElement('img');
         image.src = dataUrl;
-        image.alt = 'Private Signaturvorschau';
-        image.style.cssText = 'display:block;max-width:380px;max-height:120px;background:#fff;border:1px solid #d1d5db;padding:8px';
-        preview.replaceChildren(image);
+        image.alt = 'Vorschau der privaten Handschrift';
+        let heading = preview.querySelector('h4');
+        if (!heading) {
+            heading = document.createElement('h4');
+            heading.textContent = 'Vorschau';
+        }
+        preview.replaceChildren(heading, image);
     };
 
     root.querySelector('[data-handwritten-clear]').addEventListener('click', () => {
         clearCanvas();
-        status.textContent = 'Zeichenfläche geleert. Die gespeicherte Vorlage bleibt bis zum Speichern unverändert.';
+        status.textContent = 'Aktuelle Zeichnung geleert. Eine gespeicherte Vorlage bleibt bis zum Speichern unverändert.';
     });
 
     root.querySelector('[data-handwritten-upload]').addEventListener('change', event => {

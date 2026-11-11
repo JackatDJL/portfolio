@@ -1,0 +1,534 @@
+.app-cp-workflow,
+.app-handwriting {
+    display: grid;
+    gap: 1rem;
+    max-width: 72rem;
+    color: inherit;
+    line-height: 1.5;
+}
+
+.app-cp-workflow *,
+.app-handwriting * {
+    box-sizing: border-box;
+}
+
+.app-cp-workflow [hidden],
+.app-handwriting [hidden] {
+    display: none !important;
+}
+
+.app-cp-card,
+.app-handwriting-panel {
+    min-width: 0;
+    padding: 1.125rem;
+    border: 1px solid rgb(127 127 127 / 25%);
+    border-radius: 0.75rem;
+    background: rgb(127 127 127 / 4%);
+}
+
+.app-cp-section-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.app-cp-section-heading h3,
+.app-cp-detail h4,
+.app-cp-notes h4,
+.app-handwriting-panel h3 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 650;
+    line-height: 1.35;
+}
+
+.app-cp-section-heading p,
+.app-cp-workflow .app-cp-detail p,
+.app-cp-notes p,
+.app-cp-advanced > p,
+.app-cp-new-link > p,
+.app-handwriting-panel > p {
+    margin: 0.375rem 0 0;
+    max-width: 68ch;
+    color: inherit;
+    opacity: 0.78;
+}
+
+.app-cp-summary {
+    padding-bottom: 1rem;
+}
+
+.app-cp-organisation {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 650;
+    line-height: 1.3;
+}
+
+.app-cp-position {
+    margin: 0.25rem 0 0;
+    font-size: 1.025rem;
+}
+
+.app-cp-facts {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.875rem 1.5rem;
+    margin: 1rem 0 0;
+}
+
+.app-cp-facts > div {
+    min-width: 0;
+}
+
+.app-cp-facts dt {
+    margin: 0;
+    color: inherit;
+    font-size: 0.8125rem;
+    opacity: 0.72;
+}
+
+.app-cp-facts dd {
+    margin: 0.125rem 0 0;
+    overflow-wrap: anywhere;
+    font-weight: 550;
+}
+
+.app-cp-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+}
+
+.app-cp-overview-tools {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem 1rem;
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid rgb(127 127 127 / 20%);
+}
+
+.app-cp-overview-tools p {
+    margin: 0;
+    color: inherit;
+    font-size: 0.8125rem;
+    opacity: 0.72;
+}
+
+.app-cp-detail,
+.app-cp-notes {
+    min-width: 0;
+    padding: 0.875rem 1rem;
+    border: 1px solid rgb(127 127 127 / 20%);
+    border-radius: 0.625rem;
+    background: rgb(127 127 127 / 5%);
+}
+
+.app-cp-detail h4,
+.app-cp-notes h4 {
+    font-size: 0.875rem;
+}
+
+.app-cp-detail p,
+.app-cp-notes p {
+    overflow-wrap: anywhere;
+}
+
+.app-cp-notes {
+    margin-top: 0.75rem;
+    border-left: 3px solid #4f46e5;
+}
+
+.app-cp-button-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.625rem;
+}
+
+.app-cp-button {
+    display: inline-flex;
+    min-height: 2.625rem;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.625rem 0.875rem;
+    border: 1px solid rgb(127 127 127 / 34%);
+    border-radius: 0.5rem;
+    background: rgb(127 127 127 / 8%);
+    color: inherit;
+    font: inherit;
+    font-size: 0.875rem;
+    font-weight: 550;
+    line-height: 1.2;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 120ms ease, border-color 120ms ease;
+}
+
+.app-cp-button:hover:not(:disabled) {
+    background: rgb(127 127 127 / 16%);
+}
+
+.app-cp-button:focus-visible,
+.app-cp-control:focus-visible,
+.app-handwriting-canvas:focus-visible {
+    outline: 2px solid #6366f1;
+    outline-offset: 2px;
+}
+
+.app-cp-button:disabled {
+    opacity: 0.58;
+    cursor: not-allowed;
+}
+
+.app-cp-button-primary {
+    border-color: #4f46e5;
+    background: #4f46e5;
+    color: #fff;
+}
+
+.app-cp-button-primary:hover:not(:disabled) {
+    background: #4338ca;
+}
+
+.app-cp-button-danger {
+    border-color: rgb(220 38 38 / 45%);
+    color: #dc2626;
+}
+
+.app-cp-button-danger:hover:not(:disabled) {
+    background: rgb(220 38 38 / 9%);
+}
+
+.app-cp-access-form {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    margin-bottom: 0.875rem;
+}
+
+.app-cp-field {
+    display: grid;
+    min-width: 0;
+    gap: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 550;
+}
+
+.app-cp-field small,
+.app-cp-muted {
+    color: inherit;
+    font-size: 0.8125rem;
+    font-weight: 400;
+    opacity: 0.72;
+}
+
+.app-cp-control {
+    width: 100%;
+    min-height: 2.625rem;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid rgb(127 127 127 / 38%);
+    border-radius: 0.5rem;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    color-scheme: light dark;
+}
+
+.app-cp-new-link {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    gap: 0.75rem;
+    margin-top: 1rem;
+    padding: 1rem;
+    border: 1px dashed rgb(79 70 229 / 60%);
+    border-radius: 0.625rem;
+    background: rgb(79 70 229 / 6%);
+}
+
+.app-cp-new-link > p {
+    grid-column: 1 / -1;
+    margin-top: 0;
+}
+
+.app-cp-grants {
+    display: grid;
+    gap: 0.625rem;
+    margin-top: 1rem;
+}
+
+.app-cp-grant {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem 1rem;
+    padding: 0.875rem 1rem;
+    border: 1px solid rgb(127 127 127 / 22%);
+    border-radius: 0.625rem;
+}
+
+.app-cp-grant-info {
+    flex: 1 1 24rem;
+    min-width: 0;
+}
+
+.app-cp-grant-heading {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 0.75rem;
+}
+
+.app-cp-grant-heading strong {
+    overflow-wrap: anywhere;
+}
+
+.app-cp-grant-state {
+    padding: 0.125rem 0.5rem;
+    border-radius: 999px;
+    background: rgb(127 127 127 / 12%);
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.app-cp-grant-state[data-state="active"] {
+    background: rgb(22 163 74 / 12%);
+    color: #15803d;
+}
+
+.app-cp-grant-state[data-state="expired"] {
+    background: rgb(220 38 38 / 10%);
+    color: #b91c1c;
+}
+
+.app-cp-grant-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 1.25rem;
+    margin: 0.625rem 0 0;
+}
+
+.app-cp-grant-meta dt {
+    margin: 0;
+    font-size: 0.75rem;
+    opacity: 0.68;
+}
+
+.app-cp-grant-meta dd {
+    margin: 0.125rem 0 0;
+    font-size: 0.8125rem;
+}
+
+.dark .app-cp-grant-state[data-state="active"] {
+    color: #4ade80;
+}
+
+.dark .app-cp-grant-state[data-state="expired"] {
+    color: #f87171;
+}
+
+.app-cp-empty {
+    margin: 0;
+    padding: 0.75rem 0;
+    color: inherit;
+    opacity: 0.72;
+}
+
+.app-cp-advanced > summary {
+    cursor: pointer;
+    font-weight: 650;
+}
+
+.app-cp-advanced[open] > summary {
+    margin-bottom: 0.75rem;
+}
+
+.app-cp-signature-versions {
+    display: grid;
+    flex: 1 0 100%;
+    gap: 0.75rem;
+    margin-top: 0.25rem;
+}
+
+.app-cp-signature-versions > div {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.875rem;
+    border: 1px solid rgb(127 127 127 / 22%);
+    border-radius: 0.625rem;
+}
+
+.app-cp-signature-versions p {
+    flex: 1 0 100%;
+    margin: 0;
+    overflow-wrap: anywhere;
+    font-size: 0.875rem;
+}
+
+.app-cp-signature-versions input[type="file"] {
+    max-width: 100%;
+    padding: 0.375rem;
+    border: 1px solid rgb(127 127 127 / 35%);
+    border-radius: 0.5rem;
+    color: inherit;
+    font: inherit;
+}
+
+.app-cp-status {
+    min-height: 1.25rem;
+    margin: 0.25rem 0 0;
+    color: inherit;
+    font-size: 0.875rem;
+}
+
+.app-cp-recommended {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 0.75rem;
+    margin: 0;
+    padding: 0.75rem 0.875rem;
+    border-left: 3px solid #4f46e5;
+    border-radius: 0 0.5rem 0.5rem 0;
+    background: rgb(79 70 229 / 7%);
+    font-size: 0.875rem;
+}
+
+.app-cp-recommended span {
+    opacity: 0.82;
+}
+
+.app-handwriting-panel {
+    display: grid;
+    gap: 0.875rem;
+}
+
+.app-handwriting-instructions {
+    margin: 0;
+}
+
+.app-handwriting-canvas-wrap {
+    overflow: hidden;
+    border: 1px solid rgb(127 127 127 / 35%);
+    border-radius: 0.75rem;
+    background: #fff;
+}
+
+.app-handwriting-canvas {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: 18rem;
+    touch-action: none;
+    cursor: crosshair;
+}
+
+.app-handwriting-tools {
+    display: grid;
+    grid-template-columns: minmax(15rem, 1fr) minmax(15rem, 1fr);
+    align-items: end;
+    gap: 0.75rem;
+}
+
+.app-handwriting-file {
+    display: grid;
+    gap: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 550;
+}
+
+.app-handwriting-file input[type="file"] {
+    width: 100%;
+    min-height: 2.625rem;
+    padding: 0.375rem;
+    border: 1px solid rgb(127 127 127 / 35%);
+    border-radius: 0.5rem;
+    background: rgb(127 127 127 / 5%);
+    color: inherit;
+    font: inherit;
+    font-weight: 400;
+}
+
+.app-handwriting-option {
+    display: flex;
+    min-height: 2.625rem;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+}
+
+.app-handwriting-option input {
+    width: 1rem;
+    height: 1rem;
+}
+
+.app-handwriting-preview {
+    display: grid;
+    gap: 0.5rem;
+    padding: 0.875rem;
+    border: 1px solid rgb(127 127 127 / 22%);
+    border-radius: 0.625rem;
+    background: rgb(127 127 127 / 5%);
+}
+
+.app-handwriting-preview h4 {
+    margin: 0;
+    font-size: 0.875rem;
+}
+
+.app-handwriting-preview img {
+    display: block;
+    max-width: min(100%, 32rem);
+    max-height: 9rem;
+    padding: 0.75rem;
+    border: 1px solid rgb(127 127 127 / 25%);
+    border-radius: 0.5rem;
+    background: #fff;
+}
+
+.app-handwriting-note {
+    margin: 0;
+    padding: 0.875rem 1rem;
+    border-left: 3px solid #4f46e5;
+    border-radius: 0 0.5rem 0.5rem 0;
+    background: rgb(79 70 229 / 7%);
+    font-size: 0.875rem;
+}
+
+@media (max-width: 720px) {
+    .app-cp-card,
+    .app-handwriting-panel {
+        padding: 0.875rem;
+    }
+
+    .app-cp-facts,
+    .app-cp-detail-grid,
+    .app-cp-access-form,
+    .app-handwriting-tools {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .app-cp-new-link {
+        grid-template-columns: minmax(0, 1fr);
+        align-items: stretch;
+    }
+
+    .app-cp-button-row > .app-cp-button {
+        flex: 1 1 14rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .app-cp-button {
+        transition: none;
+    }
+}

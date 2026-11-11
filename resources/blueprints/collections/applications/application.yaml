@@ -30,8 +30,109 @@ tabs:
       - handle: workflow
         field:
           type: html
-          display: Aktionen
-          html: '<div data-application-overview><div data-application-summary aria-live="polite">Bewerbungsübersicht wird geladen …</div><p><strong>Empfohlener Ablauf:</strong> Speichern → Vorschau → Export → selbst versenden.</p><section data-application-actions><h3>Vorschau</h3><p>Die Vorschau wird frisch erzeugt und bleibt privat.</p><button type="button" data-application-preview>Anschreiben und Bewerbung prüfen</button><button type="button" data-application-cv>Bewerbungs-CV als PDF prüfen</button><button type="button" data-reset-application-date>Datum auf heute setzen</button><h3>Download / Export</h3><p>Der Export lädt die gespeicherte, vollständige Bewerbungs-PDF herunter. Der Versand erfolgt manuell.</p><button type="button" data-application-export>Vollständige Bewerbung herunterladen</button><h3>Empfängerzugriff</h3><p>Ein privater PDF-Export ist eine Datei. Ein Empfängerlink ist ein separat widerrufbarer Zugang, über den die aktuelle PDF geöffnet werden kann. Es wird keine E-Mail versendet.</p><label>Bezeichnung für den Link <input type="text" maxlength="100" data-application-grant-label value="Empfänger"></label><label>Ablaufdatum (optional) <input type="datetime-local" data-application-grant-expiry></label><button type="button" data-application-grant-create>Empfängerzugriff erstellen</button><div data-application-grants aria-live="polite"></div><label hidden data-application-new-link-label>Einmalig angezeigter Link <input type="url" readonly data-application-recipient-link></label><button type="button" hidden data-application-copy-link>Link kopieren</button><p role="status" data-application-status></p></section><details data-application-actions><summary>Elektronische Signaturen (erweitert)</summary><p>Ein extern signiertes Dokument wird getrennt geprüft. Eine visuelle Signatur ist keine QES; es erfolgt keine automatische Signierung.</p><div data-application-signatures><button type="button" data-signature-action="status">Status laden</button> <button type="button" data-signature-action="prepare">Endgültige PDF einfrieren</button> <button type="button" data-signature-action="unsigned">Unsigniert ausliefern</button><div data-signature-versions></div><p role="status" data-signature-status></p></div></details></div>'
+          display: Bewerbungsübersicht und Aktionen
+          html: |
+            <div class="app-cp-workflow" data-application-overview data-application-actions>
+              <p class="app-cp-recommended"><strong>Empfohlener Ablauf</strong><span>Speichern → Vorschau → Export → selbst versenden</span></p>
+              <section class="app-cp-card" aria-labelledby="application-overview-title">
+                <div class="app-cp-section-heading">
+                  <div>
+                    <h3 id="application-overview-title">Bewerbung im Überblick</h3>
+                    <p>Organisation, Stelle und interne Referenz.</p>
+                  </div>
+                </div>
+                <div class="app-cp-summary" data-application-summary aria-live="polite">Bewerbungsübersicht wird geladen …</div>
+                <div class="app-cp-detail-grid">
+                  <section class="app-cp-detail" aria-labelledby="application-correspondence-title">
+                    <h4 id="application-correspondence-title">Letzte Korrespondenz</h4>
+                    <p data-application-latest>Wird geladen …</p>
+                  </section>
+                  <section class="app-cp-detail" aria-labelledby="application-follow-up-title">
+                    <h4 id="application-follow-up-title">Nächste Wiedervorlage</h4>
+                    <p data-application-follow-up>Wird geladen …</p>
+                  </section>
+                </div>
+                <div class="app-cp-overview-tools">
+                  <p>Setzt das gespeicherte Bewerbungsdatum auf heute und entfernt eine manuelle Datumsüberschreibung.</p>
+                  <button type="button" class="app-cp-button" data-reset-application-date>Datum auf heute setzen</button>
+                </div>
+                <section class="app-cp-notes" data-application-notes-wrap hidden>
+                  <h4>Private Notizen</h4>
+                  <p data-application-notes></p>
+                </section>
+              </section>
+
+              <section class="app-cp-card" aria-labelledby="application-preview-title">
+                <div class="app-cp-section-heading">
+                  <div>
+                    <h3 id="application-preview-title">Vorschau</h3>
+                    <p>Die Vorschau wird frisch erzeugt und bleibt unsigniert. Prüfe die gespeicherte Bewerbung; Änderungen zuerst speichern.</p>
+                  </div>
+                </div>
+                <div class="app-cp-button-row">
+                  <button type="button" class="app-cp-button app-cp-button-primary" data-application-preview>Anschreiben und Bewerbung ansehen</button>
+                  <button type="button" class="app-cp-button" data-application-cv>Bewerbungs-CV als PDF prüfen</button>
+                </div>
+              </section>
+
+              <section class="app-cp-card" aria-labelledby="application-export-title">
+                <div class="app-cp-section-heading">
+                  <div>
+                    <h3 id="application-export-title">Download und Export</h3>
+                    <p>Der private Download lädt die vollständige PDF in der ausgewählten Auslieferung herunter. Du versendest sie selbst.</p>
+                  </div>
+                </div>
+                <div class="app-cp-button-row">
+                  <button type="button" class="app-cp-button app-cp-button-primary" data-application-export>Vollständige Bewerbung herunterladen</button>
+                </div>
+              </section>
+
+              <section class="app-cp-card" aria-labelledby="application-access-title">
+                <div class="app-cp-section-heading">
+                  <div>
+                    <h3 id="application-access-title">Empfängerzugriff</h3>
+                    <p>Ein Link öffnet die aktuelle private PDF und lässt sich später widerrufen. Er wird nicht per E-Mail verschickt. Ein Download ist dagegen eine eigenständige Datei.</p>
+                  </div>
+                </div>
+                <div class="app-cp-access-form">
+                  <label class="app-cp-field">
+                    <span>Bezeichnung für den Link</span>
+                    <input class="app-cp-control" type="text" maxlength="100" data-application-grant-label value="Empfänger">
+                    <small>Nur für deine Verwaltung. Der Empfänger sieht diese Bezeichnung nicht.</small>
+                  </label>
+                  <label class="app-cp-field">
+                    <span>Ablaufdatum und Uhrzeit <span class="app-cp-muted">(optional)</span></span>
+                    <input class="app-cp-control" type="datetime-local" data-application-grant-expiry aria-label="Ablaufdatum und Uhrzeit für den Empfängerzugriff">
+                    <small>Ohne Datum bleibt der Link aktiv, bis du ihn widerrufst.</small>
+                  </label>
+                </div>
+                <div class="app-cp-button-row">
+                  <button type="button" class="app-cp-button app-cp-button-primary" data-application-grant-create>Empfängerlink erstellen</button>
+                </div>
+                <div class="app-cp-grants" data-application-grants aria-live="polite"></div>
+                <div class="app-cp-new-link" hidden>
+                  <label class="app-cp-field" data-application-new-link-label>
+                    <span>Neuer Link. Nur hier einmal sichtbar.</span>
+                    <input class="app-cp-control" type="url" readonly data-application-recipient-link>
+                  </label>
+                  <button type="button" class="app-cp-button" hidden data-application-copy-link>Link kopieren</button>
+                  <p>Bewahre diesen Link sicher auf. Wenn du ihn verlierst, kannst du einen weiteren Link erstellen.</p>
+                </div>
+              </section>
+
+              <details class="app-cp-card app-cp-advanced">
+                <summary>Elektronische Signaturen</summary>
+                <p>Fortgeschrittene Verwaltung externer Signaturen. Die Vorschau bleibt unsigniert. Der Export verwendet die ausgewählte Auslieferung. Eine Grafik oder Testsignatur ist keine QES.</p>
+                <div class="app-cp-button-row" data-application-signatures>
+                  <button type="button" class="app-cp-button" data-signature-action="status">Signaturstatus laden</button>
+                  <button type="button" class="app-cp-button" data-signature-action="prepare">Endgültige PDF einfrieren</button>
+                  <button type="button" class="app-cp-button" data-signature-action="unsigned">Unsignierte PDF auswählen</button>
+                  <div class="app-cp-signature-versions" data-signature-versions></div>
+                  <p class="app-cp-status" role="status" data-signature-status></p>
+                </div>
+              </details>
+              <p class="app-cp-status" role="status" data-application-status></p>
+            </div>
           sanitize: false
   recipient:
     display: Empfänger
@@ -428,19 +529,20 @@ tabs:
               reorderable: true
 
   signature:
-    display: Unterschrift
+    display: Signatur
     sections:
     - fields:
       - handle: signature
         field:
           type: application_private_group
-          display: Unterschrift
+          display: Signatur für diese Bewerbung
           border: false
           fields:
           - handle: mode
             field:
               type: select
-              display: Unterschrift
+              display: Darstellung
+              instructions: Handschrift nutzt die private Vorlage aus Bewerbungsvorgaben. Die Auswahl wirkt auf Anschreiben und Bewerbungs-CV.
               options:
                 none: Keine
                 typed: Getippter Name
