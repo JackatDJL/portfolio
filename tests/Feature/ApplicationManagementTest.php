@@ -311,7 +311,7 @@ class ApplicationManagementTest extends TestCase
         $values['recipient']['period_start'] = '2026-02-01';
         $values['recipient']['period_end'] = '2026-01-01';
         $url = '/cp/collections/applications/entries/'.$entry->id();
-        $this->patchJson($url, $values)->assertUnprocessable();
+        $this->patchJson($url, $values)->assertUnprocessable()->assertJsonValidationErrors(['recipient.period_end']);
         $values['recipient']['period_end'] = '2026-03-01';
         $values['recipient']['organisation'] = 'UPDATED-PRIVATE-SENTINEL';
         $this->patchJson($url, $values)->assertOk();

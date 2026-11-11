@@ -16,6 +16,7 @@ use Illuminate\Session\TokenMismatchException;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Statamic\Facades\Entry;
@@ -144,6 +145,27 @@ class ApplicationPdfWorkflowTest extends TestCase
         $this->assertSame($last - 3, $bookmarkTargets['Attachment bookmark 0']);
         $this->assertSame($last, $bookmarkTargets['Attachment bookmark 1']);
         $this->assertSame(0600, fileperms($pdf) & 0777);
+    }
+
+    public function test_application_export_still_works_after_a_control_panel_edit_and_save(): void
+    {
+        $id = $this->save();
+        $entry = Entry::find($id);
+        $this->actingAs($this->user());
+        $payload = [
+            'title' => 'Edited synthetic reference',
+            'application_status' => 'draft',
+        ];
+        foreach (ApplicationData::GROUPS as $group) {
+            $payload[$group] = ApplicationData::group($entry, $group);
+        }
+        $payload['recipient']['position'] = 'Synthetic internship';
+
+        $this->patchJson('/cp/collections/applications/entries/'.$id, $payload)->assertOk();
+
+        $this->get('/cp/applications/'.$id.'/export.pdf')
+            ->assertOk()
+            ->assertHeader('Content-Type', 'application/pdf');
     }
 
     public function test_long_letter_paginates_on_a4_without_missing_closing(): void
@@ -618,6 +640,7 @@ class ApplicationPdfWorkflowTest extends TestCase
             $this->fail('Corrupt private data must fail.');
         } catch (ApplicationPdfException $exception) {
             $this->assertStringNotContainsString('INVALID-PRIVATE', $exception->getMessage());
+            $this->assertMatchesRegularExpression('/Fehlerreferenz: [a-f0-9]{12}\./', $exception->getMessage());
         } finally {
             $global->set('private_email', $original);
         }
@@ -632,6 +655,25 @@ class ApplicationPdfWorkflowTest extends TestCase
             $this->assertSame([], glob($this->fixture->root.'/cache/*/*.pdf'));
         }
         $this->assertSame([], glob($this->fixture->root.'/work/*'));
+    }
+
+    public function test_logging_failure_does_not_replace_the_redacted_pdf_exception(): void
+    {
+        $global = GlobalSet::find('cv')->inDefaultSite();
+        $original = $global->get('private_email');
+        $global->set('private_email', 'INVALID-PRIVATE-CIPHERTEXT');
+        Log::shouldReceive('error')->once()->andThrow(new \RuntimeException('log backend unavailable'));
+
+        try {
+            app(ApplicationPdfExporter::class)->render($this->fixture->entry);
+            $this->fail('The export must fail with a redacted application PDF exception.');
+        } catch (ApplicationPdfException $exception) {
+            $this->assertStringContainsString('PDF-Schritt [Datenprüfung]', $exception->getMessage());
+            $this->assertStringNotContainsString('log backend unavailable', $exception->getMessage());
+            $this->assertMatchesRegularExpression('/Fehlerreferenz: [a-f0-9]{12}\./', $exception->getMessage());
+        } finally {
+            $global->set('private_email', $original);
+        }
     }
 
     public function test_latex_injection_is_escaped_and_compile_failure_is_redacted(): void
