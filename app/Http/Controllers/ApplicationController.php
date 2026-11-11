@@ -52,9 +52,17 @@ final class ApplicationController extends Controller
             ->first();
 
         return response()->json([
+            'reference' => (string) $entry->value('title', ''),
             'status' => (string) $entry->value('application_status', 'draft'),
             'organisation' => (string) ($recipient['organisation'] ?? ''),
             'position' => (string) ($recipient['position'] ?? ''),
+            'recipient_name' => (string) ($recipient['recipient'] ?? ''),
+            'year' => $recipient['year'] ?? null,
+            'location' => (string) ($recipient['location'] ?? ''),
+            'period_start' => (string) ($recipient['period_start'] ?? ''),
+            'period_end' => (string) ($recipient['period_end'] ?? ''),
+            'application_date' => ApplicationData::date($entry),
+            'has_date_override' => ! empty($tracking['date_override']),
             'notes' => (string) ($tracking['notes'] ?? ''),
             'latest_correspondence' => $latest ? [
                 'date' => (string) $latest['date'],
@@ -64,6 +72,7 @@ final class ApplicationController extends Controller
             'follow_up_date' => ($tracking['follow_up_status'] ?? null) === 'planned'
                 ? ($tracking['follow_up_date'] ?? null)
                 : null,
+            'follow_up_status' => (string) ($tracking['follow_up_status'] ?? ''),
         ])->header('Cache-Control', 'private, no-store');
     }
 

@@ -389,9 +389,30 @@ class ApplicationManagementTest extends TestCase
     public function test_application_overview_is_superuser_only_and_contains_only_private_cp_summary_data(): void
     {
         $entry = $this->createThroughCp();
+        $recipient = ApplicationData::group($entry, 'recipient');
+        $recipient = array_merge($recipient, [
+            'recipient' => 'Private contact', 'year' => 2027, 'location' => 'Hamburg',
+            'period_start' => '2027-02-08', 'period_end' => '2027-02-19',
+        ]);
+        $tracking = ApplicationData::group($entry, 'tracking');
+        $tracking['correspondence'] = [['date' => '2026-10-20', 'direction' => 'outgoing', 'summary' => 'Private follow-up']];
+        $tracking['follow_up_status'] = 'planned';
+        $tracking['follow_up_date'] = '2026-11-17';
+        $entry->set('recipient', ApplicationData::encrypt([$recipient]));
+        $entry->set('tracking', ApplicationData::encrypt([$tracking]));
+        $entry->save();
+
         $response = $this->getJson('/cp/applications/'.$entry->id().'/summary')->assertOk()
+            ->assertJsonPath('reference', 'Test reference')
             ->assertJsonPath('organisation', 'PRIVATE-ORG-SENTINEL')
             ->assertJsonPath('position', 'Internship')
+            ->assertJsonPath('recipient_name', 'Private contact')
+            ->assertJsonPath('period_start', '2027-02-08')
+            ->assertJsonPath('period_end', '2027-02-19')
+            ->assertJsonPath('application_date', '2026-02-01')
+            ->assertJsonPath('has_date_override', true)
+            ->assertJsonPath('latest_correspondence.summary', 'Private follow-up')
+            ->assertJsonPath('follow_up_date', '2026-11-17')
             ->assertJsonPath('notes', 'PRIVATE-NOTE-SENTINEL');
         $this->assertStringContainsString('private', $response->headers->get('Cache-Control'));
         $this->assertStringContainsString('no-store', $response->headers->get('Cache-Control'));

@@ -13,6 +13,8 @@ on:
       - 'resources/blueprints/globals/**'
       - 'resources/views/partials/cv/**'
       - 'public/cp-handwritten-signature.js'
+      - 'public/cp-applications.js'
+      - 'public/cp-applications.css'
       - 'routes/**'
       - 'scripts/*application*pdf*'
       - 'scripts/application-signatures.py'

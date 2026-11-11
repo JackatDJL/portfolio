@@ -6,8 +6,9 @@ tabs:
     - fields:
       - handle: documents
         field:
-          type: application_private_grid
+          type: application_private_group
           display: Standardanlagen
+          border: false
           fields:
           - handle: items
             field:
@@ -46,23 +47,20 @@ tabs:
                   allow_uploads: true
               add_row: Dokument hinzufügen
               reorderable: true
-          mode: stacked
-          max_rows: 1
   texts:
     display: Textbausteine
     sections:
     - fields:
       - handle: text_components
         field:
-          type: application_private_grid
+          type: application_private_group
           display: Wiederverwendbare Texte
-          mode: stacked
-          max_rows: 1
+          border: false
           fields:
           - handle: items
             field:
               type: grid
-              display: Textbausteine
+              display: Verfügbare Textbausteine
               fields:
               - handle: key
                 field:
@@ -96,6 +94,58 @@ tabs:
       - handle: handwritten_signature_editor
         field:
           type: html
-          display: Private Handschrift
+          display: Handschrift erstellen oder importieren
           sanitize: false
-          html: '<div data-handwritten-signature><p>Die Handschrift wird verschlüsselt unter storage/app/private gespeichert und nie in öffentliche Assets oder Git übernommen.</p><div><canvas data-handwritten-signature-canvas width="900" height="260" aria-label="Unterschrift zeichnen" style="display:block;width:100%;max-width:760px;height:auto;touch-action:none;border:1px solid #9ca3af;border-radius:6px;background:#fff"></canvas></div><p><button type="button" data-handwritten-clear>Zeichenfläche leeren</button> <label>Bilddatei auswählen <input type="file" accept="image/png,image/jpeg,image/webp" data-handwritten-upload></label> <label><input type="checkbox" data-handwritten-remove-background> Hellen Hintergrund beim Speichern transparent machen</label></p><p><button type="button" data-handwritten-crop>Zuschneiden und Vorschau aktualisieren</button> <button type="button" data-handwritten-save>Private Signatur speichern</button> <button type="button" data-handwritten-delete>Vorlage löschen</button></p><div data-handwritten-preview aria-live="polite"></div><p role="status" data-handwritten-status></p><p>Die Grafik ist eine visuelle Unterschrift, keine QES. Empfänger können das sichtbare Bild kopieren. Signierte Bewerbungen werden weiterhin erst nach dem vollständigen PDF-Export extern kryptografisch signiert.</p></div>'
+          html: |
+            <div class="app-handwriting" data-handwritten-signature>
+              <section class="app-handwriting-panel" aria-labelledby="handwriting-draw-title">
+                <h3 id="handwriting-draw-title">1. Zeichnen</h3>
+                <p class="app-handwriting-instructions">Schreibe mit Maus, Stift oder Finger direkt in die Fläche. Die Schaltfläche Zeichenfläche leeren entfernt nur die aktuelle Zeichnung. Eine gespeicherte Vorlage bleibt dabei erhalten.</p>
+                <div class="app-handwriting-canvas-wrap">
+                  <canvas class="app-handwriting-canvas" data-handwritten-signature-canvas width="900" height="260" aria-label="Zeichenfläche für eine handschriftliche Unterschrift" tabindex="0"></canvas>
+                </div>
+                <div class="app-cp-button-row">
+                  <button class="app-cp-button" type="button" data-handwritten-clear>Zeichenfläche leeren</button>
+                </div>
+              </section>
+
+              <section class="app-handwriting-panel" aria-labelledby="handwriting-import-title">
+                <h3 id="handwriting-import-title">Oder Bilddatei verwenden</h3>
+                <p>Wähle einen Scan deiner Unterschrift. Unterstützt werden PNG, JPEG und WebP bis 10 MB. Das Bild wird privat verarbeitet und nicht in einen öffentlichen Asset-Ordner geladen.</p>
+                <div class="app-handwriting-tools">
+                  <label class="app-handwriting-file">
+                    <span>Bilddatei auswählen</span>
+                    <input type="file" accept="image/png,image/jpeg,image/webp" data-handwritten-upload>
+                  </label>
+                  <label class="app-handwriting-option">
+                    <input type="checkbox" data-handwritten-remove-background>
+                    <span>Hellen Hintergrund beim Speichern transparent machen</span>
+                  </label>
+                </div>
+              </section>
+
+              <section class="app-handwriting-panel" aria-labelledby="handwriting-review-title">
+                <h3 id="handwriting-review-title">2. Zuschneiden und prüfen</h3>
+                <p>Entfernt leere Ränder. Prüfe die Vorschau, bevor du die private Vorlage speicherst.</p>
+                <div class="app-cp-button-row">
+                  <button class="app-cp-button" type="button" data-handwritten-crop>Zuschneiden und Vorschau aktualisieren</button>
+                </div>
+                <div class="app-handwriting-preview" data-handwritten-preview aria-live="polite">
+                  <h4>Vorschau</h4>
+                  <p>Noch keine Vorschau vorhanden.</p>
+                </div>
+                <p class="app-cp-status" role="status" data-handwritten-preview-status>Erstelle zuerst eine Vorschau, bevor du speicherst.</p>
+              </section>
+
+              <section class="app-handwriting-panel" aria-labelledby="handwriting-save-title">
+                <h3 id="handwriting-save-title">3. Private Vorlage</h3>
+                <p>Speichern ersetzt die wiederverwendbare private Vorlage. Sie wird verschlüsselt unter <code>storage/app/private</code> abgelegt. Zum Entfernen wählst du Vorlage löschen.</p>
+                <div class="app-cp-button-row">
+                  <button class="app-cp-button app-cp-button-primary" type="button" data-handwritten-save disabled>Private Handschrift speichern</button>
+                  <button class="app-cp-button app-cp-button-danger" type="button" data-handwritten-delete>Vorlage löschen</button>
+                </div>
+                <p class="app-cp-status" role="status" data-handwritten-status>Private Signaturvorlage wird geladen …</p>
+              </section>
+
+              <p class="app-handwriting-note">Diese Grafik ist eine sichtbare Unterschrift, keine QES. Empfänger können sie aus einem autorisiert erhaltenen PDF kopieren oder per Screenshot erfassen. Eine solche Bildsignatur wird nur in Bewerbungen verwendet, in denen Handschrift ausdrücklich aktiviert ist. Externe kryptografische Signaturen folgen weiterhin erst auf das vollständige PDF.</p>
+            </div>
