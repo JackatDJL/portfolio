@@ -122,11 +122,3 @@ tabs:
             field: { type: text, display: Ort, width: 50 }
           - handle: print_date
             field: { type: text, display: Datum, width: 50 }
-          - handle: signature
-            field:
-              type: assets
-              container: assets
-              folder: cv/signatures
-              restrict: true
-              max_files: 1
-              display: Unterschrift

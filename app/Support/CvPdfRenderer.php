@@ -32,9 +32,25 @@ class CvPdfRenderer
 
     public function renderApplication(Entry $application): string
     {
-        $cv = $this->viewModel->forApplication($application);
+        $work = config('applications.work_path').'/cv-'.bin2hex(random_bytes(12));
+        if (! is_dir($work) && ! mkdir($work, 0700, true) && ! is_dir($work)) {
+            throw new RuntimeException('Could not create a private application CV work directory.');
+        }
+        chmod($work, 0700);
+        try {
+            $settings = ApplicationData::group($application, 'signature');
+            $signature = ($settings['mode'] ?? 'none') === 'handwritten'
+                ? app(PrivateHandwrittenSignature::class)->materialize($work.'/signature.png')
+                : null;
+            $cv = $this->viewModel->forApplication($application, $signature);
 
-        return $this->compile(view('latex.cv', compact('cv'))->render());
+            return $this->compile(view('latex.cv', compact('cv'))->render());
+        } finally {
+            foreach (glob($work.'/*') ?: [] as $file) {
+                @unlink($file);
+            }
+            @rmdir($work);
+        }
     }
 
     public function renderViewModel(array $cv, ?float $deadline = null): string
@@ -188,6 +204,9 @@ class CvPdfRenderer
 
         if (is_string($cv['photo'] ?? null) && $cv['photo'] !== '') {
             $files[] = $cv['photo'];
+        }
+        if (is_string($cv['signature_image'] ?? null) && $cv['signature_image'] !== '') {
+            $files[] = $cv['signature_image'];
         }
 
         $files = array_values(array_unique($files));

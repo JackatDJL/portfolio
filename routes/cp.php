@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ApplicationController;
+use App\Http\Controllers\ApplicationHandwrittenSignatureController;
 use App\Http\Controllers\ApplicationPdfController;
 use App\Http\Controllers\ApplicationSignatureController;
 use App\Http\Controllers\SearchAgentOptimizationController;
@@ -13,6 +14,9 @@ Route::post('/search-agent-optimization', [SearchAgentOptimizationController::cl
     ->name('search-agent-optimization.update');
 
 Route::post('/applications/{id}/reset-date', [ApplicationController::class, 'resetDate'])->name('applications.reset-date');
+Route::get('/applications/handwritten-signature', [ApplicationHandwrittenSignatureController::class, 'show'])->name('applications.handwritten-signature.show');
+Route::post('/applications/handwritten-signature', [ApplicationHandwrittenSignatureController::class, 'store'])->middleware('throttle:application-pdf')->name('applications.handwritten-signature.store');
+Route::delete('/applications/handwritten-signature', [ApplicationHandwrittenSignatureController::class, 'destroy'])->name('applications.handwritten-signature.destroy');
 Route::get('/applications/{id}/cv.pdf', [ApplicationController::class, 'cv'])->name('applications.cv');
 Route::get('/applications/{id}/summary', [ApplicationController::class, 'summary'])->name('applications.summary');
 Route::get('/applications/{id}/cv-profile', [ApplicationController::class, 'cvProfile'])->name('applications.cv-profile');

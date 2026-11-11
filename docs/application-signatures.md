@@ -1,6 +1,6 @@
 # Private application signatures
 
-The application PDF exporter remains the only rendering/composition pipeline. CV rendering and CV authorization are unchanged. Electronic signatures apply only to a frozen, complete composite, after cover letter, freshly resolved private CV and ordered attachments have been composed. The existing typed visual signature is decorative and is never presented as a cryptographic signature or QES.
+The application PDF exporter remains the only rendering/composition pipeline. Electronic signatures apply only to a frozen, complete composite, after cover letter, freshly resolved private CV and ordered attachments have been composed. A separate optional handwritten graphic is rendered by the shared LuaLaTeX pipeline in the letter and CV; it is not a cryptographic signature or QES.
 
 ## Operator workflow
 
@@ -30,7 +30,7 @@ Preview, export, save, autosave and recipient access never initiate signing. The
 
 ## Privacy and operations
 
-Artifacts live beneath `storage/app/private/application-signatures`, with opaque application hashes, UUID version directories, 0700 directories and 0600 PDF files. No filenames from uploads, signatures, keys or certificate reports enter public assets or Statamic content. Verification metadata is Laravel-encrypted in the database; retain `APP_KEY` securely with encrypted backups. Checksums detect changed/missing stored files before use. CP endpoints require a Statamic super user and normal CSRF protection for mutations; responses use private/no-store and noindex headers. Parser errors are sanitized. Configure PHP/web-server upload limits consistently with the 100 MiB server validation limit and keep the parser environment patched.
+External-signature artifacts live beneath `storage/app/private/application-signatures`, with opaque application hashes, UUID version directories, 0700 directories and 0600 PDF files. The reusable handwritten source is stored separately as Laravel-encrypted data beneath `storage/app/private/application-handwritten-signature`; its temporary PNG is created only in a 0700 export work directory and deleted after rendering. No signature bytes or strokes enter public assets, Statamic content, content sync or Git. Verification metadata is Laravel-encrypted in the database; retain `APP_KEY` securely with encrypted backups. Checksums detect changed/missing files before use. CP endpoints require a Statamic super user and normal CSRF protection for mutations; responses use private/no-store and noindex headers. Parser errors are sanitized. Configure PHP/web-server upload limits consistently with the 100 MiB server validation limit and keep the parser environment patched.
 
 Private storage permissions are defense in depth, not protection against a compromised server/admin or a public web-server alias. Do not expose this directory through any asset container or symlink. Retain only necessary applications and verification records; backups and archive retention need an operator policy. No automated deletion or public publication is implemented. A visible handwritten/scanned signature can be copied; no copy-prevention claim is made.
 

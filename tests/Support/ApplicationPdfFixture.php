@@ -27,8 +27,10 @@ final class ApplicationPdfFixture
         mkdir($this->root, 0700, true);
         config([
             'applications.cache_path' => $this->root.'/cache', 'applications.work_path' => $this->root.'/work',
+            'applications.python' => env('APPLICATION_PDF_PYTHON', 'python3'),
             'cv.private_pdf_root' => $this->root.'/compiler',
             'filesystems.disks.application_documents.root' => $this->root.'/documents',
+            'applications.handwritten_signature_path' => $this->root.'/handwritten-signature',
         ]);
         Storage::forgetDisk('application_documents');
         mkdir($this->root.'/documents', 0700);
@@ -113,6 +115,18 @@ final class ApplicationPdfFixture
     public function cleanup(): void
     {
         $this->restore();
+        if (($this->entry?->collectionHandle() ?? null) === 'applications'
+            && $this->entry->value('title') === 'Synthetic PDF integration fixture') {
+            $path = $this->entry->path();
+            $contentRoot = realpath(base_path('content/collections/applications'));
+            if (is_string($path) && is_file($path) && $contentRoot
+                && str_starts_with(realpath($path) ?: '', $contentRoot.DIRECTORY_SEPARATOR)) {
+                $this->entry->delete();
+                if (is_file($path)) {
+                    @unlink($path);
+                }
+            }
+        }
         $remove = function ($path) use (&$remove) {
             if (is_dir($path) && ! is_link($path)) {
                 foreach (scandir($path) as $name) {

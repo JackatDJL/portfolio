@@ -91,6 +91,7 @@ class AppServiceProvider extends ServiceProvider
         }, ':attribute darf nur gültige öffentliche HTTPS-URLs enthalten.');
         Statamic::externalScript(asset('/cp-cv-profile-access.js'));
         Statamic::externalScript(asset('/cp-applications.js').'?v='.hash_file('sha256', public_path('cp-applications.js')));
+        Statamic::externalScript(asset('/cp-handwritten-signature.js').'?v='.hash_file('sha256', public_path('cp-handwritten-signature.js')));
 
         Statamic::pushCpRoutes(function () {
             Route::namespace('App\\Http\\Controllers')->group(function () {

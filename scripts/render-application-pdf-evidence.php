@@ -1,9 +1,12 @@
 <?php
 
+use App\Support\ApplicationData;
 use App\Support\ApplicationPdfExporter;
+use App\Support\PrivateHandwrittenSignature;
 use Illuminate\Contracts\Console\Kernel;
 use Symfony\Component\Process\Process;
 use Tests\Support\ApplicationPdfFixture;
+use Tests\Support\HandwrittenSignatureFixture;
 
 // Synthetic review evidence only. Keep output outside the checkout and out of Git.
 require __DIR__.'/../vendor/autoload.php';
@@ -18,6 +21,10 @@ if (! $directory || ! is_dir($directory) || $directory === $root || str_starts_w
 $fixture = new ApplicationPdfFixture($directory.'/runtime');
 try {
     $fixture->documents();
+    $png = HandwrittenSignatureFixture::png();
+    app(PrivateHandwrittenSignature::class)->save('data:image/png;base64,'.base64_encode($png), HandwrittenSignatureFixture::strokes());
+    $fixture->entry->set('signature', ApplicationData::encrypt([['mode' => 'handwritten', 'width_mm' => 46, 'baseline_mm' => 0]]));
+    $fixture->entry->save();
     $pdf = app(ApplicationPdfExporter::class)->render($fixture->entry);
     copy($pdf, $directory.'/bewerbung.pdf');
     chmod($directory.'/bewerbung.pdf', 0600);
