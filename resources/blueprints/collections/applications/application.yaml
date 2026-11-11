@@ -31,20 +31,7 @@ tabs:
         field:
           type: html
           display: Aktionen
-          html: <div data-application-actions><button type="button" class="btn" data-reset-application-date>Datum
-            auf heute setzen</button><button type="button" class="btn" data-application-cv>Privaten
-            CV herunterladen</button><button type="button" data-application-preview>Vollständige
-            PDF prüfen</button> <button type="button" data-application-export>PDF
-            exportieren</button> <button type="button" data-application-link>Empfängerlink
-            erstellen / ersetzen</button> <button type="button" data-application-revoke>Empfängerlink
-            widerrufen</button><input type="url" readonly hidden data-application-recipient-link
-            aria-label="Einmalig angezeigter Empfängerlink"><p role="status" data-application-status></p></div>
-          sanitize: false
-      - handle: electronic_signatures
-        field:
-          type: html
-          display: Elektronische Signaturen
-          html: '<div data-application-signatures data-application-actions><p>Externe Signaturen werden lokal auf Integrität geprüft. Zertifikatsvertrauen, Widerruf und QES-Qualifikation sind getrennt zu bewerten. Keine automatische Signierung.</p><button type="button" data-signature-action="status">Status laden</button> <button type="button" data-signature-action="prepare">Endgültige PDF einfrieren</button> <button type="button" data-signature-action="unsigned">Unsigniert ausliefern</button><div data-signature-versions></div><p role="status" data-signature-status></p></div>'
+          html: '<div data-application-overview><div data-application-summary aria-live="polite">Bewerbungsübersicht wird geladen …</div><p><strong>Empfohlener Ablauf:</strong> Speichern → Vorschau → Export → selbst versenden.</p><section data-application-actions><h3>Vorschau</h3><p>Die Vorschau wird frisch erzeugt und bleibt privat.</p><button type="button" data-application-preview>Anschreiben und Bewerbung prüfen</button><button type="button" data-application-cv>Bewerbungs-CV als PDF prüfen</button><button type="button" data-reset-application-date>Datum auf heute setzen</button><h3>Download / Export</h3><p>Der Export lädt die gespeicherte, vollständige Bewerbungs-PDF herunter. Der Versand erfolgt manuell.</p><button type="button" data-application-export>Vollständige Bewerbung herunterladen</button><h3>Empfängerzugriff</h3><p>Ein privater PDF-Export ist eine Datei. Ein Empfängerlink ist ein separat widerrufbarer Zugang, über den die aktuelle PDF geöffnet werden kann. Es wird keine E-Mail versendet.</p><label>Bezeichnung für den Link <input type="text" maxlength="100" data-application-grant-label value="Empfänger"></label><label>Ablaufdatum (optional) <input type="datetime-local" data-application-grant-expiry></label><button type="button" data-application-grant-create>Empfängerzugriff erstellen</button><div data-application-grants aria-live="polite"></div><label hidden data-application-new-link-label>Einmalig angezeigter Link <input type="url" readonly data-application-recipient-link></label><button type="button" hidden data-application-copy-link>Link kopieren</button><p role="status" data-application-status></p></section><details data-application-actions><summary>Elektronische Signaturen (erweitert)</summary><p>Ein extern signiertes Dokument wird getrennt geprüft. Eine visuelle Signatur ist keine QES; es erfolgt keine automatische Signierung.</p><div data-application-signatures><button type="button" data-signature-action="status">Status laden</button> <button type="button" data-signature-action="prepare">Endgültige PDF einfrieren</button> <button type="button" data-signature-action="unsigned">Unsigniert ausliefern</button><div data-signature-versions></div><p role="status" data-signature-status></p></div></details></div>'
           sanitize: false
   recipient:
     display: Empfänger
@@ -52,8 +39,9 @@ tabs:
     - fields:
       - handle: recipient
         field:
-          type: application_private_grid
+          type: application_private_group
           display: Empfänger
+          border: false
           fields:
           - handle: organisation
             field:
@@ -116,28 +104,20 @@ tabs:
               format: Y-m-d
               mode: single
               time_enabled: false
-          mode: stacked
-          max_rows: 1
-          min_rows: 1
-          default:
-          - {}
-          add_row: Empfänger
-          validate:
-          - required
-          - array
-          - size:1
+
   letter:
     display: Anschreiben
     sections:
     - fields:
       - handle: letter
         field:
-          type: application_private_grid
+          type: application_private_group
           display: Anschreiben
+          border: false
           fields:
           - handle: subject
             field:
-              type: textarea
+              type: text
               display: Betreff
           - handle: salutation
             field:
@@ -174,24 +154,17 @@ tabs:
             field:
               type: text
               display: Grußformel
-          mode: stacked
-          max_rows: 1
-          min_rows: 1
-          default:
-          - {}
-          add_row: Anschreiben
-          validate:
-          - required
-          - array
-          - size:1
+              instructions: Nur „Mit freundlichen Grüßen“ eintragen. Der Name steht im Unterschriftsfeld.
+
   cv:
     display: Lebenslauf
     sections:
     - fields:
       - handle: cv
         field:
-          type: application_private_grid
+          type: application_private_group
           display: Lebenslauf
+          border: false
           fields:
           - handle: profile
             field:
@@ -202,15 +175,40 @@ tabs:
               max_items: 1
               instructions: 'Leer: Standard-CV. Das referenzierte Profil wird nie
                 verändert.'
+          - handle: profile_summary
+            field:
+              type: html
+              display: Ausgewähltes Profil
+              html: '<div data-application-profile-summary aria-live="polite">Profil wird geprüft …</div>'
+              sanitize: false
+              if:
+                profile: not empty
+          - handle: advanced_cv_overrides
+            field:
+              type: toggle
+              display: Erweiterte CV-Einstellungen anzeigen
+              instructions: Zeigt gespeicherte Einleitungs- und Akzent-Overrides für dieses Profil.
+              default: false
+              always_save: true
+              if:
+                profile: not empty
           - handle: introduction
             field:
               type: textarea
-              display: Einleitung überschreiben
+              display: Bewerbungsspezifische Einleitung
               instructions: 'Leer: Einleitung des Profils übernehmen.'
+              always_save: true
+              if_any:
+                profile: empty
+                advanced_cv_overrides: true
           - handle: accent_color
             field:
               type: color
-              display: Akzentfarbe
+              display: Bewerbungsspezifische Akzentfarbe
+              always_save: true
+              if_any:
+                profile: empty
+                advanced_cv_overrides: true
               validate:
               - nullable
               - regex:/^#[0-9a-fA-F]{6}$/
@@ -367,24 +365,16 @@ tabs:
                 Profil duplizieren.
               if:
                 milestones_source: equals override
-          mode: stacked
-          max_rows: 1
-          min_rows: 1
-          default:
-          - {}
-          add_row: Lebenslauf
-          validate:
-          - required
-          - array
-          - size:1
+
   documents:
     display: Anlagen
     sections:
     - fields:
       - handle: documents
         field:
-          type: application_private_grid
+          type: application_private_group
           display: Anlagen
+          border: false
           fields:
           - handle: mode
             field:
@@ -392,7 +382,7 @@ tabs:
               display: Anlagenquelle
               options:
                 inherit: Globale Vorgaben
-                override: Eigene Auswahl, auch leer
+                override: Eigene Auswahl
               default: inherit
               validate:
               - in:inherit,override
@@ -400,6 +390,9 @@ tabs:
             field:
               type: grid
               display: Dokumente in Versand-Reihenfolge
+              always_save: true
+              if:
+                mode: override
               fields:
               - handle: label
                 field:
@@ -433,24 +426,16 @@ tabs:
                   allow_uploads: true
               add_row: Dokument hinzufügen
               reorderable: true
-          mode: stacked
-          max_rows: 1
-          min_rows: 1
-          default:
-          - {}
-          add_row: Anlagen
-          validate:
-          - required
-          - array
-          - size:1
+
   signature:
     display: Unterschrift
     sections:
     - fields:
       - handle: signature
         field:
-          type: application_private_grid
+          type: application_private_group
           display: Unterschrift
+          border: false
           fields:
           - handle: mode
             field:
@@ -467,26 +452,18 @@ tabs:
               type: text
               display: Getippter Name
               validate:
-              - required_if:signature.0.mode,typed
+              - required_if:signature.mode,typed
               - max:200
-          mode: stacked
-          max_rows: 1
-          min_rows: 1
-          default:
-          - {}
-          add_row: Unterschrift
-          validate:
-          - required
-          - array
-          - size:1
+
   tracking:
     display: Verlauf
     sections:
     - fields:
       - handle: tracking
         field:
-          type: application_private_grid
+          type: application_private_group
           display: Verlauf
+          border: false
           fields:
           - handle: application_date
             field:
@@ -553,13 +530,3 @@ tabs:
               format: Y-m-d
               mode: single
               time_enabled: false
-          mode: stacked
-          max_rows: 1
-          min_rows: 1
-          default:
-          - {}
-          add_row: Verlauf
-          validate:
-          - required
-          - array
-          - size:1

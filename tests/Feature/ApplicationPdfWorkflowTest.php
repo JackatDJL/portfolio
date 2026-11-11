@@ -13,7 +13,10 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Middleware\ThrottleRequests;
 use Illuminate\Session\TokenMismatchException;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Statamic\Facades\Entry;
 use Statamic\Facades\GlobalSet;
@@ -340,16 +343,41 @@ class ApplicationPdfWorkflowTest extends TestCase
         }
     }
 
-    public function test_expired_or_other_application_grants_cannot_authorize_and_only_hashes_enter_the_session(): void
+    public function test_expired_or_other_application_grants_cannot_authorize_and_session_stores_only_the_grant_id(): void
     {
         $id = $this->save();
-        $token = ApplicationCapabilities::issue($id);
+        $issued = ApplicationCapabilities::issue($id, 'Expirationstest');
+        $token = $issued['token'];
         $this->postJson('/applications/token-exchange', ['id' => $id, 'token' => $token])->assertOk();
-        $this->assertSame(hash('sha256', $token), session('application_grants.'.hash('sha256', $id)));
+        $this->assertSame($issued['id'], session('application_grants.'.hash('sha256', $id)));
         $this->assertFalse(ApplicationCapabilities::allowsHash((string) Str::uuid(), hash('sha256', $token)));
         $this->assertNull(session('cv_grants'));
-        DB::table('application_access_tokens')->where('application_id', $id)->update(['expires_at' => now()->subMinute()]);
+        DB::table('application_recipient_grants')->where('id', $issued['id'])->update(['expires_at' => now()->subMinute()]);
         $this->get('/applications/'.$id.'/pdf')->assertNotFound();
+    }
+
+    public function test_recipient_session_is_isolated_to_a_single_application(): void
+    {
+        $firstId = $this->save();
+        $other = Entry::make()->id((string) Str::uuid())->collection('applications')->data(
+            $this->fixture->entry->data()->all()
+        );
+        $other->set('title', 'Second synthetic application');
+        $other->save();
+
+        try {
+            $first = ApplicationCapabilities::issue($firstId, 'First test recipient');
+            $second = ApplicationCapabilities::issue($other->id(), 'Second test recipient');
+
+            $this->postJson('/applications/token-exchange', ['id' => $firstId, 'token' => $first['token']])->assertOk();
+            $this->assertTrue(ApplicationCapabilities::sessionAllows(request(), $firstId));
+
+            $this->postJson('/applications/token-exchange', ['id' => $other->id(), 'token' => $second['token']])->assertOk();
+            $this->assertFalse(ApplicationCapabilities::sessionAllows(request(), $firstId));
+            $this->assertTrue(ApplicationCapabilities::sessionAllows(request(), $other->id()));
+        } finally {
+            $other->delete();
+        }
     }
 
     public function test_preview_is_ephemeral_and_cp_permissions_are_enforced(): void
@@ -380,7 +408,7 @@ class ApplicationPdfWorkflowTest extends TestCase
         $issue = $this->postJson('/cp/applications/'.$id.'/recipient-link')->assertOk();
         $token = explode('#application=', $issue->json('url'))[1];
         $this->app['auth']->logout();
-        $row = (array) DB::table('application_access_tokens')->where('application_id', $id)->first();
+        $row = (array) DB::table('application_recipient_grants')->where('application_id', $id)->first();
         $this->assertStringNotContainsString($token, json_encode($row));
         $this->assertSame(hash('sha256', $token), $row['token_hash']);
         $this->postJson('/applications/token-exchange', ['id' => $id, 'token' => $token], ['Origin' => 'https://evil.invalid'])->assertForbidden();
@@ -389,20 +417,143 @@ class ApplicationPdfWorkflowTest extends TestCase
         $this->get('/applications/'.$id.'/pdf?token='.$token)->assertNotFound();
         $pdf = $this->get('/applications/'.$id.'/pdf?public=true')->assertOk();
         $this->assertStringContainsString('private-export@example.invalid', $this->text($pdf->baseResponse->getFile()->getPathname()));
-        $newToken = ApplicationCapabilities::issue($id);
+        $newIssued = ApplicationCapabilities::issue($id, 'Zweiter Empfänger');
+        $this->assertTrue(ApplicationCapabilities::allowsHash($id, hash('sha256', $token)), 'Issuing a new grant must not revoke the existing link.');
+        $this->assertTrue(ApplicationCapabilities::allowsHash($id, hash('sha256', $newIssued['token'])));
+        $this->get('/applications/'.$id.'/pdf')->assertOk();
+        $this->actingAs($editor);
+        $this->deleteJson('/cp/applications/'.$id.'/recipient-grants/'.$row['id'])->assertOk()->assertJson(['revoked' => true]);
         $this->get('/applications/'.$id.'/pdf')->assertNotFound();
         $this->postJson('/applications/token-exchange', ['id' => $id, 'token' => $token])->assertNotFound();
-        $this->postJson('/applications/token-exchange', ['id' => $id, 'token' => $newToken])->assertOk();
+        $this->postJson('/applications/token-exchange', ['id' => $id, 'token' => $newIssued['token']])->assertOk();
         $this->withoutMiddleware(ThrottleRequests::class);
         $this->actingAs($editor);
-        $this->deleteJson('/cp/applications/'.$id.'/recipient-link')->assertOk();
+        $this->deleteJson('/cp/applications/'.$id.'/recipient-grants')->assertOk();
         $this->get('/applications/'.$id.'/pdf')->assertNotFound();
+    }
+
+    public function test_recipient_grants_are_independent_labeled_and_listed_without_bearer_secrets(): void
+    {
+        $id = $this->save();
+        $editor = $this->user();
+        $this->actingAs($editor);
+        $expiresAt = now()->addDays(3)->utc()->toIso8601String();
+        $normalizedExpiry = Carbon::parse($expiresAt)
+            ->setTimezone(config('app.timezone'))
+            ->toDateTimeString();
+        $first = $this->postJson('/cp/applications/'.$id.'/recipient-grants', [
+            'label' => 'TUHH Personalabteilung',
+            'expires_at' => $expiresAt,
+        ])->assertOk();
+        $firstToken = explode('#application=', $first->json('url'))[1];
+        $firstId = $first->json('grant.id');
+        $this->assertSame('TUHH Personalabteilung', $first->json('grant.label'));
+        $this->assertSame($normalizedExpiry, $first->json('grant.expires_at'));
+        $this->assertSame($normalizedExpiry, DB::table('application_recipient_grants')->where('id', $firstId)->value('expires_at'));
+        $this->assertMatchesRegularExpression('/^[A-Za-z0-9]{64}$/', $firstToken);
+        $this->assertStringContainsString('/applications/'.$id.'#application=', $first->json('url'));
+        $encryptedLabel = DB::table('application_recipient_grants')->where('id', $firstId)->value('label');
+        $this->assertStringNotContainsString('TUHH Personalabteilung', $encryptedLabel);
+        $this->assertSame('TUHH Personalabteilung', Crypt::decryptString($encryptedLabel));
+
+        $second = $this->postJson('/cp/applications/'.$id.'/recipient-grants', ['label' => 'Zweite Prüfung'])->assertOk();
+        $secondToken = explode('#application=', $second->json('url'))[1];
+        $secondId = $second->json('grant.id');
+        $this->assertNotSame($firstToken, $secondToken);
+        $this->assertTrue(ApplicationCapabilities::allowsHash($id, hash('sha256', $firstToken)));
+        $this->assertTrue(ApplicationCapabilities::allowsHash($id, hash('sha256', $secondToken)));
+
+        $management = $this->getJson('/cp/applications/'.$id.'/recipient-grants')->assertOk();
+        $this->assertStringNotContainsString($firstToken, $management->getContent());
+        $this->assertStringNotContainsString($secondToken, $management->getContent());
+        $this->assertStringNotContainsString('token_hash', $management->getContent());
+        $this->assertSame(2, count($management->json('grants')));
+
+        $this->app['auth']->logout();
+        $this->postJson('/applications/token-exchange', ['id' => $id, 'token' => $firstToken])->assertOk();
+        $this->assertSame($firstId, session('application_grants.'.hash('sha256', $id)));
+        $this->get('/cv')->assertDontSee($firstToken);
+        $this->assertNotNull(DB::table('application_recipient_grants')->where('id', $firstId)->value('last_accessed_at'));
+        $lastExchange = now()->subDay()->toDateTimeString();
+        DB::table('application_recipient_grants')->where('id', $firstId)->update(['last_accessed_at' => $lastExchange]);
+        $pdf = $this->get('/applications/'.$id.'/pdf')->assertOk();
+        $this->assertSame($lastExchange, DB::table('application_recipient_grants')->where('id', $firstId)->value('last_accessed_at'), 'Authorized requests must not write audit state.');
+        $this->assertStringNotContainsString($firstToken, $this->text($pdf->baseResponse->getFile()->getPathname()));
+
+        $this->actingAs($editor);
+        $this->deleteJson('/cp/applications/'.$id.'/recipient-grants/'.$firstId)->assertOk()->assertJson(['revoked' => true]);
+        $this->app['auth']->logout();
+        $this->get('/applications/'.$id.'/pdf')->assertNotFound();
+        $this->postJson('/applications/token-exchange', ['id' => $id, 'token' => $firstToken])->assertNotFound();
+        $this->postJson('/applications/token-exchange', ['id' => $id, 'token' => $secondToken])->assertOk();
+        $this->actingAs($editor);
+        $this->deleteJson('/cp/applications/'.$id.'/recipient-grants')->assertOk();
+        $this->app['auth']->logout();
+        $this->get('/applications/'.$id.'/pdf')->assertNotFound();
+        $this->assertNotNull(DB::table('application_recipient_grants')->where('id', $secondId)->value('revoked_at'));
+    }
+
+    public function test_unreadable_grant_labels_do_not_block_listing_or_issuing_new_links(): void
+    {
+        $id = $this->save();
+        $legacy = ApplicationCapabilities::issue($id, 'Vorhandener Zugriff');
+        DB::table('application_recipient_grants')->where('id', $legacy['id'])->update(['label' => 'invalid-ciphertext']);
+        $this->actingAs($this->user());
+
+        $this->getJson('/cp/applications/'.$id.'/recipient-grants')
+            ->assertOk()
+            ->assertJsonFragment(['label' => 'Bezeichnung nicht lesbar']);
+
+        $issued = $this->postJson('/cp/applications/'.$id.'/recipient-grants', ['label' => 'Neuer Zugriff'])
+            ->assertOk();
+        $this->assertSame('Neuer Zugriff', $issued->json('grant.label'));
+        $this->assertNotEmpty($issued->json('url'));
+        $this->assertSame(2, DB::table('application_recipient_grants')->where('application_id', $id)->count());
+    }
+
+    public function test_recipient_grant_migration_preserves_existing_hash_expiration_and_revocation(): void
+    {
+        Schema::drop('application_recipient_grants');
+        $applicationId = (string) Str::uuid();
+        $hash = hash('sha256', 'existing-link-secret');
+        $createdAt = now()->subDays(2)->toDateTimeString();
+        $expiresAt = now()->addDays(5)->toDateTimeString();
+        DB::table('application_access_tokens')->insert([
+            'application_id' => $applicationId,
+            'token_hash' => $hash,
+            'created_at' => $createdAt,
+            'updated_at' => $createdAt,
+            'expires_at' => $expiresAt,
+            'revoked_at' => null,
+        ]);
+        $revokedApplicationId = (string) Str::uuid();
+        DB::table('application_access_tokens')->insert([
+            'application_id' => $revokedApplicationId,
+            'token_hash' => hash('sha256', 'existing-revoked-link-secret'),
+            'created_at' => $createdAt,
+            'updated_at' => $createdAt,
+            'expires_at' => null,
+            'revoked_at' => now()->subDay()->toDateTimeString(),
+        ]);
+
+        $migration = require base_path('database/migrations/2026_11_10_000001_create_application_recipient_grants_table.php');
+        $migration->up();
+
+        $grant = DB::table('application_recipient_grants')->where('application_id', $applicationId)->first();
+        $this->assertNotNull($grant);
+        $this->assertSame($hash, $grant->token_hash);
+        $this->assertSame($expiresAt, $grant->expires_at);
+        $this->assertNull($grant->revoked_at);
+        $this->assertSame('Vorhandener Empfängerlink', Crypt::decryptString($grant->label));
+        $this->assertNotSame($hash, $grant->id);
+        $revoked = DB::table('application_recipient_grants')->where('application_id', $revokedApplicationId)->first();
+        $this->assertNotNull($revoked->revoked_at);
     }
 
     public function test_revocation_during_generation_stops_the_pending_recipient_response(): void
     {
         $id = $this->save();
-        $token = ApplicationCapabilities::issue($id);
+        $token = ApplicationCapabilities::issue($id, 'Widerrufsprobe')['token'];
         $this->postJson('/applications/token-exchange', ['id' => $id, 'token' => $token])->assertOk();
         $this->app->instance(ApplicationPdfPostProcessor::class, new class($id) implements ApplicationPdfPostProcessor
         {
@@ -415,7 +566,7 @@ class ApplicationPdfWorkflowTest extends TestCase
 
             public function process(string $privatePdf, array $manifest): void
             {
-                ApplicationCapabilities::revoke($this->id);
+                ApplicationCapabilities::revokeAll($this->id);
             }
         });
         $this->get('/applications/'.$id.'/pdf')->assertNotFound()->assertDontSee('private-export@example.invalid');
@@ -439,7 +590,7 @@ class ApplicationPdfWorkflowTest extends TestCase
         $id = $this->save();
         $this->actingAs($this->user());
         $this->get('/cp/applications/'.$id.'/preview.pdf')->assertStatus(422)->assertSee('Betreff');
-        $token = ApplicationCapabilities::issue($id);
+        $token = ApplicationCapabilities::issue($id, 'Fehlende Felder')['token'];
         $this->app['auth']->logout();
         $this->postJson('/applications/token-exchange', ['id' => $id, 'token' => $token])->assertOk();
         $this->get('/applications/'.$id.'/pdf')->assertStatus(503)->assertDontSee('private-export@example.invalid')->assertDontSee('Beispiel GmbH');

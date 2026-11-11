@@ -8,8 +8,8 @@ Save edits before using the PDF actions:
 
 - **Vollständige PDF prüfen** creates a fresh private inline preview. It bypasses the canonical cache and deletes its result after sending.
 - **PDF exportieren** downloads the canonical composite. Every request resolves current dependencies before checking the content fingerprint.
-- **Empfängerlink erstellen / ersetzen** creates an optional permanent recipient capability and replaces any earlier one. Copy it immediately; the raw token is shown once and never stored. It grants access to the complete private PDF, including future saved changes. Preview the saved application before sharing it.
-- **Empfängerlink widerrufen** invalidates the link and existing recipient sessions. Already downloaded copies cannot be recalled.
+- **Empfängerzugriff erstellen** issues a named independent grant. Copy the URL immediately; its raw token is shown once and never stored. It grants access to the complete private PDF, including future saved changes. Preview the saved application before sharing it.
+- The grant list shows labels and timestamps without secrets. Revoke one grant or explicitly revoke all grants. Existing recipient sessions are checked against the current grant state on every request. Already downloaded copies cannot be recalled.
 
 Only super users may use CP generation and link-management actions. The existing CV-only download remains available. No action sends email.
 
@@ -33,7 +33,7 @@ Remote-file actions still require the external file. Existing cryptographic sign
 
 `/applications/{UUID}` is a generic access page without sender, recipient or application details. There is no collection index. The page removes `#application=TOKEN` before posting it to `/applications/token-exchange`. The exchange uses normal Laravel CSRF protections, checks origin and is rate-limited. Query-string tokens are rejected. The clean `/applications/{UUID}/pdf` route requires the scoped session.
 
-The database stores only SHA-256 hashes of random 64-character secrets. Sessions store only hashes under application-specific scopes. Each PDF request checks the current hash, expiry/revocation and application existence, including a second authorization check after generation. Rotation and revocation invalidate existing sessions. CV grants never authorize applications, and application grants never create CV grants. Authorized application rendering explicitly includes private CV data independently of the viewer's CV session. There is no public-data downgrade flag.
+The database stores only SHA-256 hashes of random 64-character secrets; grant labels are encrypted. Each grant has its own UUID and creation, expiry, last-access and revocation timestamps. New grants never replace existing ones. The CP can revoke one grant or all grants, and displays no token hashes or bearer secrets. The new table migration copies existing token hashes and state without changing old recipient URLs. Sessions store only a scoped grant UUID (or an existing hash during compatibility transition), and each authorized request rechecks the grant's current expiry and revocation state, including a second authorization check after PDF generation. CV grants never authorize applications, and application grants never create CV grants. Authorized application rendering explicitly includes private CV data independently of the viewer's CV session. There is no public-data downgrade flag.
 
 Responses have private/no-store, no-referrer and noindex headers, with same-origin framing. Statamic static caching excludes `/applications*`; the Content API remains disabled. Range requests still pass authorization.
 
@@ -49,7 +49,7 @@ Old versions are pruned after 30 days when a new version is generated. Administr
 
 ## Runtime and validation
 
-Docker installs the Python environment and German TeX support. Existing installations need the matching dependencies, `APPLICATION_PDF_PYTHON` set to that Python executable, and `php artisan migrate` for `application_access_tokens`. CP actions never migrate or deploy.
+Docker installs the Python environment and German TeX support. Existing installations need the matching dependencies, `APPLICATION_PDF_PYTHON` set to that Python executable, and `php artisan migrate` for `application_access_tokens` and `application_recipient_grants`. The latter migration preserves existing token hashes and grant state. CP actions never migrate or deploy.
 
 ```sh
 uv venv /tmp/portfolio-pdf-venv

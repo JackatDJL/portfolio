@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Fieldtypes\ApplicationPrivateGrid;
+use App\Fieldtypes\ApplicationPrivateGroup;
 use App\Fieldtypes\ApplicationTextComponent;
 use App\Fieldtypes\ProtectedText;
 use App\Signatures\ApplicationCompositeSource;
@@ -60,6 +61,7 @@ class AppServiceProvider extends ServiceProvider
 
         ProtectedText::register();
         ApplicationPrivateGrid::register();
+        ApplicationPrivateGroup::register();
         ApplicationTextComponent::register();
         ApplicationPrivacy::boot();
         RateLimiter::for('application-pdf', fn (Request $request) => Limit::perMinute(6)->by($request->user()?->getAuthIdentifier() ?: $request->ip()));
@@ -88,7 +90,7 @@ class AppServiceProvider extends ServiceProvider
             return true;
         }, ':attribute darf nur gültige öffentliche HTTPS-URLs enthalten.');
         Statamic::externalScript(asset('/cp-cv-profile-access.js'));
-        Statamic::externalScript(asset('/cp-applications.js'));
+        Statamic::externalScript(asset('/cp-applications.js').'?v='.hash_file('sha256', public_path('cp-applications.js')));
 
         Statamic::pushCpRoutes(function () {
             Route::namespace('App\\Http\\Controllers')->group(function () {
