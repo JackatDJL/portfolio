@@ -10,10 +10,10 @@
 
     let overviewRequest = 0;
     async function loadOverview(base) {
-        const request = ++overviewRequest;
         const summary = document.querySelector('[data-application-summary]');
         const grants = document.querySelector('[data-application-grants]');
-        if (!summary || !base) return;
+        if (!summary || !base || base !== appBase()) return;
+        const request = ++overviewRequest;
         const isCurrent = () => request === overviewRequest
             && base === appBase()
             && summary === document.querySelector('[data-application-summary]');
@@ -237,6 +237,19 @@
     overviewObserver.observe(document.documentElement, { childList: true, subtree: true });
     window.addEventListener('popstate', refreshApplicationOverview);
     refreshApplicationOverview();
+
+    window.Statamic?.$hooks?.on('entry.saved', async (resolve, _reject, payload) => {
+        try {
+            if (payload?.collection === 'applications') {
+                const base = appBase();
+                if (base) await loadOverview(base);
+            }
+        } catch {
+            // Overview loading reports its own error. The save hook must still unblock Statamic.
+        } finally {
+            resolve();
+        }
+    });
 })();
 
 // Use the same Statamic 6 button utilities as the existing CV profile actions.
