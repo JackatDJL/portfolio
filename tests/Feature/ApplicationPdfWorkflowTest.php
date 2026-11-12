@@ -267,6 +267,28 @@ class ApplicationPdfWorkflowTest extends TestCase
         }
     }
 
+    public function test_application_pdf_normalizes_a_legacy_short_profile_accent_without_saving_the_cv(): void
+    {
+        $settings = ApplicationData::group($this->fixture->entry, 'cv');
+        $profile = Entry::find($settings['profile'][0] ?? null);
+        $this->assertNotNull($profile);
+        unset($settings['accent_color']);
+        $this->fixture->entry->set('cv', ApplicationData::encrypt([$settings]));
+        $originalAccent = $profile->get('accent_color');
+        $profilePath = $profile->path();
+        $originalProfileFile = file_get_contents($profilePath);
+
+        try {
+            $profile->set('accent_color', '#ABC');
+            $pdf = app(ApplicationPdfExporter::class)->render($this->fixture->entry, cached: false);
+            $this->assertSame('%PDF-', file_get_contents($pdf, false, null, 0, 5));
+        } finally {
+            $profile->set('accent_color', $originalAccent);
+        }
+
+        $this->assertSame($originalProfileFile, file_get_contents($profilePath));
+    }
+
     public function test_concurrent_exports_share_one_atomically_published_canonical_pdf(): void
     {
         if (! function_exists('pcntl_fork')) {
