@@ -39,6 +39,15 @@ return [
             'permissions' => ['file' => ['public' => 0600, 'private' => 0600], 'dir' => ['public' => 0700, 'private' => 0700]],
         ],
 
+        'funding_documents' => [
+            'driver' => 'local',
+            'root' => storage_path('app/private/funding-documents'),
+            'visibility' => 'private',
+            'throw' => true,
+            'serve' => false,
+            'permissions' => ['file' => ['public' => 0600, 'private' => 0600], 'dir' => ['public' => 0700, 'private' => 0700]],
+        ],
+
         'local' => [
             'driver' => 'local',
             'root' => storage_path('app/private'),

@@ -98,6 +98,7 @@ class AppServiceProvider extends ServiceProvider
         Statamic::externalScript(asset('/cp-applications.js').'?v='.hash_file('sha256', public_path('cp-applications.js')));
         Statamic::externalScript(asset('/cp-handwritten-signature.js').'?v='.hash_file('sha256', public_path('cp-handwritten-signature.js')));
         Statamic::externalStyle(asset('/cp-applications.css').'?v='.hash_file('sha256', public_path('cp-applications.css')));
+        Statamic::externalStyle(asset('/cp-sponsorships.css').'?v='.hash_file('sha256', public_path('cp-sponsorships.css')));
 
         Statamic::pushCpRoutes(function () {
             Route::namespace('App\\Http\\Controllers')->group(function () {
@@ -106,6 +107,10 @@ class AppServiceProvider extends ServiceProvider
         });
 
         Nav::extend(function ($nav) {
+            $nav->create('Sponsoring und Förderung')
+                ->section('Tools')
+                ->route('sponsorships.index')
+                ->icon('money');
             $nav->create('Search Agent Optimization')
                 ->section('Tools')
                 ->route('search-agent-optimization.index')
