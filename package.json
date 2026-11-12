@@ -5,6 +5,7 @@
     "scripts": {
         "build": "vite build",
         "dev": "vite",
+        "preview": "bun scripts/dev-preview.mjs",
         "test:browser": "playwright test",
         "test:cv": "playwright test --config playwright.cv.config.js",
         "watch": "vite"
