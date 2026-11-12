@@ -125,12 +125,20 @@ final class ApplicationPdfExporter implements ApplicationCompositeSource
             throw $exception;
         } catch (Throwable $exception) {
             $diagnosticId = bin2hex(random_bytes(6));
+            $compilerDiagnostics = $exception instanceof LatexCompilationFailure
+                ? [
+                    'compiler_diagnostic_code' => $exception->diagnosticCode,
+                    'compiler_source_line' => $exception->sourceLine,
+                    'compiler_pass' => $exception->pass,
+                ]
+                : [];
             try {
                 Log::error('Private application PDF generation failed.', [
                     'reference' => $diagnosticId,
                     'stage' => $stage,
                     'exception' => $exception::class,
                     'source' => basename($exception->getFile()).':'.$exception->getLine(),
+                    ...$compilerDiagnostics,
                 ]);
             } catch (Throwable) {
                 // A failed log write must not replace the redacted export failure.

@@ -156,7 +156,7 @@ class CvPdfRenderer
                             throw ValidationException::withMessages([$error['field'] => $error['message']]);
                         }
                     }
-                    throw new RuntimeException('PDF compilation failed. Compiler output is suppressed to protect private fields.');
+                    throw LatexCompilationFailure::fromCompilerLog($log, $pass + 1);
                 }
             }
 

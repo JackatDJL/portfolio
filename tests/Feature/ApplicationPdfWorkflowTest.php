@@ -65,6 +65,7 @@ class ApplicationPdfWorkflowTest extends TestCase
     private function save(): string
     {
         $this->fixture->entry->save();
+
         return $this->fixture->entry->id();
     }
 
@@ -674,6 +675,59 @@ class ApplicationPdfWorkflowTest extends TestCase
         } finally {
             $global->set('private_email', $original);
         }
+    }
+
+    public function test_latex_failure_logs_only_a_safe_diagnostic_and_never_private_log_text(): void
+    {
+        $binary = $this->fixture->root.'/fake-lualatex';
+        $counter = $this->fixture->root.'/fake-lualatex-count';
+        $script = <<<'SH'
+#!/bin/sh
+if [ "${1:-}" = "--version" ]; then
+  printf 'LuaLaTeX diagnostic fixture\n'
+  exit 0
+fi
+count=0
+if [ -f __COUNTER__ ]; then count=$(cat __COUNTER__); fi
+count=$((count + 1))
+printf '%s\n' "$count" > __COUNTER__
+output=
+for argument in "$@"; do
+  case "$argument" in --output-directory=*) output=${argument#--output-directory=};; esac
+done
+if [ "$count" -eq 3 ]; then
+  cat > "$output/cv.log" <<'LOG'
+! Undefined control sequence.
+PRIVATE_LATEX_SENTINEL
+l.42 \privateSecret
+LOG
+  exit 1
+fi
+printf '\045PDF-1.4\n%%%%EOF\n' > "$output/cv.pdf"
+SH;
+        $script = str_replace('__COUNTER__', escapeshellarg($counter), $script);
+        file_put_contents($binary, $script);
+        chmod($binary, 0700);
+        config(['cv.lualatex' => $binary]);
+        Log::shouldReceive('error')->once()->with('Private application PDF generation failed.', \Mockery::on(
+            fn (array $context): bool => ($context['compiler_diagnostic_code'] ?? null) === 'undefined_control_sequence'
+                && ($context['compiler_source_line'] ?? null) === 42
+                && ($context['compiler_pass'] ?? null) === 1
+                && ! str_contains(json_encode($context), 'PRIVATE_LATEX_SENTINEL')
+                && ! str_contains(json_encode($context), 'privateSecret')
+        ));
+
+        try {
+            app(ApplicationPdfExporter::class)->render($this->fixture->entry, cached: false);
+            $this->fail('The synthetic CV compiler failure must be reported.');
+        } catch (ApplicationPdfException $exception) {
+            $this->assertStringContainsString('PDF-Schritt [Lebenslauf]', $exception->getMessage());
+            $this->assertStringNotContainsString('PRIVATE_LATEX_SENTINEL', $exception->getMessage());
+            $this->assertStringNotContainsString('privateSecret', $exception->getMessage());
+        }
+
+        $this->assertSame([], glob($this->fixture->root.'/work/*'));
+        $this->assertSame([], glob($this->fixture->root.'/compiler/cv-latex/*'));
     }
 
     public function test_latex_injection_is_escaped_and_compile_failure_is_redacted(): void
