@@ -20,6 +20,7 @@ use App\Support\SearchPath;
 use App\Support\UnmodifiedApplicationPdf;
 use App\Tags\CvTitle;
 use App\Tags\HomepageProjects;
+use App\Tags\PoliticsCampaign;
 use App\Tags\SearchMetadata;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -68,6 +69,7 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('application-exchange', fn (Request $request) => Limit::perMinute(12)->by($request->ip()));
         CvTitle::register();
         HomepageProjects::register();
+        PoliticsCampaign::register();
         SearchMetadata::register();
         Validator::extend(
             'noindex_path_list',

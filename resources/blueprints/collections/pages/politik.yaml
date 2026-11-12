@@ -1,0 +1,34 @@
+title: Politik
+tabs:
+  main:
+    display: Inhalt
+    sections:
+      -
+        fields:
+          - handle: title
+            field: { type: text, display: Titel, validate: [required] }
+          - handle: experience
+            field: { type: entries, collections: [experience], display: Engagement und Erfahrung }
+          - handle: milestones
+            field: { type: entries, collections: [cv_milestones], display: Schulische Ämter }
+          - handle: projects
+            field: { type: entries, collections: [projects], display: Projekte }
+          - handle: publications
+            field: { type: entries, collections: [publications], display: Veröffentlichungen }
+          - handle: posts
+            field: { type: entries, collections: [posts], display: Blogbeiträge }
+          - handle: campaign_enabled
+            field: { type: toggle, display: Wahlzeit-Inhalt veröffentlichen }
+          - handle: campaign_start
+            field: { type: date, display: Anzeigen ab }
+          - handle: campaign_end
+            field: { type: date, display: Anzeigen bis }
+          - handle: campaign_title
+            field: { type: text, display: Titel des Wahlzeit-Inhalts }
+          - handle: campaign_body
+            field: { type: bard, display: Wahlzeit-Inhalt, buttons: [bold, italic, anchor, unorderedlist, orderedlist], sets: {} }
+  search:
+    display: SEO & Indexierung
+    sections:
+      - fields:
+          - import: seo

@@ -17,6 +17,7 @@ llms: |-
 
   ## Weitere Bereiche
 
+  - [Politik und Engagement](/politik): Persönliche Biografie, schulische Vertretung, Erstwählerforum und Volt-Mitarbeit. Das ist keine offizielle Parteiwebsite.
   - [Alle Projekte](/projekte)
   - [Blog](/blog)
   - [Veröffentlichungen](/publikationen)
@@ -87,8 +88,13 @@ llms_full: |-
   - [Veröffentlichungen](/publikationen)
   - [Aktuell](/aktuell)
   - [Lebenslauf](/cv)
+  - [Politik und Engagement](/politik)
 
   Die verlinkten Originalseiten sind die maßgeblichen Quellen. Projektstatus und Pläne können sich ändern. Insbesondere ist prtop weiterhin in Arbeit, ai-ctx archiviert und die nächste Ausgabe des Erstwählerforums für 2027 geplant.
+
+  ## Politik und Engagement
+
+  Die Seite [Politik und Engagement](/politik) fasst Jack Ruders persönliche schulische Vertretungsarbeit, das Erstwählerforum Stade sowie seine Kommunikationsverantwortung bei Volt Stade und technische Mitarbeit im europäischen Volt-Umfeld zusammen. Sie ist keine offizielle Parteiwebsite. Die Angaben auf der Seite verlinken auf die jeweiligen Projekt- und Lebenslaufquellen. Diese Datei ist ergänzende Navigation; sie ist keine Aussage über Google-Rankings.
 schema_same_as:
   - 'https://voltdeutschland.org/niedersachsen/menschen/jack-ruder'
 person_topics:

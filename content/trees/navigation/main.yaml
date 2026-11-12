@@ -15,3 +15,7 @@ tree:
     id: aca160a0-f116-4308-8f46-4bdb426a7c7b
     title: Veröffentlichungen
     url: /publikationen
+  -
+    id: 3c177f47-cc11-41e3-aad9-e7913c77aafd
+    title: Politik
+    url: /politik

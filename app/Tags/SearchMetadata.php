@@ -184,7 +184,7 @@ class SearchMetadata extends Tags
                 'publisher' => ['@id' => $baseUrl.'/#person'],
             ],
             [
-                '@type' => 'WebPage',
+                '@type' => $canonical === $baseUrl.'/politik' ? 'ProfilePage' : 'WebPage',
                 '@id' => $canonical.'#webpage',
                 'url' => $canonical,
                 'name' => $title,
@@ -192,6 +192,7 @@ class SearchMetadata extends Tags
                 'inLanguage' => 'de-DE',
                 'isPartOf' => ['@id' => $baseUrl.'/#website'],
                 'about' => ['@id' => $baseUrl.'/#person'],
+                ...($canonical === $baseUrl.'/politik' ? ['mainEntity' => ['@id' => $baseUrl.'/#person']] : []),
             ],
         ];
 
