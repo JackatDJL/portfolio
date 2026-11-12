@@ -1,0 +1,23 @@
+@layer components {
+    .support-page { max-width: 82rem; }
+    .support-intro { max-width: 58rem; padding-block: clamp(3rem, 9vw, 8rem); }
+    .support-intro h1 { max-width: 16ch; margin: .75rem 0 1.5rem; font-size: clamp(2.8rem, 8vw, 6.5rem); line-height: .98; letter-spacing: -.055em; text-wrap: balance; }
+    .support-intro > p:not(.eyebrow), .support-contact > p:not(.eyebrow) { max-width: 45rem; color: var(--site-text-muted); font-size: 1.08rem; line-height: 1.7; }
+    .support-intro__note { border-left: 2px solid var(--site-accent); padding-left: 1rem; }
+    .support-goals { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr)); border-top: 1px solid var(--site-border-strong); }
+    .support-goal { display: flex; flex-direction: column; align-items: flex-start; padding: clamp(1.5rem, 4vw, 3rem); border-bottom: 1px solid var(--site-border); }
+    .support-goal + .support-goal { border-left: 1px solid var(--site-border); }
+    .support-goal h2, .support-contact h2 { margin: .5rem 0 1rem; font-size: clamp(1.8rem, 3.8vw, 3rem); line-height: 1.05; letter-spacing: -.035em; }
+    .support-goal > p:not(.eyebrow), .support-separate { color: var(--site-text-muted); line-height: 1.65; }
+    .support-needs { padding-left: 1.2rem; line-height: 1.8; }
+    .support-progress { width: 100%; margin-top: auto; padding-top: 2rem; }
+    .support-progress__labels { display: flex; justify-content: space-between; gap: 1rem; font-family: var(--font-mono); font-size: .875rem; }
+    .support-progress progress { display: block; width: 100%; height: .8rem; margin-top: .75rem; accent-color: var(--site-accent); }
+    .support-progress > p { color: var(--site-text-muted); font-size: .875rem; }
+    .support-separate { margin-top: 1.5rem; border-top: 1px solid var(--site-border); padding-top: 1rem; font-size: .9rem; }
+    .support-contact { margin-top: clamp(3rem, 8vw, 7rem); padding: clamp(1.5rem, 5vw, 4rem); border: 1px solid var(--site-border-strong); }
+    .support-contact .btn { margin-block: 1rem; }
+    .support-acknowledgments { margin-top: 4rem; padding-top: 2rem; border-top: 1px solid var(--site-border); }
+    .support-acknowledgments h2 { font-size: clamp(1.8rem, 3.8vw, 3rem); }
+    .support-acknowledgments ul { display: flex; flex-wrap: wrap; gap: 1.5rem; padding: 0; list-style: none; }
+}

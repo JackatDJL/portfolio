@@ -1,0 +1,42 @@
+<div class="site-container collection-root support-page">
+    <header class="support-intro">
+        <p class="eyebrow">Förderung mit klaren Zielen</p>
+        <h1>Gute Projekte brauchen Zeit, Material und verlässliche Infrastruktur.</h1>
+        <p>Ich entwickle Open-Source-Software, digitale Werkzeuge und Robotikprojekte. Auf dieser Seite stehen konkrete, vorläufige Kostenpläne. Angezeigte Fortschritte zählen ausschließlich bestätigte Beiträge.</p>
+        <p class="support-intro__note">Die Budgets sind grobe Planungsschätzungen, keine Angebote. Sie werden aktualisiert, sobald konkrete Beschaffungen und Preise feststehen.</p>
+        {{ if githubSponsorsUrl }}<a class="btn btn-primary" href="{{ githubSponsorsUrl }}" target="_blank" rel="noopener noreferrer">Auf GitHub Sponsors unterstützen ↗</a>{{ /if }}
+    </header>
+
+    <section class="support-goals" aria-label="Förderziele">
+        {{ goals }}
+        <article class="support-goal">
+            <p class="eyebrow">{{ category }}</p>
+            <h2>{{ title }}</h2>
+            <p>{{ summary }}</p>
+            <ul class="support-needs">{{ needs }}<li>{{ value }}</li>{{ /needs }}</ul>
+            <div class="support-progress">
+                <div class="support-progress__labels"><span>Bestätigt: {{ received }} €</span><span>Ziel: {{ budget }} €</span></div>
+                <progress max="{{ budget }}" value="{{ received }}" aria-label="{{ title }}: {{ received }} von {{ budget }} Euro bestätigt">{{ progress }}%</progress>
+                <p>{{ progress }} % durch bestätigte Beiträge</p>
+            </div>
+            {{ if separate }}<p class="support-separate"><strong>Getrennte Verwaltung:</strong> Beiträge für AtheBlues können ausschließlich über eine dafür zugelassene Schule oder Teamorganisation angenommen und verwaltet werden. Diese Seite nimmt dafür kein Geld entgegen und stellt keine Spendenbescheinigungen aus.</p>{{ /if }}
+        </article>
+        {{ /goals }}
+    </section>
+
+    {{ if acknowledgments }}
+    <section class="support-acknowledgments" aria-label="Mit ausdrücklicher Erlaubnis genannte Unterstützerinnen und Unterstützer">
+        <p class="eyebrow">Mit Erlaubnis genannt</p>
+        <h2>Danke für die Unterstützung</h2>
+        <ul>{{ acknowledgments }}<li>{{ value }}</li>{{ /acknowledgments }}</ul>
+    </section>
+    {{ /if }}
+
+    <section class="support-contact">
+        <p class="eyebrow">Unternehmen und Sachleistungen</p>
+        <h2>Unterstützung besprechen</h2>
+        <p>Unternehmen können wegen finanzieller Förderung, Hosting, Komponenten oder Fertigungsleistungen anfragen. Ich kläre Zweck, Rahmen und Verwaltung vorab persönlich.</p>
+        {{ if email }}<a class="btn btn-secondary" href="mailto:{{ email }}?subject=Projektunterst%C3%BCtzung">Kontakt aufnehmen ↗</a>{{ /if }}
+        <p>Eine Unterstützung an eine Privatperson ist nicht automatisch steuerlich absetzbar und begründet keinen Anspruch auf eine Spendenbescheinigung. Eine öffentliche Nennung erfolgt nur nach ausdrücklicher Zustimmung.</p>
+    </section>
+</div>

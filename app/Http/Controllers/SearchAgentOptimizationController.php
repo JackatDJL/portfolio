@@ -22,7 +22,7 @@ class SearchAgentOptimizationController extends Controller
 
     private const ROUTES = [
         '/projekte' => 'Projekte', '/blog' => 'Blog',
-        '/publikationen' => 'Veröffentlichungen', '/aktuell' => 'Aktuell', '/cv' => 'Lebenslauf',
+        '/publikationen' => 'Veröffentlichungen', '/aktuell' => 'Aktuell', '/cv' => 'Lebenslauf', '/support' => 'Unterstützen',
     ];
 
     private const PAGE_SIZE = 100;
