@@ -140,7 +140,7 @@ async function startProcess(state, name, command, args, port, url, extraEnv = {}
   const runnerConfigPath = path.join(state.directory, `${name}.runner.json`)
   const config = { command, args, cwd: root, logPath }
   await fs.writeFile(runnerConfigPath, `${JSON.stringify(config)}\n`, { mode: 0o600 })
-  const child = spawn(process.execPath, [runnerPath, runnerConfigPath], {
+  const child = spawn('bun', ['--no-env-file', runnerPath, runnerConfigPath], {
     cwd: root,
     env: safeEnvironment(extraEnv),
     detached: true,
@@ -167,15 +167,28 @@ async function waitReady(entry, timeoutMs = 120_000) {
     } catch {}
     await new Promise((resolve) => setTimeout(resolve, 250))
   }
-  throw new Error(`${entry.name} did not become ready in ${Math.round(timeoutMs / 1000)} seconds.`)
+  const recentLog = await tail(entry.logPath, 25)
+  throw new Error(`${entry.name} did not become ready in ${Math.round(timeoutMs / 1000)} seconds.${recentLog ? `\nRecent log output:\n${recentLog}` : ''}`)
 }
 
 async function tail(file, count = 60) {
-  try { return redact((await fs.readFile(file, 'utf8')).split(/\r?\n/).slice(-count).join('\n').trim()) }
-  catch { return '' }
+  let handle
+  try {
+    handle = await fs.open(file, 'r')
+    const { size } = await handle.stat()
+    const start = Math.max(0, size - 64 * 1024)
+    const buffer = Buffer.alloc(size - start)
+    await handle.read(buffer, 0, buffer.length, start)
+    let content = buffer.toString('utf8')
+    if (start > 0) {
+      const firstLine = content.indexOf('\n')
+      content = firstLine < 0 ? '' : content.slice(firstLine + 1)
+    }
+    return redact(content.split(/\r?\n/).slice(-count).join('\n').trim())
+  } catch { return '' } finally { await handle?.close() }
 }
 
-async function stopState(state) {
+async function stopState(state, { preserveArtifacts = false } = {}) {
   const failures = []
   for (const entry of [...state.processes].reverse()) {
     if (!processMatches(entry)) continue
@@ -186,7 +199,13 @@ async function stopState(state) {
       if (processMatches(entry)) process.kill(-entry.processGroup, 'SIGKILL')
     } catch (error) { if (error.code !== 'ESRCH') failures.push(`${entry.name}: ${redact(error.message)}`) }
   }
-  if (!failures.length) {
+  if (preserveArtifacts) {
+    if (failures.length) {
+      state.status = 'cleanup-failed'
+      state.failures = [...(state.failures || []), ...failures]
+    }
+    await writeState(state)
+  } else if (!failures.length) {
     await fs.rm(statePath(state.id), { force: true })
     await fs.rm(state.directory, { recursive: true, force: true })
   }
@@ -226,7 +245,7 @@ async function up(name) {
     await writeState(state)
     try {
       const safeArgs = { HOMEPAGE_PREVIEW_HOT_FILE: hotFile, HOMEPAGE_PREVIEW_ENV_DIR: envDirectory }
-      await startProcess(state, 'vite', 'bun', ['run', 'dev', '--', '--host', '127.0.0.1', '--port', String(vitePort), '--strictPort'], vitePort, `${state.localUrls.vite}/@vite/client`, { ...safeArgs, HOMEPAGE_PREVIEW_HOST: '127.0.0.1', HOMEPAGE_PREVIEW_VITE_PORT: String(vitePort) })
+      await startProcess(state, 'vite', 'bun', ['--no-env-file', 'run', 'dev', '--', '--host', '127.0.0.1', '--port', String(vitePort), '--strictPort'], vitePort, `${state.localUrls.vite}/@vite/client`, { ...safeArgs, HOMEPAGE_PREVIEW_HOST: '127.0.0.1', HOMEPAGE_PREVIEW_VITE_PORT: String(vitePort) })
       await waitReady(state.processes.at(-1))
       await startProcess(state, 'laravel', 'php', ['artisan', 'serve', '--host=127.0.0.1', `--port=${appPort}`], appPort, state.localUrls.app, safeArgs)
       await waitReady(state.processes.at(-1))
@@ -234,8 +253,10 @@ async function up(name) {
       await writeState(state)
       console.log(JSON.stringify(await statusFor(state), null, 2))
     } catch (error) {
-      await stopState(state)
-      throw error
+      state.status = 'failed'
+      state.failures = [redact(error.message)]
+      await stopState(state, { preserveArtifacts: true })
+      throw new Error(`${redact(error.message)} Preview diagnostics retained at ${state.directory}.`)
     }
   })
 }
@@ -254,9 +275,12 @@ async function statusFor(state) {
 async function main() {
   const [command, ...raw] = process.argv.slice(2)
   const idIndex = raw.indexOf('--id')
+  if (idIndex >= 0 && (!raw[idIndex + 1] || raw[idIndex + 1].startsWith('--'))) {
+    throw new Error('Missing value for --id.')
+  }
   const requestedId = idIndex >= 0 ? raw[idIndex + 1] : null
   if (requestedId && !/^preview-[a-f0-9]{16}$/.test(requestedId)) throw new Error('Preview ID must be a generated preview ID.')
-  const name = raw.find((arg, index) => !arg.startsWith('--') && index !== idIndex + 1) || sourceInfo().branch || 'preview'
+  const name = raw.find((arg, index) => !arg.startsWith('--') && (idIndex < 0 || index !== idIndex + 1)) || sourceInfo().branch || 'preview'
   if (!['up', 'status', 'logs', 'down'].includes(command)) {
     throw new Error('Usage: bun run preview -- <up|status|logs|down> [name|--id preview-<hex>]')
   }
@@ -273,7 +297,7 @@ async function main() {
     } else {
       const failures = await stopState(state)
       if (failures.length) throw new Error(failures.join('; '))
-      console.log(`Stopped preview ${redact(name)}.`)
+      console.log(`Stopped preview ${redact(state.name)}.`)
     }
   })
 }

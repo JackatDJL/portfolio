@@ -25,16 +25,37 @@ async function main() {
   const append = (line) => {
     queue = queue.then(() => log.appendFile(`${redact(line)}\n`)).catch(() => {})
   }
+  const maxLineLength = 16 * 1024
   for (const stream of [child.stdout, child.stderr]) {
     stream.setEncoding('utf8')
     let pending = ''
+    let dropping = false
     stream.on('data', (chunk) => {
-      const lines = `${pending}${chunk}`.split(/\r?\n/)
-      pending = lines.pop() || ''
-      lines.forEach(append)
-      if (pending.length > 4096) { append(pending); pending = '' }
+      let remainder = `${pending}${chunk}`
+      pending = ''
+      while (remainder.length) {
+        const newline = remainder.indexOf('\n')
+        const complete = newline >= 0
+        const segment = complete ? remainder.slice(0, newline).replace(/\r$/, '') : remainder
+        remainder = complete ? remainder.slice(newline + 1) : ''
+        if (dropping) {
+          if (complete) { append('[overlong log line omitted]'); dropping = false }
+          continue
+        }
+        if (pending.length + segment.length > maxLineLength) {
+          pending = ''
+          dropping = true
+          if (complete) { append('[overlong log line omitted]'); dropping = false }
+          continue
+        }
+        if (complete) { append(`${pending}${segment}`); pending = '' }
+        else pending = `${pending}${segment}`
+      }
     })
-    stream.on('end', () => { if (pending) append(pending) })
+    stream.on('end', () => {
+      if (!dropping && pending) append(pending)
+      else if (dropping) append('[overlong log line omitted]')
+    })
   }
   const forward = (signal) => { try { child.kill(signal) } catch {} }
   process.on('SIGTERM', () => forward('SIGTERM'))
