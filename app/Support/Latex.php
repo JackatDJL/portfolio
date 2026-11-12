@@ -34,13 +34,7 @@ final class Latex
 
     public static function accessibleAccent(string $accent): string
     {
-        $hex = ltrim(trim($accent), '#');
-        if (preg_match('/^[a-fA-F0-9]{3}$/', $hex)) {
-            $hex = implode('', array_map(fn (string $part) => $part.$part, str_split($hex)));
-        }
-        if (! preg_match('/^[a-fA-F0-9]{6}$/', $hex)) {
-            $hex = '5ADBBD';
-        }
+        $hex = self::normalizeHexColor($accent);
 
         $channels = array_map('hexdec', str_split($hex, 2));
         $contrastAt = static function (float $scale) use ($channels): float {
@@ -91,5 +85,19 @@ final class Latex
         $luminance = (0.2126 * $linear[0]) + (0.7152 * $linear[1]) + (0.0722 * $linear[2]);
 
         return 1.05 / ($luminance + 0.05);
+    }
+
+    /** Return a safe six-digit RGB value without '#', using the default accent for invalid legacy values. */
+    public static function normalizeHexColor(string $accent): string
+    {
+        $hex = ltrim(trim($accent), '#');
+        if (preg_match('/^[a-fA-F0-9]{3}$/', $hex)) {
+            $hex = implode('', array_map(fn (string $part) => $part.$part, str_split($hex)));
+        }
+        if (! preg_match('/^[a-fA-F0-9]{6}$/', $hex)) {
+            return '5ADBBD';
+        }
+
+        return strtoupper($hex);
     }
 }
