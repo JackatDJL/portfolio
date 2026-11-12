@@ -74,7 +74,16 @@ class SearchMetadata extends Tags
             $image ? '<meta property="og:image" content="'.e($image).'">' : '',
             $image ? '<meta property="og:image:alt" content="'.e($siteName).'">' : '',
             $image ? '<meta name="twitter:image" content="'.e($image).'">' : '',
-            '<script type="application/ld+json">'.$this->jsonLd($site, $baseUrl, $canonical, $title, $description).'</script>',
+            '<script type="application/ld+json">'.$this->jsonLd(
+                $site,
+                $baseUrl,
+                $canonical,
+                $title,
+                $description,
+                in_array($collection, ['posts', 'publications'], true),
+                $this->plainValue($this->context->get('date')),
+                $image,
+            ).'</script>',
         ];
 
         return implode("\n        ", array_filter($tags));
@@ -143,7 +152,16 @@ class SearchMetadata extends Tags
     }
 
     /** Encodes the site's Person, WebSite, and current WebPage schema graph. */
-    private function jsonLd(array $site, string $baseUrl, string $canonical, string $title, string $description): string
+    private function jsonLd(
+        array $site,
+        string $baseUrl,
+        string $canonical,
+        string $title,
+        string $description,
+        bool $isArticle,
+        mixed $datePublished,
+        ?string $image,
+    ): string
     {
         $sameAs = array_values(array_unique(array_filter([
             $site['github_url'] ?? null,
@@ -195,9 +213,43 @@ class SearchMetadata extends Tags
             ],
         ];
 
+        if ($isArticle) {
+            $article = array_filter([
+                '@type' => 'BlogPosting',
+                '@id' => $canonical.'#article',
+                'url' => $canonical,
+                'headline' => $title,
+                'description' => $description ?: null,
+                'inLanguage' => 'de-DE',
+                'mainEntityOfPage' => ['@id' => $canonical.'#webpage'],
+                'author' => ['@id' => $baseUrl.'/#person'],
+                'publisher' => ['@id' => $baseUrl.'/#person'],
+                'datePublished' => $this->schemaDate($datePublished),
+                'image' => $image,
+            ], fn ($value) => $value !== null && $value !== '');
+            $graph[] = $article;
+        }
+
         return json_encode(
             ['@context' => 'https://schema.org', '@graph' => $graph],
             JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT,
         ) ?: '{}';
+    }
+
+    private function schemaDate(mixed $value): ?string
+    {
+        if ($value instanceof \DateTimeInterface) {
+            return $value->format('c');
+        }
+
+        if (is_string($value) && trim($value) !== '') {
+            try {
+                return (new \DateTimeImmutable($value))->format('c');
+            } catch (\Throwable) {
+                return null;
+            }
+        }
+
+        return null;
     }
 }
