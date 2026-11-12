@@ -1,0 +1,10 @@
+.sponsorship-form > label { display: flex; flex-direction: column; gap: .4rem; color: inherit; font-weight: 600; }
+.sponsorship-form > label:has(input[type="checkbox"]) { flex-direction: row; align-items: center; }
+.sponsorship-form input:not([type="checkbox"]),
+.sponsorship-form select,
+.sponsorship-form textarea { width: 100%; min-height: 2.5rem; border: 1px solid var(--gray-400, #888); border-radius: .25rem; background: var(--white, #fff); color: var(--gray-900, #222); padding: .5rem .65rem; font: inherit; font-weight: 400; }
+.sponsorship-form textarea { min-height: 5rem; }
+.sponsorship-form input[type="checkbox"] { width: 1rem; height: 1rem; accent-color: var(--blue-600, #2563eb); }
+.sponsorship-form input[type="file"] { min-height: auto; }
+.sponsorship-form :is(input, select, textarea):focus-visible { outline: 2px solid var(--blue-600, #2563eb); outline-offset: 2px; }
+.sponsorship-form .btn { width: fit-content; min-height: 2.5rem; }
