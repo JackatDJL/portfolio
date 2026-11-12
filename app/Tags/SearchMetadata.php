@@ -80,7 +80,11 @@ class SearchMetadata extends Tags
                 $canonical,
                 $title,
                 $description,
-                in_array($collection, ['posts', 'publications'], true),
+                match ($collection) {
+                    'posts' => 'BlogPosting',
+                    'publications' => 'Article',
+                    default => null,
+                },
                 $this->plainValue($this->context->get('date')),
                 $image,
             ).'</script>',
@@ -158,7 +162,7 @@ class SearchMetadata extends Tags
         string $canonical,
         string $title,
         string $description,
-        bool $isArticle,
+        ?string $articleType,
         mixed $datePublished,
         ?string $image,
     ): string
@@ -213,9 +217,9 @@ class SearchMetadata extends Tags
             ],
         ];
 
-        if ($isArticle) {
+        if ($articleType !== null) {
             $article = array_filter([
-                '@type' => 'BlogPosting',
+                '@type' => $articleType,
                 '@id' => $canonical.'#article',
                 'url' => $canonical,
                 'headline' => $title,
