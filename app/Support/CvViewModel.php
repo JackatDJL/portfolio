@@ -57,6 +57,9 @@ final class CvViewModel
         $private = CvPrivateData::reveal(GlobalSet::find('cv')->inDefaultSite(), strict: true);
         $resolved = $this->resolver->resolveForApplication($application);
         $cv = $this->make(null, true, null, $resolved);
+        // Legacy CV profile accents may predate hex validation. Normalize only the export view model;
+        // never rewrite the shared profile or its stored data.
+        $cv['accent'] = '#'.Latex::normalizeHexColor((string) $cv['accent']);
         $addressParts = array_values(array_filter([
             CvPrivateData::streetLine($private),
             trim(($private['postal_code'] ?? '').' '.($private['city'] ?? '')),
