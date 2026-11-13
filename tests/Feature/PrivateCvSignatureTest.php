@@ -88,6 +88,30 @@ class PrivateCvSignatureTest extends TestCase
         $this->post('/cv/private-signature', ['path' => '/cv/jobmesse-26'])->assertNotFound();
     }
 
+    public function test_authorized_private_signature_endpoint_works_with_csrf_middleware_and_without_fetch_site_header(): void
+    {
+        $cv = GlobalSet::find('cv')->inDefaultSite();
+        $cv->set('private_cv_signature_enabled', true);
+        $png = HandwrittenSignatureFixture::png();
+        app(PrivateHandwrittenSignature::class)->save('data:image/png;base64,'.base64_encode($png), HandwrittenSignatureFixture::strokes());
+
+        $grant = CvCapabilities::issueTemporary('/cv/jobmesse-26');
+        $this->postJson('/cv/token-exchange', ['path' => '/cv/jobmesse-26', 'token' => $grant['token']])->assertOk();
+
+        // Laravel's test environment normally skips request forgery checks. Use a
+        // production-like environment to exercise the configured middleware and
+        // the same header-less request sent by the private CV page.
+        $previousEnvironment = $this->app['env'];
+        $this->app['env'] = 'local';
+        try {
+            $this->call('POST', '/cv/private-signature', ['path' => '/cv/jobmesse-26'])
+                ->assertOk()
+                ->assertHeader('Content-Type', 'image/png');
+        } finally {
+            $this->app['env'] = $previousEnvironment;
+        }
+    }
+
     public function test_authorized_cv_pdf_places_signature_after_content_on_a4_without_public_leakage(): void
     {
         $cv = GlobalSet::find('cv')->inDefaultSite();
