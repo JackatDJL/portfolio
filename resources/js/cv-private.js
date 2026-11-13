@@ -76,12 +76,33 @@ export const initCvPrivateData = ({ watch = true } = {}) => {
             const meta = signaturePanel.querySelector('[data-cv-private-signature-meta]');
             if (!(image instanceof HTMLImageElement)) return;
             if (image.dataset.objectUrl) URL.revokeObjectURL(image.dataset.objectUrl);
-            image.dataset.objectUrl = URL.createObjectURL(blob);
-            image.src = image.dataset.objectUrl;
-            image.hidden = false;
-            if (pattern instanceof HTMLElement) pattern.hidden = true;
-            if (meta instanceof HTMLElement) meta.hidden = false;
-            signaturePanel.hidden = false;
+            const objectUrl = URL.createObjectURL(blob);
+            image.dataset.objectUrl = objectUrl;
+            image.hidden = true;
+            if (pattern instanceof HTMLElement) pattern.hidden = false;
+            if (meta instanceof HTMLElement) meta.hidden = true;
+            image.addEventListener('load', () => {
+                if (image.dataset.objectUrl !== objectUrl || image.naturalWidth === 0) return;
+                image.hidden = false;
+                if (pattern instanceof HTMLElement) pattern.hidden = true;
+                if (meta instanceof HTMLElement) meta.hidden = false;
+                signaturePanel.hidden = false;
+            }, { once: true });
+            image.addEventListener('error', () => {
+                if (image.dataset.objectUrl !== objectUrl) return;
+                URL.revokeObjectURL(objectUrl);
+                delete image.dataset.objectUrl;
+                image.removeAttribute('src');
+                image.hidden = true;
+                if (meta instanceof HTMLElement) meta.hidden = true;
+                if (pattern instanceof HTMLElement) {
+                    pattern.hidden = false;
+                    signaturePanel.hidden = false;
+                } else {
+                    signaturePanel.hidden = true;
+                }
+            }, { once: true });
+            image.src = objectUrl;
         })
         .catch(() => {});
 };

@@ -3,12 +3,13 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 const script = readFileSync(fileURLToPath(new URL('../../resources/js/cv-private.js', import.meta.url)), 'utf8');
+const validPng = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/pWQAAAAASUVORK5CYII=', 'base64');
 
 const pageMarkup = `
     <aside data-cv-private-panel data-cv-private-endpoint="/cv/private-data"></aside>
     <section data-cv-private-signature data-enabled="true" data-endpoint="/cv/private-signature">
         <div data-cv-security-pattern><svg aria-label="Synthetisches Linienmotiv"></svg></div>
-        <img data-cv-private-signature-image hidden>
+        <img data-cv-private-signature-image style="width:46mm;height:16mm" hidden>
         <div data-cv-private-signature-meta hidden><p>Musterstadt, 6. November 2026</p><p>Erika Muster</p></div>
     </section>`;
 
@@ -32,13 +33,32 @@ test('keeps the real signature hidden when the private endpoint denies access', 
 
 test('replaces the synthetic pattern only after the private endpoint returns an image', async ({ page }) => {
     await page.route('**/cv/private-data', route => route.fulfill({ json: {} }));
-    await page.route('**/cv/private-signature', route => route.fulfill({ status: 200, contentType: 'image/png', body: Buffer.from('synthetic-png-fixture') }));
+    await page.route('**/cv/private-signature', route => route.fulfill({ status: 200, contentType: 'image/png', body: validPng }));
     await initializePage(page);
 
-    await expect(page.locator('[data-cv-private-signature-image]')).toBeVisible();
-    await expect(page.locator('[data-cv-private-signature-image]')).toHaveAttribute('src', /^blob:/);
+    const image = page.locator('[data-cv-private-signature-image]');
+    await expect(image).toHaveAttribute('src', /^blob:/);
+    await expect.poll(() => image.evaluate(element => element.naturalWidth)).toBe(1);
+    await expect(image).toBeVisible();
     await expect(page.locator('[data-cv-security-pattern]')).toBeHidden();
     await expect(page.locator('[data-cv-private-signature-meta]')).toBeVisible();
     await expect(page.locator('[data-cv-private-signature-meta]')).toContainText('Musterstadt');
     await expect(page.locator('[data-cv-private-signature-meta]')).toContainText('Erika Muster');
+});
+
+test('keeps the synthetic pattern when the private signature image cannot be decoded', async ({ page }) => {
+    await page.route('**/cv/private-data', route => route.fulfill({ json: {} }));
+    await page.route('**/cv/private-signature', route => route.fulfill({
+        status: 200,
+        contentType: 'image/png',
+        body: Buffer.from('not a PNG image'),
+    }));
+    await initializePage(page);
+
+    const image = page.locator('[data-cv-private-signature-image]');
+    await expect(image).toHaveAttribute('src', /^blob:/);
+    await expect.poll(() => image.evaluate(element => element.complete && element.naturalWidth === 0)).toBe(true);
+    await expect(image).toBeHidden();
+    await expect(page.locator('[data-cv-security-pattern]')).toBeVisible();
+    await expect(page.locator('[data-cv-private-signature-meta]')).toBeHidden();
 });
