@@ -5,6 +5,7 @@ use App\Http\Controllers\CvPageController;
 use App\Http\Controllers\CvPdfController;
 use App\Http\Controllers\CvPrivateDataController;
 use App\Http\Controllers\CvPrivateLinkController;
+use App\Http\Controllers\CvPrivateSignatureController;
 use App\Http\Controllers\CvTokenExchangeController;
 use App\Http\Controllers\SearchDocumentsController;
 use App\Http\Middleware\ApplicationAccess;
@@ -33,6 +34,9 @@ Route::get('/design-system', function () {
 
 Route::post('/cv/private-data', [CvPrivateDataController::class, 'reveal'])
     ->name('cv.private-data');
+Route::post('/cv/private-signature', CvPrivateSignatureController::class)
+    ->middleware('throttle:6,1')
+    ->name('cv.private-signature');
 Route::post('/cv/token-exchange', CvTokenExchangeController::class)
     ->middleware('throttle:12,1')
     ->name('cv.token-exchange');

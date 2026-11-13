@@ -66,6 +66,7 @@ final class ApplicationLetter
             'signature_image' => ($signature['mode'] ?? 'none') === 'handwritten' ? ($cv['signature_image'] ?? null) : null,
             'signature_width_mm' => ($signature['mode'] ?? 'none') === 'handwritten' ? (int) ($cv['signature_width_mm'] ?? 46) : null,
             'signature_baseline_mm' => ($signature['mode'] ?? 'none') === 'handwritten' ? (int) ($cv['signature_baseline_mm'] ?? 0) : null,
+            'signature_alignment' => in_array($signature['alignment'] ?? 'left', ['left', 'center', 'right'], true) ? ($signature['alignment'] ?? 'left') : 'left',
             'documents' => array_column($documents, 'label'),
         ];
     }

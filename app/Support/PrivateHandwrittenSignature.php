@@ -46,6 +46,12 @@ final class PrivateHandwrittenSignature
         ];
     }
 
+    /** Return only the stored raster bytes for a caller that has already authorized delivery. */
+    public function imageBytes(): ?string
+    {
+        return $this->read()['png'] ?? null;
+    }
+
     public function save(string $dataUrl, array $strokes = []): void
     {
         if (! preg_match('#^data:image/png;base64,([A-Za-z0-9+/=]+)$#D', $dataUrl, $matches)

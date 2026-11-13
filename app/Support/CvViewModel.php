@@ -48,6 +48,7 @@ final class CvViewModel
             'projects' => $this->entryReferences($resolved['sections']['projects']['value']),
             'publications' => $this->entryReferences($resolved['sections']['publications']['value']),
             'milestones' => $this->milestones($resolved['sections']['milestones']['value']),
+            'print' => $resolved['print'],
         ];
     }
 
@@ -75,6 +76,9 @@ final class CvViewModel
         $cv['signature_digest'] = $handwritten ? $signatureSource['sha256'] : null;
         $cv['signature_width_mm'] = $handwritten ? (int) ($signature['width_mm'] ?? 46) : null;
         $cv['signature_baseline_mm'] = $handwritten ? (int) ($signature['baseline_mm'] ?? 0) : null;
+        $cv['signature_alignment'] = in_array($signature['alignment'] ?? 'left', ['left', 'center', 'right'], true)
+            ? ($signature['alignment'] ?? 'left')
+            : 'left';
         $cv['signed_by'] = $handwritten ? $cv['name'] : null;
         $cv['signed_date'] = $handwritten ? Carbon::parse(ApplicationData::date($application))->locale('de')->translatedFormat('j. F Y') : null;
         $cv['signed_place'] = $handwritten ? trim((string) ($private['city'] ?? '')) : null;

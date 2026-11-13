@@ -61,7 +61,10 @@ $subject = new \Illuminate\Support\HtmlString(implode('\\\\', array_map(fn ($lin
 {{ $e($letter['signature']) }}\par
 @elseif($letter['signature_image'])
 \vspace{7mm}
+\begin{minipage}{\textwidth}
+@if($letter['signature_alignment'] === 'center')\centering @elseif($letter['signature_alignment'] === 'right')\raggedleft @else\raggedright @endif
 \raisebox{ {{ (int) $letter['signature_baseline_mm'] }}mm }{\includegraphics[width={{ (int) $letter['signature_width_mm'] }}mm,height=16mm,keepaspectratio]{ {{ $e($letter['signature_image']) }} }}\par
 {{ $e($letter['sender']) }}\par
+\end{minipage}
 @endif
 \end{document}

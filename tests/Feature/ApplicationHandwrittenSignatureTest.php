@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Support\ApplicationData;
+use App\Support\ApplicationLetter;
 use App\Support\ApplicationPdfExporter;
 use App\Support\CvViewModel;
 use App\Support\PrivateHandwrittenSignature;
@@ -203,6 +204,27 @@ class ApplicationHandwrittenSignatureTest extends TestCase
         $this->assertMatchesRegularExpression('/^\s*[2-9]\d*\s+\d+\s+image\s+480\s+140\b/m', $images);
         $this->assertStringNotContainsString(base64_encode(HandwrittenSignatureFixture::png()), $text);
         $this->assertSame(hash('sha256', HandwrittenSignatureFixture::png()), $signature->materialize($this->fixture->root.'/digest-check.png')['sha256']);
+    }
+
+    public function test_application_signature_alignment_is_applied_to_both_letter_and_cv(): void
+    {
+        $source = $this->saveSource()->materialize($this->fixture->root.'/alignment-signature.png');
+        $this->fixture->entry->set('signature', ApplicationData::encrypt([[
+            'mode' => 'handwritten',
+            'width_mm' => 46,
+            'baseline_mm' => 0,
+            'alignment' => 'right',
+        ]]));
+
+        $cv = app(CvViewModel::class)->forApplication($this->fixture->entry, $source);
+        $letter = app(ApplicationLetter::class)->make($this->fixture->entry, $cv, []);
+        $cvSource = view('latex.cv', compact('cv'))->render();
+        $letterSource = view('latex.application-letter', compact('letter'))->render();
+
+        $this->assertSame('right', $cv['signature_alignment']);
+        $this->assertSame('right', $letter['signature_alignment']);
+        $this->assertStringContainsString('\\raggedleft', $cvSource);
+        $this->assertStringContainsString('\\raggedleft', $letterSource);
     }
 
     public function test_changing_handwriting_invalidates_the_canonical_pdf_cache(): void

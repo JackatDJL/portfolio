@@ -57,4 +57,52 @@ export const initCvPrivateData = ({ watch = true } = {}) => {
             document.dispatchEvent(new CustomEvent('cv:private-settled'));
             retryOnHashChange();
         });
+
+    const signaturePanel = document.querySelector('[data-cv-private-signature]');
+    if (!(signaturePanel instanceof HTMLElement) || signaturePanel.dataset.enabled !== 'true') return;
+
+    exchange.then(ok => ok ? fetch(signaturePanel.dataset.endpoint || '/cv/private-signature', {
+        method: 'POST',
+        credentials: 'same-origin',
+        referrerPolicy: 'no-referrer',
+        headers: { 'Content-Type': 'application/json', Accept: 'image/png' },
+        body: JSON.stringify({ path: location.pathname }),
+    }) : null)
+        .then(response => response?.ok ? response.blob() : null)
+        .then(blob => {
+            if (!(blob instanceof Blob) || blob.type !== 'image/png') return;
+            const image = signaturePanel.querySelector('[data-cv-private-signature-image]');
+            const pattern = signaturePanel.querySelector('[data-cv-security-pattern]');
+            const meta = signaturePanel.querySelector('[data-cv-private-signature-meta]');
+            if (!(image instanceof HTMLImageElement)) return;
+            if (image.dataset.objectUrl) URL.revokeObjectURL(image.dataset.objectUrl);
+            const objectUrl = URL.createObjectURL(blob);
+            image.dataset.objectUrl = objectUrl;
+            image.hidden = true;
+            if (pattern instanceof HTMLElement) pattern.hidden = false;
+            if (meta instanceof HTMLElement) meta.hidden = true;
+            image.addEventListener('load', () => {
+                if (image.dataset.objectUrl !== objectUrl || image.naturalWidth === 0) return;
+                image.hidden = false;
+                if (pattern instanceof HTMLElement) pattern.hidden = true;
+                if (meta instanceof HTMLElement) meta.hidden = false;
+                signaturePanel.hidden = false;
+            }, { once: true });
+            image.addEventListener('error', () => {
+                if (image.dataset.objectUrl !== objectUrl) return;
+                URL.revokeObjectURL(objectUrl);
+                delete image.dataset.objectUrl;
+                image.removeAttribute('src');
+                image.hidden = true;
+                if (meta instanceof HTMLElement) meta.hidden = true;
+                if (pattern instanceof HTMLElement) {
+                    pattern.hidden = false;
+                    signaturePanel.hidden = false;
+                } else {
+                    signaturePanel.hidden = true;
+                }
+            }, { once: true });
+            image.src = objectUrl;
+        })
+        .catch(() => {});
 };
