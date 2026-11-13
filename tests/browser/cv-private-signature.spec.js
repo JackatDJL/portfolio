@@ -13,11 +13,24 @@ const pageMarkup = `
         <div data-cv-private-signature-meta hidden><p>Musterstadt, 6. November 2026</p><p>Erika Muster</p></div>
     </section>`;
 
-const initializePage = async (page) => {
+const initializePage = async (page, { waitForSignatureError = false } = {}) => {
     await page.goto('/tests/browser/fixtures/article-toc.html');
     await page.setContent(pageMarkup);
     await page.evaluate(() => { window.__cvExchange = Promise.resolve(true); });
+    if (waitForSignatureError) {
+        await page.evaluate(() => {
+            const image = document.querySelector('[data-cv-private-signature-image]');
+            window.__cvPrivateSignatureError = new Promise(resolve => image.addEventListener('error', resolve, { once: true }));
+            window.__cvRevokedPrivateUrls = [];
+            const revokeObjectURL = URL.revokeObjectURL.bind(URL);
+            URL.revokeObjectURL = url => {
+                window.__cvRevokedPrivateUrls.push(url);
+                revokeObjectURL(url);
+            };
+        });
+    }
     await page.addScriptTag({ type: 'module', content: `${script}\ninitCvPrivateData();` });
+    if (waitForSignatureError) await page.evaluate(() => window.__cvPrivateSignatureError);
 };
 
 test('keeps the real signature hidden when the private endpoint denies access', async ({ page }) => {
@@ -53,11 +66,12 @@ test('keeps the synthetic pattern when the private signature image cannot be dec
         contentType: 'image/png',
         body: Buffer.from('not a PNG image'),
     }));
-    await initializePage(page);
+    await initializePage(page, { waitForSignatureError: true });
 
     const image = page.locator('[data-cv-private-signature-image]');
-    await expect(image).toHaveAttribute('src', /^blob:/);
-    await expect.poll(() => image.evaluate(element => element.complete && element.naturalWidth === 0)).toBe(true);
+    await expect(image).not.toHaveAttribute('src', /.+/);
+    await expect(image).not.toHaveAttribute('data-object-url', /.+/);
+    await expect.poll(() => page.evaluate(() => window.__cvRevokedPrivateUrls.length)).toBe(1);
     await expect(image).toBeHidden();
     await expect(page.locator('[data-cv-security-pattern]')).toBeVisible();
     await expect(page.locator('[data-cv-private-signature-meta]')).toBeHidden();
