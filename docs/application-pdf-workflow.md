@@ -23,6 +23,8 @@ The letter fonts are bundled under `resources/application-fonts` with their OFL 
 
 The letter uses two LuaLaTeX passes to position its overlay. Longer letters continue on A4 with normal margins, keeping closing/signature together. A selected private handwritten signature is materialized only in the private export work directory, then reused in the letter and after the final content of the application CV. The CV signature strip uses the saved application date or manual override. No signature image or personal content is imported from the reference. The same existing CV renderer and profile resolver render the application CV. Bard supports paragraphs, bold/italic, hard breaks, lists and HTTP(S), mailto and tel links. Authors can use `#cv` and `#document-1`, `#document-2`, etc. in their own letter text; composite part bookmarks also remain available. User text is escaped, and unsupported blocks and unsafe URLs fail validation.
 
+Standalone CV PDFs can include the same encrypted handwritten source only when `private_cv_signature_enabled` is enabled and the request has an active, profile-scoped CV session. Public PDFs remain unsigned. The optional public web motif is generated from allowlisted pattern, color and density settings without reading the signature source. It is an ordinary SVG decoration, not physical UV printing, a passport security feature, anti-copy protection or QES. A CV signature remains visibly copyable after authorized delivery. The authorized CV page fetches the image through the scoped private endpoint only after token exchange; it displays the configured print date/place and typed name alongside the image.
+
 Order is always letter, freshly resolved private CV, then effective supporting documents in author-defined order. Inherit mode uses global defaults; an explicit empty override stays empty. Files must resolve inside the private application-document disk. Missing, encrypted, malformed or oversized documents stop the complete export. Defaults limit attachments to 20 MiB each, 100 MiB total and 300 composite pages.
 
 The pinned `pypdf` helper composes existing PDFs without rasterizing pages. It imports annotations/outlines, groups form fields per input and adds a bookmark per part. Internal named destinations are remapped to output page references, including identical names in different attachments. Letter attachment links target the correct part starts. External URI actions remain intact; accidental surrounding whitespace is removed. The shared URL escaping encodes additional fragment hashes so hyperref does not truncate Matrix room URLs. Supporting documents keep their original page sizes/rotation; generated letter/CV pages are A4. See the [pypdf merging documentation](https://pypdf.readthedocs.io/en/stable/user/merging-pdfs.html).
@@ -61,13 +63,13 @@ Keep the existing LuaLaTeX packages/fonts and add German Babel/hyphenation, such
 
 Integration tests use synthetic private data and real LuaLaTeX/pypdf output. They cover address coordinates/page bounds, A4 pagination, part order, duplicate named destinations/external URLs, private contacts, permissions/CSRF/scope/expiry/revocation, cache invalidation/integrity/concurrency and redacted failures/post-processing.
 
-Generate evidence in a dedicated directory outside the checkout:
+Generate signature evidence in a dedicated directory outside the checkout. It uses only synthetic contact details and a generated test signature; it does not resolve or embed the site's CV entries:
 
 ```sh
-pdf_evidence_dir=$(mktemp -d /tmp/portfolio-pdf-evidence.XXXXXX)
-APPLICATION_PDF_PYTHON=/tmp/portfolio-pdf-venv/bin/python php scripts/render-application-pdf-evidence.php "$pdf_evidence_dir"
+pdf_evidence_dir=$(mktemp -d /tmp/portfolio-signature-evidence.XXXXXX)
+php scripts/render-private-signature-evidence.php "$pdf_evidence_dir"
 ```
 
-The PDF and rendered pages use explicitly synthetic contact/recipient data. The CV otherwise uses existing public content. GitHub Actions runs the application tests and uploads rendered-page/PDF artifacts for 14 days. No PR-only evidence belongs in Git.
+The script creates synthetic CV and cover-letter PDFs, renders their pages, and checks A4 page size, embedded synthetic signature, date/location and typed name. GitHub Actions uploads only these synthetic PDF/page artifacts for 14 days. No rendered evidence belongs in Git.
 
 Electronic signing is a separate explicit operation on the final composite. See [private signature workflow and validation limits](application-signatures.md) and [official provider research](application-signature-provider-research.md). Rendering never initiates signing.

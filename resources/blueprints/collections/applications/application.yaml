@@ -580,6 +580,18 @@ tabs:
               if:
                 mode: handwritten
               always_save: true
+          - handle: alignment
+            field:
+              type: select
+              display: Ausrichtung
+              options:
+                left: Links
+                center: Zentriert
+                right: Rechts
+              default: left
+              if:
+                mode: handwritten
+              always_save: true
 
   tracking:
     display: Verlauf

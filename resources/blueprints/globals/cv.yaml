@@ -122,3 +122,87 @@ tabs:
             field: { type: text, display: Ort, width: 50 }
           - handle: print_date
             field: { type: text, display: Datum, width: 50 }
+  signature:
+    display: Handschrift & Muster
+    sections:
+      -
+        display: Private CV-Signatur
+        instructions: 'Nur bei gültigem, nicht widerrufenem privaten CV-Link. Die Grafik bleibt kopierbar und ist keine QES.'
+        fields:
+          - handle: private_cv_signature_enabled
+            field:
+              type: toggle
+              display: Handschrift in privaten CV-Ansichten und PDFs zeigen
+              default: false
+              instructions: 'Öffentliche CVs und öffentliche PDFs erhalten diese Bilddatei nie. Das Aktivieren macht sie für Empfänger mit gültigem privatem CV-Link sichtbar.'
+          - handle: private_cv_signature_width_mm
+            field:
+              type: integer
+              display: Breite im privaten CV-PDF (mm)
+              default: 46
+              min: 30
+              max: 75
+              if:
+                private_cv_signature_enabled: true
+          - handle: private_cv_signature_baseline_mm
+            field:
+              type: integer
+              display: Grundlinien-Versatz (mm)
+              default: 0
+              min: -3
+              max: 3
+              if:
+                private_cv_signature_enabled: true
+          - handle: private_cv_signature_alignment
+            field:
+              type: select
+              display: Ausrichtung im privaten CV-PDF
+              options:
+                left: Links
+                center: Zentriert
+                right: Rechts
+              default: left
+              if:
+                private_cv_signature_enabled: true
+      -
+        display: Synthetisches öffentliches Linienmotiv
+        instructions: 'Das Motiv wird unabhängig von der Handschrift erzeugt. Es ist nur Dekoration und verhindert weder Kopieren noch Fälschungen.'
+        fields:
+          - handle: signature_pattern_enabled
+            field:
+              type: toggle
+              display: Synthetisches Motiv auf CV-Seiten anzeigen
+              default: false
+          - handle: signature_pattern_style
+            field:
+              type: select
+              display: Linienmotiv
+              options:
+                guilloche: Guilloche
+                rosette: Rosette
+                waves: Wellenlinien
+              default: guilloche
+              if:
+                signature_pattern_enabled: true
+          - handle: signature_pattern_color
+            field:
+              type: select
+              display: Farbton
+              options:
+                blue: Blau
+                teal: Petrol
+                violet: Violett
+              default: blue
+              if:
+                signature_pattern_enabled: true
+          - handle: signature_pattern_density
+            field:
+              type: select
+              display: Liniendichte
+              options:
+                light: Leicht
+                balanced: Ausgewogen
+                fine: Fein
+              default: balanced
+              if:
+                signature_pattern_enabled: true

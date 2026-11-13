@@ -107,6 +107,13 @@
     .cv-record--reference { grid-template-columns: 8.4rem minmax(0, 1fr); padding-block: .8rem; }
     .cv-relation-meta { margin: .4rem 0 0; color: var(--site-text-muted); font-size: .74rem; line-height: 1.45; }
     .cv-document__print-footer { display: none; }
+    .cv-document__signature { clear: both; width: min(100%, 44rem); margin: 2.5rem 0 0 auto; padding: 1rem; border: 1px solid var(--site-border); background: color-mix(in srgb, var(--site-surface-strong) 34%, transparent); }
+    .cv-document__signature[hidden], .cv-document__signature-image[hidden] { display: none; }
+    .cv-document__signature-pattern svg { display: block; width: 100%; height: auto; max-height: 9rem; }
+    .cv-document__signature-pattern p { margin: .35rem 0 0; color: var(--site-text-muted); font-size: .68rem; text-align: right; }
+    .cv-document__signature-image { display: block; width: min(46mm, 100%); max-height: 18mm; object-fit: contain; object-position: left center; }
+    .cv-document__signature-meta { margin-top: .25rem; color: var(--site-text-muted); font-size: .72rem; line-height: 1.4; }
+    .cv-document__signature-meta p { margin: 0; }
     .cv-chapter-nav { display: flex; gap: 1.2rem; align-items: center; padding-block: 2rem; font-size: .85rem; }
     .cv-chapter-nav > span { color: var(--site-text-muted); }
     .experience-detail { padding-bottom: 4rem; }
@@ -290,6 +297,12 @@ html[data-theme='dark'] .cv-document::before { opacity: .035; mix-blend-mode: sc
     .cv-document__print-footer { display: flex; clear: both; align-items: end; justify-content: space-between; gap: 15mm; margin: 4mm 0 0 47mm; padding-top: 3mm; border-top: 1px solid var(--site-border); font-size: 7pt; break-inside: avoid; }
     .cv-document__print-footer p { margin: 0; }
     .cv-document__print-footer img { width: 32mm; max-height: 12mm; object-fit: contain; object-position: right bottom; }
+    .cv-document__signature { clear: both; width: 100%; margin: 7mm 0 0; padding: 0; border: 0; background: transparent; break-inside: avoid; }
+    .cv-document__signature-pattern { max-width: 150mm; margin-left: auto; }
+    .cv-document__signature-pattern svg { max-height: 24mm; }
+    .cv-document__signature-pattern p { font-size: 6.5pt; }
+    .cv-document__signature-image { width: 46mm; max-height: 16mm; }
+    .cv-document__signature-meta { font-size: 6.5pt; }
 }
 @media (prefers-reduced-motion: reduce) {
     .cv-timeline__bars > i, .cv-timeline__needle, .cv-explore__detail { transition: none; }

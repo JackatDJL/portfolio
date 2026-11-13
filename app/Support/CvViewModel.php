@@ -48,6 +48,7 @@ final class CvViewModel
             'projects' => $this->entryReferences($resolved['sections']['projects']['value']),
             'publications' => $this->entryReferences($resolved['sections']['publications']['value']),
             'milestones' => $this->milestones($resolved['sections']['milestones']['value']),
+            'print' => $resolved['print'],
         ];
     }
 

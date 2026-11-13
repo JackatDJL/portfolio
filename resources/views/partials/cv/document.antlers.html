@@ -105,6 +105,21 @@
             </div></section>{{ /if }}
         </div>
     </div>
+    {{ if cv_signature_security_pattern || cv_private_signature_enabled }}
+    <section class="cv-document__signature" data-cv-private-signature data-enabled="{{ if cv_private_signature_enabled }}true{{ else }}false{{ /if }}" data-endpoint="/cv/private-signature"{{ if !cv_signature_security_pattern }} hidden{{ /if }} aria-label="Unterschriftsbereich">
+        {{ if cv_signature_security_pattern }}
+        <div class="cv-document__signature-pattern" data-cv-security-pattern>
+            {{ cv_signature_security_pattern | raw }}
+            <p>Synthetisches Linienmotiv · keine Unterschrift · kein Fälschungsschutz</p>
+        </div>
+        {{ /if }}
+        <img class="cv-document__signature-image" data-cv-private-signature-image alt="Handschriftliche Signatur" hidden>
+        <div class="cv-document__signature-meta" data-cv-private-signature-meta hidden>
+            <p>{{ cv_signature_place }}{{ if cv_signature_place && cv_signature_date }}, {{ /if }}{{ cv_signature_date }}</p>
+            <p>{{ cv_resolved:public_identity:name }}</p>
+        </div>
+    </section>
+    {{ /if }}
     {{ if cv:print_place || cv:print_date }}
         <footer class="cv-document__print-footer" aria-label="Ort und Datum"><p>{{ cv:print_place }}{{ if cv:print_place && cv:print_date }}, {{ /if }}{{ cv:print_date }}</p></footer>
     {{ /if }}

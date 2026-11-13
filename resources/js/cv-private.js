@@ -57,4 +57,31 @@ export const initCvPrivateData = ({ watch = true } = {}) => {
             document.dispatchEvent(new CustomEvent('cv:private-settled'));
             retryOnHashChange();
         });
+
+    const signaturePanel = document.querySelector('[data-cv-private-signature]');
+    if (!(signaturePanel instanceof HTMLElement) || signaturePanel.dataset.enabled !== 'true') return;
+
+    exchange.then(ok => ok ? fetch(signaturePanel.dataset.endpoint || '/cv/private-signature', {
+        method: 'POST',
+        credentials: 'same-origin',
+        referrerPolicy: 'no-referrer',
+        headers: { 'Content-Type': 'application/json', Accept: 'image/png' },
+        body: JSON.stringify({ path: location.pathname }),
+    }) : null)
+        .then(response => response?.ok ? response.blob() : null)
+        .then(blob => {
+            if (!(blob instanceof Blob) || blob.type !== 'image/png') return;
+            const image = signaturePanel.querySelector('[data-cv-private-signature-image]');
+            const pattern = signaturePanel.querySelector('[data-cv-security-pattern]');
+            const meta = signaturePanel.querySelector('[data-cv-private-signature-meta]');
+            if (!(image instanceof HTMLImageElement)) return;
+            if (image.dataset.objectUrl) URL.revokeObjectURL(image.dataset.objectUrl);
+            image.dataset.objectUrl = URL.createObjectURL(blob);
+            image.src = image.dataset.objectUrl;
+            image.hidden = false;
+            if (pattern instanceof HTMLElement) pattern.hidden = true;
+            if (meta instanceof HTMLElement) meta.hidden = false;
+            signaturePanel.hidden = false;
+        })
+        .catch(() => {});
 };

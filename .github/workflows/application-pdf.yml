@@ -12,11 +12,14 @@ on:
       - 'resources/blueprints/collections/applications/**'
       - 'resources/blueprints/globals/**'
       - 'resources/views/partials/cv/**'
+      - 'resources/js/cv-private.js'
+      - 'resources/css/cv.css'
       - 'public/cp-handwritten-signature.js'
       - 'public/cp-applications.js'
       - 'public/cp-applications.css'
       - 'routes/**'
       - 'scripts/*application*pdf*'
+      - 'scripts/render-private-signature-evidence.php'
       - 'scripts/application-signatures.py'
       - 'tests/**'
       - 'requirements-pdf.txt'
@@ -64,23 +67,24 @@ jobs:
           bun install --frozen-lockfile
           bun run build
       - name: Run application PDF integration tests
-        run: php artisan test --compact --filter='ApplicationPdfWorkflowTest|ApplicationManagementTest|ApplicationSignatureWorkflowTest|ApplicationHandwrittenSignatureTest'
+        run: php artisan test --compact --filter='ApplicationPdfWorkflowTest|ApplicationManagementTest|ApplicationSignatureWorkflowTest|ApplicationHandwrittenSignatureTest|PrivateCvSignatureTest'
       - name: Install Playwright Chromium
         run: bunx playwright install --with-deps chromium
       - name: Run handwritten signature CP browser regression
         # The test uses Vite only as a static fixture server, not as the application asset build.
         env:
           LARAVEL_BYPASS_ENV_CHECK: '1'
-        run: bun run test:browser -- tests/browser/handwritten-signature.spec.js
+        run: bun run test:browser -- tests/browser/handwritten-signature.spec.js tests/browser/cv-private-signature.spec.js
       - name: Render synthetic review evidence
         run: |
-          mkdir -p "$RUNNER_TEMP/application-pdf-evidence"
-          php scripts/render-application-pdf-evidence.php "$RUNNER_TEMP/application-pdf-evidence"
+          mkdir -p "$RUNNER_TEMP/private-signature-evidence"
+          php scripts/render-private-signature-evidence.php "$RUNNER_TEMP/private-signature-evidence"
       - uses: actions/upload-artifact@v4
         with:
-          name: application-pdf-rendered-pages-php-${{ matrix.php-version }}
+          name: private-signature-rendered-pages-php-${{ matrix.php-version }}
           path: |
-            ${{ runner.temp }}/application-pdf-evidence/bewerbung.pdf
-            ${{ runner.temp }}/application-pdf-evidence/page-*.png
-            ${{ runner.temp }}/application-pdf-evidence/validation.json
+            ${{ runner.temp }}/private-signature-evidence/cover-letter.pdf
+            ${{ runner.temp }}/private-signature-evidence/cv.pdf
+            ${{ runner.temp }}/private-signature-evidence/*-page-*.png
+            ${{ runner.temp }}/private-signature-evidence/validation.json
           retention-days: 14

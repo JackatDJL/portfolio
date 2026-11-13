@@ -97,6 +97,7 @@ $v = function ($value) use ($u) {
 @if(!empty($cv['signature_image']))
 \Needspace{28mm}
 \par\vspace{2mm}\noindent\begin{minipage}{\textwidth}
+@if(($cv['signature_alignment'] ?? 'left') === 'center')\centering @elseif(($cv['signature_alignment'] ?? 'left') === 'right')\raggedleft @else\raggedright @endif
 \begingroup\fontsize{7.5}{9}\selectfont\color{muted}
 @if($cv['signed_place']){{ $e($cv['signed_place']) }}, @endif{{ $e($cv['signed_date']) }}\par
 \endgroup
