@@ -23,22 +23,32 @@ final class CvPageController extends Controller
 
     public function profile(string $profile, CvProfileContentResolver $resolver, SignatureSecurityPattern $patterns): Response
     {
+        // Check if this is an application slug
+        $application = Entry::query()->where('collection', 'applications')->where('slug', $profile)->first();
+        if ($application) {
+            abort_unless(CvNavigation::authorized(request(), '/cv/'.$profile), 404);
+            return $this->render($resolver->resolveForApplication($application), $patterns, $application);
+        }
+        // Otherwise, treat it as a CV profile slug
         return $this->render($resolver->resolve($profile), $patterns);
     }
 
     public function application(Request $request, string $id, CvProfileContentResolver $resolver, SignatureSecurityPattern $patterns): Response
     {
-        abort_unless(CvNavigation::authorized($request, '/applications/'.$id.'/cv'), 404);
         $application = Entry::find($id);
+        abort_unless($application, 404);
+        abort_unless(CvNavigation::authorized($request, '/cv/'.$application->slug()), 404);
 
         return $this->render($resolver->resolveForApplication($application), $patterns, $application);
     }
 
     public function applicationPdf(Request $request, string $id, CvPdfRenderer $renderer)
     {
-        $path = '/applications/'.$id.'/cv';
+        $application = Entry::find($id);
+        abort_unless($application, 404);
+        $path = '/cv/'.$application->slug();
         abort_unless(CvNavigation::authorized($request, $path), 404);
-        $pdf = $renderer->renderApplication(Entry::find($id));
+        $pdf = $renderer->renderApplication($application);
         if (! CvNavigation::authorized($request, $path)) {
             @unlink($pdf);
             abort(404);

@@ -9,9 +9,29 @@ use Statamic\Facades\User;
 /** Non-secret return context; authorization remains in the existing scoped session. */
 final class CvNavigation
 {
+    /** @var array<string, string> Cache for application slug -> id lookups */
+    private static array $applicationIdCache = [];
+
     public static function applicationId(string $path): ?string
     {
-        return preg_match('#^/applications/([a-f0-9-]{36})/cv$#D', $path, $matches) ? $matches[1] : null;
+        // Check for new format: /cv/{application-slug}
+        if (preg_match('#^/cv/([a-z0-9-]+)$#D', $path, $matches)) {
+            $slug = $matches[1];
+            if (isset(self::$applicationIdCache[$slug])) {
+                return self::$applicationIdCache[$slug];
+            }
+            $application = Entry::query()->where('collection', 'applications')->where('slug', $slug)->first();
+            if ($application) {
+                self::$applicationIdCache[$slug] = $application->id();
+                return $application->id();
+            }
+        }
+        // Check for old format: /{uuid}/cv or /applications/{uuid}/cv
+        if (preg_match('#^/(?:applications/)?([a-f0-9-]{36})/cv$#D', $path, $matches)) {
+            return $matches[1];
+        }
+        
+        return null;
     }
 
     public static function authorized(Request $request, string $path): bool
@@ -33,8 +53,15 @@ final class CvNavigation
         }
         if (preg_match('#^/cv/([a-z0-9-]+)$#D', $path, $matches)) {
             $profile = Entry::query()->where('collection', 'cv_profiles')->where('slug', $matches[1])->where('published', true)->first();
-
-            return $profile ? $path : '/cv';
+            if ($profile) {
+                return $path;
+            }
+            // Check if it's an application slug
+            $application = Entry::query()->where('collection', 'applications')->where('slug', $matches[1])->first();
+            if ($application && self::authorized(request(), $path)) {
+                return $path;
+            }
+            return '/cv';
         }
         if (self::applicationId($path) && self::authorized(request(), $path)) {
             return $path;

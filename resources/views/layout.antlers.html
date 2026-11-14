@@ -10,15 +10,34 @@
         <script>
             window.__cvExchangeFragment = () => {
                 const path = new URLSearchParams(location.search).get('cv_return') || location.pathname;
-                if (!/^\/cv(?:\/[a-z0-9-]+)?$/.test(path) || !location.hash.startsWith('#cv=')) return Promise.resolve(true);
-                const match = location.hash.match(/^#cv=([A-Za-z0-9]{64})$/);
-                history.replaceState(null, '', location.pathname + location.search);
-                if (!match) return Promise.resolve(false);
-                return fetch('/cv/token-exchange', {
-                    method: 'POST', credentials: 'same-origin', referrerPolicy: 'no-referrer',
-                    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-                    body: JSON.stringify({ path, token: match[1] }),
-                }).then(response => response.ok);
+                const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+                if (!/^\/cv(?:\/[a-z0-9-]+)?$/.test(path) || !csrfToken) return Promise.resolve(true);
+                
+                if (location.hash.startsWith('#cv=')) {
+                    const match = location.hash.match(/^#cv=([A-Za-z0-9]{64})$/);
+                    history.replaceState(null, '', location.pathname + location.search);
+                    if (match) return fetch('/cv/token-exchange', {
+                        method: 'POST', credentials: 'same-origin', referrerPolicy: 'no-referrer',
+                        headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-CSRF-TOKEN': csrfToken },
+                        body: JSON.stringify({ path, token: match[1] }),
+                    }).then(response => response.ok);
+                }
+                
+                if (location.hash.startsWith('#application=')) {
+                    const match = location.hash.match(/^#application=([A-Za-z0-9]{64})$/);
+                    history.replaceState(null, '', location.pathname + location.search);
+                    if (match) {
+                        // Extract slug from path /cv/{slug}
+                        const slug = path.split('/').pop();
+                        return fetch('/applications/token-exchange', {
+                            method: 'POST', credentials: 'same-origin', referrerPolicy: 'no-referrer',
+                            headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-CSRF-TOKEN': csrfToken },
+                            body: JSON.stringify({ slug, token: match[1] }),
+                        }).then(response => response.ok);
+                    }
+                }
+                
+                return Promise.resolve(true);
             };
             window.__cvExchange = window.__cvExchangeFragment();
         </script>
