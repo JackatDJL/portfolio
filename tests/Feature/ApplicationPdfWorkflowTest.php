@@ -480,6 +480,7 @@ class ApplicationPdfWorkflowTest extends TestCase
             ->setTimezone(config('app.timezone'))
             ->toDateTimeString();
         $apiExpiry = Carbon::parse($normalizedExpiry, config('app.timezone'))->toIso8601String();
+        $application = $this->fixture->entry;
         $first = $this->postJson('/cp/applications/'.$id.'/recipient-grants', [
             'label' => 'TUHH Personalabteilung',
             'expires_at' => $expiresAt,
@@ -491,7 +492,7 @@ class ApplicationPdfWorkflowTest extends TestCase
         $this->assertMatchesRegularExpression('/(?:Z|[+-]\d{2}:\d{2})$/', $first->json('grant.expires_at'));
         $this->assertSame($normalizedExpiry, DB::table('application_recipient_grants')->where('id', $firstId)->value('expires_at'));
         $this->assertMatchesRegularExpression('/^[A-Za-z0-9]{64}$/', $firstToken);
-        $this->assertStringContainsString('/applications/'.$id.'#application=', $first->json('url'));
+        $this->assertStringContainsString('/cv/'.$application->slug().'#application=', $first->json('url'));
         $encryptedLabel = DB::table('application_recipient_grants')->where('id', $firstId)->value('label');
         $this->assertStringNotContainsString('TUHH Personalabteilung', $encryptedLabel);
         $this->assertSame('TUHH Personalabteilung', Crypt::decryptString($encryptedLabel));

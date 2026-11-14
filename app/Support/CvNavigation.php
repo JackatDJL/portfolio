@@ -26,8 +26,12 @@ final class CvNavigation
                 return $application->id();
             }
         }
-        // Check for old format: /applications/{uuid}/cv
-        return preg_match('#^/applications/([a-f0-9-]{36})/cv$#D', $path, $matches) ? $matches[1] : null;
+        // Check for old format: /{uuid}/cv or /applications/{uuid}/cv
+        if (preg_match('#^/(?:applications/)?([a-f0-9-]{36})/cv$#D', $path, $matches)) {
+            return $matches[1];
+        }
+        
+        return null;
     }
 
     public static function authorized(Request $request, string $path): bool

@@ -87,9 +87,10 @@ final class ApplicationPdfController extends Controller
             'expires_at' => ['nullable', 'date', 'after:now'],
         ])->validate();
         $issued = ApplicationCapabilities::issue($id, $input['label'], $input['expires_at'] ?? null);
+        $application = $this->application($id);
 
         return response()->json([
-            'url' => url('/applications/'.$id).'#application='.$issued['token'],
+            'url' => url('/cv/'.$application->slug()).'#application='.$issued['token'],
             'grant' => Arr::except($issued, ['token']),
         ])->header('Cache-Control', 'private, no-store');
     }
@@ -97,10 +98,10 @@ final class ApplicationPdfController extends Controller
     public function issueLegacyGrant(string $id)
     {
         abort_unless(User::current()?->isSuper(), 403);
-        $this->application($id);
+        $application = $this->application($id);
         $issued = ApplicationCapabilities::issue($id, 'Empfängerlink (Legacy)');
 
-        return response()->json(['url' => url('/applications/'.$id).'#application='.$issued['token']])
+        return response()->json(['url' => url('/cv/'.$application->slug()).'#application='.$issued['token']])
             ->header('Cache-Control', 'private, no-store');
     }
 
@@ -135,7 +136,20 @@ final class ApplicationPdfController extends Controller
     {
         $origin = $request->header('Origin');
         abort_if(($origin && $origin !== $request->getSchemeAndHttpHost()) || $request->header('Sec-Fetch-Site') === 'cross-site', 403);
-        $validator = Validator::make($request->only(['id', 'token']), ['id' => ['required', 'uuid'], 'token' => ['required', 'string', 'regex:/^[A-Za-z0-9]{64}$/']]);
+        
+        // Support both id and slug parameters
+        $input = $request->only(['id', 'slug', 'token']);
+        
+        if (isset($input['slug'])) {
+            $application = Entry::query()->where('collection', 'applications')->where('slug', $input['slug'])->first();
+            abort_unless($application, 404);
+            $input['id'] = $application->id();
+        }
+        
+        $validator = Validator::make($input, [
+            'id' => ['required', 'uuid'],
+            'token' => ['required', 'string', 'regex:/^[A-Za-z0-9]{64}$/']
+        ]);
         if ($validator->fails()) {
             return response()->json(['message' => 'Ungültige Zugriffsdaten.'], 422);
         }
