@@ -30,6 +30,19 @@ class ContactPageTest extends TestCase
         Mail::assertNothingSent();
     }
 
+    public function test_url_overrides_cannot_select_discarding_or_logging_transports(): void
+    {
+        $this->enable();
+        Mail::fake();
+        foreach (['array://localhost', 'log://localhost', 'smtp://localhost?driver=log'] as $url) {
+            config(['mail.mailers.contact-test.url' => $url]);
+            $this->post('/kontakt', $this->payload())->assertStatus(503);
+        }
+        Mail::assertNothingSent();
+        config(['mail.mailers.contact-test.url' => 'smtp://localhost:2525']);
+        $this->get('/kontakt')->assertOk()->assertDontSee('Nachrichtenversand ist derzeit nicht eingerichtet');
+    }
+
     public function test_invalid_fields_are_rendered_without_flashing_private_input(): void
     {
         $this->enable();

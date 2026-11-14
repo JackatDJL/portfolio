@@ -6,6 +6,7 @@ use App\Mail\ContactMessage;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\ConfigurationUrlParser;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
@@ -82,7 +83,18 @@ final class ContactController extends Controller
     private function configured(): bool
     {
         $mailer = config('contact.mailer');
-        $transport = is_string($mailer) ? config("mail.mailers.{$mailer}.transport") : null;
+        $settings = is_string($mailer) ? config("mail.mailers.{$mailer}") : null;
+        if (! is_array($settings) || config('mail.driver')) {
+            return false;
+        }
+        try {
+            // Mirror MailManager's URL resolution, including query-string driver overrides.
+            $transport = isset($settings['url'])
+                ? ((new ConfigurationUrlParser)->parseConfiguration($settings)['driver'] ?? null)
+                : ($settings['transport'] ?? null);
+        } catch (Throwable) {
+            return false;
+        }
 
         // Explicit real transport only. Log/array/failover could disclose or silently discard messages.
         return config('contact.enabled') === true
