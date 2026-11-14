@@ -46,8 +46,10 @@
 
     root.querySelectorAll('button').forEach(button => button.classList.add('app-cp-button'));
 
+    const exampleSource = root.dataset.source === 'example';
+    const sourceLabel = exampleSource ? 'Öffentliche Beispielgrafik' : 'Private Signaturvorlage';
     const csrf = () => document.querySelector('meta[name="csrf-token"]')?.content || '';
-    const endpoint = () => location.pathname.split('/globals/')[0] + '/applications/handwritten-signature';
+    const endpoint = () => location.pathname.split('/globals/')[0] + '/applications/handwritten-signature' + (root.dataset.source === 'example' ? '/example' : '');
 
     const clearCanvas = () => {
         context.clearRect(0, 0, canvas.width, canvas.height);
@@ -188,7 +190,7 @@
             status.textContent = 'Erstelle zuerst eine aktuelle Vorschau.';
             return;
         }
-        if (savedSource && !window.confirm('Die gespeicherte private Signaturvorlage ersetzen?')) return;
+        if (savedSource && !window.confirm(`${sourceLabel} ersetzen?`)) return;
         const imageToSave = previewDataUrl;
         button.disabled = true;
         try {
@@ -203,7 +205,7 @@
             if (previewDataUrl === imageToSave) {
                 showPreview(imageToSave);
                 markPreviewCurrent(imageToSave);
-                status.textContent = 'Private Signaturvorlage verschlüsselt gespeichert.';
+                status.textContent = `${sourceLabel} verschlüsselt gespeichert.`;
             } else {
                 status.textContent = 'Die Vorschau wurde gespeichert. Eine zwischenzeitliche Änderung ist noch nicht gespeichert; erstelle dafür eine neue Vorschau.';
             }
@@ -212,7 +214,7 @@
     }, { signal });
 
     deleteButton.addEventListener('click', async event => {
-        if (!savedSource || !window.confirm('Private Signaturvorlage endgültig löschen? Bewerbungen mit aktiver Handschrift verhindern das Löschen.')) return;
+        if (!savedSource || !window.confirm(exampleSource ? 'Öffentliche Beispielgrafik löschen?' : 'Private Signaturvorlage endgültig löschen? Bewerbungen mit aktiver Handschrift verhindern das Löschen.')) return;
         const button = event.currentTarget;
         button.disabled = true;
         try {
@@ -221,13 +223,13 @@
             if (!response.ok) throw new Error(data.message || 'Löschen fehlgeschlagen.');
             savedSource = false;
             clearCanvas();
-            status.textContent = 'Private Signaturvorlage gelöscht.';
+            status.textContent = `${sourceLabel} gelöscht.`;
         } catch (error) { status.textContent = error.message; }
         finally { button.disabled = false; }
     }, { signal });
 
     fetch(endpoint(), { headers: { Accept: 'application/json' }, signal }).then(async response => {
-        if (!response.ok) throw new Error('Private Signaturvorlage konnte nicht geladen werden.');
+        if (!response.ok) throw new Error(`${sourceLabel} konnte nicht geladen werden.`);
         const data = await response.json();
         if (signal.aborted) return;
         savedSource = Boolean(data.available);
@@ -243,11 +245,11 @@
                 showPreview(data.source.image);
                 strokes = Array.isArray(data.source.strokes) ? data.source.strokes : [];
                 markPreviewCurrent(data.source.image);
-                status.textContent = 'Gespeicherte private Signatur geladen.';
+                status.textContent = `${sourceLabel} geladen.`;
             };
             image.src = data.source.image;
         } else {
-            status.textContent = 'Noch keine private Signaturvorlage gespeichert.';
+            status.textContent = exampleSource ? 'Noch keine öffentliche Beispielgrafik gespeichert.' : 'Noch keine private Signaturvorlage gespeichert.';
         }
     }).catch(error => { if (!signal.aborted) status.textContent = error.message; });
         return true;

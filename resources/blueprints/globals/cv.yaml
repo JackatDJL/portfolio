@@ -123,10 +123,10 @@ tabs:
           - handle: print_date
             field: { type: text, display: Datum, width: 50 }
   signature:
-    display: Handschrift & Muster
+    display: Unterschrift
     sections:
       -
-        display: Private CV-Signatur
+        display: Unterschrift für private CVs
         instructions: 'Nur bei gültigem, nicht widerrufenem privaten CV-Link. Die Grafik bleibt kopierbar und ist keine QES.'
         fields:
           - handle: private_cv_signature_enabled
@@ -164,26 +164,39 @@ tabs:
               default: left
               if:
                 private_cv_signature_enabled: true
+          - handle: private_cv_signature_mode
+            field:
+              type: select
+              display: Signatur im privaten CV
+              options:
+                typed: 'Name in Momo Signature'
+                handwritten: 'Handschriftliche Grafik'
+              default: handwritten
+              if:
+                private_cv_signature_enabled: true
+          - handle: signature_editor_link
+            field:
+              type: html
+              display: Handschrift bearbeiten
+              html: '<p>Die private Handschrift wird unter <a href="/cp/globals/application_defaults#signature">Bewerbungsvorgaben → Handschrift</a> gezeichnet, importiert und gespeichert.</p>'
       -
-        display: Synthetisches öffentliches Linienmotiv
+        display: Öffentliche Darstellung
         instructions: 'Das Motiv wird unabhängig von der Handschrift erzeugt. Es ist nur Dekoration und verhindert weder Kopieren noch Fälschungen.'
         fields:
           - handle: signature_pattern_enabled
             field:
               type: toggle
-              display: Synthetisches Motiv auf CV-Seiten anzeigen
+              display: Öffentlichen Signaturblock mit Linienmuster anzeigen
               default: false
-          - handle: signature_pattern_style
+          - handle: signature_public_source
             field:
               type: select
-              display: Linienmotiv
+              display: Öffentliche Signaturdarstellung
               options:
-                guilloche: Guilloche
-                rosette: Rosette
-                waves: Wellenlinien
-              default: guilloche
-              if:
-                signature_pattern_enabled: true
+                font: 'Name in Momo Signature'
+                example: 'Separate Beispielgrafik (keine echte Unterschrift)'
+              default: font
+              instructions: 'Die Beispielgrafik wird im Editor unten separat gespeichert. Niemals die echte Unterschrift hier hochladen. Ohne Vorlage wird die Schrift verwendet.'
           - handle: signature_pattern_color
             field:
               type: select
@@ -206,3 +219,62 @@ tabs:
               default: balanced
               if:
                 signature_pattern_enabled: true
+
+          - handle: public_signature_example_editor
+            field:
+              type: html
+              display: Separate öffentliche Beispielgrafik erstellen
+              sanitize: false
+              html: |
+                <div class="app-handwriting" data-handwritten-signature data-source="example">
+                  <section class="app-handwriting-panel" aria-labelledby="handwriting-draw-title">
+                    <h3 id="handwriting-draw-title">1. Zeichnen</h3>
+                    <p class="app-handwriting-instructions">Schreibe mit Maus, Stift oder Finger direkt in die Fläche. Die Schaltfläche Zeichenfläche leeren entfernt nur die aktuelle Zeichnung. Eine gespeicherte Vorlage bleibt dabei erhalten.</p>
+                    <div class="app-handwriting-canvas-wrap">
+                      <canvas class="app-handwriting-canvas" data-handwritten-signature-canvas width="900" height="260" aria-label="Zeichenfläche für eine handschriftliche Unterschrift" tabindex="0"></canvas>
+                    </div>
+                    <div class="app-cp-button-row">
+                      <button class="app-cp-button" type="button" data-handwritten-clear>Zeichenfläche leeren</button>
+                    </div>
+                  </section>
+
+                  <section class="app-handwriting-panel" aria-labelledby="handwriting-import-title">
+                    <h3 id="handwriting-import-title">Oder Bilddatei verwenden</h3>
+                    <p>Wähle einen Scan einer erkennbar erfundenen Beispielsignatur. Unterstützt werden PNG, JPEG und WebP bis 10 MB. Das Bild wird privat verarbeitet und nicht in einen öffentlichen Asset-Ordner geladen.</p>
+                    <div class="app-handwriting-tools">
+                      <label class="app-handwriting-file">
+                        <span>Bilddatei auswählen</span>
+                        <input type="file" accept="image/png,image/jpeg,image/webp" data-handwritten-upload>
+                      </label>
+                      <label class="app-handwriting-option">
+                        <input type="checkbox" data-handwritten-remove-background>
+                        <span>Hellen Hintergrund beim Speichern transparent machen</span>
+                      </label>
+                    </div>
+                  </section>
+
+                  <section class="app-handwriting-panel" aria-labelledby="handwriting-review-title">
+                    <h3 id="handwriting-review-title">2. Zuschneiden und prüfen</h3>
+                    <p>Entfernt leere Ränder. Prüfe die Vorschau, bevor du die separate Beispielvorlage speicherst.</p>
+                    <div class="app-cp-button-row">
+                      <button class="app-cp-button" type="button" data-handwritten-crop>Zuschneiden und Vorschau aktualisieren</button>
+                    </div>
+                    <div class="app-handwriting-preview" data-handwritten-preview aria-live="polite">
+                      <h4>Vorschau</h4>
+                      <p>Noch keine Vorschau vorhanden.</p>
+                    </div>
+                    <p class="app-cp-status" role="status" data-handwritten-preview-status>Erstelle zuerst eine Vorschau, bevor du speicherst.</p>
+                  </section>
+
+                  <section class="app-handwriting-panel" aria-labelledby="handwriting-save-title">
+                    <h3 id="handwriting-save-title">3. Öffentliche Beispielvorlage</h3>
+                    <p>Speichern ersetzt die wiederverwendbare separate Beispielvorlage. Sie wird verschlüsselt unter <code>storage/app/private</code> abgelegt. Zum Entfernen wählst du Vorlage löschen.</p>
+                    <div class="app-cp-button-row">
+                      <button class="app-cp-button app-cp-button-primary" type="button" data-handwritten-save disabled>Öffentliche Beispielgrafik speichern</button>
+                      <button class="app-cp-button app-cp-button-danger" type="button" data-handwritten-delete>Vorlage löschen</button>
+                    </div>
+                    <p class="app-cp-status" role="status" data-handwritten-status>Separate Beispielvorlage wird geladen …</p>
+                  </section>
+
+                  <p class="app-handwriting-note">Nur eine erkennbar erfundene Beispielgrafik speichern. Bei Auswahl der öffentlichen Beispielgrafik können alle Besucher dieses Bild sehen und kopieren. Die echte private Handschrift gehört ausschließlich in Bewerbungsvorgaben → Handschrift. Das Linienmuster ist Dekoration und kein Kopierschutz.</p>
+                </div>

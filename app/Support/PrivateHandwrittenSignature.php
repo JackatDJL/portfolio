@@ -8,6 +8,13 @@ use RuntimeException;
 /** Stores reusable handwritten signature source only as Laravel-encrypted private data. */
 final class PrivateHandwrittenSignature
 {
+    public function __construct(private readonly bool $example = false) {}
+
+    public static function example(): self
+    {
+        return new self(true);
+    }
+
     private const MAX_PNG_BYTES = 2_000_000;
 
     private const MAX_STROKES = 200;
@@ -180,7 +187,7 @@ final class PrivateHandwrittenSignature
 
     private function path(): string
     {
-        $root = trim((string) config('applications.handwritten_signature_path'));
+        $root = $this->example ? (string) config('applications.public_signature_example_path', storage_path('app/private/public-signature-example')) : trim((string) config('applications.handwritten_signature_path'));
         if ($root === '' || $root === DIRECTORY_SEPARATOR) {
             throw new RuntimeException('Der private Signaturpfad ist nicht konfiguriert.');
         }

@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'public_signature_example_path' => storage_path('app/private/public-signature-example'),
     'python' => env('APPLICATION_PDF_PYTHON', '/opt/portfolio-pdf/bin/python'),
     'timeout' => (int) env('APPLICATION_PDF_TIMEOUT', 90),
     'cache_path' => storage_path('app/private/application-pdf-cache'),

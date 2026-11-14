@@ -8,13 +8,17 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use RuntimeException;
 use Statamic\Facades\Entry;
+use Statamic\Facades\GlobalSet;
 use Statamic\Facades\User;
 
 final class ApplicationHandwrittenSignatureController extends Controller
 {
-    public function show(PrivateHandwrittenSignature $signature)
+    public function show(Request $request, PrivateHandwrittenSignature $signature)
     {
         $this->authorizeSuperUser();
+        if ($request->route('source') === 'example') {
+            $signature = PrivateHandwrittenSignature::example();
+        }
 
         return response()->json(['available' => $signature->exists(), 'source' => $signature->editorData()])
             ->header('Cache-Control', 'private, no-store')
@@ -25,6 +29,9 @@ final class ApplicationHandwrittenSignatureController extends Controller
     public function store(Request $request, PrivateHandwrittenSignature $signature)
     {
         $this->authorizeSuperUser();
+        if ($request->route('source') === 'example') {
+            $signature = PrivateHandwrittenSignature::example();
+        }
         $data = $request->validate([
             'image' => ['required', 'string', 'max:2800000'],
             'strokes' => ['sometimes', 'array', 'max:200'],
@@ -40,10 +47,13 @@ final class ApplicationHandwrittenSignatureController extends Controller
             ->header('X-Robots-Tag', 'noindex, nofollow, noarchive');
     }
 
-    public function destroy(PrivateHandwrittenSignature $signature)
+    public function destroy(Request $request, PrivateHandwrittenSignature $signature)
     {
         $this->authorizeSuperUser();
-        foreach (Entry::query()->where('collection', 'applications')->whereStatus('any')->get() as $application) {
+        if ($request->route('source') === 'example') {
+            $signature = PrivateHandwrittenSignature::example();
+        }
+        foreach ($request->route('source') === 'example' ? [] : Entry::query()->where('collection', 'applications')->whereStatus('any')->get() as $application) {
             try {
                 $settings = ApplicationData::group($application, 'signature');
             } catch (\Throwable) {
@@ -65,6 +75,16 @@ final class ApplicationHandwrittenSignatureController extends Controller
         return response()->json(['deleted' => true])
             ->header('Cache-Control', 'private, no-store')
             ->header('X-Robots-Tag', 'noindex, nofollow, noarchive');
+    }
+
+    public function exampleImage()
+    {
+        $cv = GlobalSet::find('cv')?->inDefaultSite();
+        abort_unless($cv && filter_var($cv->value('signature_pattern_enabled'), FILTER_VALIDATE_BOOLEAN) && $cv->value('signature_public_source') === 'example', 404);
+        $png = PrivateHandwrittenSignature::example()->imageBytes();
+        abort_if($png === null, 404);
+
+        return response($png, 200, ['Content-Type' => 'image/png', 'Cache-Control' => 'private, no-store', 'X-Content-Type-Options' => 'nosniff', 'X-Robots-Tag' => 'noindex, nofollow']);
     }
 
     private function authorizeSuperUser(): void

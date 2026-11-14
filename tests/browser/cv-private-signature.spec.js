@@ -9,6 +9,7 @@ const pageMarkup = `
     <aside data-cv-private-panel data-cv-private-endpoint="/cv/private-data"></aside>
     <section data-cv-private-signature data-enabled="true" data-endpoint="/cv/private-signature">
         <div data-cv-security-pattern><svg aria-label="Synthetisches Linienmotiv"></svg></div>
+        <span data-cv-private-signature-text hidden>Erika Muster</span>
         <img data-cv-private-signature-image style="width:46mm;height:16mm" hidden>
         <div data-cv-private-signature-meta hidden><p>Musterstadt, 6. November 2026</p><p>Erika Muster</p></div>
     </section>`;
@@ -75,4 +76,14 @@ test('keeps the synthetic pattern when the private signature image cannot be dec
     await expect(image).toBeHidden();
     await expect(page.locator('[data-cv-security-pattern]')).toBeVisible();
     await expect(page.locator('[data-cv-private-signature-meta]')).toBeHidden();
+});
+
+test('uses the handwriting font name when authorized typed mode is selected', async ({ page }) => {
+    await page.route('**/cv/private-data', route => route.fulfill({ json: { signature_mode: 'typed', signature_name: 'Erika Signatur' } }));
+    await page.route('**/cv/private-signature', route => route.fulfill({ status: 404 }));
+    await initializePage(page);
+    await expect(page.locator('[data-cv-private-signature-text]')).toBeVisible();
+    await expect(page.locator('[data-cv-private-signature-text]')).toContainText('Erika Signatur');
+    await expect(page.locator('[data-cv-private-signature-image]')).toBeHidden();
+    await expect(page.locator('[data-cv-security-pattern]')).toBeHidden();
 });
