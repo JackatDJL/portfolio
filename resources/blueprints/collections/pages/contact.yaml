@@ -1,0 +1,17 @@
+title: Kontakt
+tabs:
+  main:
+    display: Inhalt
+    sections:
+      - fields:
+          - handle: title
+            field: { type: text, display: Titel, validate: [required] }
+          - handle: intro
+            field: { type: textarea, display: Einleitung, validate: [required] }
+          - handle: privacy_note
+            field: { type: textarea, display: Datenschutzhinweis, validate: [required] }
+  search:
+    display: SEO
+    sections:
+      - fields:
+          - import: seo
