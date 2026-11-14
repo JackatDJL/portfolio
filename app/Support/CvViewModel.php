@@ -60,7 +60,7 @@ final class CvViewModel
         return $model;
     }
 
-    public function forApplication(\Statamic\Contracts\Entries\Entry $application, ?array $signatureSource = null): array
+    public function forApplication(\Statamic\Contracts\Entries\Entry $application, ?array $signatureSource = null, bool $permanentLink = false): array
     {
         // Corrupt configured private data must stop the export, never become public masks.
         $private = CvPrivateData::reveal(GlobalSet::find('cv')->inDefaultSite(), strict: true);
@@ -75,14 +75,29 @@ final class CvViewModel
             $private['country'] ?? null,
         ]));
         $cv['contact']['address'] = implode(', ', $addressParts);
-        // Use the resolved profile slug (CV profile) if available, otherwise fall back to application slug
-        $returnPath = '/cv/'.($resolved['profile']['slug'] ?? $application->slug());
+        $cvSettings = ApplicationData::group($application, 'cv');
+        $profileReference = $cvSettings['profile'] ?? null;
+        if (is_array($profileReference)) $profileReference = reset($profileReference);
+        $profileEntry = is_string($profileReference) && $profileReference !== '' ? Entries::find($profileReference) : null;
+        abort_if($profileReference && (! $profileEntry || $profileEntry->collectionHandle() !== 'cv_profiles'), 422);
+        $profileSlug = $profileEntry?->slug();
+        $returnPath = '/cv'.($profileSlug ? '/'.$profileSlug : '');
+        $publicCvPath = ! $profileEntry || $profileEntry->published() ? $returnPath : null;
+        // Unpublished profiles are exportable to the owner, but must not get a public bearer link.
+        $grant = $publicCvPath === null
+            ? null
+            : ($permanentLink
+                ? CvCapabilities::permanentForLabel($returnPath, 'Bewerbungs Lebenslauf für '.$application->id())
+                : CvCapabilities::temporaryForLabel($returnPath, 'Bewerbungs Lebenslauf für '.$application->id(), 15));
+        $token = $grant['token'] ?? null;
         $cv['canonical_url'] = rtrim((string) config('cv.canonical_base_url'), '/').$returnPath;
-        $cv['interactive_url'] = $cv['canonical_url'];
+        $cv['interactive_url'] = $publicCvPath === null ? null : $cv['canonical_url'].($token ? '#cv='.$token : '');
         foreach (['experience', 'education', 'projects', 'publications'] as $section) {
             foreach ($cv[$section] as &$item) {
                 $item['url'] = preg_replace('/\?cv_return=.*$/', '', $item['url']);
-                $item['url'] = CvNavigation::detailUrl($item['url'], $returnPath);
+                if ($publicCvPath !== null) {
+                    $item['url'] = CvNavigation::detailUrl($item['url'], $returnPath, $token);
+                }
             }
             unset($item);
         }

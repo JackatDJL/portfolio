@@ -15,9 +15,54 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Statamic\Facades\Entry;
+use Statamic\Facades\User;
 
 class CvPrivateLinkController extends Controller
 {
+    public function grants(Request $request): JsonResponse
+    {
+        abort_unless(User::current()?->isSuper(), 403);
+        $path = $this->path($request);
+        return response()->json(['path' => $path, 'grants' => CvCapabilities::namedGrants($path)])
+            ->header('Cache-Control', 'private, no-store')->header('X-Robots-Tag', 'noindex, nofollow, noarchive');
+    }
+
+    public function issueGrant(Request $request): JsonResponse
+    {
+        abort_unless(User::current()?->isSuper(), 403);
+        $input = $request->validate([
+            'path' => ['required', 'regex:#^/cv(?:/[a-z0-9-]+)?$#'],
+            'label' => ['required', 'string', 'min:1', 'max:140'],
+            'kind' => ['required', 'in:temporary,permanent'],
+            'minutes' => ['nullable', 'integer', 'min:1', 'max:43200'],
+        ]);
+        $path = $this->path($request);
+        if ($path !== '/cv') {
+            $profile = Entry::query()->where('collection', 'cv_profiles')->where('slug', basename($path))->first();
+            abort_unless($profile?->published(), 422, 'Nur veröffentlichte CV-Profile können einen öffentlichen Zugriffslink erhalten.');
+        }
+        $grant = $request->boolean('reuse') && $input['kind'] === 'permanent'
+            ? CvCapabilities::permanentForLabel($path, $input['label'])
+            : CvCapabilities::issueNamed($path, $input['kind'], $input['label'], (int) ($input['minutes'] ?? 15));
+        if (empty($grant['created'])) {
+            return response()->json(['created' => false, 'grant' => ['id' => $grant['id'], 'label' => $grant['label'], 'kind' => $grant['kind']]])
+                ->header('Cache-Control', 'private, no-store');
+        }
+        return response()->json([
+            'created' => true,
+            'url' => url($path).'#cv='.$grant['token'],
+            'grant' => ['id' => $grant['id'], 'label' => $grant['label'], 'kind' => $grant['kind'], 'expires_at' => $grant['expires_at']],
+        ])->header('Cache-Control', 'private, no-store')->header('X-Robots-Tag', 'noindex, nofollow, noarchive');
+    }
+
+    public function revokeGrant(Request $request, int $grantId): JsonResponse
+    {
+        abort_unless(User::current()?->isSuper(), 403);
+        $path = $this->path($request);
+        return response()->json(['revoked' => CvCapabilities::revokeGrant($path, $grantId)])
+            ->header('Cache-Control', 'private, no-store');
+    }
+
     public function qr(Request $request): Response
     {
         $path = $this->path($request);

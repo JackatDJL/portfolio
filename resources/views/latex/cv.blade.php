@@ -40,7 +40,7 @@ $v = function ($value) use ($u) {
     \hbox to \textwidth{%
       \parbox[b]{.22\textwidth}{\fontsize{6}{7}\selectfont\color{muted}{{ $e($cv['name']) }} · Lebenslauf}%
       \hfil
-      \parbox[b]{.68\textwidth}{\raggedleft\fontsize{7.1}{8.5}\selectfont\color{muted}\textbf{Interaktive Version:} \cvurl{ {{ $u($cv['interactive_url']) }} }{ {{ $v($cv['interactive_url']) }} }\hspace{.7em}{\fontsize{6.5}{7.5}\selectfont\color{muted}\thepage}}%
+      \parbox[b]{.68\textwidth}{\raggedleft\fontsize{7.1}{8.5}\selectfont\color{muted}@if(!empty($cv['interactive_url']))\textbf{Interaktive Version:} \cvurl{ {{ $u($cv['interactive_url']) }} }{ {{ $v($cv['interactive_url']) }} }\hspace{.7em}@endif{\fontsize{6.5}{7.5}\selectfont\color{muted}\thepage}}%
     }%
   }%
   \let\@evenfoot\@oddfoot
@@ -60,7 +60,7 @@ $v = function ($value) use ($u) {
   @if(!empty($cv['profile']['title']))\node[anchor=west,inner sep=0pt,text=cvtext] at (11,37) {\fontsize{7.5}{8}\selectfont\bfseries {{ $e($cv['profile']['title']) }}};@endif
   \node[anchor=west,inner sep=0pt] at (11,19) {\fontsize{32}{32}\selectfont\bfseries {{ $e($cv['name']) }}};
   \node[anchor=west,inner sep=0pt] at (11,8) {\fontsize{7}{8}\selectfont\bfseries {{ $e($cv['location']) }}};
-  \node[anchor=west,inner sep=0pt] at (73,8) {\fontsize{7.6}{9}\selectfont\cvurl{ {{ $u($cv['interactive_url']) }} }{ {{ $v($cv['interactive_url']) }} }};
+  @if(!empty($cv['interactive_url']))\node[anchor=west,inner sep=0pt] at (73,8) {\fontsize{7.6}{9}\selectfont\cvurl{ {{ $u($cv['interactive_url']) }} }{ {{ $v($cv['interactive_url']) }} }};@endif
   @if($cv['photo'])\begin{scope}\clip (151,23) circle (15mm);\node[inner sep=0pt] at (151,23){\includegraphics[height=34mm]{ {{ $e($cv['photo']) }} }};\end{scope}\draw[cvtext,line width=.6pt] (151,23) circle (15mm);@endif
 \end{tikzpicture}
 \vspace{4mm}
@@ -71,8 +71,8 @@ $v = function ($value) use ($u) {
 @if($cv['contact']['phone'])\sidevalue{ {{ $e($cv['contact']['phone']) }} }@elseif(empty($cv['private_export']))\sidevalue{Geschützte Angabe}@endif
 @if($cv['contact']['address'])\sidevalue{ {{ $e($cv['contact']['address']) }} }@elseif(empty($cv['private_export']))\sidevalue{Geschützte Angabe}@endif
 \sidevalue{ {{ $e($cv['location']) }} }
-\sidebarhead{Interaktiver Lebenslauf}
-\sidevalue{\begingroup\fontsize{8.6}{11}\selectfont\bfseries\cvurl{ {{ $u($cv['interactive_url']) }} }{ {{ $v($cv['interactive_url']) }} }\endgroup}
+@if(!empty($cv['interactive_url']))\sidebarhead{Interaktiver Lebenslauf}
+\sidevalue{\begingroup\fontsize{8.6}{11}\selectfont\bfseries\cvurl{ {{ $u($cv['interactive_url']) }} }{ {{ $v($cv['interactive_url']) }} }\endgroup}@endif
 @if($cv['about'])\vspace{2mm}{\color{rule}\rule{\linewidth}{.4pt}}\par\sidebarhead{Über mich}\sidevalue{ {{ $e($cv['about']) }} }@endif
 @foreach($cv['knowledge'] as $group)\vspace{1.2mm}\sidebarhead{ {{ $e(mb_strtoupper($group['category'] ?? '')) }} }@foreach(($group['items'] ?? []) as $item)\sidevalue{\textbf{ {{ $e($item['label'] ?? '') }} }@if(!empty($item['context']))\\{\scriptsize {{ $e($item['context']) }} }@endif}@endforeach @endforeach
 @if($cv['soft_skills'])\sidebarhead{Soft Skills}

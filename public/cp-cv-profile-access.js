@@ -73,10 +73,10 @@
                 if (button.dataset.copy) { await navigator.clipboard.writeText(links[button.dataset.copy].url); status.textContent = 'Link kopiert.'; }
                 if (button.dataset.action) {
                     const action = button.dataset.action;
-                    if (action === 'revoke' && !confirm('Dauerhaften Link und zugehörige Freigaben widerrufen?')) return;
+                    if (action === 'revoke' && !confirm('Alle dauerhaften CV-Links für dieses Profil widerrufen? Bereits exportierte PDFs verlieren damit ebenfalls den CV-Zugriff.')) return;
                     if (action === 'temporary' && links.temporary && !confirm('Weiteren temporären Prüf-Link erstellen?')) return;
                     await request(action === 'revoke' ? 'DELETE' : 'POST', '/cp/cv/private-link/' + (action === 'revoke' ? 'permanent' : action), { path, replace: action === 'temporary' && !!links.temporary });
-                    status.textContent = action === 'revoke' ? 'Link widerrufen.' : 'Link erstellt.';
+                    status.textContent = action === 'revoke' ? 'Alle dauerhaften Links widerrufen.' : 'Link erstellt.';
                 }
                 if (button.dataset.pdf === 'copy') { await navigator.clipboard.writeText(location.origin + path + '/pdf'); status.textContent = 'PDF-URL kopiert.'; }
                 if (button.dataset.pdf === 'public') window.open(path + '/pdf?public=1', '_blank', 'noopener');
@@ -112,4 +112,73 @@
     };
     const scan = () => document.querySelectorAll('[data-cv-profile-access]').forEach(bind);
     new MutationObserver(scan).observe(document.documentElement, {childList:true,subtree:true}); scan();
+})();
+
+// Independently managed, labelled CV grants. Secrets are returned only by create.
+(() => {
+    const csrf = () => document.querySelector('meta[name="csrf-token"]')?.content || '';
+    const request = async (method, url, body) => {
+        const response = await fetch(url, { method, credentials: 'same-origin', cache: 'no-store', headers: { Accept: 'application/json', 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf() }, ...(method === 'GET' ? {} : { body: JSON.stringify(body || {}) }) });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.message || 'CV-Zugriff konnte nicht verwaltet werden.');
+        return data;
+    };
+    const bind = root => {
+        if (root.dataset.namedBound) return;
+        root.dataset.namedBound = 'true';
+        const nativeButton = 'relative inline-flex items-center justify-center whitespace-nowrap font-medium antialiased cursor-pointer no-underline disabled:opacity-60 disabled:cursor-not-allowed bg-linear-to-b from-white to-gray-50 hover:to-gray-100 text-gray-900 border border-gray-300 shadow-ui-sm dark:from-gray-850 dark:to-gray-900 dark:border-gray-700/80 dark:text-gray-300 px-4 h-10 text-sm gap-2 rounded-lg';
+        root.querySelectorAll('button').forEach(button => { button.className = nativeButton; button.style.marginBlockEnd = '.5rem'; });
+        root.querySelectorAll('input, select').forEach(input => { input.className = nativeButton + ' min-w-64'; });
+        const match = location.pathname.match(/\/collections\/cv_profiles\/entries\/([^/]+)/);
+        const path = match ? '/cv/' + decodeURIComponent(match[1]) : '/cv';
+        const list = root.querySelector('[data-cv-grant-list]');
+        const status = root.querySelector('[data-cv-grant-status]');
+        const render = async () => {
+            const data = await request('GET', '/cp/cv/private-link/grants?path=' + encodeURIComponent(path));
+            list.replaceChildren();
+            for (const grant of data.grants) {
+                const row = document.createElement('li');
+                const state = grant.revoked_at ? 'widerrufen' : grant.expires_at && Date.parse(grant.expires_at) < Date.now() ? 'abgelaufen' : 'aktiv';
+                const detail = document.createElement('span');
+                detail.textContent = `${grant.label} · ${grant.kind === 'temporary' ? 'temporär' : 'dauerhaft'} · ${state}`;
+                row.append(detail);
+                if (!grant.revoked_at && state === 'aktiv') {
+                    const revoke = document.createElement('button');
+                    revoke.type = 'button'; revoke.className = 'btn'; revoke.textContent = 'Widerrufen';
+                    revoke.dataset.cvGrantRevoke = String(grant.id);
+                    row.append(' ', revoke);
+                }
+                list.append(row);
+            }
+        };
+        root.addEventListener('click', async event => {
+            const button = event.target.closest('[data-cv-grant-create], [data-cv-grant-copy], [data-cv-grant-revoke]');
+            if (!button) return;
+            try {
+                if (button.hasAttribute('data-cv-grant-create')) {
+                    const label = root.querySelector('[data-cv-grant-label]').value.trim();
+                    if (!label) throw new Error('Bitte eine Bezeichnung eingeben.');
+                    const kind = root.querySelector('[data-cv-grant-kind]').value;
+                    const result = await request('POST', '/cp/cv/private-link/grants', { path, label, kind, minutes: 15 });
+                    if (result.url) {
+                        root.querySelector('[data-cv-grant-url]').value = result.url;
+                        root.querySelector('[data-cv-grant-url-wrap]').hidden = false;
+                        status.textContent = 'Der Link wird nur hier einmal angezeigt. Bei Verlust kannst du einen neuen Grant erstellen.';
+                    }
+                    await render();
+                } else if (button.hasAttribute('data-cv-grant-copy')) {
+                    await navigator.clipboard.writeText(root.querySelector('[data-cv-grant-url]').value);
+                    status.textContent = 'Link kopiert.';
+                } else {
+                    if (!confirm('Diesen CV-Zugriff widerrufen?')) return;
+                    await request('DELETE', '/cp/cv/private-link/grants/' + encodeURIComponent(button.dataset.cvGrantRevoke) + '?path=' + encodeURIComponent(path));
+                    status.textContent = 'CV-Zugriff widerrufen.';
+                    await render();
+                }
+            } catch (error) { status.textContent = error.message; }
+        });
+        render().catch(error => { status.textContent = error.message; });
+    };
+    const scan = () => document.querySelectorAll('[data-cv-named-grants]').forEach(bind);
+    new MutationObserver(scan).observe(document.documentElement, { childList: true, subtree: true }); scan();
 })();

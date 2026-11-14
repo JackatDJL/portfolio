@@ -1,7 +1,7 @@
-{{ if {cv_navigation:has_context} }}<nav class="cv-chapter-nav" aria-label="Lebenslauf"><a class="btn btn-ghost" href="{{ cv_navigation }}">← Lebenslauf</a></nav>{{ /if }}
 {{# Projekt-Detailseite: Intro, Lesebereich, Kontext-Rail. #}}
 <article class="project-detail">
     {{ partial:detail/layout intro="projects/hero" aside="projects/rail" }}
+        {{ if {cv_navigation:has_context} }}<nav class="cv-chapter-nav mb-6" aria-label="Lebenslauf"><a class="btn btn-ghost" href="{{ cv_navigation }}">← Lebenslauf</a></nav>{{ /if }}
         {{ partial:components/table-of-contents variant="mobile" }}
         {{ partial:bard/prose :content="content" }}
 

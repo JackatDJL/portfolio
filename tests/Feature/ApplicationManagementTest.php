@@ -7,6 +7,7 @@ use App\Support\CvPdfRenderer;
 use App\Support\CvPrivateData;
 use App\Support\CvProfileContentResolver;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 use Statamic\Facades\Asset;
@@ -20,6 +21,8 @@ use Tests\TestCase;
 
 class ApplicationManagementTest extends TestCase
 {
+    use RefreshDatabase;
+
     private array $entries = [];
 
     private array $users = [];
@@ -454,7 +457,7 @@ class ApplicationManagementTest extends TestCase
             $resolved = app(CvProfileContentResolver::class)->resolveForApplication($entry);
 
             $this->assertSame('', $resolved['profile']['title']);
-            $this->assertNull($resolved['profile']['slug']);
+            $this->assertSame($profile->slug(), $resolved['profile']['slug']);
             $this->assertSame([], $resolved['sections']['about']['value']);
             $this->assertSame('Lufthansa Technik Praktikum 2027', $profile->value('title'));
         } finally {

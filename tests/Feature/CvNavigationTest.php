@@ -11,8 +11,11 @@ use App\Support\CvPdfRenderer;
 use App\Support\CvViewModel;
 use App\Support\PrivateHandwrittenSignature;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\DB;
 use Statamic\Facades\GlobalSet;
+use Statamic\Facades\User;
 use Statamic\StaticCaching\DefaultUrlExcluder;
 use Tests\Support\ApplicationPdfFixture;
 use Tests\Support\HandwrittenSignatureFixture;
@@ -23,6 +26,7 @@ class CvNavigationTest extends TestCase
     use RefreshDatabase;
 
     private ApplicationPdfFixture $fixture;
+    private array $users = [];
 
     protected function setUp(): void
     {
@@ -32,6 +36,7 @@ class CvNavigationTest extends TestCase
 
     protected function tearDown(): void
     {
+        foreach ($this->users as $user) $user->delete();
         $this->fixture->cleanup();
         parent::tearDown();
     }
@@ -100,32 +105,150 @@ class CvNavigationTest extends TestCase
         try {
             $fixture->entry->save();
             $id = $fixture->entry->id();
-            $path = '/applications/'.$id.'/cv';
             $model = app(CvViewModel::class)->forApplication($fixture->entry);
-            $this->assertStringNotContainsString('#cv=', json_encode($model));
-            $this->assertStringContainsString($path, $model['interactive_url']);
-            $this->assertStringContainsString(http_build_query(['cv_return' => $path], '', '&', PHP_QUERY_RFC3986), $model['education'][0]['url']);
-            $this->get($path)->assertNotFound();
-            $this->get($path.'/pdf')->assertNotFound();
+            $path = '/cv/'.$model['profile']['slug'];
+            $token = substr(parse_url($model['interactive_url'], PHP_URL_FRAGMENT), 3);
+            $this->assertMatchesRegularExpression('/^[A-Za-z0-9]{64}$/', $token);
+            $this->assertTrue(CvCapabilities::allows($token, $path));
+            $this->assertStringContainsString($path.'#cv='.$token, $model['interactive_url']);
+            $this->assertStringContainsString(http_build_query(['cv_return' => $path], '', '&', PHP_QUERY_RFC3986).'#cv='.$token, $model['education'][0]['url']);
+            $permanent = app(CvViewModel::class)->forApplication($fixture->entry, permanentLink: true);
+            $again = app(CvViewModel::class)->forApplication($fixture->entry, permanentLink: true);
+            $this->assertSame($permanent['interactive_url'], $again['interactive_url']);
+            $this->assertStringContainsString($path, $permanent['interactive_url']);
+            $this->assertCount(1, array_filter(\App\Support\CvCapabilities::namedGrants($path), fn ($grant) => $grant['kind'] === 'permanent'));
+            $permanentToken = substr(parse_url($permanent['interactive_url'], PHP_URL_FRAGMENT), 3);
+            $this->assertTrue(CvCapabilities::allows($permanentToken, $path));
+            $applicationPath = '/applications/'.$id.'/cv';
+            $this->get($applicationPath)->assertNotFound();
+            $this->get($applicationPath.'/pdf')->assertNotFound();
             app(PrivateHandwrittenSignature::class)->save('data:image/png;base64,'.base64_encode(HandwrittenSignatureFixture::png()));
             $fixture->entry->set('signature', ApplicationData::encrypt([['mode' => 'handwritten', 'width_mm' => 46, 'baseline_mm' => 0]]));
             $fixture->entry->save();
             $grant = ApplicationCapabilities::issue($id, 'Navigation test');
             $this->postJson('/applications/token-exchange', ['id' => $id, 'token' => $grant['token']])->assertOk();
-            $this->get($path)->assertOk()->assertSee('data-cv-private-panel', false)->assertDontSee('Lebenslauf zur Bewerbung');
-            $this->postJson('/cv/private-data', ['path' => $path])->assertOk();
-            $this->post('/cv/private-signature', ['path' => $path])->assertOk()->assertHeader('Content-Type', 'image/png');
+            $this->get($applicationPath)->assertOk()->assertSee('data-cv-private-panel', false)->assertDontSee('Lebenslauf zur Bewerbung');
+            $this->postJson('/cv/private-data', ['path' => $applicationPath])->assertOk();
+            $this->post('/cv/private-signature', ['path' => $applicationPath])->assertOk()->assertHeader('Content-Type', 'image/png');
             $pdf = $fixture->root.'/route-fixture.pdf';
             file_put_contents($pdf, '%PDF-1.4');
             $this->mock(CvPdfRenderer::class)->shouldReceive('renderApplication')->once()->andReturn($pdf);
-            $this->get($path.'/pdf')->assertOk()->assertHeader('X-Robots-Tag', 'noindex, nofollow, noarchive');
+            $this->get($applicationPath.'/pdf')->assertOk()->assertHeader('X-Robots-Tag', 'noindex, nofollow, noarchive');
             ApplicationCapabilities::revoke($id, $grant['id']);
-            $this->get($path)->assertNotFound();
-            $this->postJson('/cv/private-data', ['path' => $path])->assertNotFound();
-            $this->post('/cv/private-signature', ['path' => $path])->assertNotFound();
-            $this->get($path.'/pdf')->assertNotFound();
+            $this->get($applicationPath)->assertNotFound();
+            $this->postJson('/cv/private-data', ['path' => $applicationPath])->assertNotFound();
+            $this->post('/cv/private-signature', ['path' => $applicationPath])->assertNotFound();
+            $this->get($applicationPath.'/pdf')->assertNotFound();
         } finally {
             $fixture->cleanup();
         }
+    }
+
+    public function test_application_preview_reuses_one_temporary_cv_grant_and_rotates_it_after_expiry(): void
+    {
+        $this->fixture->entry->save();
+        $first = app(CvViewModel::class)->forApplication($this->fixture->entry);
+        $path = '/cv/'.$first['profile']['slug'];
+        $again = app(CvViewModel::class)->forApplication($this->fixture->entry);
+        $firstToken = substr(parse_url($first['interactive_url'], PHP_URL_FRAGMENT), 3);
+
+        $this->assertSame($first['interactive_url'], $again['interactive_url']);
+        $this->assertTrue(CvCapabilities::allows($firstToken, $path));
+        $this->assertSame(1, DB::table('cv_access_tokens')->where('profile_path', $path)->where('kind', 'temporary')->whereNull('revoked_at')->count());
+
+        $this->travel(16)->minutes();
+        $next = app(CvViewModel::class)->forApplication($this->fixture->entry);
+        $nextToken = substr(parse_url($next['interactive_url'], PHP_URL_FRAGMENT), 3);
+
+        $this->assertNotSame($firstToken, $nextToken);
+        $this->assertFalse(CvCapabilities::allows($firstToken, $path));
+        $this->assertTrue(CvCapabilities::allows($nextToken, $path));
+        $this->assertSame(1, DB::table('cv_access_tokens')->where('profile_path', $path)->where('kind', 'temporary')->whereNull('revoked_at')->count());
+        $this->assertSame(2, DB::table('cv_access_tokens')->where('profile_path', $path)->where('kind', 'temporary')->count());
+        $this->assertNotNull(DB::table('cv_access_tokens')->where('token_hash', hash('sha256', $firstToken))->value('revoked_at'));
+    }
+
+    public function test_named_cv_grant_is_looked_up_and_created_inside_an_atomic_lock(): void
+    {
+        $cache = app('cache');
+        try {
+            $lock = \Mockery::mock();
+            $lock->shouldReceive('block')->once()->with(10, \Mockery::type(\Closure::class))
+                ->andReturnUsing(function (int $seconds, \Closure $createGrant) {
+                    $this->assertSame(0, DB::table('cv_access_tokens')->count(), 'The lock must be acquired before grant lookup/insertion.');
+
+                    return $createGrant();
+                });
+            Cache::shouldReceive('lock')->once()
+                ->withArgs(fn (string $name, int $seconds): bool => str_starts_with($name, 'cv-grant:') && $seconds === 30)
+                ->andReturn($lock);
+
+            $grant = CvCapabilities::permanentForLabel('/cv/jobmesse-26', 'Bewerbungs Lebenslauf für 2027-001');
+
+            $this->assertSame('permanent', $grant['kind']);
+            $this->assertDatabaseCount('cv_access_tokens', 1);
+        } finally {
+            Cache::swap($cache);
+        }
+    }
+
+    public function test_cv_profile_manager_creates_independent_named_grants_and_revokes_only_one(): void
+    {
+        $profile = \Statamic\Facades\Entry::query()->where('collection', 'cv_profiles')->where('slug', 'jobmesse-26')->first();
+        $this->assertNotNull($profile);
+        $endpoint = '/cp/cv/private-link/grants?path='.urlencode('/cv/jobmesse-26');
+        $this->getJson($endpoint)->assertUnauthorized();
+        $limited = User::make()->id('cv-grant-limited-'.bin2hex(random_bytes(6)))->email(bin2hex(random_bytes(6)).'@example.invalid');
+        $limited->save();
+        $this->users[] = $limited;
+        $this->actingAs($limited)->getJson($endpoint)->assertForbidden();
+        $user = User::make()->id('cv-grant-manager-'.bin2hex(random_bytes(6)))->email(bin2hex(random_bytes(6)).'@example.invalid')->makeSuper();
+        $user->save();
+        $this->users[] = $user;
+        $this->actingAs($user);
+        $path = '/cv/jobmesse-26';
+
+        $first = $this->postJson('/cp/cv/private-link/grants', ['path' => $path, 'label' => 'Bewerbungs Lebenslauf für 2027-001', 'kind' => 'permanent'])->assertOk()->json();
+        $second = $this->postJson('/cp/cv/private-link/grants', ['path' => $path, 'label' => 'Bewerbungs Lebenslauf für 2027-001', 'kind' => 'permanent'])->assertOk()->json();
+        $firstToken = substr(parse_url($first['url'], PHP_URL_FRAGMENT), 3);
+        $secondToken = substr(parse_url($second['url'], PHP_URL_FRAGMENT), 3);
+        $this->assertNotSame($firstToken, $secondToken);
+        $this->assertTrue(CvCapabilities::allows($firstToken, $path));
+        $this->assertTrue(CvCapabilities::allows($secondToken, $path));
+
+        $list = $this->getJson('/cp/cv/private-link/grants?path='.urlencode($path))->assertOk()->json('grants');
+        $this->assertCount(2, $list);
+        $this->assertStringNotContainsString($firstToken, json_encode($list));
+        $this->assertStringNotContainsString($secondToken, json_encode($list));
+        $this->deleteJson('/cp/cv/private-link/grants/'.$first['grant']['id'].'?path='.urlencode($path))->assertOk();
+        $this->assertFalse(CvCapabilities::allows($firstToken, $path));
+        $this->assertTrue(CvCapabilities::allows($secondToken, $path));
+    }
+
+    public function test_unpublished_connected_profile_gets_no_public_cv_grant_or_return_links(): void
+    {
+        $profile = \Statamic\Facades\Entry::make()->collection('cv_profiles')->slug('private-draft-'.bin2hex(random_bytes(5)))->published(false)->data(['title' => 'Private draft profile']);
+        $profile->save();
+        try {
+            $this->fixture->entry->set('cv', ApplicationData::encrypt([['profile' => [$profile->id()]]]));
+            $model = app(CvViewModel::class)->forApplication($this->fixture->entry);
+            $this->assertNull($model['interactive_url']);
+            $this->assertStringNotContainsString('#cv=', json_encode($model));
+            foreach (['experience', 'education', 'projects', 'publications'] as $section) {
+                foreach ($model[$section] as $entry) $this->assertStringNotContainsString('cv_return=', $entry['url']);
+            }
+            $this->assertSame([], \App\Support\CvCapabilities::namedGrants('/cv/'.$profile->slug()));
+        } finally {
+            \Statamic\Facades\Entry::delete($profile);
+        }
+    }
+
+    public function test_cv_profile_detail_templates_keep_back_links_in_the_page_actions(): void
+    {
+        $project = file_get_contents(resource_path('views/projects/show.antlers.html'));
+        $publication = file_get_contents(resource_path('views/partials/publications/header.antlers.html'));
+        $this->assertStringContainsString('partial:detail/layout intro="projects/hero"', $project);
+        $this->assertMatchesRegularExpression('/partial:detail\/layout intro="projects\/hero".*?cv-chapter-nav mb-6.*?partial:components\/table-of-contents/s', $project, 'Project return control belongs after the hero and before article content.');
+        $this->assertStringContainsString('← Lebenslauf', $publication, 'Publication return control belongs in the existing header action row.');
     }
 }

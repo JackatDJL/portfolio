@@ -35,7 +35,7 @@ final class ApplicationPdfExporter implements ApplicationCompositeSource
             $signatureSource = ($signatureSettings['mode'] ?? 'none') === 'handwritten'
                 ? $this->handwrittenSignature->materialize($work.'/signature.png')
                 : null;
-            $cv = $this->viewModel->forApplication($entry, $signatureSource);
+            $cv = $this->viewModel->forApplication($entry, $signatureSource, permanentLink: $cached);
             if ($cv['photo']) {
                 $copy = $work.'/photo.'.pathinfo($cv['photo'], PATHINFO_EXTENSION);
                 if (! copy($cv['photo'], $copy)) {

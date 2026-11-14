@@ -81,6 +81,25 @@ tabs:
                 </div>
               </section>
 
+              <section class="app-cp-card" aria-labelledby="application-cv-link-title" data-application-cv-grant hidden>
+                <div class="app-cp-section-heading">
+                  <div>
+                    <h3 id="application-cv-link-title">CV-Prüflink</h3>
+                    <p>Der dauerhafte Zugriff wird im CV-Profilmanager geführt. Der Export verwendet denselben, benannten Grant.</p>
+                  </div>
+                </div>
+                <p data-application-cv-grant-state>Wird geladen …</p>
+                <div class="app-cp-grants" data-application-cv-grant-list></div>
+                <div class="app-cp-button-row">
+                  <button type="button" class="app-cp-button" data-application-cv-grant-create>CV-Link erstellen oder öffnen</button>
+                </div>
+                <div class="app-cp-new-link" data-application-cv-grant-url-wrap hidden>
+                  <label class="app-cp-field"><span>Neuer Link, nur einmal angezeigt</span><input class="app-cp-control" type="url" readonly data-application-cv-grant-url></label>
+                  <button type="button" class="app-cp-button" data-application-cv-grant-copy>Link kopieren</button>
+                </div>
+                <p class="app-cp-status" role="status" data-application-cv-grant-status></p>
+              </section>
+
               <section class="app-cp-card" aria-labelledby="application-export-title">
                 <div class="app-cp-section-heading">
                   <div>
