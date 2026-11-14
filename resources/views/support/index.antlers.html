@@ -1,0 +1,30 @@
+<article class="support-story" data-support-story>
+    <header class="support-opening site-container">
+        <p class="support-person">Jack Ruder · Software und Robotik</p>
+        <h1>{{ heading | sanitize }}</h1>
+        <p class="support-opening__intro">{{ intro | sanitize }}</p>
+        <nav aria-label="Projekte auf dieser Seite"><a href="#offene-software">Offene Software</a><a href="#rosenfold">Rosenfold</a><a href="#atheblues">AtheBlues</a></nav>
+    </header>
+    <section id="offene-software" class="support-work support-work--software site-container" data-support-section aria-labelledby="software-heading">
+        <svg class="support-connection" data-support-connection aria-hidden="true" focusable="false"><path data-support-path /></svg>
+        <div class="support-work__intro" data-support-from><h2 id="software-heading">{{ software_title | sanitize }}</h2><p>{{ software_intro | sanitize }}</p></div>
+        <div class="support-software-artifact">{{ if software_image }}{{ partial:media/image :asset="software_image" width="1280" sizes="(min-width: 1024px) 65vw, 94vw" loading="eager" fetchpriority="high" :caption_override="software_caption" }}{{ /if }}<div class="support-artifact-note">{{ software_project }}{{ if published && project_status != 'confidential' }}<h3>{{ title | sanitize }}</h3><p>{{ summary | sanitize }}</p><a class="semantic-link" href="{{ url }}">Arbeitsstand ansehen</a>{{ /if }}{{ /software_project }}</div></div>
+        <div class="support-next" data-support-to><h3>Was Unterstützung hier bedeutet</h3><p>{{ software_need | sanitize }}</p><span class="support-owner">Persönliche Softwareprojekte</span></div>
+    </section>
+    <section id="rosenfold" class="support-work support-work--rosenfold" data-support-section aria-labelledby="rosenfold-heading">
+        <div class="site-container support-rosenfold-layout">
+            <svg class="support-connection" data-support-connection aria-hidden="true" focusable="false"><path data-support-path /></svg>
+            <div data-support-from><p class="support-owner">Unabhängiges Projekt · In Entwicklung</p><h2 id="rosenfold-heading">{{ rosenfold_title | sanitize }}</h2><p>{{ rosenfold_intro | sanitize }}</p></div>
+            {{ if rosenfold_image }}{{ partial:media/image :asset="rosenfold_image" width="1280" sizes="(min-width: 1024px) 50vw, 94vw" :caption_override="rosenfold_caption" }}{{ else }}<div class="support-media-pending"><p>Einblicke in die Entwicklung</p><p>Für diesen Entwurf ist noch kein öffentlich freigegebenes Projektbild hinterlegt.</p></div>{{ /if }}
+            <div class="support-next" data-support-to><h3>Der nächste belegbare Schritt</h3><p>{{ rosenfold_need | sanitize }}</p></div>
+        </div>
+    </section>
+    <section id="atheblues" class="support-work support-work--robot site-container" data-support-section aria-labelledby="robot-heading">
+        <svg class="support-connection" data-support-connection aria-hidden="true" focusable="false"><path data-support-path /></svg>
+        <div class="support-robot-layout"><div data-support-from><p class="support-owner">AtheBlues · Schulteam</p><h2 id="robot-heading">{{ robot_title | sanitize }}</h2>{{ robot_project }}{{ if published && project_status != 'confidential' }}<p>{{ summary | sanitize }}</p><a class="semantic-link" href="{{ url }}">Die Robotikgeschichte lesen</a>{{ /if }}{{ /robot_project }}</div>
+        {{ if robot_image }}{{ partial:media/image :asset="robot_image" width="1280" sizes="(min-width: 1024px) 50vw, 94vw" :caption_override="robot_caption" }}{{ else }}<div class="support-media-pending"><p>CAD, Bauteile, Fertigung</p><p>Hier sind echte Aufnahmen des aktuellen Rescue-Line-Projekts vorgesehen. Archivmaterial wird nicht als aktueller Baufortschritt ausgegeben.</p></div>{{ /if }}</div>
+        <div class="support-next" data-support-to><h3>Material für das Team</h3><p>{{ robot_need | sanitize }}</p></div>
+    </section>
+    <section class="support-transparency site-container" aria-labelledby="transparency-heading"><h2 id="transparency-heading">{{ transparency_title | sanitize }}</h2><div><p>{{ transparency_intro | sanitize }}</p><p>Persönliche Projekte, mögliche geschäftliche Vorhaben und das Schulteam bleiben finanziell getrennt. Diese Seite nimmt keine Zahlungen entgegen.</p></div></section>
+    <footer class="support-ending site-container"><h2>{{ contact_title | sanitize }}</h2><p>{{ contact_intro | sanitize }}</p><a class="btn btn-primary" href="/kontakt?thema=sponsoring">Unterstützung besprechen</a></footer>
+</article>

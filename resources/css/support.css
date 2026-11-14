@@ -1,0 +1,39 @@
+.support-story { overflow: clip; }
+.support-opening { padding-block: clamp(3rem, 8vw, 8rem) 4rem; }
+.support-person { color: var(--site-text-muted); font-size: .9rem; margin-bottom: 2rem; }
+.support-opening h1 { font-size: clamp(3.25rem, 7.5vw, 8rem); line-height: 1; letter-spacing: -.05em; max-width: 15ch; }
+.support-opening__intro { margin: 2rem 0 2rem auto; max-width: 47ch; font-size: clamp(1.1rem, 1.5vw, 1.3rem); line-height: 1.65; }
+.support-opening nav { display: flex; flex-wrap: wrap; gap: .5rem 2rem; border-bottom: 1px solid var(--site-border); padding-block: 1.5rem; }
+.support-opening nav a { display: inline-flex; min-height: 2.75rem; align-items: center; text-decoration: underline; text-decoration-color: var(--site-focus); text-underline-offset: .35em; }
+.support-work { position: relative; padding-block: clamp(3rem, 7vw, 7rem); scroll-margin-top: 2rem; }
+.support-work h2, .support-transparency h2, .support-ending h2 { font-size: clamp(2.4rem, 4.8vw, 5rem); line-height: 1.05; letter-spacing: -.04em; max-width: 18ch; }
+.support-work p { max-width: 55ch; line-height: 1.7; }
+.support-work__intro { display: grid; grid-template-columns: 1.3fr 1fr; gap: 3rem; align-items: end; margin-bottom: 3rem; }
+.support-work__intro p { font-size: 1.2rem; }
+.support-software-artifact { display: grid; grid-template-columns: 3fr 1fr; gap: 2rem; align-items: end; }
+.support-software-artifact img { width: 100%; height: auto; }
+.support-artifact-note { border-left: 2px solid var(--site-focus); padding-left: 1.25rem; }
+.support-artifact-note h3 { font-size: 1.7rem; margin-bottom: .75rem; }
+.support-artifact-note p { font-size: .9rem; margin-bottom: 1rem; }
+.support-next { max-width: 44rem; margin: 4rem 0 0 auto; padding-left: 2rem; border-left: 2px solid var(--site-focus); }
+.support-next h3 { font-size: 1.6rem; margin-bottom: 1rem; }
+.support-owner { display: block; font-size: .85rem; color: var(--site-text-muted); margin-block: 1rem; }
+.support-connection { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.support-connection path { fill: none; stroke: var(--site-focus); stroke-width: 2; opacity: .7; vector-effect: non-scaling-stroke; }
+.support-work--rosenfold { background: var(--site-surface); margin-block: 2rem; }
+.support-rosenfold-layout { position: relative; display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: center; }
+.support-rosenfold-layout h2 { margin-block: 1.5rem; }
+.support-rosenfold-layout > .support-next { grid-column: 2; margin: 1rem 0 0; }
+.support-media-pending { min-height: 20rem; display: flex; flex-direction: column; justify-content: end; gap: .75rem; border: 1px dashed var(--site-border-strong); padding: 2rem; background: var(--site-surface); }
+.support-media-pending p:first-child { font-family: var(--font-display); font-size: 1.8rem; font-weight: 700; line-height: 1.1; }
+.support-media-pending p:last-child { color: var(--site-text-muted); font-size: .9rem; }
+.support-robot-layout { display: grid; grid-template-columns: .9fr 1.1fr; gap: 4rem; align-items: center; }
+.support-robot-layout h2 { margin-block: 1rem 2rem; }
+.support-robot-layout > div > p { margin-bottom: 1.5rem; }
+.support-transparency { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; border-block: 1px solid var(--site-border); padding-block: 4rem; }
+.support-transparency p { max-width: 53ch; line-height: 1.7; margin-bottom: 1rem; }
+.support-ending { padding-block: clamp(3rem, 7vw, 7rem); }
+.support-ending p { max-width: 57ch; line-height: 1.7; margin-block: 2rem; }
+@media (max-width: 63.99rem) { .support-software-artifact { grid-template-columns: 1fr; } .support-artifact-note { max-width: 40rem; margin-left: auto; } }
+@media (max-width: 47.99rem) { .support-opening h1 { font-size: clamp(3rem, 12vw, 5rem); } .support-opening__intro { margin-left: 0; } .support-work__intro, .support-rosenfold-layout, .support-robot-layout, .support-transparency { display: block; } .support-work__intro p { margin-top: 2rem; } .support-work h2, .support-transparency h2, .support-ending h2 { font-size: clamp(2.2rem, 9vw, 3.8rem); } .support-media-pending { margin-top: 2rem; min-height: 16rem; padding: 1.5rem; } .support-next { padding-left: 1.25rem; margin-top: 3rem; } .support-transparency h2 { margin-bottom: 2rem; } .support-connection { display: none; } }
+.support-connection { overflow: visible; }

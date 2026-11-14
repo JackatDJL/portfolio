@@ -1,0 +1,114 @@
+title: Unterstützung
+tabs:
+  main:
+    display: Inhalt
+    sections:
+      - fields:
+          - handle: title
+            field:
+              type: text
+              display: Seitentitel
+              validate: [required]
+          - handle: heading
+            field:
+              type: text
+              display: Überschrift
+          - handle: intro
+            field:
+              type: textarea
+              display: Einleitung
+          - handle: software_title
+            field:
+              type: text
+              display: Kapitel Software
+          - handle: software_intro
+            field:
+              type: textarea
+              display: Einleitung Software
+          - handle: software_project
+            field:
+              type: entries
+              display: Softwareprojekt
+              collections: [projects]
+              max_items: 1
+          - handle: software_image
+            field:
+              type: assets
+              display: Softwarebild
+              container: assets
+              max_files: 1
+          - handle: software_caption
+            field:
+              type: text
+              display: Bildunterschrift Software
+          - handle: software_need
+            field:
+              type: textarea
+              display: Bedarf Software
+          - handle: rosenfold_title
+            field:
+              type: text
+              display: Kapitel Rosenfold
+          - handle: rosenfold_intro
+            field:
+              type: textarea
+              display: Einleitung Rosenfold
+          - handle: rosenfold_image
+            field:
+              type: assets
+              display: Rosenfoldbild
+              container: assets
+              max_files: 1
+          - handle: rosenfold_caption
+            field:
+              type: text
+              display: Bildunterschrift Rosenfold
+          - handle: rosenfold_need
+            field:
+              type: textarea
+              display: Bedarf Rosenfold
+          - handle: robot_title
+            field:
+              type: text
+              display: Kapitel Robotik
+          - handle: robot_project
+            field:
+              type: entries
+              display: Robotikprojekt
+              collections: [projects]
+              max_items: 1
+          - handle: robot_image
+            field:
+              type: assets
+              display: Robotikbild
+              container: assets
+              max_files: 1
+          - handle: robot_caption
+            field:
+              type: text
+              display: Bildunterschrift Robotik
+          - handle: robot_need
+            field:
+              type: textarea
+              display: Bedarf Robotik
+          - handle: transparency_title
+            field:
+              type: text
+              display: Überschrift Transparenz
+          - handle: transparency_intro
+            field:
+              type: textarea
+              display: Transparenztext
+          - handle: contact_title
+            field:
+              type: text
+              display: Kontaktüberschrift
+          - handle: contact_intro
+            field:
+              type: textarea
+              display: Kontakttext
+  search:
+    display: SEO
+    sections:
+      - fields:
+          - import: seo
