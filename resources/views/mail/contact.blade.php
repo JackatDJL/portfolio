@@ -1,5 +1,5 @@
-Thema: {{ $topic }}
-Name: {{ $senderName }}
-Antwortadresse: {{ $senderEmail }}
+Thema: {!! $topic !!}
+Name: {!! $senderName !!}
+Antwortadresse: {!! $senderEmail !!}
 
-{{ $messageText }}
+{!! $messageText !!}

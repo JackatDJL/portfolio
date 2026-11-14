@@ -32,6 +32,7 @@ final class ContactController extends Controller
 
     public function send(Request $request): Response|RedirectResponse
     {
+        $this->publishedEntry();
         if (! $this->configured()) {
             return $this->render($request, [], ['Der Nachrichtenversand ist derzeit nicht eingerichtet. Es wurde nichts versendet.'], 503);
         }
@@ -68,6 +69,14 @@ final class ContactController extends Controller
         }
 
         return redirect('/kontakt')->with('contact_sent', true);
+    }
+
+    private function publishedEntry()
+    {
+        $entry = Entry::query()->where('collection', 'pages')->where('slug', 'kontakt')->first();
+        abort_unless($entry && $entry->published(), 404);
+
+        return $entry;
     }
 
     private function configured(): bool
@@ -112,15 +121,15 @@ final class ContactController extends Controller
 
     private function render(Request $request, array $input = [], array $errors = [], int $status = 200): Response
     {
-        $entry = Entry::query()->where('collection', 'pages')->where('slug', 'kontakt')->first();
-        abort_unless($entry && $entry->published(), 404);
+        $entry = $this->publishedEntry();
         $topics = [];
         foreach (self::TOPICS as $value => $label) {
             $topics[] = ['value' => $value, 'label' => $label, 'selected' => ($input['topic'] ?? 'allgemein') === $value];
         }
         $token = Crypt::encryptString(json_encode(['time' => time(), 'session' => hash('sha256', $request->session()->token())], JSON_THROW_ON_ERROR));
 
-        return response((new View)->template('contact/index')->layout('layout')->with([
+        return response((new View)->template('contact/index')->layout('layout')->cascadeContent($entry)->with([
+            'noindex' => true,
             'title' => $entry->value('title'),
             'contact_intro' => $entry->value('intro'),
             'contact_privacy' => $entry->value('privacy_note'),

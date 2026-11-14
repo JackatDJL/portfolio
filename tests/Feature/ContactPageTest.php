@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Mail\ContactMessage;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Mail;
+use Statamic\Facades\Entry;
 use Tests\TestCase;
 
 class ContactPageTest extends TestCase
@@ -106,6 +107,41 @@ class ContactPageTest extends TestCase
     public function test_topic_query_does_not_accept_arbitrary_values(): void
     {
         $this->get('/kontakt?thema[]=politik')->assertOk()->assertSee('selected>Allgemeiner Kontakt', false);
+    }
+
+    public function test_unpublished_entry_blocks_post_before_mail_is_sent(): void
+    {
+        $this->enable();
+        Mail::fake();
+        $entry = clone Entry::find('633a4a23-b229-4508-87f2-c79814bd6d92');
+        $entry->published(false);
+        $query = \Mockery::mock();
+        $query->shouldReceive('where')->andReturnSelf();
+        $query->shouldReceive('first')->andReturn($entry);
+        Entry::shouldReceive('query')->andReturn($query);
+        $this->post('/kontakt', $this->payload())->assertNotFound();
+        Mail::assertNothingSent();
+    }
+
+    public function test_editorial_metadata_reaches_layout_while_noindex_is_enforced(): void
+    {
+        $entry = clone Entry::find('633a4a23-b229-4508-87f2-c79814bd6d92');
+        $entry->set('seo_title', 'Kontakt Testtitel')->set('seo_description', 'Bearbeitete Beschreibung');
+        $query = \Mockery::mock();
+        $query->shouldReceive('where')->andReturnSelf();
+        $query->shouldReceive('first')->andReturn($entry);
+        Entry::shouldReceive('query')->andReturn($query);
+        $this->get('/kontakt')->assertOk()->assertSee('Kontakt Testtitel')->assertSee('Bearbeitete Beschreibung')
+            ->assertSee('noindex, nofollow');
+    }
+
+    public function test_plain_text_mime_preserves_punctuation_without_html_entities(): void
+    {
+        $sent = Mail::mailer('array')->to('recipient@example.org')->send(new ContactMessage('Projektanfrage', "O'Connor & Partner", 'sender@example.org', 'A < B & C'));
+        $body = $sent->getSymfonySentMessage()->getOriginalMessage()->getTextBody();
+        $this->assertStringContainsString("O'Connor & Partner", $body);
+        $this->assertStringContainsString('A < B & C', $body);
+        $this->assertStringNotContainsString('&amp;', $body);
     }
 
     private function enable(string $transport = 'smtp'): void
