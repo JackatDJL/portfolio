@@ -9,12 +9,20 @@ use Statamic\Facades\User;
 /** Non-secret return context; authorization remains in the existing scoped session. */
 final class CvNavigation
 {
+    /** @var array<string, string> Cache for application slug -> id lookups */
+    private static array $applicationIdCache = [];
+
     public static function applicationId(string $path): ?string
     {
         // Check for new format: /cv/{application-slug}
         if (preg_match('#^/cv/([a-z0-9-]+)$#D', $path, $matches)) {
-            $application = Entry::query()->where('collection', 'applications')->where('slug', $matches[1])->first();
+            $slug = $matches[1];
+            if (isset(self::$applicationIdCache[$slug])) {
+                return self::$applicationIdCache[$slug];
+            }
+            $application = Entry::query()->where('collection', 'applications')->where('slug', $slug)->first();
             if ($application) {
+                self::$applicationIdCache[$slug] = $application->id();
                 return $application->id();
             }
         }
