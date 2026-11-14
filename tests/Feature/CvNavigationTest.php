@@ -11,6 +11,8 @@ use App\Support\CvPdfRenderer;
 use App\Support\CvViewModel;
 use App\Support\PrivateHandwrittenSignature;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Crypt;
+use Statamic\Facades\GlobalSet;
 use Statamic\StaticCaching\DefaultUrlExcluder;
 use Tests\Support\ApplicationPdfFixture;
 use Tests\Support\HandwrittenSignatureFixture;
@@ -58,6 +60,30 @@ class CvNavigationTest extends TestCase
             $this->assertSame('/cv', CvNavigation::returnPath($path));
         }
         $this->assertSame('/cv/jobmesse-26', CvNavigation::returnPath('/cv/jobmesse-26'));
+    }
+
+    public function test_application_data_payload_omits_birth_fields_but_cv_grants_keep_their_existing_payload(): void
+    {
+        $cv = GlobalSet::find('cv')->inDefaultSite();
+        $cv->set('date_of_birth', Crypt::encryptString('2000-01-02'));
+        $cv->set('place_of_birth', Crypt::encryptString('Synthetic birthplace'));
+        $this->fixture->entry->save();
+        $id = $this->fixture->entry->id();
+        $grant = ApplicationCapabilities::issue($id, 'Payload test');
+        $this->postJson('/applications/token-exchange', ['id' => $id, 'token' => $grant['token']])->assertOk();
+        $this->postJson('/cv/private-data', ['path' => '/applications/'.$id.'/cv'])
+            ->assertOk()
+            ->assertJsonPath('private_email', 'private-export@example.invalid')
+            ->assertJsonPath('signature_mode', 'typed')
+            ->assertJsonMissingPath('date_of_birth')
+            ->assertJsonMissingPath('place_of_birth');
+
+        $cvGrant = CvCapabilities::issueTemporary('/cv/jobmesse-26');
+        $this->postJson('/cv/token-exchange', ['path' => '/cv/jobmesse-26', 'token' => $cvGrant['token']])->assertOk();
+        $this->postJson('/cv/private-data', ['path' => '/cv/jobmesse-26'])
+            ->assertOk()
+            ->assertJsonPath('date_of_birth', '02.01.2000')
+            ->assertJsonPath('place_of_birth', 'Synthetic birthplace');
     }
 
     public function test_return_context_is_excluded_from_static_caching_without_losing_existing_exclusions(): void

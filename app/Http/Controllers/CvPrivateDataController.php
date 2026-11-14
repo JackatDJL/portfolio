@@ -7,6 +7,7 @@ use App\Support\CvNavigation;
 use App\Support\CvPrivateData;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 use Statamic\Facades\Entry;
 use Statamic\Facades\GlobalSet;
@@ -28,6 +29,9 @@ class CvPrivateDataController extends Controller
 
         $data = CvPrivateData::reveal($variables);
         $id = CvNavigation::applicationId($path);
+        if ($id) {
+            $data = Arr::only($data, ['private_email', 'phone', 'street', 'house_number', 'postal_code', 'city', 'country']);
+        }
         $settings = $id ? ApplicationData::group(Entry::find($id), 'signature') : [];
         $data['signature_mode'] = $id ? ($settings['mode'] ?? 'none') : (filter_var($variables->value('private_cv_signature_enabled', false), FILTER_VALIDATE_BOOLEAN) ? ($variables->value('private_cv_signature_mode') ?? 'handwritten') : 'none');
         if ($id && $data['signature_mode'] === 'typed') {
