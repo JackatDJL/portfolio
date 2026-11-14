@@ -20,12 +20,12 @@ final class CvCapabilities
 
     public static function permanent(string $path, bool $replace = false): array
     {
-        $existing = DB::table('cv_access_tokens')->where('profile_path', $path)->where('kind', 'permanent')->whereNull('revoked_at')->first();
+        $existing = DB::table('cv_access_tokens')->where('profile_path', $path)->where('kind', 'permanent')->whereNull('label')->whereNull('revoked_at')->first();
         if ($existing && ! $replace) {
             return self::present($existing);
         }
         if ($existing) {
-            DB::table('cv_access_tokens')->where('id', $existing->id)->update(['revoked_at' => now(), 'updated_at' => now()]);
+            DB::table('cv_access_tokens')->where('id', $existing->id)->update(['revoked_at' => now(), 'label_key' => null, 'updated_at' => now()]);
         }
 
         return self::store(Str::random(64), $path, 'permanent');
@@ -116,7 +116,7 @@ final class CvCapabilities
 
     public static function revokePermanent(string $path): bool
     {
-        return DB::table('cv_access_tokens')->where('profile_path', $path)->where('kind', 'permanent')->whereNull('revoked_at')->update(['revoked_at' => now(), 'label_key' => null, 'updated_at' => now()]) > 0;
+        return DB::table('cv_access_tokens')->where('profile_path', $path)->where('kind', 'permanent')->whereNull('label')->whereNull('revoked_at')->update(['revoked_at' => now(), 'label_key' => null, 'updated_at' => now()]) > 0;
     }
 
     public static function allows(string $token, string $path): bool

@@ -71,7 +71,7 @@ class CvPrivateLinkController extends Controller
         $url = url($path);
         if ($source !== 'public') {
             $record = DB::table('cv_access_tokens')
-                ->where('profile_path', $path)->where('kind', $source)->whereNull('revoked_at')
+                ->where('profile_path', $path)->where('kind', $source)->whereNull('label')->whereNull('revoked_at')
                 ->orderByDesc('id')->first();
             abort_unless($record && (! $record->expires_at || now()->isBefore($record->expires_at)), 404);
             $url .= '#cv='.Crypt::decryptString($record->encrypted_token);
@@ -92,7 +92,7 @@ class CvPrivateLinkController extends Controller
     public function status(Request $request): JsonResponse
     {
         $path = $this->path($request);
-        $records = DB::table('cv_access_tokens')->where('profile_path', $path)->whereNull('revoked_at')->orderByDesc('id')->get();
+        $records = DB::table('cv_access_tokens')->where('profile_path', $path)->whereNull('label')->whereNull('revoked_at')->orderByDesc('id')->get();
         $links = [];
         foreach ($records as $record) {
             if (isset($links[$record->kind]) || ($record->expires_at && now()->isAfter($record->expires_at))) {
@@ -114,7 +114,7 @@ class CvPrivateLinkController extends Controller
         $path = $this->path($request);
 
         if ($request->boolean('replace')) {
-            DB::table('cv_access_tokens')->where('profile_path', $path)->where('kind', 'temporary')->whereNull('revoked_at')->update(['revoked_at' => now(), 'updated_at' => now()]);
+            DB::table('cv_access_tokens')->where('profile_path', $path)->where('kind', 'temporary')->whereNull('label')->whereNull('revoked_at')->update(['revoked_at' => now(), 'label_key' => null, 'updated_at' => now()]);
         }
 
         return $this->response($path, CvCapabilities::issueTemporary($path));

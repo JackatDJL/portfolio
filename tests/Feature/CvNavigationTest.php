@@ -27,6 +27,7 @@ class CvNavigationTest extends TestCase
 
     private ApplicationPdfFixture $fixture;
     private array $users = [];
+    private array $roles = [];
 
     protected function setUp(): void
     {
@@ -37,8 +38,25 @@ class CvNavigationTest extends TestCase
     protected function tearDown(): void
     {
         foreach ($this->users as $user) $user->delete();
+        foreach ($this->roles as $role) \Statamic\Facades\Role::delete($role);
         $this->fixture->cleanup();
         parent::tearDown();
+    }
+
+    private function limitedCpUser(): object
+    {
+        $role = \Statamic\Facades\Role::make()
+            ->handle('cv-grant-limited-'.bin2hex(random_bytes(6)))
+            ->title('Limited CV link test')
+            ->addPermission('access cp');
+        \Statamic\Facades\Role::save($role);
+        $this->roles[] = $role;
+
+        $user = User::make()->id('cv-grant-limited-'.bin2hex(random_bytes(6)))->email(bin2hex(random_bytes(6)).'@example.invalid')->assignRole($role);
+        $user->save();
+        $this->users[] = $user;
+
+        return $user;
     }
 
     public function test_detail_return_context_preserves_the_profile_and_existing_authorization(): void
@@ -223,6 +241,46 @@ class CvNavigationTest extends TestCase
         $this->deleteJson('/cp/cv/private-link/grants/'.$first['grant']['id'].'?path='.urlencode($path))->assertOk();
         $this->assertFalse(CvCapabilities::allows($firstToken, $path));
         $this->assertTrue(CvCapabilities::allows($secondToken, $path));
+    }
+
+    public function test_legacy_cv_link_endpoints_never_expose_named_grants_to_regular_cp_users(): void
+    {
+        $path = '/cv/jobmesse-26';
+        CvCapabilities::temporaryForLabel($path, 'Bewerbungs Lebenslauf für 2027-001');
+        CvCapabilities::permanentForLabel($path, 'Bewerbungs Lebenslauf für 2027-001');
+
+        $this->actingAs($this->limitedCpUser());
+
+        $this->getJson('/cp/cv/private-link/status?path='.urlencode($path))
+            ->assertOk()
+            ->assertExactJson(['path' => $path, 'links' => []]);
+        $this->get('/cp/cv/private-link/qr?path='.urlencode($path).'&source=temporary')->assertNotFound();
+        $this->get('/cp/cv/private-link/qr?path='.urlencode($path).'&source=permanent')->assertNotFound();
+        $this->getJson('/cp/cv/private-link/grants?path='.urlencode($path))->assertForbidden();
+    }
+
+    public function test_legacy_link_replacement_and_revocation_leave_named_application_grants_active(): void
+    {
+        $path = '/cv/jobmesse-26';
+        $label = 'Bewerbungs Lebenslauf für 2027-001';
+        $namedTemporary = CvCapabilities::temporaryForLabel($path, $label);
+        $namedPermanent = CvCapabilities::permanentForLabel($path, $label);
+        $legacyTemporary = CvCapabilities::issueTemporary($path);
+        $legacyPermanent = CvCapabilities::permanent($path);
+
+        $this->actingAs($this->limitedCpUser());
+
+        $this->postJson('/cp/cv/private-link/temporary', ['path' => $path, 'replace' => true])->assertOk();
+        $this->postJson('/cp/cv/private-link/permanent', ['path' => $path, 'replace' => true])->assertOk();
+        $this->assertFalse(CvCapabilities::allows($legacyTemporary['token'], $path));
+        $this->assertFalse(CvCapabilities::allows($legacyPermanent['token'], $path));
+        $this->assertTrue(CvCapabilities::allows($namedTemporary['token'], $path));
+        $this->assertTrue(CvCapabilities::allows($namedPermanent['token'], $path));
+
+        $this->assertTrue(CvCapabilities::revokePermanent($path));
+        $this->assertTrue(CvCapabilities::allows($namedPermanent['token'], $path));
+        $this->assertSame($namedTemporary['token'], CvCapabilities::temporaryForLabel($path, $label)['token']);
+        $this->assertSame($namedPermanent['token'], CvCapabilities::permanentForLabel($path, $label)['token']);
     }
 
     public function test_unpublished_connected_profile_gets_no_public_cv_grant_or_return_links(): void

@@ -153,19 +153,24 @@
         };
         root.addEventListener('click', async event => {
             const button = event.target.closest('[data-cv-grant-create], [data-cv-grant-copy], [data-cv-grant-revoke]');
-            if (!button) return;
+            if (!button || button.disabled) return;
             try {
                 if (button.hasAttribute('data-cv-grant-create')) {
                     const label = root.querySelector('[data-cv-grant-label]').value.trim();
                     if (!label) throw new Error('Bitte eine Bezeichnung eingeben.');
                     const kind = root.querySelector('[data-cv-grant-kind]').value;
-                    const result = await request('POST', '/cp/cv/private-link/grants', { path, label, kind, minutes: 15 });
-                    if (result.url) {
-                        root.querySelector('[data-cv-grant-url]').value = result.url;
-                        root.querySelector('[data-cv-grant-url-wrap]').hidden = false;
-                        status.textContent = 'Der Link wird nur hier einmal angezeigt. Bei Verlust kannst du einen neuen Grant erstellen.';
+                    button.disabled = true;
+                    try {
+                        const result = await request('POST', '/cp/cv/private-link/grants', { path, label, kind, minutes: 15 });
+                        if (result.url) {
+                            root.querySelector('[data-cv-grant-url]').value = result.url;
+                            root.querySelector('[data-cv-grant-url-wrap]').hidden = false;
+                            status.textContent = 'Der Link wird nur hier einmal angezeigt. Bei Verlust kannst du einen neuen Grant erstellen.';
+                        }
+                        await render();
+                    } finally {
+                        button.disabled = false;
                     }
-                    await render();
                 } else if (button.hasAttribute('data-cv-grant-copy')) {
                     await navigator.clipboard.writeText(root.querySelector('[data-cv-grant-url]').value);
                     status.textContent = 'Link kopiert.';

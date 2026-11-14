@@ -74,7 +74,7 @@ jobs:
         # The test uses Vite only as a static fixture server, not as the application asset build.
         env:
           LARAVEL_BYPASS_ENV_CHECK: '1'
-        run: bun run test:browser -- tests/browser/handwritten-signature.spec.js tests/browser/cv-private-signature.spec.js tests/browser/cv-signature-presentation.spec.js
+        run: bun run test:browser -- tests/browser/handwritten-signature.spec.js tests/browser/cv-private-signature.spec.js tests/browser/cv-signature-presentation.spec.js tests/browser/cv-access-manager.spec.js
       - name: Render synthetic review evidence
         run: |
           mkdir -p "$RUNNER_TEMP/private-signature-evidence"
