@@ -4,7 +4,7 @@
 
         <nav class="site-header__nav" aria-label="Direktnavigation">
             {{ nav:main max_depth="1" }}
-                {{ if url == '/projekte' || url == '/cv' || url == '/lebenslauf' }}
+                {{ if url == '/projekte' || url == '/politik' || url == '/cv' || url == '/lebenslauf' }}
                     <a href="{{ url }}"{{ if is_current }} aria-current="page"{{ /if }}>{{ title }}</a>
                 {{ /if }}
             {{ /nav:main }}

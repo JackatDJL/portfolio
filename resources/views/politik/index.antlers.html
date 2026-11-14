@@ -1,0 +1,54 @@
+<article class="detail-container politics-page">
+    <header class="detail-hero">
+        <div class="detail-hero__content">
+            <p class="eyebrow">Persönliches Engagement · Stade</p>
+            <h1 class="mt-4 text-4xl md:text-6xl">{{ title }}</h1>
+            <p class="politics-lead">Ich engagiere mich in der Schülervertretung, organisiere politische Bildung vor Ort und arbeite bei Volt Stade an Kommunikation. Diese persönliche Website ist kein offizieller Auftritt von Volt.</p>
+            <p><a class="btn btn-secondary" href="https://voltdeutschland.org/niedersachsen/menschen/jack-ruder" rel="external">Offizielles Profil bei Volt Niedersachsen</a></p>
+        </div>
+    </header>
+
+    {{ if politics_campaign:active }}
+    <aside class="politics-campaign" aria-labelledby="campaign-heading">
+        <p class="eyebrow">Wahlzeit</p><h2 id="campaign-heading">{{ campaign_title }}</h2>
+        <div class="prose">{{ campaign_body | bard_html }}</div>
+    </aside>
+    {{ /if }}
+
+    <section class="politics-section" aria-labelledby="bio-heading">
+        <h2 id="bio-heading">Engagement und politische Bildung</h2>
+        <p>Mein politisches Engagement begann an meiner Schule: Seit 2019 bin ich in der Schülervertretung aktiv. Später kamen Verantwortung im Schulvorstand, das schulübergreifende Erstwählerforum Stade und meine Mitarbeit bei Volt hinzu.</p>
+        <p>Mich interessieren Europa, Bildung, digitale Verwaltung, Infrastruktur und Datenschutz. Das sind Themenfelder, mit denen ich mich beschäftige; konkrete Positionen ordne ich nur dort zu, wo ich sie selbst öffentlich belegt habe.</p>
+    </section>
+
+    <section class="politics-section" aria-labelledby="school-heading">
+        <h2 id="school-heading">Schulvertretung</h2>
+        <ul class="politics-records">
+            {{ milestones }}{{ if published }}<li><h3>{{ title }}</h3><p>{{ summary }}</p><p class="text-muted">{{ date_label }} · Gymnasium Athenaeum Stade</p></li>{{ /if }}{{ /milestones }}
+        </ul>
+        <p><a href="/cv">Mehr zum Bildungsweg im Lebenslauf</a></p>
+    </section>
+
+    <section class="politics-section" aria-labelledby="forum-heading">
+        <h2 id="forum-heading">Erstwählerforum Stade</h2>
+        {{ projects }}{{ if slug == 'erstwaehlerforum-stade' }}<p>{{ summary }}</p><p><a class="related-reference" href="{{ url }}">Zum Projektbericht: {{ title }}</a></p>{{ /if }}{{ /projects }}
+    </section>
+
+    <section class="politics-section" aria-labelledby="volt-heading">
+        <h2 id="volt-heading">Mitarbeit bei Volt</h2>
+        <ul class="politics-records">
+            {{ experience }}{{ if organisation == 'Volt Stade' || organisation == 'Volt Europa' }}<li><h3>{{ title }} · {{ organisation }}</h3><p>{{ summary }}</p><p><a href="/cv/exp/{{ slug }}">Details zur Mitarbeit</a></p></li>{{ /if }}{{ /experience }}
+        </ul>
+        <p>Diese Angaben beschreiben meine Mitarbeit. Sie stellen keine offizielle Vertretung von Volt durch diese Website dar.</p>
+    </section>
+
+    <section class="politics-section" aria-labelledby="related-heading">
+        <h2 id="related-heading">Texte und Projekte</h2>
+        <ul class="politics-links">
+            {{ publications }}{{ if published }}<li><a href="{{ url }}">{{ title }}</a>{{ if abstract }}<span>{{ abstract }}</span>{{ /if }}</li>{{ /if }}{{ /publications }}
+            {{ posts }}{{ if published }}<li><a href="{{ url }}">{{ title }}</a>{{ if summary }}<span>{{ summary }}</span>{{ /if }}</li>{{ /if }}{{ /posts }}
+            {{ projects }}{{ if published && slug != 'erstwaehlerforum-stade' }}<li><a href="{{ url }}">{{ title }}</a>{{ if summary }}<span>{{ summary }}</span>{{ /if }}</li>{{ /if }}{{ /projects }}
+        </ul>
+        <p class="politics-navigation"><a href="/projekte">Alle Projekte</a><a href="/blog">Blog</a><a href="/cv">Lebenslauf</a></p>
+    </section>
+</article>

@@ -1,0 +1,12 @@
+.politics-page { padding-bottom: 5rem; }
+.politics-page .detail-hero { padding-block: clamp(3rem, 9vw, 7rem); }
+.politics-page .detail-hero__content { max-width: 52rem; }
+.politics-lead { max-width: 42rem; font-size: clamp(1.2rem, 2vw, 1.6rem); line-height: 1.45; }
+.politics-section { max-width: 48rem; margin: 0 auto; padding-block: 2rem; border-top: 1px solid var(--site-border); }
+.politics-section h2 { font-family: var(--font-display); font-size: clamp(1.7rem, 4vw, 2.4rem); }
+.politics-records, .politics-links { display: grid; gap: 1rem; padding: 0; list-style: none; }
+.politics-records li, .politics-links li { display: grid; gap: .45rem; padding: 1.1rem; border: 1px solid var(--site-border); border-radius: .75rem; background: var(--site-surface); }
+.politics-records h3, .politics-records p, .politics-links span { margin: 0; }
+.politics-navigation { display: flex; flex-wrap: wrap; gap: 1.25rem; }
+.politics-campaign { max-width: 48rem; margin: 0 auto 2rem; padding: 1.5rem; border: 2px solid var(--site-accent); border-radius: .75rem; background: var(--site-surface-strong); }
+@media (max-width: 640px) { .politics-page .detail-hero { padding-block: 2.5rem; } .politics-section { padding-block: 1.5rem; } }
