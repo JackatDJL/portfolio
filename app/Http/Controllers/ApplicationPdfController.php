@@ -61,7 +61,8 @@ final class ApplicationPdfController extends Controller
             return response($exception->getMessage(), 503);
         }
         $response = response()->file($path, ['Content-Type' => 'application/pdf']);
-        $response->setContentDisposition($download ? 'attachment' : 'inline', 'bewerbung.pdf');
+        // Both Preview and Export open inline in viewer; Export uses cached/signed PDF
+        $response->setContentDisposition('inline', 'bewerbung.pdf');
         if ($preview) {
             $response->deleteFileAfterSend(true);
         }

@@ -27,6 +27,13 @@ tabs:
           default: draft
           validate:
           - in:draft,ready,sent,interview,accepted,rejected,withdrawn
+          width: 50
+      - handle: published
+        field:
+          type: toggle
+          display: Veröffentlicht
+          default: false
+          width: 50
       - handle: workflow
         field:
           type: html
@@ -71,7 +78,6 @@ tabs:
                 </div>
                 <div class="app-cp-button-row">
                   <button type="button" class="app-cp-button app-cp-button-primary" data-application-preview>Anschreiben und Bewerbung ansehen</button>
-                  <button type="button" class="app-cp-button" data-application-cv>Bewerbungs-CV als PDF prüfen</button>
                 </div>
               </section>
 
