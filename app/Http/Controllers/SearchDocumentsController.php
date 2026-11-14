@@ -17,7 +17,7 @@ class SearchDocumentsController extends Controller
         $baseUrl = $this->baseUrl();
         $globals = GlobalSet::findByHandle('search_agent_optimization')?->inDefaultSite();
         $noindexRoutes = SearchPath::normalizeList($globals?->get('noindex_routes') ?? []);
-        $paths = collect(['/projekte', '/blog', '/publikationen', '/aktuell', '/cv'])
+        $paths = collect(['/projekte', '/blog', '/publikationen', '/aktuell', '/cv', '/support'])
             ->reject(fn ($path) => in_array($path, $noindexRoutes, true))
             ->values()
             ->all();
