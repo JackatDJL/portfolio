@@ -1,0 +1,120 @@
+title: Politik
+tabs:
+  main:
+    display: Inhalt
+    sections:
+      - fields:
+          - handle: title
+            field:
+              type: text
+              display: Seitentitel
+              validate: [required]
+          - handle: heading
+            field:
+              type: text
+              display: Überschrift
+              validate: [required]
+          - handle: intro
+            field:
+              type: textarea
+              display: Einleitung
+              validate: [required]
+          - handle: hero_image
+            field:
+              type: assets
+              display: Einstiegsbild
+              container: assets
+              max_files: 1
+          - handle: hero_caption
+            field:
+              type: text
+              display: Bildunterschrift Einstieg
+          - handle: chapter_school_title
+            field:
+              type: text
+              display: Kapitel Schule
+          - handle: chapter_school_intro
+            field:
+              type: textarea
+              display: Einleitung Schule
+          - handle: school_milestones
+            field:
+              type: entries
+              display: Schulische Stationen
+              collections: [cv_milestones]
+          - handle: chapter_forum_title
+            field:
+              type: text
+              display: Kapitel Erstwählerforum
+          - handle: forum_project
+            field:
+              type: entries
+              display: Projekt Erstwählerforum
+              collections: [projects]
+              max_items: 1
+          - handle: forum_image
+            field:
+              type: assets
+              display: Forumfoto
+              container: assets
+              max_files: 1
+          - handle: forum_caption
+            field:
+              type: text
+              display: Bildunterschrift Forum
+          - handle: chapter_volt_title
+            field:
+              type: text
+              display: Kapitel Volt
+          - handle: volt_experience
+            field:
+              type: entries
+              display: Mitarbeit Volt Stade
+              collections: [experience]
+          - handle: volt_image
+            field:
+              type: assets
+              display: Foto Zusammenarbeit
+              container: assets
+              max_files: 1
+          - handle: volt_caption
+            field:
+              type: text
+              display: Bildunterschrift Zusammenarbeit
+          - handle: chapter_tech_title
+            field:
+              type: text
+              display: Kapitel Technik
+          - handle: tech_experience
+            field:
+              type: entries
+              display: Technische Mitarbeit
+              collections: [experience]
+          - handle: chapter_personal_title
+            field:
+              type: text
+              display: Persönliches Kapitel
+          - handle: personal_intro
+            field:
+              type: textarea
+              display: Persönliche Einleitung
+          - handle: personal_image
+            field:
+              type: assets
+              display: Persönliches Bild
+              container: assets
+              max_files: 1
+          - handle: personal_caption
+            field:
+              type: text
+              display: Persönliche Bildunterschrift
+          - handle: interests
+            field:
+              type: entries
+              display: Persönliche Stationen
+              collections: [cv_milestones]
+  search:
+    display: SEO
+    sections:
+      - fields:
+          - import: seo
