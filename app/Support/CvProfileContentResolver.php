@@ -104,7 +104,8 @@ final class CvProfileContentResolver
             $resolved['profile']['title'] = '';
             // Application rendering uses its own authorized return route rather
             // than reusing the source profile's public employer-specific identity.
-            $resolved['profile']['slug'] = null;
+            // Use application's own slug for URL generation
+            $resolved['profile']['slug'] = $application->slug();
         }
         $overlay = Entries::make()->collection('cv_profiles')->data($settings);
         foreach (self::SECTIONS as $handle) {

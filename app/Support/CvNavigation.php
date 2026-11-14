@@ -11,6 +11,14 @@ final class CvNavigation
 {
     public static function applicationId(string $path): ?string
     {
+        // Check for new format: /cv/{application-slug}
+        if (preg_match('#^/cv/([a-z0-9-]+)$#D', $path, $matches)) {
+            $application = Entry::query()->where('collection', 'applications')->where('slug', $matches[1])->first();
+            if ($application) {
+                return $application->id();
+            }
+        }
+        // Check for old format: /applications/{uuid}/cv
         return preg_match('#^/applications/([a-f0-9-]{36})/cv$#D', $path, $matches) ? $matches[1] : null;
     }
 
@@ -33,8 +41,15 @@ final class CvNavigation
         }
         if (preg_match('#^/cv/([a-z0-9-]+)$#D', $path, $matches)) {
             $profile = Entry::query()->where('collection', 'cv_profiles')->where('slug', $matches[1])->where('published', true)->first();
-
-            return $profile ? $path : '/cv';
+            if ($profile) {
+                return $path;
+            }
+            // Check if it's an application slug
+            $application = Entry::query()->where('collection', 'applications')->where('slug', $matches[1])->first();
+            if ($application && self::authorized(request(), $path)) {
+                return $path;
+            }
+            return '/cv';
         }
         if (self::applicationId($path) && self::authorized(request(), $path)) {
             return $path;

@@ -29,8 +29,10 @@
             {{ /if }}
             {{ if doi }}
                 {{ partial:components/button variant="secondary" href="https://doi.org/{{ doi }}" label="DOI ↗" attributes="target=_blank rel=noreferrer" }}
+                <a class="btn btn-secondary" href="/cv">← Lebenslauf</a>
             {{ elseif publication_url }}
                 {{ partial:components/button variant="secondary" :href="publication_url" label="Veröffentlichungsseite ↗" attributes="target=_blank rel=noreferrer" }}
+                <a class="btn btn-secondary" href="/cv">← Lebenslauf</a>
             {{ /if }}
         </div>
     {{ /if }}

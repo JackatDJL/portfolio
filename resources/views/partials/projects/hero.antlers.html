@@ -22,6 +22,11 @@
                 {{ if website_url }}
                     {{ partial:components/button variant="secondary" :href="website_url" label="Webseite ↗" attributes="target=_blank rel=noreferrer" }}
                 {{ /if }}
+                <a class="btn btn-secondary" href="/cv">← Lebenslauf</a>
+            </div>
+        {{ else }}
+            <div class="mt-8 flex flex-wrap gap-3">
+                <a class="btn btn-secondary" href="/cv">← Lebenslauf</a>
             </div>
         {{ /if }}
     </div>

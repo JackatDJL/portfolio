@@ -23,6 +23,13 @@ final class CvPageController extends Controller
 
     public function profile(string $profile, CvProfileContentResolver $resolver, SignatureSecurityPattern $patterns): Response
     {
+        // Check if this is an application slug
+        $application = Entry::query()->where('collection', 'applications')->where('slug', $profile)->first();
+        if ($application) {
+            abort_unless(CvNavigation::authorized(request(), '/cv/'.$profile), 404);
+            return $this->render($resolver->resolveForApplication($application), $patterns, $application);
+        }
+        // Otherwise, treat it as a CV profile slug
         return $this->render($resolver->resolve($profile), $patterns);
     }
 
