@@ -75,7 +75,8 @@ final class CvViewModel
             $private['country'] ?? null,
         ]));
         $cv['contact']['address'] = implode(', ', $addressParts);
-        $returnPath = '/cv/'.$application->slug();
+        // Use the resolved profile slug (CV profile) if available, otherwise fall back to application slug
+        $returnPath = '/cv/'.($resolved['profile']['slug'] ?? $application->slug());
         $cv['canonical_url'] = rtrim((string) config('cv.canonical_base_url'), '/').$returnPath;
         $cv['interactive_url'] = $cv['canonical_url'];
         foreach (['experience', 'education', 'projects', 'publications'] as $section) {

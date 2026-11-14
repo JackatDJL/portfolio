@@ -158,4 +158,38 @@ final class ApplicationCapabilities
 
         return true;
     }
+
+    public static function hasAuthorizedApplication(Request $request): bool
+    {
+        foreach ($request->session()->get('application_grants', []) as $hash => $grantId) {
+            if (is_string($grantId) && preg_match('/^[a-f0-9]{64}$/D', $hash)) {
+                // Legacy hash-based session
+                $applicationId = substr($hash, 0, 36);
+                if (Str::isUuid($applicationId)) {
+                    return true;
+                }
+            } elseif (Str::isUuid($hash)) {
+                // New application ID based session
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static function authorizedApplicationId(Request $request): ?string
+    {
+        foreach ($request->session()->get('application_grants', []) as $hash => $grantId) {
+            if (is_string($grantId) && preg_match('/^[a-f0-9]{64}$/D', $hash)) {
+                // Legacy hash-based session - the hash is sha256 of the application ID
+                $applicationId = substr($hash, 0, 36);
+                if (Str::isUuid($applicationId)) {
+                    return $applicationId;
+                }
+            } elseif (Str::isUuid($hash)) {
+                // New application ID based session
+                return $hash;
+            }
+        }
+        return null;
+    }
 }

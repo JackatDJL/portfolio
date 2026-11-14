@@ -33,7 +33,13 @@
                             method: 'POST', credentials: 'same-origin', referrerPolicy: 'no-referrer',
                             headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-CSRF-TOKEN': csrfToken },
                             body: JSON.stringify({ slug, token: match[1] }),
-                        }).then(response => response.ok);
+                        }).then(response => {
+                            if (response.ok) {
+                                // Reload to render with authorized application
+                                location.reload();
+                            }
+                            return response.ok;
+                        });
                     }
                 }
                 

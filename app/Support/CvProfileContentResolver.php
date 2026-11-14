@@ -104,8 +104,14 @@ final class CvProfileContentResolver
             $resolved['profile']['title'] = '';
             // Application rendering uses its own authorized return route rather
             // than reusing the source profile's public employer-specific identity.
-            // Use application's own slug for URL generation
-            $resolved['profile']['slug'] = $application->slug();
+            // Use the CV profile's slug for consistent URLs like /cv/tuhh-praktikum-2027
+            // If no profile is selected, fall back to application slug
+            if (! empty($settings['profile'])) {
+                $profileEntry = $this->referencedEntry($settings['profile']);
+                if ($profileEntry) {
+                    $resolved['profile']['slug'] = $profileEntry->slug();
+                }
+            }
         }
         $overlay = Entries::make()->collection('cv_profiles')->data($settings);
         foreach (self::SECTIONS as $handle) {

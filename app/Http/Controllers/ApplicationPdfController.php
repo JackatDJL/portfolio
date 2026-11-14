@@ -78,6 +78,13 @@ final class ApplicationPdfController extends Controller
             ->header('Cache-Control', 'private, no-store');
     }
 
+    private function applicationProfileSlug($application): string
+    {
+        $cv = ApplicationData::group($application, 'cv');
+        $profileEntry = ($cv['profile'][0] ?? null) ? Entry::find($cv['profile'][0]) : null;
+        return $profileEntry?->slug() ?? $application->slug();
+    }
+
     public function issueGrant(Request $request, string $id)
     {
         abort_unless(User::current()?->isSuper(), 403);
@@ -90,7 +97,7 @@ final class ApplicationPdfController extends Controller
         $application = $this->application($id);
 
         return response()->json([
-            'url' => url('/cv/'.$application->slug()).'#application='.$issued['token'],
+            'url' => url('/cv/'.$this->applicationProfileSlug($application)).'#application='.$issued['token'],
             'grant' => Arr::except($issued, ['token']),
         ])->header('Cache-Control', 'private, no-store');
     }
@@ -101,7 +108,7 @@ final class ApplicationPdfController extends Controller
         $application = $this->application($id);
         $issued = ApplicationCapabilities::issue($id, 'Empfängerlink (Legacy)');
 
-        return response()->json(['url' => url('/cv/'.$application->slug()).'#application='.$issued['token']])
+        return response()->json(['url' => url('/cv/'.$this->applicationProfileSlug($application)).'#application='.$issued['token']])
             ->header('Cache-Control', 'private, no-store');
     }
 
