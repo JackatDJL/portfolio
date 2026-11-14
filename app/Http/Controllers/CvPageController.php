@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Support\ApplicationCapabilities;
 use App\Support\ApplicationData;
 use App\Support\CvNavigation;
 use App\Support\CvPdfRenderer;
