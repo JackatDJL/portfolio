@@ -61,8 +61,8 @@ class PrivateCvSignatureTest extends TestCase
         app(PrivateHandwrittenSignature::class)->save('data:image/png;base64,'.base64_encode($png), HandwrittenSignatureFixture::strokes());
 
         $public = $this->get('/cv/jobmesse-26')->assertOk();
-        $public->assertSee('Synthetisches Linienmotiv', false)
-            ->assertSee('kein Fälschungsschutz', false)
+        $public->assertSee('data-signature-pattern', false)
+            ->assertDontSee('kein Fälschungsschutz', false)
             ->assertDontSee(base64_encode($png));
         $this->postJson('/cv/private-signature', ['path' => '/cv/jobmesse-26'])->assertNotFound();
 
@@ -142,6 +142,23 @@ class PrivateCvSignatureTest extends TestCase
         $this->assertStringNotContainsString('Synthetic City, 6. November 2026', $publicText);
         $this->assertSame($publicInfo['pages'], $signedInfo['pages']);
         $this->assertStringContainsString('A4', $signedInfo['page_size']);
+    }
+
+    public function test_private_cv_typed_mode_needs_no_graphical_source(): void
+    {
+        $cv = GlobalSet::find('cv')->inDefaultSite();
+        $cv->set('private_cv_signature_enabled', true);
+        $cv->set('private_cv_signature_mode', 'typed');
+        $grant = CvCapabilities::issueTemporary('/cv/jobmesse-26');
+        $this->postJson('/cv/token-exchange', ['path' => '/cv/jobmesse-26', 'token' => $grant['token']])->assertOk();
+        $this->postJson('/cv/private-data', ['path' => '/cv/jobmesse-26'])->assertOk()->assertJsonPath('signature_mode', 'typed');
+        $this->post('/cv/private-signature', ['path' => '/cv/jobmesse-26'])->assertNotFound();
+        $response = $this->get('/cv/jobmesse-26/pdf')->assertOk();
+        $path = $this->fixture->root.'/typed-cv.pdf';
+        file_put_contents($path, $response->streamedContent());
+        $fonts = (new Process(['pdffonts', $path]))->mustRun()->getOutput();
+        $this->assertStringContainsString('MomoSignature', $fonts);
+        $this->assertFalse(app(PrivateHandwrittenSignature::class)->exists());
     }
 
     private function inspectPdf(string $bytes): array

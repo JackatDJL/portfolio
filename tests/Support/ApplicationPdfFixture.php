@@ -31,6 +31,7 @@ final class ApplicationPdfFixture
             'cv.private_pdf_root' => $this->root.'/compiler',
             'filesystems.disks.application_documents.root' => $this->root.'/documents',
             'applications.handwritten_signature_path' => $this->root.'/handwritten-signature',
+            'applications.public_signature_example_path' => $this->root.'/public-signature-example',
         ]);
         Storage::forgetDisk('application_documents');
         mkdir($this->root.'/documents', 0700);

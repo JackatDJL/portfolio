@@ -198,6 +198,26 @@ class ApplicationHandwrittenSignatureTest extends TestCase
         $text = (new Process(['pdftotext', '-layout', $signedVisually, '-']))->mustRun()->getOutput();
         $images = (new Process(['pdfimages', '-list', $signedVisually]))->mustRun()->getOutput();
 
+        $positions = json_decode((new Process([config('applications.python'), '-c', <<<'PYTHON'
+import json, sys
+from pypdf import PdfReader
+positions = []
+for page in PdfReader(sys.argv[1]).pages[1:]:
+    def visit(op, args, cm, tm):
+        if op == b'Do':
+            obj = page['/Resources'].get('/XObject', {}).get(args[0])
+            if obj:
+                obj = obj.get_object()
+                if obj.get('/Width') == 480 and obj.get('/Height') == 140:
+                    positions.append(cm[4])
+    page.extract_text(visitor_operand_before=visit)
+print(json.dumps(positions))
+PYTHON
+            , $signedVisually]))->mustRun()->getOutput(), true);
+        $this->assertNotEmpty($positions);
+        foreach ($positions as $x) {
+            $this->assertGreaterThan(170, $x, 'The CV signature belongs in the main content column.');
+        }
         $this->assertSame($unsignedInfo['sizes'], $signedInfo['sizes']);
         $this->assertStringContainsString('Musterstadt, 6. November 2026', $text);
         $this->assertMatchesRegularExpression('/^\s*1\s+\d+\s+image\s+480\s+140\b/m', $images);
@@ -225,6 +245,41 @@ class ApplicationHandwrittenSignatureTest extends TestCase
         $this->assertSame('right', $letter['signature_alignment']);
         $this->assertStringContainsString('\\raggedleft', $cvSource);
         $this->assertStringContainsString('\\raggedleft', $letterSource);
+    }
+
+    public function test_public_example_has_its_own_encrypted_source_and_never_uses_private_handwriting(): void
+    {
+        $this->saveSource();
+        $example = HandwrittenSignatureFixture::png(variant: 1);
+        $this->getJson('/cp/applications/handwritten-signature/example')->assertUnauthorized();
+        $this->actingAs($this->user());
+        $this->postJson('/cp/applications/handwritten-signature/example', [
+            'image' => 'data:image/png;base64,'.base64_encode($example),
+        ])->assertOk();
+        $this->assertSame(HandwrittenSignatureFixture::png(), app(PrivateHandwrittenSignature::class)->imageBytes());
+        $this->assertSame($example, PrivateHandwrittenSignature::example()->imageBytes());
+        $encrypted = file_get_contents(config('applications.public_signature_example_path').'/source.enc');
+        $this->assertStringNotContainsString(base64_encode($example), $encrypted);
+        $cv = GlobalSet::find('cv')->inDefaultSite();
+        $cv->set('signature_pattern_enabled', false);
+        $this->get('/cv/signature-example')->assertNotFound();
+        $cv->set('signature_pattern_enabled', true);
+        $cv->set('signature_public_source', 'example');
+        $response = $this->get('/cv/signature-example')->assertOk()->assertHeader('Content-Type', 'image/png');
+        $this->assertSame($example, $response->getContent());
+        $this->deleteJson('/cp/applications/handwritten-signature/example')->assertOk();
+        $this->assertSame(HandwrittenSignatureFixture::png(), app(PrivateHandwrittenSignature::class)->imageBytes());
+    }
+
+    public function test_typed_application_signature_uses_the_same_handwriting_font_in_both_pdfs(): void
+    {
+        $this->fixture->entry->set('signature', ApplicationData::encrypt([['mode' => 'typed', 'name' => 'Erika Muster']]));
+        $pdf = app(ApplicationPdfExporter::class)->render($this->fixture->entry, cached: false);
+        $fonts = (new Process(['pdffonts', $pdf]))->mustRun()->getOutput();
+        $text = (new Process(['pdftotext', '-layout', $pdf, '-']))->mustRun()->getOutput();
+        $this->assertStringContainsString('MomoSignature', $fonts);
+        $this->assertStringContainsString('Musterstadt, 6. November 2026', preg_replace('/\s+/u', ' ', $text));
+        $this->assertGreaterThanOrEqual(4, substr_count($text, 'Erika Muster'));
     }
 
     public function test_changing_handwriting_invalidates_the_canonical_pdf_cache(): void

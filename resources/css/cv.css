@@ -1,3 +1,4 @@
+@font-face { font-family: 'Momo Signature'; src: url('../fonts/MomoSignature-Regular.ttf') format('truetype'); font-display: swap; }
 /* The CV is a document inside the site, not another collection page. */
 @layer components {
     .cv-document {
@@ -107,7 +108,7 @@
     .cv-record--reference { grid-template-columns: 8.4rem minmax(0, 1fr); padding-block: .8rem; }
     .cv-relation-meta { margin: .4rem 0 0; color: var(--site-text-muted); font-size: .74rem; line-height: 1.45; }
     .cv-document__print-footer { display: none; }
-    .cv-document__signature { clear: both; width: min(100%, 44rem); margin: 2.5rem 0 0 auto; padding: 1rem; border: 1px solid var(--site-border); background: color-mix(in srgb, var(--site-surface-strong) 34%, transparent); }
+    .cv-document__signature { clear: both; width: 100%; margin: 2rem 0 0; padding: 0; border: 0; background: transparent; }
     .cv-document__signature[hidden], .cv-document__signature-image[hidden] { display: none; }
     .cv-document__signature-pattern svg { display: block; width: 100%; height: auto; max-height: 9rem; }
     .cv-document__signature-pattern p { margin: .35rem 0 0; color: var(--site-text-muted); font-size: .68rem; text-align: right; }
@@ -310,3 +311,20 @@ html[data-theme='dark'] .cv-document::before { opacity: .035; mix-blend-mode: sc
 
 
 .education-hero__back { position: absolute; z-index: 4; top: 1.5rem; left: max(1.25rem, calc((100vw - 68rem) / 2)); --site-text: #f5faf6; --site-border: #ffffff80; --site-surface: #111a16; background: #111a16b8; }
+
+@layer components {
+    .cv-document__signature { display: grid; justify-items: start; }
+    .cv-document__signature-pattern { max-width: 100%; }
+    .cv-document__signature-pattern p { text-align: left; color: inherit; font-size: .8rem; }
+    .cv-signature-font { font-family: 'Momo Signature', cursive; font-size: 22pt; line-height: 1.5; white-space: nowrap; }
+    .cv-signature-artwork { position: relative; isolation: isolate; width: 58mm; max-width: 100%; height: 22mm; display: grid; align-items: center; }
+    .cv-signature-artwork > svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; opacity: .7; }
+    .cv-signature-example { width: 100%; max-height: 20mm; object-fit: contain; object-position: left center; }
+    .cv-document__signature-meta { display: contents; }
+    .cv-document__signature-meta[hidden], .cv-document__signature-text[hidden], [data-signature-example-fallback][hidden] { display: none; }
+    .cv-document__signature-meta .cv-signature-date { grid-row: 1; margin: 0 0 1mm; }
+    .cv-document__signature-image, .cv-document__signature-text { grid-row: 2; }
+    .cv-document__signature-meta .cv-signature-name { grid-row: 3; margin: 1mm 0 0; }
+    .cv-signature-date { color: var(--site-text-muted); font-size: .75rem; }
+}
+@media print { .cv-signature-date { font-size: 7.5pt; } .cv-document__signature-pattern { margin-left: 0; } }

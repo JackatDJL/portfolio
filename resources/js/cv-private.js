@@ -44,6 +44,21 @@ export const initCvPrivateData = ({ watch = true } = {}) => {
                 retryOnHashChange();
                 return;
             }
+            if (data.signature_mode === 'typed') {
+                const section = document.querySelector('[data-cv-private-signature]');
+                if (section instanceof HTMLElement) {
+                    const text = section.querySelector('[data-cv-private-signature-text]');
+                    const pattern = section.querySelector('[data-cv-security-pattern]');
+                    const meta = section.querySelector('[data-cv-private-signature-meta]');
+                    if (text instanceof HTMLElement) {
+                        if (typeof data.signature_name === 'string' && data.signature_name.trim()) text.textContent = data.signature_name;
+                        text.hidden = false;
+                    }
+                    if (pattern instanceof HTMLElement) pattern.hidden = true;
+                    if (meta instanceof HTMLElement) meta.hidden = false;
+                    section.hidden = false;
+                }
+            }
             setValue('email', data.private_email, data.private_email ? `mailto:${data.private_email}` : null);
             setValue('phone', data.phone, data.phone ? `tel:${data.phone.replace(/[^+0-9]/g, '')}` : null);
             setValue('address', composeAddress(data));

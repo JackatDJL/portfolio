@@ -85,7 +85,7 @@
                 <div class="cv-section__heading"><h2 id="cv-experience-title">Erfahrung</h2></div>
                 <div class="cv-records cv-records--thread" data-cv-thread>
                     {{ collection:experience sort="started_at:desc" }}
-                    <article class="cv-record"><div class="cv-record__content"><h3><a class="related-reference related-reference--text" href="{{ url }}" data-related-reference>{{ partial:components/link-title size="md" }}</a></h3><p class="cv-record__organisation">{{ organisation }}</p>{{ if summary }}<p class="cv-record__summary">{{ summary }}</p>{{ /if }}</div><div class="cv-record__context"><div class="cv-period">{{ partial:cv/period }}</div></div></article>
+                    <article class="cv-record"><div class="cv-record__content"><h3><a class="related-reference related-reference--text" href="{{ cv_navigation:link :url="url" }}" data-related-reference>{{ partial:components/link-title size="md" }}</a></h3><p class="cv-record__organisation">{{ organisation }}</p>{{ if summary }}<p class="cv-record__summary">{{ summary }}</p>{{ /if }}</div><div class="cv-record__context"><div class="cv-period">{{ partial:cv/period }}</div></div></article>
                     {{ /collection:experience }}
                 </div>
             </section>
@@ -93,7 +93,7 @@
                 <div class="cv-section__heading"><h2 id="cv-education-title">Bildung</h2></div>
                 <div class="cv-records cv-records--thread" data-cv-thread>
                     {{ collection:education sort="started_at:desc" }}
-                    <article class="cv-record cv-record--education"><div class="cv-record__content"><h3><a class="related-reference related-reference--text" href="{{ url }}" data-related-reference>{{ partial:components/link-title :title="programme ?? title" size="md" }}</a></h3><p class="cv-record__organisation">{{ title }}</p>{{ if summary }}<p class="cv-record__summary">{{ summary }}</p>{{ /if }}</div><div class="cv-record__context"><div class="cv-period">{{ partial:cv/period }}</div></div></article>
+                    <article class="cv-record cv-record--education"><div class="cv-record__content"><h3><a class="related-reference related-reference--text" href="{{ cv_navigation:link :url="url" }}" data-related-reference>{{ partial:components/link-title :title="programme ?? title" size="md" }}</a></h3><p class="cv-record__organisation">{{ title }}</p>{{ if summary }}<p class="cv-record__summary">{{ summary }}</p>{{ /if }}</div><div class="cv-record__context"><div class="cv-period">{{ partial:cv/period }}</div></div></article>
                     {{ /collection:education }}
                 </div>
             </section>
@@ -103,23 +103,28 @@
             {{ if cv_resolved:sections:publications:display }}<section class="cv-section" aria-labelledby="cv-publications-title"><div class="cv-section__heading"><h2 id="cv-publications-title">Veröffentlichungen</h2></div><div class="cv-records">
                 {{ cv_resolved:sections:publications:display }}{{ partial:cv/reference }}{{ /cv_resolved:sections:publications:display }}
             </div></section>{{ /if }}
-        </div>
-    </div>
     {{ if cv_signature_security_pattern || cv_private_signature_enabled }}
     <section class="cv-document__signature" data-cv-private-signature data-enabled="{{ if cv_private_signature_enabled }}true{{ else }}false{{ /if }}" data-endpoint="/cv/private-signature"{{ if !cv_signature_security_pattern }} hidden{{ /if }} aria-label="Unterschriftsbereich">
         {{ if cv_signature_security_pattern }}
         <div class="cv-document__signature-pattern" data-cv-security-pattern>
-            {{ cv_signature_security_pattern | raw }}
-            <p>Synthetisches Linienmotiv · keine Unterschrift · kein Fälschungsschutz</p>
+            <p class="cv-signature-date">{{ cv_signature_place }}{{ if cv_signature_place && cv_signature_date }}, {{ /if }}{{ cv_signature_date }}</p>
+            <div class="cv-signature-artwork">
+                {{ if cv_signature_public_example }}<img src="/cv/signature-example" alt="Öffentliche Beispielgrafik" class="cv-signature-example" data-signature-example><span class="cv-signature-font" data-signature-example-fallback hidden>{{ cv_resolved:public_identity:name }}</span>{{ else }}<span class="cv-signature-font">{{ cv_resolved:public_identity:name }}</span>{{ /if }}
+                {{ cv_signature_security_pattern | raw }}
+            </div>
+            <p class="cv-signature-name">{{ cv_resolved:public_identity:name }}</p>
         </div>
         {{ /if }}
         <img class="cv-document__signature-image" data-cv-private-signature-image alt="Handschriftliche Signatur" hidden>
+        <span class="cv-signature-font cv-document__signature-text" data-cv-private-signature-text hidden>{{ cv_resolved:public_identity:name }}</span>
         <div class="cv-document__signature-meta" data-cv-private-signature-meta hidden>
-            <p>{{ cv_signature_place }}{{ if cv_signature_place && cv_signature_date }}, {{ /if }}{{ cv_signature_date }}</p>
-            <p>{{ cv_resolved:public_identity:name }}</p>
+            <p class="cv-signature-date">{{ cv_signature_place }}{{ if cv_signature_place && cv_signature_date }}, {{ /if }}{{ cv_signature_date }}</p>
+            <p class="cv-signature-name">{{ cv_resolved:public_identity:name }}</p>
         </div>
     </section>
     {{ /if }}
+        </div>
+    </div>
     {{ if cv:print_place || cv:print_date }}
         <footer class="cv-document__print-footer" aria-label="Ort und Datum"><p>{{ cv:print_place }}{{ if cv:print_place && cv:print_date }}, {{ /if }}{{ cv:print_date }}</p></footer>
     {{ /if }}

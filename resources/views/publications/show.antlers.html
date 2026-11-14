@@ -1,3 +1,4 @@
+{{ if {cv_navigation:has_context} }}<nav class="cv-chapter-nav" aria-label="Lebenslauf"><a class="btn btn-ghost" href="{{ cv_navigation }}">← Lebenslauf</a></nav>{{ /if }}
 {{# Veröffentlichungs-Detailseite: Dokumentkontext, Lesespalte und Bibliografie. #}}
 <article>
     {{ partial:detail/layout intro="publications/header" aside="publications/rail" aside_label="Bibliografische Angaben" }}

@@ -48,9 +48,9 @@ try {
             'title' => 'Technisches Beispielprojekt', 'period' => '2025–2026', 'organisation' => 'Beispielwerkstatt',
             'url' => 'https://example.invalid/projekt', 'summary' => 'Ausschließlich erfundener Text zur Prüfung von Typografie und Umbruch.',
         ]],
-        'education' => [], 'projects' => [], 'publications' => [], 'milestones' => [],
+        'education' => [], 'projects' => [], 'publications' => [['title' => 'Beispiel-Veröffentlichung', 'period' => '2026', 'type' => 'Article', 'url' => 'https://example.invalid/article']], 'milestones' => [],
         'signature_image' => $signatureSource['path'], 'signature_digest' => $signatureSource['sha256'],
-        'signature_width_mm' => 46, 'signature_baseline_mm' => 0, 'signature_alignment' => 'right',
+        'signature_width_mm' => 46, 'signature_baseline_mm' => 0, 'signature_alignment' => 'left',
         'signed_by' => 'Erika Muster', 'signed_place' => 'Musterstadt', 'signed_date' => '6. November 2026',
     ];
     $temporaryPdfs[] = $renderer->renderViewModel($cv);
@@ -71,7 +71,14 @@ try {
     $letterTex = view('latex.application-letter', compact('letter'))->render();
     $temporaryPdfs[] = $renderer->compile($letterTex, passes: 2);
 
-    $names = ['cv.pdf', 'cover-letter.pdf'];
+    $cv['signature_image'] = null;
+    $cv['signature_text'] = $cv['name'];
+    $temporaryPdfs[] = $renderer->renderViewModel($cv);
+    $letter['signature_image'] = null;
+    $letter['signature'] = $letter['sender'];
+    $temporaryPdfs[] = $renderer->compile(view('latex.application-letter', compact('letter'))->render(), passes: 2);
+
+    $names = ['cv.pdf', 'cover-letter.pdf', 'cv-typed.pdf', 'cover-letter-typed.pdf'];
     foreach ($temporaryPdfs as $index => $source) {
         $pdf = $directory.'/'.$names[$index];
         if (! copy($source, $pdf)) {
@@ -85,8 +92,14 @@ try {
         $text = (new Process(['pdftotext', '-layout', $pdf, '-'], null, null, null, 10))->mustRun()->getOutput();
         preg_match('/^Pages:\s+(\d+)$/m', $info, $pages);
         preg_match('/^Page size:\s+(.+)$/m', $info, $size);
-        if (! str_contains($size[1] ?? '', 'A4') || ! preg_match('/\bimage\s+480\s+140\b/', $images)) {
+        if (! str_contains($size[1] ?? '', 'A4') || ($index < 2 && ! preg_match('/\bimage\s+480\s+140\b/', $images))) {
             throw new RuntimeException('Synthetic signature PDF failed its A4 or embedded-image checks.');
+        }
+        if ($index >= 2) {
+            $fonts = (new Process(['pdffonts', $pdf]))->mustRun()->getOutput();
+            if (! str_contains($fonts, 'MomoSignature')) {
+                throw new RuntimeException('Typed signature font is missing.');
+            }
         }
         if ($index === 0 && (! str_contains($text, 'Musterstadt') || ! str_contains($text, '6. November 2026'))) {
             throw new RuntimeException('Synthetic CV PDF is missing its signed-by date or location.');

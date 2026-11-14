@@ -542,10 +542,10 @@ tabs:
             field:
               type: select
               display: Darstellung
-              instructions: Handschrift nutzt die private Vorlage aus Bewerbungsvorgaben. Die Auswahl wirkt auf Anschreiben und Bewerbungs-CV.
+              instructions: 'Name in Momo Signature setzt den Namen in Schreibschrift. Handschriftliche Grafik nutzt die private Vorlage aus Bewerbungsvorgaben. Beide belegen denselben Platz in Anschreiben und CV; keine Variante ist eine QES.'
               options:
                 none: Keine
-                typed: Getippter Name
+                typed: 'Name in Momo Signature'
                 handwritten: Handschriftliche Grafik
               default: none
               validate:
@@ -567,7 +567,7 @@ tabs:
               min: 30
               max: 75
               if:
-                mode: handwritten
+                mode: not none
               always_save: true
           - handle: baseline_mm
             field:
@@ -578,7 +578,7 @@ tabs:
               min: -3
               max: 3
               if:
-                mode: handwritten
+                mode: not none
               always_save: true
           - handle: alignment
             field:
@@ -590,7 +590,7 @@ tabs:
                 right: Rechts
               default: left
               if:
-                mode: handwritten
+                mode: not none
               always_save: true
 
   tracking:

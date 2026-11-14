@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use Illuminate\Support\HtmlString;
 use Statamic\Entries\Entry;
 use Statamic\Facades\Entry as Entries;
 use Statamic\Facades\GlobalSet;
@@ -100,9 +101,9 @@ final class CvProfileContentResolver
         abort_if(! empty($settings['profile']) && (! $reference || $reference->collectionHandle() !== 'cv_profiles'), 422);
         $resolved = $this->resolve($reference?->slug(), allowUnpublishedProfile: true);
         if ($resolved['profile']) {
-            $resolved['profile']['title'] = 'Lebenslauf zur Bewerbung';
-            // A personalized application PDF must not link to the source profile's
-            // public employer-specific page. The PDF links to the general public CV.
+            $resolved['profile']['title'] = '';
+            // Application rendering uses its own authorized return route rather
+            // than reusing the source profile's public employer-specific identity.
             $resolved['profile']['slug'] = null;
         }
         $overlay = Entries::make()->collection('cv_profiles')->data($settings);
@@ -116,7 +117,7 @@ final class CvProfileContentResolver
             }
         }
         if (($settings['about_source'] ?? 'inherit') !== 'hide' && ! empty($settings['introduction'])) {
-            $resolved['sections']['about'] = ['source' => 'application', 'value' => $settings['introduction'], 'display' => null];
+            $resolved['sections']['about'] = ['source' => 'application', 'value' => $settings['introduction'], 'display' => new HtmlString('<p>'.nl2br(e((string) $settings['introduction'])).'</p>')];
         }
         if (! empty($settings['accent_color'])) {
             $resolved['application_accent'] = $settings['accent_color'];

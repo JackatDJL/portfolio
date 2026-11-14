@@ -30,8 +30,8 @@ final class SignatureSecurityPattern
             default => $this->waves($count, $primary, $secondary, 3.0, 0.68),
         };
 
-        return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 180" role="img" aria-label="Synthetisches dekoratives Linienmotiv" focusable="false">'
-            .'<g fill="none" stroke-linecap="round" stroke-width="0.8" opacity="0.78">'.$paths.'</g></svg>';
+        return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 180" data-signature-pattern role="img" aria-label="Dekoratives Linienmotiv" focusable="false">'
+            .'<g fill="none" stroke-linecap="round" stroke-width="2.2" opacity="0.78">'.$paths.'</g></svg>';
     }
 
     private function waves(int $count, string $primary, string $secondary, float $frequency, float $opacity): string
@@ -50,7 +50,7 @@ final class SignatureSecurityPattern
                         + 17 * sin($angle * 2.15 - $phase * 1.7) * $direction;
                     $path .= ($step === 0 ? 'M' : 'L').$this->number($x).' '.$this->number($y);
                 }
-                $output .= '<path d="'.$path.'" stroke="'.$color.'" stroke-opacity="'.$opacity.'"/>';
+                $output .= '<path vector-effect="non-scaling-stroke" d="'.$path.'" stroke="'.$color.'" stroke-opacity="'.$opacity.'"/>';
             }
         }
 
@@ -71,7 +71,7 @@ final class SignatureSecurityPattern
                     $y = 90 + $radius * 0.72 * sin($angle);
                     $path .= ($step === 0 ? 'M' : 'L').$this->number($x).' '.$this->number($y);
                 }
-                $output .= '<path d="'.$path.'" stroke="'.$color.'" stroke-opacity="0.62"/>';
+                $output .= '<path vector-effect="non-scaling-stroke" d="'.$path.'" stroke="'.$color.'" stroke-opacity="0.62"/>';
             }
         }
 

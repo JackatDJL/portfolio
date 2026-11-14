@@ -21,7 +21,7 @@ final class CvViewModel
         $interactiveUrl = $canonicalUrl.($authorized && $capabilityToken ? '#cv='.$capabilityToken : '');
         $private = $authorized ? CvPrivateData::reveal(GlobalSet::find('cv')->inDefaultSite()) : [];
 
-        return [
+        $model = [
             'name' => $identity['name'],
             'location' => $identity['location'],
             'profile' => $profile,
@@ -50,6 +50,14 @@ final class CvViewModel
             'milestones' => $this->milestones($resolved['sections']['milestones']['value']),
             'print' => $resolved['print'],
         ];
+        foreach (['experience', 'education', 'projects', 'publications'] as $section) {
+            foreach ($model[$section] as &$item) {
+                $item['url'] = CvNavigation::detailUrl($item['url'], '/cv'.(! empty($profile['slug']) ? '/'.$profile['slug'] : ''), $authorized ? $capabilityToken : null);
+            }
+            unset($item);
+        }
+
+        return $model;
     }
 
     public function forApplication(\Statamic\Contracts\Entries\Entry $application, ?array $signatureSource = null): array
@@ -67,21 +75,33 @@ final class CvViewModel
             $private['country'] ?? null,
         ]));
         $cv['contact']['address'] = implode(', ', $addressParts);
+        $returnPath = '/applications/'.$application->id().'/cv';
+        $cv['canonical_url'] = rtrim((string) config('cv.canonical_base_url'), '/').$returnPath;
+        $cv['interactive_url'] = $cv['canonical_url'];
+        foreach (['experience', 'education', 'projects', 'publications'] as $section) {
+            foreach ($cv[$section] as &$item) {
+                $item['url'] = preg_replace('/\?cv_return=.*$/', '', $item['url']);
+                $item['url'] = CvNavigation::detailUrl($item['url'], $returnPath);
+            }
+            unset($item);
+        }
         $signature = ApplicationData::group($application, 'signature');
+        $signed = in_array($signature['mode'] ?? 'none', ['typed', 'handwritten'], true);
+        $cv['signature_text'] = ($signature['mode'] ?? 'none') === 'typed' ? trim((string) ($signature['name'] ?? '')) ?: $cv['name'] : null;
         $handwritten = ($signature['mode'] ?? 'none') === 'handwritten';
         if ($handwritten && (! is_array($signatureSource) || ! is_file($signatureSource['path'] ?? ''))) {
             throw new \RuntimeException('Die gespeicherte private Handschrift ist für diesen Export nicht verfügbar.');
         }
         $cv['signature_image'] = $handwritten ? $signatureSource['path'] : null;
         $cv['signature_digest'] = $handwritten ? $signatureSource['sha256'] : null;
-        $cv['signature_width_mm'] = $handwritten ? (int) ($signature['width_mm'] ?? 46) : null;
-        $cv['signature_baseline_mm'] = $handwritten ? (int) ($signature['baseline_mm'] ?? 0) : null;
+        $cv['signature_width_mm'] = $signed ? (int) ($signature['width_mm'] ?? 46) : null;
+        $cv['signature_baseline_mm'] = $signed ? (int) ($signature['baseline_mm'] ?? 0) : null;
         $cv['signature_alignment'] = in_array($signature['alignment'] ?? 'left', ['left', 'center', 'right'], true)
             ? ($signature['alignment'] ?? 'left')
             : 'left';
-        $cv['signed_by'] = $handwritten ? $cv['name'] : null;
-        $cv['signed_date'] = $handwritten ? Carbon::parse(ApplicationData::date($application))->locale('de')->translatedFormat('j. F Y') : null;
-        $cv['signed_place'] = $handwritten ? trim((string) ($private['city'] ?? '')) : null;
+        $cv['signed_by'] = $signed ? $cv['name'] : null;
+        $cv['signed_date'] = $signed ? Carbon::parse(ApplicationData::date($application))->locale('de')->translatedFormat('j. F Y') : null;
+        $cv['signed_place'] = $signed ? trim((string) ($private['city'] ?? '')) : null;
 
         return [...$cv, 'private_export' => true,
             'sender_return_address' => implode(', ', array_slice($addressParts, 0, 2)),

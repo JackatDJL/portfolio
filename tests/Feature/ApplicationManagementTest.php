@@ -453,7 +453,7 @@ class ApplicationManagementTest extends TestCase
 
             $resolved = app(CvProfileContentResolver::class)->resolveForApplication($entry);
 
-            $this->assertSame('Lebenslauf zur Bewerbung', $resolved['profile']['title']);
+            $this->assertSame('', $resolved['profile']['title']);
             $this->assertNull($resolved['profile']['slug']);
             $this->assertSame([], $resolved['sections']['about']['value']);
             $this->assertSame('Lufthansa Technik Praktikum 2027', $profile->value('title'));

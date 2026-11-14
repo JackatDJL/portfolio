@@ -32,6 +32,8 @@ Route::get('/design-system', function () {
         ->header('Cache-Control', 'private, no-store');
 })->name('design-system');
 
+Route::get('/cv/signature-example', [\App\Http\Controllers\ApplicationHandwrittenSignatureController::class, 'exampleImage'])->name('cv.signature-example');
+
 Route::post('/cv/private-data', [CvPrivateDataController::class, 'reveal'])
     ->name('cv.private-data');
 Route::post('/cv/private-signature', CvPrivateSignatureController::class)
@@ -73,6 +75,8 @@ Route::get('/cp/cv/private-link/status', [CvPrivateLinkController::class, 'statu
 Route::get('/cp/cv/private-link/qr', [CvPrivateLinkController::class, 'qr'])->middleware(['statamic.cp', 'statamic.cp.authenticated']);
 
 Route::prefix('applications')->middleware(ApplicationAccess::class)->group(function () {
+    Route::get('{id}/cv/pdf', [CvPageController::class, 'applicationPdf'])->whereUuid('id')->middleware('throttle:application-pdf')->name('applications.cv.pdf');
+    Route::get('{id}/cv', [CvPageController::class, 'application'])->whereUuid('id')->name('applications.cv');
     Route::post('token-exchange', [ApplicationPdfController::class, 'exchange'])->middleware('throttle:application-exchange')->name('applications.exchange');
     Route::get('{id}/pdf', [ApplicationPdfController::class, 'recipient'])->whereUuid('id')->middleware('throttle:application-pdf')->name('applications.pdf');
     Route::get('{id}', [ApplicationPdfController::class, 'landing'])->whereUuid('id')->name('applications.access');

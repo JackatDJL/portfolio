@@ -1,3 +1,4 @@
+if (document.querySelector('[data-signature-pattern]')) import('./cv-signature-pattern.js');
 import { initCvExplore } from './cv-explore.js';
 
 if (document.querySelector('[data-project-stream]')) import('./collection-preview.js');

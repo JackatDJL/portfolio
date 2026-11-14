@@ -53,15 +53,17 @@ class CvPdfRenderer
         }
 
         try {
-            $source = app(PrivateHandwrittenSignature::class)->materialize($work.'/signature.png');
-            if (! $source) {
+            $typed = $settings->value('private_cv_signature_mode', 'handwritten') === 'typed';
+            $source = $typed ? null : app(PrivateHandwrittenSignature::class)->materialize($work.'/signature.png');
+            if (! $typed && ! $source) {
                 return $this->compile(view('latex.cv', compact('cv'))->render());
             }
 
             $date = trim((string) ($cv['print']['date'] ?? ''));
-            $cv['signature_image'] = $source['path'];
-            $cv['signature_digest'] = $source['sha256'];
-            $cv['signature_width_mm'] = max(30, min(75, (int) $settings->value('private_cv_signature_width_mm', 46)));
+            $cv['signature_image'] = $source['path'] ?? null;
+            $cv['signature_text'] = $typed ? $cv['name'] : null;
+            $cv['signature_digest'] = $source['sha256'] ?? null;
+            $cv['signature_width_mm'] = max(30, min(75, (int) ($settings->value('private_cv_signature_width_mm') ?? 46)));
             $cv['signature_baseline_mm'] = max(-3, min(3, (int) $settings->value('private_cv_signature_baseline_mm', 0)));
             $cv['signature_alignment'] = in_array($settings->value('private_cv_signature_alignment', 'left'), ['left', 'center', 'right'], true)
                 ? $settings->value('private_cv_signature_alignment', 'left')

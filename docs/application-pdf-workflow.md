@@ -73,3 +73,5 @@ php scripts/render-private-signature-evidence.php "$pdf_evidence_dir"
 The script creates synthetic CV and cover-letter PDFs, renders their pages, and checks A4 page size, embedded synthetic signature, date/location and typed name. GitHub Actions uploads only these synthetic PDF/page artifacts for 14 days. No rendered evidence belongs in Git.
 
 Electronic signing is a separate explicit operation on the final composite. See [private signature workflow and validation limits](application-signatures.md) and [official provider research](application-signature-provider-research.md). Rendering never initiates signing.
+
+The application CV uses the normal CV template with the application's detached content overlay, without the generic “Lebenslauf zur Bewerbung” heading. Its interactive URL and internal detail-page return context point to the session-authorized application CV route. Supporting documents and external signature processing remain after the final letter/CV composition.

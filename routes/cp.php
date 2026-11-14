@@ -14,9 +14,9 @@ Route::post('/search-agent-optimization', [SearchAgentOptimizationController::cl
     ->name('search-agent-optimization.update');
 
 Route::post('/applications/{id}/reset-date', [ApplicationController::class, 'resetDate'])->name('applications.reset-date');
-Route::get('/applications/handwritten-signature', [ApplicationHandwrittenSignatureController::class, 'show'])->name('applications.handwritten-signature.show');
-Route::post('/applications/handwritten-signature', [ApplicationHandwrittenSignatureController::class, 'store'])->middleware('throttle:application-pdf')->name('applications.handwritten-signature.store');
-Route::delete('/applications/handwritten-signature', [ApplicationHandwrittenSignatureController::class, 'destroy'])->name('applications.handwritten-signature.destroy');
+Route::get('/applications/handwritten-signature/{source?}', [ApplicationHandwrittenSignatureController::class, 'show'])->where('source', 'example')->name('applications.handwritten-signature.show');
+Route::post('/applications/handwritten-signature/{source?}', [ApplicationHandwrittenSignatureController::class, 'store'])->middleware('throttle:application-pdf')->where('source', 'example')->name('applications.handwritten-signature.store');
+Route::delete('/applications/handwritten-signature/{source?}', [ApplicationHandwrittenSignatureController::class, 'destroy'])->where('source', 'example')->name('applications.handwritten-signature.destroy');
 Route::get('/applications/{id}/cv.pdf', [ApplicationController::class, 'cv'])->name('applications.cv');
 Route::get('/applications/{id}/summary', [ApplicationController::class, 'summary'])->name('applications.summary');
 Route::get('/applications/{id}/cv-profile', [ApplicationController::class, 'cvProfile'])->name('applications.cv-profile');
