@@ -19,7 +19,7 @@ At 1440 × 900 the sampled frame shrank from 820 to 647 pixels after 400 pixels 
 
 Reduced-motion and JavaScript-disabled mobile contexts retained identical frame height before/after scrolling, one heading, one hero credit and four gallery credits. A temporary credit-link fixture verified mouse, touch and keyboard activation, because this project's actual credit is plain text.
 
-`bun run build` and the AssetAttributionTest, DynamicStatamicPagesTest and DesignSystemTest subset passed, 12 tests / 57 assertions. Sol review approved after fixing attribution pointer interception. Screenshots are temporary review evidence outside Git.
+`bun run build` and the AssetAttributionTest, DynamicStatamicPagesTest DesignSystemTest and CvNavigationTest subset passed after rebasing, 24 tests / 178 assertions with STATAMIC_PRO_ENABLED=true. Sol review approved the pointer fix and confirmed the template conflict resolution; its stale navigation-test assertion finding was fixed and the full subset rerun. Screenshots are temporary review evidence outside Git.
 
 Performance observations: the experiment is dynamically imported only when its hero exists. Its production chunk is about 1.3 kB before gzip and shares the existing GSAP/ScrollTrigger chunks. Responsive image candidates range from 480 to 1920 pixels; gallery images remain lazy-loaded. Frame dimensions deliberately animate layout during this short interval, so this is not a compositor-only animation. No frame-rate or physical-device performance claim is made. Evaluate on a lower-end phone before broad CMS rollout.
 

@@ -305,8 +305,8 @@ class CvNavigationTest extends TestCase
     {
         $project = file_get_contents(resource_path('views/projects/show.antlers.html'));
         $publication = file_get_contents(resource_path('views/partials/publications/header.antlers.html'));
-        $this->assertStringContainsString('partial:detail/layout intro="projects/hero"', $project);
-        $this->assertMatchesRegularExpression('/partial:detail\/layout intro="projects\/hero".*?cv-chapter-nav mb-6.*?partial:components\/table-of-contents/s', $project, 'Project return control belongs after the hero and before article content.');
+        $this->assertStringContainsString('partial:detail/layout :intro="_intro"', $project);
+        $this->assertMatchesRegularExpression('/partial:detail\/layout :intro="_intro".*?cv-chapter-nav mb-6.*?partial:components\/table-of-contents/s', $project, 'Project return control belongs after the hero and before article content.');
         $this->assertStringContainsString('← Lebenslauf', $publication, 'Publication return control belongs in the existing header action row.');
     }
 }
