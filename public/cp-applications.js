@@ -139,6 +139,60 @@
     }
 
     let profileRequest = 0;
+    let cvGrantRequest = 0;
+    const clearApplicationCvGrantUrl = card => {
+        const field = card?.querySelector('[data-application-cv-grant-url]');
+        const wrapper = card?.querySelector('[data-application-cv-grant-url-wrap]');
+        if (field) field.value = '';
+        if (wrapper) wrapper.hidden = true;
+    };
+    const invalidateApplicationCvGrant = () => {
+        cvGrantRequest++;
+        const card = document.querySelector('[data-application-cv-grant]');
+        if (!card) return;
+        clearApplicationCvGrantUrl(card);
+        card.querySelector('[data-application-cv-grant-list]')?.replaceChildren();
+        const state = card.querySelector('[data-application-cv-grant-state]');
+        if (state) state.textContent = 'CV-Profil wird aktualisiert …';
+    };
+    async function loadApplicationCvGrant(context = null) {
+        const card = document.querySelector('[data-application-cv-grant]');
+        const path = context?.path ?? card?.dataset.path;
+        const label = context?.label ?? card?.dataset.label;
+        if (!card || !path || !label) return;
+        const request = ++cvGrantRequest;
+        const isCurrent = () => request === cvGrantRequest
+            && card.isConnected
+            && card === document.querySelector('[data-application-cv-grant]')
+            && card.dataset.path === path
+            && card.dataset.label === label;
+        try {
+            const response = await fetch('/cp/cv/private-link/grants?path=' + encodeURIComponent(path), { headers: { Accept: 'application/json' }, cache: 'no-store' });
+            if (!response.ok) throw new Error('CV-Zugriffe können im CV-Profilmanager geprüft werden.');
+            const data = await response.json();
+            if (!isCurrent()) return;
+            const grants = data.grants.filter(grant => grant.label === label);
+            const list = card.querySelector('[data-application-cv-grant-list]');
+            list.replaceChildren();
+            const active = grants
+                .filter(grant => !grant.revoked_at && (!grant.expires_at || Date.parse(grant.expires_at) > Date.now()))
+                .sort((first, second) => (first.kind === 'permanent' ? -1 : 1) - (second.kind === 'permanent' ? -1 : 1))[0];
+            card.querySelector('[data-application-cv-grant-state]').textContent = active
+                ? `Aktiver ${active.kind === 'temporary' ? 'temporärer' : 'dauerhafter'} CV-Link. Verwaltung im CV-Profilmanager.`
+                : 'Noch kein aktiver Bewerbungs-CV-Link. Beim Export wird ein dauerhafter Grant erstellt.';
+            if (active) {
+                const revoke = document.createElement('button');
+                revoke.type = 'button'; revoke.className = 'app-cp-button app-cp-button-danger';
+                revoke.textContent = 'Bewerbungs-CV-Link widerrufen';
+                revoke.dataset.applicationCvGrantRevoke = String(active.id);
+                revoke.dataset.applicationCvGrantPath = path;
+                revoke.dataset.applicationCvGrantLabel = label;
+                list.append(revoke);
+            }
+        } catch (error) {
+            if (isCurrent()) card.querySelector('[data-application-cv-grant-state]').textContent = error.message;
+        }
+    }
     async function loadProfileSummary(base, profileId = undefined) {
         const target = document.querySelector('[data-application-profile-summary]');
         if (!target || !base) return;
@@ -150,6 +204,20 @@
             if (!response.ok) throw new Error('Profilzusammenfassung nicht verfügbar.');
             const data = await response.json();
             if (request !== profileRequest) return;
+            const cvGrantCard = document.querySelector('[data-application-cv-grant]');
+            if (cvGrantCard) {
+                const path = data.cv_link_path || '';
+                const label = data.cv_link_label || '';
+                if (cvGrantCard.dataset.path !== path || cvGrantCard.dataset.label !== label) {
+                    cvGrantRequest++;
+                    clearApplicationCvGrantUrl(cvGrantCard);
+                    cvGrantCard.querySelector('[data-application-cv-grant-list]')?.replaceChildren();
+                }
+                cvGrantCard.dataset.path = path;
+                cvGrantCard.dataset.label = label;
+                cvGrantCard.hidden = !path;
+                if (path && label) loadApplicationCvGrant({ path, label });
+            }
             target.replaceChildren();
             if (!data.selected) {
                 target.textContent = 'Standard-CV ausgewählt. Einleitung und Akzentfarbe können unten angepasst werden.';
@@ -193,24 +261,87 @@
         const reference = profileReference();
         if (reference.key === lastProfileReference) return;
         lastProfileReference = reference.key;
+        invalidateApplicationCvGrant();
+        profileRequest++;
         loadProfileSummary(base, reference.present ? reference.id : undefined);
     };
+    const onProfileSelectionChange = () => {
+        invalidateApplicationCvGrant();
+        profileRequest++;
+        setTimeout(refreshProfileSummary, 0);
+    };
     document.addEventListener('input', event => {
-        if (event.target.name?.endsWith('[profile]') || event.target.name?.endsWith('.profile')) setTimeout(refreshProfileSummary, 0);
+        if (event.target.name?.endsWith('[profile]') || event.target.name?.endsWith('.profile')) onProfileSelectionChange();
     });
     document.addEventListener('change', event => {
-        if (event.target.name?.endsWith('[profile]') || event.target.name?.endsWith('.profile')) setTimeout(refreshProfileSummary, 0);
+        if (event.target.name?.endsWith('[profile]') || event.target.name?.endsWith('.profile')) onProfileSelectionChange();
     });
     document.addEventListener('click', () => setTimeout(refreshProfileSummary, 30));
     new MutationObserver(refreshProfileSummary).observe(document.documentElement, { attributes: true, attributeFilter: ['value'], childList: true, subtree: true });
 
     document.addEventListener('click', async event => {
-        const button = event.target.closest('[data-reset-application-date], [data-application-cv], [data-application-preview], [data-application-export], [data-application-grant-create], [data-application-grant-revoke], [data-application-grant-revoke-all], [data-application-copy-link]');
+        const button = event.target.closest('[data-reset-application-date], [data-application-cv], [data-application-preview], [data-application-export], [data-application-grant-create], [data-application-grant-revoke], [data-application-grant-revoke-all], [data-application-copy-link], [data-application-cv-grant-create], [data-application-cv-grant-copy], [data-application-cv-grant-revoke]');
         if (!button) return;
         const base = appBase();
         const panel = button.closest('[data-application-actions]') || document.querySelector('[data-application-actions]');
         const status = panel?.querySelector('[data-application-status]') || document.querySelector('[data-application-status]');
         if (!base) { if (status) status.textContent = 'Bitte zuerst speichern.'; return; }
+
+        if (button.hasAttribute('data-application-cv-grant-create')) {
+            const card = button.closest('[data-application-cv-grant]');
+            const cvStatus = card.querySelector('[data-application-cv-grant-status]');
+            const path = card.dataset.path;
+            const label = card.dataset.label;
+            const request = ++cvGrantRequest;
+            const isCurrent = () => request === cvGrantRequest && card.isConnected
+                && card === document.querySelector('[data-application-cv-grant]')
+                && card.dataset.path === path && card.dataset.label === label;
+            button.disabled = true;
+            try {
+                const response = await fetch('/cp/cv/private-link/grants', { method: 'POST', headers: { Accept: 'application/json', 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf() }, body: JSON.stringify({ path, label, kind: 'permanent', reuse: true }) });
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.message || 'CV-Link konnte nicht erstellt werden.');
+                if (!isCurrent()) return;
+                if (data.url) {
+                    card.querySelector('[data-application-cv-grant-url]').value = data.url;
+                    card.querySelector('[data-application-cv-grant-url-wrap]').hidden = false;
+                    cvStatus.textContent = 'Neuer Link erstellt. Er wird nur auf dieser Seite einmal angezeigt.';
+                } else {
+                    cvStatus.textContent = 'Der benannte Link besteht bereits. Er ist im CV-Profilmanager sichtbar. Beim PDF-Export wird er in den Lebenslauf eingebettet.';
+                }
+                await loadApplicationCvGrant({ path, label });
+            } catch (error) { if (isCurrent()) cvStatus.textContent = error.message; }
+            finally { button.disabled = false; }
+            return;
+        }
+        if (button.hasAttribute('data-application-cv-grant-copy')) {
+            const field = button.closest('[data-application-cv-grant]').querySelector('[data-application-cv-grant-url]');
+            await navigator.clipboard.writeText(field.value);
+            button.closest('[data-application-cv-grant]').querySelector('[data-application-cv-grant-status]').textContent = 'Link kopiert.';
+            return;
+        }
+        if (button.hasAttribute('data-application-cv-grant-revoke')) {
+            if (!confirm('Diesen CV-Link widerrufen? Der Zugriff aus damit bereits versendeten PDF-Dateien endet ebenfalls.')) return;
+            const card = button.closest('[data-application-cv-grant]');
+            const path = button.dataset.applicationCvGrantPath;
+            const label = button.dataset.applicationCvGrantLabel;
+            if (!path || !label || card.dataset.path !== path || card.dataset.label !== label) return;
+            const request = ++cvGrantRequest;
+            const isCurrent = () => request === cvGrantRequest && card.isConnected
+                && card === document.querySelector('[data-application-cv-grant]')
+                && card.dataset.path === path && card.dataset.label === label;
+            const url = '/cp/cv/private-link/grants/' + encodeURIComponent(button.dataset.applicationCvGrantRevoke) + '?path=' + encodeURIComponent(path);
+            button.disabled = true;
+            try {
+                const response = await fetch(url, { method: 'DELETE', headers: { Accept: 'application/json', 'X-CSRF-TOKEN': csrf() } });
+                if (!response.ok) throw new Error('CV-Link konnte nicht widerrufen werden.');
+                if (!isCurrent()) return;
+                card.querySelector('[data-application-cv-grant-status]').textContent = 'CV-Link widerrufen.';
+                await loadApplicationCvGrant({ path, label });
+            } catch (error) { if (isCurrent()) card.querySelector('[data-application-cv-grant-status]').textContent = error.message; }
+            finally { button.disabled = false; }
+            return;
+        }
 
         if (button.hasAttribute('data-application-preview') || button.hasAttribute('data-application-export')) {
             window.open(base + (button.hasAttribute('data-application-preview') ? '/preview.pdf' : '/export.pdf'), '_blank', 'noopener,noreferrer');

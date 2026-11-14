@@ -135,6 +135,13 @@ class ApplicationPdfWorkflowTest extends TestCase
         $this->assertContains('https://example.org/document-0', $inspection['urls']);
         $this->assertContains('https://example.org/document-1', $inspection['urls']);
         $this->assertContains('https://matrix.to/#/%23layout-test:example.invalid', $inspection['urls']);
+        $cvSettings = ApplicationData::group($this->fixture->entry, 'cv');
+        $profileId = is_array($cvSettings['profile'] ?? null) ? reset($cvSettings['profile']) : ($cvSettings['profile'] ?? null);
+        $profile = $profileId ? Entry::find($profileId) : null;
+        $cvPath = $profile ? '/cv/'.$profile->slug() : '/cv';
+        $cvGrant = CvCapabilities::permanentForLabel($cvPath, 'Bewerbungs Lebenslauf für '.$this->fixture->entry->id());
+        $this->assertContains(rtrim((string) config('cv.canonical_base_url'), '/').$cvPath.'#cv='.$cvGrant['token'], $inspection['urls']);
+        $this->assertStringNotContainsString('/applications/'.$this->fixture->entry->id().'/cv', implode("\n", $inspection['urls']));
         foreach ($inspection['urls'] as $url) {
             $this->assertSame(trim($url), $url);
         }
@@ -294,6 +301,11 @@ class ApplicationPdfWorkflowTest extends TestCase
         if (! function_exists('pcntl_fork')) {
             $this->markTestSkipped('Requires pcntl.');
         }
+        $cvSettings = ApplicationData::group($this->fixture->entry, 'cv');
+        $profileId = is_array($cvSettings['profile'] ?? null) ? reset($cvSettings['profile']) : ($cvSettings['profile'] ?? null);
+        $profile = $profileId ? Entry::find($profileId) : null;
+        $cvPath = $profile ? '/cv/'.$profile->slug() : '/cv';
+        CvCapabilities::permanentForLabel($cvPath, 'Bewerbungs Lebenslauf für '.$this->fixture->entry->id());
         $children = [];
         for ($index = 0; $index < 2; $index++) {
             $pid = pcntl_fork();
@@ -430,7 +442,7 @@ class ApplicationPdfWorkflowTest extends TestCase
         $this->assertStringContainsString('no-store', $preview->headers->get('Cache-Control'));
         $this->assertStringContainsString('preview-', $preview->baseResponse->getFile()->getPathname());
         $export = $this->get('/cp/applications/'.$id.'/export.pdf')->assertOk();
-        $this->assertStringContainsString('attachment', $export->headers->get('Content-Disposition'));
+        $this->assertStringContainsString('inline', $export->headers->get('Content-Disposition'));
         $this->assertStringContainsString('private-export@example.invalid', $this->text($export->baseResponse->getFile()->getPathname()));
     }
 
@@ -492,7 +504,10 @@ class ApplicationPdfWorkflowTest extends TestCase
         $this->assertMatchesRegularExpression('/(?:Z|[+-]\d{2}:\d{2})$/', $first->json('grant.expires_at'));
         $this->assertSame($normalizedExpiry, DB::table('application_recipient_grants')->where('id', $firstId)->value('expires_at'));
         $this->assertMatchesRegularExpression('/^[A-Za-z0-9]{64}$/', $firstToken);
-        $this->assertStringContainsString('/cv/'.$application->slug().'#application=', $first->json('url'));
+        $cvSettings = ApplicationData::group($application, 'cv');
+        $profileId = is_array($cvSettings['profile'] ?? null) ? reset($cvSettings['profile']) : ($cvSettings['profile'] ?? null);
+        $profile = $profileId ? Entry::find($profileId) : null;
+        $this->assertStringContainsString('/cv/'.($profile?->slug() ?? $application->slug()).'#application=', $first->json('url'));
         $encryptedLabel = DB::table('application_recipient_grants')->where('id', $firstId)->value('label');
         $this->assertStringNotContainsString('TUHH Personalabteilung', $encryptedLabel);
         $this->assertSame('TUHH Personalabteilung', Crypt::decryptString($encryptedLabel));

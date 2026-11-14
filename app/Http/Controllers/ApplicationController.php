@@ -98,6 +98,8 @@ final class ApplicationController extends Controller
             'edit_url' => $profile?->editUrl(),
             'public_url' => ($profile && $profile->published()) ? $profile->url() : null,
             'public' => (bool) ($profile && $profile->published() && $profile->url()),
+            'cv_link_path' => $profile ? ($profile->published() ? '/cv/'.$profile->slug() : null) : '/cv',
+            'cv_link_label' => 'Bewerbungs Lebenslauf für '.$application->id(),
             'cv_pdf_url' => route('statamic.cp.applications.cv', ['id' => $application->id()]),
         ])->header('Cache-Control', 'private, no-store');
     }

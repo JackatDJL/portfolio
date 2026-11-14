@@ -61,6 +61,9 @@ Route::post('/cp/cv/private-link/permanent', [CvPrivateLinkController::class, 'p
 Route::delete('/cp/cv/private-link/permanent', [CvPrivateLinkController::class, 'revoke'])
     ->middleware(['statamic.cp', 'statamic.cp.authenticated'])
     ->name('cv.private-link.revoke');
+Route::get('/cp/cv/private-link/grants', [CvPrivateLinkController::class, 'grants'])->middleware(['statamic.cp', 'statamic.cp.authenticated'])->name('cv.private-link.grants');
+Route::post('/cp/cv/private-link/grants', [CvPrivateLinkController::class, 'issueGrant'])->middleware(['statamic.cp', 'statamic.cp.authenticated'])->name('cv.private-link.grants.issue');
+Route::delete('/cp/cv/private-link/grants/{grantId}', [CvPrivateLinkController::class, 'revokeGrant'])->middleware(['statamic.cp', 'statamic.cp.authenticated'])->whereNumber('grantId')->name('cv.private-link.grants.revoke');
 
 Route::statamic('/projekte', 'projects/index', ['title' => 'Projekte']);
 Route::statamic('/blog', 'posts/index', ['title' => 'Blog']);

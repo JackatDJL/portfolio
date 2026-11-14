@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Signatures\ApplicationSignatureWorkflow;
 use App\Signatures\SignatureWorkflowException;
 use App\Support\ApplicationCapabilities;
+use App\Support\ApplicationData;
 use App\Support\ApplicationPdfException;
 use App\Support\ApplicationPdfExporter;
 use Illuminate\Http\Request;

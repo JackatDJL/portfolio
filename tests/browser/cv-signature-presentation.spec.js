@@ -33,9 +33,10 @@ for (const detail of ['/cv/edu/example', '/cv/exp/example', '/projekte/example']
         let exchanged;
         await page.route('**/cv/token-exchange', route => {
             exchanged = route.request().postDataJSON();
+            expect(route.request().headers()['x-csrf-token']).toBe('fixture-csrf-token');
             return route.fulfill({ json: { authorized: true } });
         });
-        await page.route(`**${detail}?*`, route => route.fulfill({ contentType: 'text/html', body: `<script>${exchangeScript}</script><a href="/cv/jobmesse-26">Lebenslauf</a>` }));
+        await page.route(`**${detail}?*`, route => route.fulfill({ contentType: 'text/html', body: `<meta name="csrf-token" content="fixture-csrf-token"><script>${exchangeScript}</script><a href="/cv/jobmesse-26">Lebenslauf</a>` }));
         await page.goto(`${detail}?cv_return=%2Fcv%2Fjobmesse-26#cv=${token}`);
         await expect.poll(() => exchanged).toEqual({ path: '/cv/jobmesse-26', token });
         expect(new URL(page.url()).hash).toBe('');
