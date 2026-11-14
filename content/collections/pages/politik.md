@@ -6,6 +6,19 @@ template: politik/index
 seo_title: 'Politik und Engagement | Jack Ruder'
 seo_description: 'Mein Engagement in Stade: Schülervertretung, Erstwählerforum, Kommunikation und technische Mitarbeit bei Volt.'
 noindex: false
+byline: 'Jack Ruder · Persönliches Engagement in Stade'
+personal_boundary: 'Meine persönliche Website. Kein offizieller Parteiauftritt.'
+school_period: 'Seit 2019'
+forum_period: '2025–2026'
+volt_period: Heute
+tech_period: Technik
+personal_period: Persönlich
+tech_intro: 'Mich beschäftigt, wie digitale Werkzeuge Zusammenarbeit ermöglichen. Meine technischen Projekte dokumentiere ich separat.'
+party_context: 'Diese Seite beschreibt meine Mitarbeit. Offizielle Informationen zu Volt findest du auf der Parteiseite.'
+invitation_heading: 'Eine Frage oder eine Idee?'
+invitation_label: 'Lass uns sprechen.'
+political_interests_title: 'Was mich politisch beschäftigt.'
+political_interests_text: 'Mich interessieren Mobilität ohne Auto, digitale Bildung und die Frage, wie junge Menschen demokratische Entscheidungen mitgestalten können. Europa gehört für mich dazu.'
 heading: 'Raum für eigene Fragen.'
 intro: 'Ich bin Jack Ruder aus Stade. Mein Engagement begann in der Schülervertretung. Heute organisiere ich politische Bildung und arbeite an Kommunikation und digitalen Werkzeugen.'
 hero_image: projects/erstwaehlerforum-stade/img-20260602-wa0030.jpg

@@ -41,3 +41,7 @@
 .politics-story.has-politics-thread::before { display: none; }
 .politics-opening h1 { max-width: 13ch; font-size: clamp(3.5rem, 7vw, 7.5rem); }
 @media (max-width: 47.99rem) { .politics-opening h1 { font-size: clamp(3.1rem, 13vw, 5.5rem); } .politics-chapter--volt .politics-date { margin-bottom: 1rem; } }
+
+.politics-working-grid img { aspect-ratio: 4 / 3; object-fit: contain; }
+.politics-chapter--tech { padding-bottom: 2rem; }
+.politics-chapter--interests { padding-top: 2rem; }

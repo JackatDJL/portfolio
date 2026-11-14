@@ -2,7 +2,7 @@
 
 Die Seite `/politik` ist eine eigenständige persönliche Biografie. Sie nutzt Fira Sans, Geist, semantische Themefarben und eine Kapitelverbindung aus der bestehenden Portfolio-Gestaltung. Die Homepage-Dateien und ihre Scrollchoreografie bleiben unverändert. Nur das gemeinsame CMS-Menü erhält Politik und Kontakt.
 
-Inhalte werden über das Blueprint `politik` bearbeitet. Einleitung, Kapitelüberschriften, Bilder und Bildunterschriften liegen in `content/collections/pages/politik.md`. Schulstationen, Erstwählerforum, Volt-Mitarbeit und Jugendchor werden als vorhandene Einträge referenziert. Veröffentlichte Quelltexte bleiben dort editierbar; unveröffentlichte Referenzen werden nicht ausgegeben. Die Seite hat keine Wahlkampf-Funktion und behauptet weder Kandidatur noch Mandat.
+Inhalte werden über das Blueprint `politik` bearbeitet. Einleitung, Kapitelüberschriften, Bilder und Bildunterschriften liegen in `content/collections/pages/politik.md`. Schulstationen, Erstwählerforum, Volt-Mitarbeit und Jugendchor werden als vorhandene Einträge referenziert. Veröffentlichte Quelltexte bleiben dort editierbar; unveröffentlichte Referenzen werden nicht ausgegeben. Zeitangaben, technische Motivation und Kontaktabschluss sind ebenfalls CMS-Felder. Ein zusätzlicher Abschnitt zu Mobilität, digitaler Bildung, demokratischer Beteiligung und Europa paraphrasiert die belegten persönlichen Interessen aus dem offiziellen Profil. Die Seite hat keine Wahlkampf-Funktion und behauptet weder Kandidatur noch Mandat.
 
 | Abschnitt | Quelle |
 | --- | --- |

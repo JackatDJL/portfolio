@@ -113,6 +113,58 @@ tabs:
               type: entries
               display: Persönliche Stationen
               collections: [cv_milestones]
+          - handle: byline
+            field:
+              type: textarea
+              display: Kontextzeile
+          - handle: personal_boundary
+            field:
+              type: textarea
+              display: Persönliche Abgrenzung
+          - handle: school_period
+            field:
+              type: textarea
+              display: Zeitangabe Schule
+          - handle: forum_period
+            field:
+              type: textarea
+              display: Zeitangabe Forum
+          - handle: volt_period
+            field:
+              type: textarea
+              display: Zeitangabe Volt
+          - handle: tech_period
+            field:
+              type: textarea
+              display: Kontext Technik
+          - handle: personal_period
+            field:
+              type: textarea
+              display: Kontext Persönliches
+          - handle: tech_intro
+            field:
+              type: textarea
+              display: Technische Motivation
+          - handle: party_context
+            field:
+              type: textarea
+              display: Hinweis Parteiseite
+          - handle: invitation_heading
+            field:
+              type: textarea
+              display: Kontaktfrage
+          - handle: invitation_label
+            field:
+              type: textarea
+              display: Kontaktlink
+          - handle: political_interests_title
+            field:
+              type: textarea
+              display: Kapitel politische Interessen
+          - handle: political_interests_text
+            field:
+              type: textarea
+              display: Politische Interessen
   search:
     display: SEO
     sections:

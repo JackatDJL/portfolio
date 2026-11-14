@@ -1,17 +1,17 @@
 <article class="politics-page" data-politics-page>
     <header class="politics-opening site-container">
-        <p class="politics-byline">Jack Ruder · Persönliches Engagement in Stade</p>
+        <p class="politics-byline">{{ byline | sanitize }}</p>
         <div class="politics-opening__copy">
             <h1>{{ heading | sanitize }}</h1>
-            <div><p class="politics-lead">{{ intro | sanitize }}</p><p class="politics-context">Meine persönliche Website. Kein offizieller Parteiauftritt.</p></div>
+            <div><p class="politics-lead">{{ intro | sanitize }}</p><p class="politics-context">{{ personal_boundary | sanitize }}</p></div>
         </div>
         {{ if hero_image }}{{ partial:media/image :asset="hero_image" width="1920" sizes="(min-width: 1440px) 1408px, 96vw" loading="eager" fetchpriority="high" :caption_override="hero_caption" figure_class="politics-opening__image" }}{{ /if }}
-        <nav class="politics-chapters" aria-label="Auf dieser Seite"><a href="#schule">Schule</a><a href="#forum">Erstwählerforum</a><a href="#volt">Volt</a><a href="#technik">Technik</a><a href="#persoenlich">Persönlich</a></nav>
+        <nav class="politics-chapters" aria-label="Auf dieser Seite"><a href="#schule">Schule</a><a href="#forum">Erstwählerforum</a><a href="#volt">Volt</a><a href="#technik">Technik</a><a href="#fragen">Politische Fragen</a><a href="#persoenlich">Persönlich</a></nav>
     </header>
     <div class="politics-story site-container" data-politics-story>
         <svg class="politics-thread" data-politics-thread aria-hidden="true" focusable="false"><path data-politics-path /></svg>
         <section id="schule" class="politics-chapter politics-chapter--school" data-politics-chapter aria-labelledby="school-heading">
-            <div class="politics-date">Seit 2019</div>
+            <div class="politics-date">{{ school_period | sanitize }}</div>
             <div class="politics-chapter__body">
                 <h2 id="school-heading">{{ chapter_school_title | sanitize }}</h2>
                 <p class="politics-chapter__intro">{{ chapter_school_intro | sanitize }}</p>
@@ -19,7 +19,7 @@
             </div>
         </section>
         <section id="forum" class="politics-chapter politics-chapter--forum" data-politics-chapter aria-labelledby="forum-heading">
-            <div class="politics-date">2025–2026</div>
+            <div class="politics-date">{{ forum_period | sanitize }}</div>
             <div class="politics-chapter__body">
                 <h2 id="forum-heading">{{ chapter_forum_title | sanitize }}</h2>
                 {{ forum_project }}{{ if published && project_status != 'confidential' }}<p class="politics-chapter__intro">{{ summary | sanitize }}</p><a class="semantic-link" href="{{ url }}">Die Geschichte des Erstwählerforums</a>{{ /if }}{{ /forum_project }}
@@ -27,30 +27,34 @@
             </div>
         </section>
         <section id="volt" class="politics-chapter politics-chapter--volt" data-politics-chapter aria-labelledby="volt-heading">
-            <div class="politics-date">Heute</div>
+            <div class="politics-date">{{ volt_period | sanitize }}</div>
             <div class="politics-chapter__body">
                 <div class="politics-working-grid">
                     {{ if volt_image }}{{ partial:media/image :asset="volt_image" width="800" sizes="(min-width: 1024px) 40vw, 90vw" :caption_override="volt_caption" }}{{ /if }}
-                    <div><h2 id="volt-heading">{{ chapter_volt_title | sanitize }}</h2>{{ volt_experience }}{{ if published }}<p class="politics-chapter__intro">{{ summary | sanitize }}</p>{{ /if }}{{ /volt_experience }}<p class="politics-context">Diese Seite beschreibt meine Mitarbeit. Offizielle Informationen zu Volt findest du auf der Parteiseite.</p><a class="semantic-link" href="https://voltdeutschland.org/niedersachsen/menschen/jack-ruder" rel="external">Offizielles Profil bei Volt Niedersachsen</a></div>
+                    <div><h2 id="volt-heading">{{ chapter_volt_title | sanitize }}</h2>{{ volt_experience }}{{ if published }}<p class="politics-chapter__intro">{{ summary | sanitize }}</p>{{ /if }}{{ /volt_experience }}<p class="politics-context">{{ party_context | sanitize }}</p><a class="semantic-link" href="https://voltdeutschland.org/niedersachsen/menschen/jack-ruder" rel="external">Offizielles Profil bei Volt Niedersachsen</a></div>
                 </div>
             </div>
         </section>
         <section id="technik" class="politics-chapter politics-chapter--tech" data-politics-chapter aria-labelledby="tech-heading">
-            <div class="politics-date">Technik</div>
+            <div class="politics-date">{{ tech_period | sanitize }}</div>
             <div class="politics-chapter__body politics-tech-copy">
                 <h2 id="tech-heading">{{ chapter_tech_title | sanitize }}</h2>
                 {{ tech_experience }}{{ if published }}<p class="politics-chapter__intro">{{ summary | sanitize }}</p>{{ /if }}{{ /tech_experience }}
-                <p>Mich beschäftigt, wie digitale Werkzeuge Zusammenarbeit ermöglichen. Meine technischen Projekte dokumentiere ich separat.</p>
+                <p>{{ tech_intro | sanitize }}</p>
                 <a class="semantic-link" href="/projekte">Zu meinen Projekten</a>
             </div>
         </section>
+        <section id="fragen" class="politics-chapter politics-chapter--interests" data-politics-chapter aria-labelledby="interests-heading">
+            <div class="politics-date">Fragen</div>
+            <div class="politics-chapter__body"><h2 id="interests-heading">{{ political_interests_title | sanitize }}</h2><p class="politics-chapter__intro">{{ political_interests_text | sanitize }}</p><a class="semantic-link" href="https://voltdeutschland.org/niedersachsen/menschen/jack-ruder" rel="external">Mehr dazu auf meinem offiziellen Volt-Profil</a></div>
+        </section>
         <section id="persoenlich" class="politics-chapter politics-chapter--personal" data-politics-chapter aria-labelledby="personal-heading">
-            <div class="politics-date">Persönlich</div>
+            <div class="politics-date">{{ personal_period | sanitize }}</div>
             <div class="politics-chapter__body politics-personal-grid">
                 <div><h2 id="personal-heading">{{ chapter_personal_title | sanitize }}</h2><p class="politics-chapter__intro">{{ personal_intro | sanitize }}</p>{{ interests }}{{ if published }}<p>{{ summary | sanitize }}</p>{{ /if }}{{ /interests }}</div>
                 {{ if personal_image }}{{ partial:media/image :asset="personal_image" width="800" sizes="(min-width: 1024px) 30vw, 90vw" :caption_override="personal_caption" }}{{ /if }}
             </div>
         </section>
     </div>
-    <footer class="politics-ending site-container"><p>Eine Frage oder eine Idee?</p><a class="politics-ending__link semantic-link" href="/kontakt?thema=politik">Lass uns sprechen.</a></footer>
+    <footer class="politics-ending site-container"><p>{{ invitation_heading | sanitize }}</p><a class="politics-ending__link semantic-link" href="/kontakt?thema=politik">{{ invitation_label | sanitize }}</a></footer>
 </article>
