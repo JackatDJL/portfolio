@@ -23,6 +23,12 @@ Choose **Kurze Begleitmail** for a concise application-specific sentence based o
 
 The saved email group is encrypted with the other private application fields. Preview is a same-origin authenticated Control Panel read, returns no-store/noindex content and makes no remote composition request. Copy as text works without rich clipboard support; Copy HTML uses the browser's rich clipboard API when available and includes plain text as a fallback. There is no sending action, tracking image, bearer link, signature image or `.eml` export. Check the result and send it yourself in your mail application.
 
+Example Control Panel screenshots below use synthetic data only.
+
+![Begleitmail fields in the private application editor](screenshots/application-email-fields.png)
+
+![Generated HTML and plain-text email preview](screenshots/application-email-preview.png)
+
 ## Storage and access
 
 `ApplicationPrivateGroup` extends Statamic's native Group fieldtype, so protected fields appear as ordinary form controls instead of a one-row Grid that must be opened first. Its nested fields use native Bard, Entries, Assets, Date and other existing CP controls. It encrypts the processed JSON using Laravel's authenticated encryption and decrypts only for CP preprocessing or an explicit application resolver. `ApplicationData::groupValue()` reads both the prior one-row Grid data shape and the new Group shape; existing encrypted application records need no content rewrite. Normal augmentation, shallow augmentation and query indexing return no private value. Invalid ciphertext fails closed. Save listeners also encrypt arrays supplied through PHP and reject unknown unprotected top-level entry fields.

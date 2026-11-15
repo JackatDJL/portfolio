@@ -105,7 +105,7 @@ final class ApplicationEmailComposer
             if (! is_string($file) || $file === '') {
                 continue;
             }
-            $asset = Asset::find($file);
+            $asset = Asset::find(str_contains($file, '::') ? $file : 'application_documents::'.$file);
             if (! $asset || $asset->containerHandle() !== 'application_documents') {
                 continue;
             }

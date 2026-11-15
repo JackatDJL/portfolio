@@ -202,7 +202,7 @@ class ApplicationManagementTest extends TestCase
         $asset = Asset::find($upload->json('data.id'));
         try {
             $entry->set('documents', ApplicationData::encrypt([['mode' => 'override', 'items' => [
-                ['label' => 'Ausbildungsnachweis', 'file' => ['application_documents::'.$asset->path()]],
+                ['label' => 'Ausbildungsnachweis', 'file' => [$asset->path()]],
             ]]]));
             $entry->save();
             $selected = app(ApplicationEmailComposer::class)->compose(Entry::find($entry->id()));

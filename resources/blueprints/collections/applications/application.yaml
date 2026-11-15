@@ -308,9 +308,8 @@ tabs:
               type: textarea
               display: Bewerbungsspezifischer Einstieg
               instructions: Leer lassen für einen kurzen, aus Stelle und Organisation erzeugten Satz. Im Teaser-Modus steht dieser Absatz vor dem ersten Absatz des Anschreibens.
-              if_any:
-              - mode: equals short
-              - mode: equals teaser
+              if:
+                mode: 'not manual'
           - handle: manual_body
             field:
               type: textarea
