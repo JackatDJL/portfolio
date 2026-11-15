@@ -37,7 +37,10 @@
 @media (max-width: 63.99rem) { .support-software-artifact { grid-template-columns: 1fr; } .support-artifact-note { max-width: 40rem; margin-left: auto; } }
 @media (max-width: 47.99rem) { .support-opening h1 { font-size: clamp(3rem, 12vw, 5rem); } .support-opening__intro { margin-left: 0; } .support-work__intro, .support-rosenfold-layout, .support-robot-layout, .support-transparency { display: block; } .support-work__intro p { margin-top: 2rem; } .support-work h2, .support-transparency h2, .support-ending h2 { font-size: clamp(2.2rem, 9vw, 3.8rem); } .support-media-pending { margin-top: 2rem; min-height: 16rem; padding: 1.5rem; } .support-next { padding-left: 1.25rem; margin-top: 3rem; } .support-transparency h2 { margin-bottom: 2rem; } .support-connection { display: none; } }
 .support-connection { overflow: visible; }
-.support-laptop { grid-column: 1 / -1; margin-block: 1rem 2rem; }
+.support-opening-layout { display: grid; grid-template-columns: .9fr 1.1fr; gap: 3rem; align-items: center; }
+.support-opening-layout h1 { font-size: clamp(3.25rem, 6.5vw, 7rem); max-width: 11ch; }
+.support-opening-layout .support-opening__intro { margin-left: 0; }
+.support-laptop { min-width: 0; }
 .support-rosenfold-layout > *, .support-workshop-record > * { min-width: 0; }
 .support-laptop img, .support-screen img, .support-workshop-photo img, .support-workshop-record img { width: 100%; height: auto; }
 .support-laptop img { border-radius: 0; }
@@ -61,4 +64,4 @@
 .support-story .asset-attribution { font-size: .75rem; line-height: 1.5; color: var(--site-text-muted); margin-top: .75rem; }
 body:has(.support-story) .site-header__wordmark { background-color: var(--site-background); box-shadow: 0 0 0 .5rem var(--site-background); }
 @media (max-width: 63.99rem) { .support-workshop-record { grid-template-columns: 1fr; } .support-workshop-notes { max-width: 46rem; } }
-@media (max-width: 47.99rem) { .support-laptop { margin-block: 2rem; } .support-code { margin-bottom: 2rem; } .support-screen { margin-top: 2rem; } .support-workshop-intro { display: block; margin-top: 3rem; } .support-robot-layout > [data-support-from] { display: block; } .support-current { padding-left: 1.25rem; } }
+@media (max-width: 47.99rem) { .support-opening-layout { display: block; } .support-opening-layout h1 { font-size: clamp(3rem, 12vw, 5rem); } .support-laptop { margin-block: 2rem; } .support-code { margin-bottom: 2rem; } .support-screen { margin-top: 2rem; } .support-workshop-intro { display: block; margin-top: 3rem; } .support-robot-layout > [data-support-from] { display: block; } .support-current { padding-left: 1.25rem; } }
