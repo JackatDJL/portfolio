@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Support\ApplicationData;
+use App\Support\ApplicationEmailComposer;
 use App\Support\CvPdfRenderer;
 use Illuminate\Http\Request;
 use Statamic\Facades\Entry;
@@ -74,6 +75,14 @@ final class ApplicationController extends Controller
                 : null,
             'follow_up_status' => (string) ($tracking['follow_up_status'] ?? ''),
         ])->header('Cache-Control', 'private, no-store');
+    }
+
+    public function email(string $id, ApplicationEmailComposer $composer)
+    {
+        return response()->json($composer->compose($this->application($id)))
+            ->header('Cache-Control', 'private, no-store')
+            ->header('X-Robots-Tag', 'noindex, nofollow, noarchive')
+            ->header('Referrer-Policy', 'no-referrer');
     }
 
     public function cvProfile(Request $request, string $id)

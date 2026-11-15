@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Support\ApplicationData;
+use App\Support\ApplicationEmailComposer;
 use App\Support\CvPdfRenderer;
 use App\Support\CvPrivateData;
 use App\Support\CvProfileContentResolver;
@@ -64,6 +65,7 @@ class ApplicationManagementTest extends TestCase
             'letter' => ['body' => [['type' => 'paragraph', 'content' => [['type' => 'text', 'text' => 'PRIVATE-LETTER-SENTINEL']]]]],
             'cv' => [], 'documents' => ['mode' => 'override', 'items' => []],
             'signature' => ['mode' => 'none'],
+            'email' => [],
             'tracking' => ['application_date' => '2026-01-01', 'date_override' => '2026-02-01', 'notes' => 'PRIVATE-NOTE-SENTINEL'],
         ];
     }
@@ -128,6 +130,87 @@ class ApplicationManagementTest extends TestCase
         $values = $this->values();
         $values['recipient']['email'] = 'not-an-email';
         $this->postJson('/cp/collections/applications/entries/'.Site::default()->handle(), $values)->assertUnprocessable();
+    }
+
+    public function test_email_companion_modes_are_private_deterministic_and_do_not_include_signature_assets(): void
+    {
+        $entry = $this->createThroughCp();
+        $empty = app(ApplicationEmailComposer::class)->compose($entry);
+        $this->assertSame('private@example.invalid', $empty['recipient']);
+        $this->assertSame('', $empty['subject']);
+        $this->assertStringNotContainsString('Sehr geehrte', $empty['text']);
+        $this->assertStringNotContainsString('Jack Ruder', $empty['text']);
+        $response = $this->getJson('/cp/applications/'.$entry->id().'/email')->assertOk();
+        $this->assertStringContainsString('no-store', $response->headers->get('Cache-Control'));
+        $this->assertStringContainsString('noindex', $response->headers->get('X-Robots-Tag'));
+        $this->assertStringNotContainsString('application=TOKEN', $response->getContent());
+        $recipient = ApplicationData::group($entry, 'recipient');
+        $recipient['email'] = 'bewerbung@example.invalid';
+        $entry->set('recipient', ApplicationData::encrypt([$recipient]));
+        $letter = ApplicationData::group($entry, 'letter');
+        $letter['subject'] = 'Praktikum Forschung';
+        $letter['salutation'] = 'Sehr geehrte Frau Dr. Müller,';
+        $letter['closing'] = 'Mit freundlichen Grüßen';
+        $letter['body'] = [
+            ['type' => 'paragraph', 'content' => [['type' => 'text', 'text' => 'Erster Absatz mit '], ['type' => 'text', 'text' => 'Formatierung', 'marks' => [['type' => 'bold']]], ['type' => 'text', 'text' => '.']]],
+            ['type' => 'paragraph', 'content' => [['type' => 'text', 'text' => 'Zweiter Absatz darf nicht übernommen werden.']]],
+        ];
+        $entry->set('letter', ApplicationData::encrypt([$letter]));
+        $entry->set('signature', ApplicationData::encrypt([['mode' => 'typed', 'name' => 'Jack Ruder']]));
+        $entry->set('email', ApplicationData::encrypt([['mode' => 'teaser', 'intro' => 'Bewerbungsspezifischer Einstieg.', 'sender_name' => 'Jack Ruder']]));
+        $entry->save();
+
+        $mail = app(ApplicationEmailComposer::class)->compose(Entry::find($entry->id()));
+        $this->assertSame('bewerbung@example.invalid', $mail['recipient']);
+        $this->assertSame('Bewerbung: Praktikum Forschung', $mail['subject']);
+        $this->assertStringContainsString("Bewerbungsspezifischer Einstieg.\n\nErster Absatz mit Formatierung.", $mail['text']);
+        $this->assertStringNotContainsString('Zweiter Absatz', $mail['text']);
+        $this->assertStringContainsString('Sehr geehrte Frau Dr. Müller,', $mail['text']);
+        $this->assertStringContainsString('Mit freundlichen Grüßen', $mail['text']);
+        $this->assertStringContainsString('<p', $mail['html']);
+        $this->assertStringNotContainsString('<img', $mail['html']);
+        $this->assertStringNotContainsString('application-test', $mail['html']);
+        $this->assertStringNotContainsString('recipient-link', $mail['html']);
+        $this->assertSame([], $mail['attachments']);
+
+        $email = ['mode' => 'manual', 'manual_body' => "Manueller erster Absatz.\n\nManueller zweiter Absatz."];
+        $entry->set('email', ApplicationData::encrypt([$email]));
+        $entry->save();
+        $manual = app(ApplicationEmailComposer::class)->compose(Entry::find($entry->id()));
+        $this->assertSame("Sehr geehrte Frau Dr. Müller,\n\nManueller erster Absatz.\n\nManueller zweiter Absatz.\n\nMit freundlichen Grüßen\n\nJack Ruder", $manual['text']);
+        $this->assertStringContainsString('<p style="margin:0 0 16px">Manueller erster Absatz.</p>', $manual['html']);
+        $this->assertStringContainsString('<p style="margin:0 0 16px">Manueller zweiter Absatz.</p>', $manual['html']);
+    }
+
+    public function test_email_attachment_description_requires_a_selected_existing_private_pdf(): void
+    {
+        $entry = $this->createThroughCp();
+        $entry->set('email', ApplicationData::encrypt([['mode' => 'short']]));
+        $entry->set('documents', ApplicationData::encrypt([['mode' => 'override', 'items' => [
+            ['label' => 'Fehlendes Zeugnis', 'file' => ['application_documents::missing.pdf']],
+        ]]]));
+        $entry->save();
+        $missing = app(ApplicationEmailComposer::class)->compose(Entry::find($entry->id()));
+        $this->assertSame([], $missing['attachments']);
+        $this->assertStringNotContainsString('Als Anlage erhalten Sie', $missing['text']);
+
+        $this->actingAs($this->user());
+        $upload = $this->post('/cp/assets', [
+            'container' => 'application_documents', 'folder' => '/',
+            'file' => UploadedFile::fake()->createWithContent('mail-attachment-'.bin2hex(random_bytes(5)).'.pdf', "%PDF-1.4\n%%EOF"),
+        ], ['Accept' => 'application/json'])->assertOk();
+        $asset = Asset::find($upload->json('data.id'));
+        try {
+            $entry->set('documents', ApplicationData::encrypt([['mode' => 'override', 'items' => [
+                ['label' => 'Ausbildungsnachweis', 'file' => ['application_documents::'.$asset->path()]],
+            ]]]));
+            $entry->save();
+            $selected = app(ApplicationEmailComposer::class)->compose(Entry::find($entry->id()));
+            $this->assertSame(['Ausbildungsnachweis'], $selected['attachments']);
+            $this->assertStringContainsString('Als Anlage erhalten Sie: Ausbildungsnachweis.', $selected['text']);
+        } finally {
+            $asset->deleteQuietly();
+        }
     }
 
     public function test_typed_signature_requires_a_name(): void
