@@ -15,15 +15,42 @@ software_image: projects/prtop/prtop-live-dashboard.png
 software_caption: 'prtop im Entwicklungsstand. Noch kein veröffentlichtes Release.'
 software_need: 'Unterstützung für persönliche Softwareprojekte kann bei Hosting, Wartung und Dokumentation helfen. Einen konkreten Bedarf und die Verwaltung kläre ich vorab.'
 rosenfold_title: 'Rosenfold. Noch in Entwicklung.'
-rosenfold_intro: 'An Rosenfold arbeite ich als unabhängigem Softwareprojekt. Es befindet sich in Entwicklung.'
-rosenfold_image: null
-rosenfold_caption: ''
+rosenfold_intro: 'Rosenfold soll Dateien und Text zwischen Geräten austauschen. Ich entwickle die Anwendung als unabhängiges Projekt. Der gezeigte Stand ist eine lokale Entwicklungsversion, kein fertiges Produkt.'
+rosenfold_image: projects/rosenfold/rosenfold-laptop-render.png
+rosenfold_caption: '3D-Rendering mit einem echten Screenshot der lokalen Rosenfold-Entwicklungsversion vom 15. November 2026.'
+rosenfold_screen: projects/rosenfold/rosenfold-ready.png
+rosenfold_screen_caption: 'Rosenfold im Zustand Ready, vor der Auswahl einer Datei. Lokale Aufnahme vom 15. November 2026.'
+rosenfold_code_title: 'Fortschritt muss bei den echten Bytes bleiben.'
+rosenfold_code_intro: 'Viele kleine Fortschrittsereignisse sollen die Oberfläche nicht überlasten. Dieser Ausschnitt bündelt Meldungen zeitlich. Der abschließende Wert kann separat ausgegeben werden. Das ist ein Einblick in die Implementierung, kein Nachweis einer fertigen Übertragung.'
+rosenfold_code_source: 'packages/core/src/progress-throttle.ts, Ausschnitt aus db38debd, 15.11.2026'
+rosenfold_code: |
+  report(value: T) {
+    pendingValue = value
+    const elapsed = now() - lastReportedAt
+    if (elapsed >= intervalMs) {
+      deliver()
+    } else if (timer === null) {
+      timer = schedule(deliver, intervalMs - elapsed)
+    }
+  },
 rosenfold_need: 'Für einen konkreten Förderbedarf müssen ein öffentlich dokumentierter nächster Schritt, passende Infrastrukturkosten und die Zuständigkeit feststehen. Hier sind noch keine geprüften Beträge veröffentlicht.'
 robot_title: 'Am Antrieb weiterarbeiten.'
 robot_project:
   - 8e9f1f56-1feb-46a8-9ae5-a79ec9444c81
-robot_image: null
-robot_caption: ''
+robot_image: projects/atheblues/atheblues-workshop-2024.jpg
+robot_caption: 'AtheBlues mit Bus und Bühnenbild vor der OnStage-Europameisterschaft 2024. Archivaufnahme, nicht der aktuelle Rescue-Line-Roboter.'
+robot_archive_title: 'Was ein Umbau wirklich bedeutet.'
+robot_archive_intro: 'Das technische Poster von AtheBlues dokumentiert die OnStage-Arbeit von 2024. Die Bilder zeigen echte Elektronik und mehrere Bauzustände des Busses. Der heutige Rescue-Line-Entwurf ist ein anderes Vorhaben.'
+robot_document: projects/atheblues/atheblues-technical-poster-2024.png
+robot_document_caption: 'Technisches Demo-Poster für das deutsche RoboCup-Junior-Finale in Kassel, 18.–21. April 2024. Historischer Entwicklungsnachweis.'
+robot_control_title: 'Vom Sensor zur Zustandssteuerung'
+robot_control_text: 'Die ersten Verbindungen über Farb- und Abstandssensoren waren fehleranfällig. Das Team plante die Kommunikation als Zustandsmodell und steuerte Bus und Stadt über eine Tablet-App und ESP32.'
+robot_drive_title: 'Motoren austauschen. Halterungen fertigen.'
+robot_drive_text: 'Die ersten Gleichstrommotoren waren für den schweren Bus zu schwach. Sie wurden ersetzt; Halterungen für die neuen Motoren entstanden im 3D-Druck. Das Poster zeigt die Umbauten und die Elektronik.'
+robot_test_title: 'Auf der Bühne zählt der ganze Aufbau.'
+robot_test_text: 'Der AG-Bericht aus Kassel beschreibt unterbrochene Bluetooth-Verbindungen während der Auftritte. Auch nach der Arbeit an Code und Mechanik musste das Zusammenspiel unter Wettbewerbsbedingungen funktionieren.'
+robot_current_title: 'Nächster Entwurf: Rescue Line'
+robot_current_text: 'Der verknüpfte Projektbericht beschreibt die Arbeit am Antrieb eines Rescue-Line-Roboters. CAD, Fertigung und Tests dieses Entwurfs sind hier noch nicht fotografisch belegt. Die Bilder von 2024 werden deshalb ausdrücklich als Archiv gezeigt.'
 robot_need: 'Für AtheBlues geht es um Material, Komponenten und Fertigung für das Teamprojekt. Unterstützung wird ausschließlich mit einer dafür zuständigen Schule oder Teamorganisation geklärt und getrennt von persönlichen Projekten verwaltet.'
 transparency_title: 'Erst der Zweck. Dann die Summe.'
 transparency_intro: 'Konkrete Budgets und bestätigte Beiträge erscheinen hier erst mit nachvollziehbarer Grundlage. Für diese Seite sind noch keine geprüften Beträge veröffentlicht. Fehlende Angaben bedeuten nicht null Euro.'

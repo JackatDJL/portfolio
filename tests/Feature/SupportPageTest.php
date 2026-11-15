@@ -52,10 +52,21 @@ class SupportPageTest extends TestCase
         });
         Entry::swap($mock);
         $response = $this->get('/support')->assertOk();
-        foreach (['prtop', 'Rosenfold. Noch in Entwicklung.', 'AtheBlues', 'Schulteam', 'keine Zahlungen', 'nicht null Euro', 'getrennt'] as $text) {
+        foreach (['prtop', 'Rosenfold. Noch in Entwicklung.', 'AtheBlues', 'Schulteam', 'keine Zahlungen', 'nicht null Euro', 'getrennt', '3D-Rendering', 'vor der Auswahl einer Datei', 'Archivaufnahme', 'nicht der aktuelle Rescue-Line-Roboter', '3D-Druck', 'Bluetooth', 'db38debd'] as $text) {
             $response->assertSee($text);
         }
         $response->assertDontSee('<progress', false)->assertDontSee('360 €')->assertDontSee('900 €')->assertDontSee('700 €')
             ->assertSee('/kontakt?thema=sponsoring', false);
+    }
+
+    public function test_code_excerpt_is_editable_and_escaped_as_text(): void
+    {
+        $entry = Entry::query()->where('collection', 'pages')->where('slug', 'support')->first();
+        $html = (new View)->template('support/index')->cascadeContent($entry)
+            ->with(['rosenfold_code' => '<script>privateMarker()</script>', 'robot_archive_title' => 'Redaktionell geänderter Titel'])
+            ->render();
+        $this->assertStringContainsString('Redaktionell geänderter Titel', $html);
+        $this->assertStringContainsString('&lt;script&gt;privateMarker()', $html);
+        $this->assertStringNotContainsString('<script>privateMarker()', $html);
     }
 }

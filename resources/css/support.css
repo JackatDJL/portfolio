@@ -37,3 +37,28 @@
 @media (max-width: 63.99rem) { .support-software-artifact { grid-template-columns: 1fr; } .support-artifact-note { max-width: 40rem; margin-left: auto; } }
 @media (max-width: 47.99rem) { .support-opening h1 { font-size: clamp(3rem, 12vw, 5rem); } .support-opening__intro { margin-left: 0; } .support-work__intro, .support-rosenfold-layout, .support-robot-layout, .support-transparency { display: block; } .support-work__intro p { margin-top: 2rem; } .support-work h2, .support-transparency h2, .support-ending h2 { font-size: clamp(2.2rem, 9vw, 3.8rem); } .support-media-pending { margin-top: 2rem; min-height: 16rem; padding: 1.5rem; } .support-next { padding-left: 1.25rem; margin-top: 3rem; } .support-transparency h2 { margin-bottom: 2rem; } .support-connection { display: none; } }
 .support-connection { overflow: visible; }
+.support-laptop { grid-column: 1 / -1; margin-block: 1rem 2rem; }
+.support-rosenfold-layout > *, .support-workshop-record > * { min-width: 0; }
+.support-laptop img, .support-screen img, .support-workshop-photo img, .support-workshop-record img { width: 100%; height: auto; }
+.support-laptop img { border-radius: 0; }
+.support-code h3, .support-workshop-intro h3, .support-current h3 { font-size: clamp(1.8rem, 3vw, 3rem); line-height: 1.1; letter-spacing: -.035em; margin-bottom: 1.5rem; }
+.support-code pre { font-family: var(--font-mono); font-size: clamp(.75rem, 1.1vw, .95rem); line-height: 1.7; margin-block: 2rem 1rem; padding-block: 1.5rem; border-block: 1px solid var(--site-border); overflow-x: auto; }
+.support-code-source { font-size: .75rem; color: var(--site-text-muted); overflow-wrap: anywhere; }
+.support-screen { align-self: start; }
+.support-screen img { border: 1px solid var(--site-border); }
+.support-workshop-photo { grid-column: 1 / -1; }
+.support-robot-layout > [data-support-from] { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; gap: 0 4rem; align-items: end; }
+.support-robot-layout > [data-support-from] > .support-owner, .support-robot-layout > [data-support-from] > h2 { grid-column: 1; }
+.support-robot-layout > [data-support-from] > p:not(.support-owner) { grid-column: 2; grid-row: 2; }
+.support-robot-layout > [data-support-from] > a { grid-column: 2; }
+.support-workshop-intro { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: end; margin-block: 5rem 3rem; }
+.support-workshop-record { display: grid; grid-template-columns: 1.7fr 1fr; gap: 3rem; align-items: start; }
+.support-workshop-record > div > a { display: inline-block; margin-top: 1rem; }
+.support-workshop-notes > div { border-top: 1px solid var(--site-border); padding-block: 1.5rem; }
+.support-workshop-notes h4 { font-size: 1.5rem; line-height: 1.2; margin-bottom: .75rem; }
+.support-workshop-notes p { font-size: .95rem; }
+.support-current { margin-top: 4rem; max-width: 48rem; padding-left: 2rem; border-left: 2px solid var(--site-focus); }
+.support-story .asset-attribution { font-size: .75rem; line-height: 1.5; color: var(--site-text-muted); margin-top: .75rem; }
+body:has(.support-story) .site-header__wordmark { background-color: var(--site-background); box-shadow: 0 0 0 .5rem var(--site-background); }
+@media (max-width: 63.99rem) { .support-workshop-record { grid-template-columns: 1fr; } .support-workshop-notes { max-width: 46rem; } }
+@media (max-width: 47.99rem) { .support-laptop { margin-block: 2rem; } .support-code { margin-bottom: 2rem; } .support-screen { margin-top: 2rem; } .support-workshop-intro { display: block; margin-top: 3rem; } .support-robot-layout > [data-support-from] { display: block; } .support-current { padding-left: 1.25rem; } }

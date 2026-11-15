@@ -71,6 +71,90 @@ tabs:
             field:
               type: textarea
               display: Bedarf Rosenfold
+          - handle: rosenfold_screen
+            field:
+              type: assets
+              display: Rosenfold Screenshot
+              container: assets
+              max_files: 1
+              query_scopes:
+              - editorial_images
+              validate:
+              - image
+          - handle: robot_document
+            field:
+              type: assets
+              display: Technisches Robotikposter
+              container: assets
+              max_files: 1
+              query_scopes:
+              - editorial_images
+              validate:
+              - image
+          - handle: rosenfold_screen_caption
+            field:
+              type: text
+              display: Bildunterschrift Screenshot
+          - handle: rosenfold_code_title
+            field:
+              type: text
+              display: Überschrift Code
+          - handle: rosenfold_code_intro
+            field:
+              type: textarea
+              display: Einleitung Code
+          - handle: rosenfold_code_source
+            field:
+              type: text
+              display: Quellstand Code
+          - handle: rosenfold_code
+            field:
+              type: textarea
+              display: Codeausschnitt
+          - handle: robot_archive_title
+            field:
+              type: text
+              display: Überschrift Werkstattarchiv
+          - handle: robot_archive_intro
+            field:
+              type: textarea
+              display: Einleitung Werkstattarchiv
+          - handle: robot_document_caption
+            field:
+              type: text
+              display: Bildunterschrift Poster
+          - handle: robot_control_title
+            field:
+              type: text
+              display: Überschrift Steuerung
+          - handle: robot_control_text
+            field:
+              type: textarea
+              display: Text Steuerung
+          - handle: robot_drive_title
+            field:
+              type: text
+              display: Überschrift Antrieb
+          - handle: robot_drive_text
+            field:
+              type: textarea
+              display: Text Antrieb
+          - handle: robot_test_title
+            field:
+              type: text
+              display: Überschrift Test
+          - handle: robot_test_text
+            field:
+              type: textarea
+              display: Text Test
+          - handle: robot_current_title
+            field:
+              type: text
+              display: Überschrift aktueller Entwurf
+          - handle: robot_current_text
+            field:
+              type: textarea
+              display: Text aktueller Entwurf
           - handle: robot_title
             field:
               type: text
