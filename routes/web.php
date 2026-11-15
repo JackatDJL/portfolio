@@ -19,6 +19,13 @@ use Statamic\View\View;
 Route::get('/kontakt', [\App\Http\Controllers\ContactController::class, 'show'])->name('contact.show');
 Route::post('/kontakt', [\App\Http\Controllers\ContactController::class, 'send'])->middleware('throttle:5,1')->name('contact.send');
 
+Route::get('/politik', function () {
+    $entry = \Statamic\Facades\Entry::query()->where('collection', 'pages')->where('slug', 'politik')->first();
+    abort_unless($entry && $entry->published(), 404);
+
+    return response((new View)->template('politik/index')->layout('layout')->cascadeContent($entry)->render());
+})->name('politics.show');
+
 Route::get('/sitemap.xml', [SearchDocumentsController::class, 'sitemap'])->name('sitemap');
 Route::get('/llms.txt', [SearchDocumentsController::class, 'llms'])->name('llms');
 Route::get('/llms-full.txt', [SearchDocumentsController::class, 'llmsFull'])->name('llms.full');

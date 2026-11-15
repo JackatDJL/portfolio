@@ -1,0 +1,60 @@
+.politics-page { overflow: clip; }
+body:has(.politics-page) .site-header__wordmark { background-color: var(--site-background); box-shadow: 0 0 0 .5rem var(--site-background); }
+.politics-opening { padding-top: clamp(3rem, 8vw, 8rem); }
+.politics-byline { font-size: .9rem; margin-bottom: 2rem; color: var(--site-text-muted); }
+.politics-opening__copy { display: grid; grid-template-columns: 1.3fr 1fr; gap: clamp(2rem, 5vw, 6rem); align-items: end; margin-bottom: 3.5rem; }
+.politics-opening h1 { max-width: 11ch; font-size: clamp(3.5rem, 8.5vw, 8.5rem); line-height: .98; letter-spacing: -.055em; }
+.politics-lead { font-size: clamp(1.15rem, 1.5vw, 1.4rem); line-height: 1.6; max-width: 42ch; }
+.politics-context { margin-top: 1.3rem; font-size: .875rem; color: var(--site-text-muted); line-height: 1.6; max-width: 56ch; }
+.politics-opening__image img { width: 100%; aspect-ratio: 2.05; object-fit: cover; object-position: center 65%; }
+.politics-page .asset-attribution { margin-top: .75rem; font-size: .75rem; color: var(--site-text-muted); }
+.politics-chapters { display: flex; flex-wrap: wrap; gap: 1rem 2rem; padding-block: 2rem; border-bottom: 1px solid var(--site-border); }
+.politics-chapters a { min-height: 2.75rem; display: inline-flex; align-items: center; text-decoration: underline; text-decoration-color: var(--site-focus); text-underline-offset: .35em; }
+.politics-story { position: relative; padding-block: 2rem; }
+.politics-thread { position: absolute; inset: 0 auto 0 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
+.politics-thread path { fill: none; stroke: var(--site-focus); stroke-width: 2; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+.politics-chapter { display: grid; grid-template-columns: 10rem minmax(0, 1fr); gap: 3rem; padding-block: clamp(3rem, 7vw, 7rem); padding-left: 3rem; scroll-margin-top: 2rem; }
+.politics-date { padding-top: .5rem; font-size: .9rem; color: var(--site-text-muted); }
+.politics-chapter h2 { max-width: 20ch; font-size: clamp(2.2rem, 4.2vw, 4.5rem); line-height: 1.06; letter-spacing: -.04em; margin-bottom: 1.5rem; }
+.politics-chapter__intro { max-width: 53ch; font-size: clamp(1.1rem, 1.5vw, 1.3rem); line-height: 1.65; margin-bottom: 1.4rem; }
+.politics-school-records { max-width: 50rem; margin-top: 2.5rem; }
+.politics-school-records li { display: grid; grid-template-columns: 8rem minmax(0, 1fr); gap: 1.5rem; border-top: 1px solid var(--site-border); padding-block: 1.5rem; }
+.politics-school-records li > span { font-size: .85rem; color: var(--site-text-muted); padding-top: .2rem; }
+.politics-school-records h3 { font-size: 1.3rem; margin-bottom: .4rem; }
+.politics-school-records p { line-height: 1.6; max-width: 50ch; }
+.politics-forum-photo { margin-top: 3rem; }
+.politics-forum-photo img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; object-position: center 64%; }
+.politics-chapter--forum { padding-block: clamp(2.5rem, 5vw, 5rem); }
+.politics-working-grid { display: grid; grid-template-columns: 1.1fr 1fr; align-items: center; gap: clamp(2rem, 4vw, 4rem); }
+.politics-working-grid h2 { font-size: clamp(2rem, 3vw, 3.2rem); }
+.politics-working-grid img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; object-position: 48% center; }
+.politics-chapter--volt { grid-template-columns: 1fr; padding-left: 3rem; }
+.politics-chapter--volt .politics-date { margin-bottom: -1rem; }
+.politics-tech-copy > p:not(.politics-chapter__intro) { max-width: 55ch; margin-block: 1rem; line-height: 1.7; }
+.politics-personal-grid { display: grid; grid-template-columns: 1.2fr .8fr; gap: 3rem; align-items: start; }
+.politics-personal-grid img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; object-position: center 40%; }
+.politics-personal-grid > div > p { line-height: 1.7; max-width: 50ch; }
+.politics-ending { padding-block: 3rem 7rem; border-top: 1px solid var(--site-border); }
+.politics-ending > p { margin-bottom: 1rem; }
+.politics-ending__link { font-family: var(--font-display); font-weight: 700; font-size: clamp(2.5rem, 6vw, 6rem); line-height: 1.1; letter-spacing: -.045em; }
+@media (max-width: 63.99rem) { .politics-chapter { grid-template-columns: 6rem minmax(0, 1fr); gap: 1.5rem; padding-left: 2rem; } .politics-working-grid { grid-template-columns: 1fr 1fr; } .politics-chapter--volt { grid-template-columns: 1fr; padding-left: 2rem; } }
+@media (max-width: 47.99rem) { .politics-opening__copy { grid-template-columns: 1fr; gap: 2rem; margin-bottom: 2rem; } .politics-opening h1 { font-size: clamp(3.1rem, 13vw, 5.5rem); } .politics-opening__image img { aspect-ratio: 4 / 3; } .politics-chapters { gap: .25rem 1.25rem; } .politics-chapter { display: block; padding-left: 1.5rem; } .politics-date { margin-bottom: 1rem; } .politics-working-grid, .politics-personal-grid { display: flex; flex-direction: column; align-items: stretch; gap: 2rem; } .politics-working-grid > figure { order: 1; } .politics-working-grid img { aspect-ratio: 4 / 3; object-position: center; } .politics-school-records li { grid-template-columns: 1fr; gap: .5rem; } .politics-chapter h2 { font-size: clamp(2rem, 8vw, 3rem); } .politics-ending { padding-bottom: 4rem; } }
+.politics-story::before { content: ''; position: absolute; left: 5px; top: 2rem; bottom: 2rem; width: 2px; background: var(--site-focus); }
+.politics-story.has-politics-thread::before { display: none; }
+.politics-opening h1 { max-width: 13ch; font-size: clamp(3.5rem, 7vw, 7.5rem); }
+@media (max-width: 47.99rem) { .politics-opening h1 { font-size: clamp(3.1rem, 13vw, 5.5rem); } .politics-chapter--volt .politics-date { margin-bottom: 1rem; } }
+
+.politics-working-grid img { aspect-ratio: 4 / 3; object-fit: contain; }
+.politics-chapter--tech { padding-bottom: 2rem; }
+.politics-chapter--interests { padding-top: 2rem; }
+
+.politics-chapter--forum { padding-bottom: 2rem; }
+.politics-chapter--volt { padding-top: 2.5rem; padding-bottom: 3rem; }
+.politics-reflections { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 3rem; margin-left: 16rem; padding-block: 2rem 3rem; }
+.politics-reflections .politics-chapter { display: block; padding: 0; scroll-margin-top: 5rem; }
+.politics-reflections .politics-date { margin-bottom: 1rem; }
+.politics-reflections h2 { font-size: clamp(1.8rem, 2.5vw, 2.5rem); line-height: 1.12; }
+.politics-reflections .politics-chapter__intro { font-size: 1.05rem; line-height: 1.65; }
+.politics-chapter--personal { padding-top: 3rem; }
+@media (max-width: 63.99rem) { .politics-reflections { margin-left: 9.5rem; gap: 2rem; } }
+@media (max-width: 47.99rem) { .politics-reflections { grid-template-columns: 1fr; margin-left: 1.5rem; gap: 2rem; padding-block: 1rem 2rem; } .politics-reflections h2 { max-width: 25ch; font-size: 1.9rem; } }

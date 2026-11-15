@@ -1,3 +1,4 @@
+if (document.querySelector('[data-politics-page]')) import('./politik.js');
 if (document.querySelector('[data-signature-pattern]')) import('./cv-signature-pattern.js');
 import { initCvExplore } from './cv-explore.js';
 
