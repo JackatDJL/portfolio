@@ -126,12 +126,12 @@ def area(name, loc, power, size, color):
 area("Large window", (-3, -4, 6), 650, 5, (1, 0.96, 0.89))
 area("Soft fill", (4, 1, 4), 500, 4, (0.87, 0.94, 1))
 area("Rim", (-1, 4, 4), 400, 3, (1, 1, 1))
-bpy.ops.object.camera_add(location=(4.3, -6.3, 4.1))
+bpy.ops.object.camera_add(location=(1.5, -5.3, 2.7))
 camera = bpy.context.object
 camera.rotation_euler = (
     (Vector((0, 0.25, 1)) - camera.location).to_track_quat("-Z", "Y").to_euler()
 )
-camera.data.lens = 52
+camera.data.lens = 48
 camera.data.dof.use_dof = True
 camera.data.dof.focus_distance = (camera.location - Vector((0, 0.25, 1))).length
 camera.data.dof.aperture_fstop = 7
@@ -144,8 +144,6 @@ scene.render.resolution_x = 1800
 scene.render.resolution_y = 1350
 scene.render.resolution_percentage = 100
 scene.world.color = (0.25, 0.25, 0.25)
-if "AgX" not in scene.view_settings.bl_rna.properties["view_transform"].enum_items.keys():
-    raise RuntimeError("A working Blender AgX/OpenColorIO configuration is required")
 scene.view_settings.view_transform = "AgX"
 scene.render.image_settings.file_format = "PNG"
 scene.render.filepath = a.output

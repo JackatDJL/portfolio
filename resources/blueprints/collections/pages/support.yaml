@@ -193,6 +193,42 @@ tabs:
             field:
               type: textarea
               display: Transparenztext
+          - handle: byline
+            field:
+              type: text
+              display: Absenderzeile
+          - handle: software_need_heading
+            field:
+              type: text
+              display: Überschrift nächster Software-Schritt
+          - handle: software_owner_label
+            field:
+              type: text
+              display: Verwaltungskreis Software
+          - handle: rosenfold_need_heading
+            field:
+              type: text
+              display: Überschrift nächster Rosenfold-Schritt
+          - handle: rosenfold_owner_label
+            field:
+              type: text
+              display: Projektstatus Rosenfold
+          - handle: robot_need_heading
+            field:
+              type: text
+              display: Überschrift nächster Robotik-Schritt
+          - handle: robot_owner_label
+            field:
+              type: text
+              display: Verwaltungskreis Robotik
+          - handle: financial_boundary
+            field:
+              type: textarea
+              display: Trennung der Finanzen
+          - handle: contact_label
+            field:
+              type: text
+              display: Kontaktaktion
           - handle: contact_title
             field:
               type: text

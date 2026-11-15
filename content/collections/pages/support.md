@@ -7,13 +7,22 @@ published: false
 noindex: true
 heading: 'Was der nächste Versuch braucht.'
 intro: 'Ich arbeite an offener Software und technischen Projekten. Unterstützung soll an einer konkreten Aufgabe ankommen. Hier zeige ich, woran ich arbeite und welche nächsten Schritte noch offen sind.'
+byline: 'Jack Ruder · Software und Robotik'
+software_need_heading: 'Ein noch unveröffentlichtes Werkzeug fertigbauen.'
+software_owner_label: 'Persönliche Softwareprojekte'
+rosenfold_need_heading: 'Unter realen Netzwerkbedingungen prüfen.'
+rosenfold_owner_label: 'Unabhängiges Projekt · In Entwicklung'
+robot_need_heading: 'Vom Antriebsentwurf zum Aufbau.'
+robot_owner_label: 'AtheBlues · Schulteam'
+financial_boundary: 'Persönliche Projekte, mögliche geschäftliche Vorhaben und das Schulteam bleiben finanziell getrennt. Diese Seite nimmt keine Zahlungen entgegen.'
+contact_label: 'Unterstützung besprechen'
 software_title: 'Offene Software endet nicht beim Code.'
 software_intro: 'Entwicklung, Dokumentation und verlässlicher Betrieb kosten Zeit. Hosting und technische Infrastruktur gehören zu dieser Arbeit.'
 software_project:
   - 4739fabf-5726-4d17-ad72-5a5f574e33cd
 software_image: projects/prtop/prtop-live-dashboard.png
 software_caption: 'prtop im Entwicklungsstand. Noch kein veröffentlichtes Release.'
-software_need: 'Unterstützung für persönliche Softwareprojekte kann bei Hosting, Wartung und Dokumentation helfen. Einen konkreten Bedarf und die Verwaltung kläre ich vorab.'
+software_need: 'prtop ist noch nicht veröffentlicht. Ich möchte das Werkzeug fertigbauen, obwohl ich es selbst derzeit nicht nutze. Dafür geht es zunächst um Entwicklungszeit und Wartung. Bei meinen anderen Softwareprojekten kommen Dokumentation und verlässlicher Betrieb hinzu. Eine Unterstützung bekommt einen konkreten Zweck, bevor ich dafür einen Betrag nenne.'
 rosenfold_title: 'Rosenfold. Noch in Entwicklung.'
 rosenfold_intro: 'Rosenfold soll Dateien und Text zwischen Geräten austauschen. Ich entwickle die Anwendung als unabhängiges Projekt. Der gezeigte Stand ist eine lokale Entwicklungsversion, kein fertiges Produkt.'
 rosenfold_image: projects/rosenfold/rosenfold-laptop-render.png
@@ -22,7 +31,7 @@ rosenfold_screen: projects/rosenfold/rosenfold-ready.png
 rosenfold_screen_caption: 'Rosenfold im Zustand Ready, vor der Auswahl einer Datei. Lokale Aufnahme vom 15. November 2026.'
 rosenfold_code_title: 'Fortschritt muss bei den echten Bytes bleiben.'
 rosenfold_code_intro: 'Viele kleine Fortschrittsereignisse sollen die Oberfläche nicht überlasten. Dieser Ausschnitt bündelt Meldungen zeitlich. Der abschließende Wert kann separat ausgegeben werden. Das ist ein Einblick in die Implementierung, kein Nachweis einer fertigen Übertragung.'
-rosenfold_code_source: 'packages/core/src/progress-throttle.ts, Ausschnitt aus db38debd, 15.11.2026'
+rosenfold_code_source: 'packages/core/src/progress-throttle.ts, Ausschnitt aus db38debd, 15.11.2026. Die Projektlizenz ist noch nicht festgelegt.'
 rosenfold_code: |
   report(value: T) {
     pendingValue = value
@@ -33,7 +42,7 @@ rosenfold_code: |
       timer = schedule(deliver, intervalMs - elapsed)
     }
   },
-rosenfold_need: 'Für einen konkreten Förderbedarf müssen ein öffentlich dokumentierter nächster Schritt, passende Infrastrukturkosten und die Zuständigkeit feststehen. Hier sind noch keine geprüften Beträge veröffentlicht.'
+rosenfold_need: 'Im Projektplan stehen noch reale Netzwerkprüfungen und Tests der Mobil-App auf Geräten. Dazu gehören auch Verbindungen über TURN-Server. Hier können Testinfrastruktur, Geräte und Entwicklungszeit helfen. Einen Kostenplan veröffentliche ich, sobald Bedarf und Verwaltung geklärt sind.'
 robot_title: 'Am Antrieb weiterarbeiten.'
 robot_project:
   - 8e9f1f56-1feb-46a8-9ae5-a79ec9444c81
@@ -52,7 +61,7 @@ robot_test_title: 'Auf der Bühne zählt der ganze Aufbau.'
 robot_test_text: 'Der AG-Bericht aus Kassel beschreibt unterbrochene Bluetooth-Verbindungen während der Auftritte. Auch nach der Arbeit an Code und Mechanik musste das Zusammenspiel unter Wettbewerbsbedingungen funktionieren.'
 robot_current_title: 'Nächster Entwurf: Rescue Line'
 robot_current_text: 'Der verknüpfte Projektbericht beschreibt die Arbeit am Antrieb eines Rescue-Line-Roboters. CAD, Fertigung und Tests dieses Entwurfs sind hier noch nicht fotografisch belegt. Die Bilder von 2024 werden deshalb ausdrücklich als Archiv gezeigt.'
-robot_need: 'Für AtheBlues geht es um Material, Komponenten und Fertigung für das Teamprojekt. Unterstützung wird ausschließlich mit einer dafür zuständigen Schule oder Teamorganisation geklärt und getrennt von persönlichen Projekten verwaltet.'
+robot_need: 'Wir arbeiten am Antriebsentwurf. Material, Komponenten und Fertigung sollen seine Umsetzung ermöglichen. Computer Vision ist als weiterer Ansatz geplant. Unterstützung klären wir ausschließlich mit einer dafür zuständigen Schule oder Teamorganisation und verwalten sie getrennt von persönlichen Projekten.'
 transparency_title: 'Erst der Zweck. Dann die Summe.'
 transparency_intro: 'Konkrete Budgets und bestätigte Beiträge erscheinen hier erst mit nachvollziehbarer Grundlage. Für diese Seite sind noch keine geprüften Beträge veröffentlicht. Fehlende Angaben bedeuten nicht null Euro.'
 contact_title: 'Etwas möglich machen.'

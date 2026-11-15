@@ -63,9 +63,11 @@ class SupportPageTest extends TestCase
     {
         $entry = Entry::query()->where('collection', 'pages')->where('slug', 'support')->first();
         $html = (new View)->template('support/index')->cascadeContent($entry)
-            ->with(['rosenfold_code' => '<script>privateMarker()</script>', 'robot_archive_title' => 'Redaktionell geänderter Titel'])
+            ->with(['rosenfold_code' => '<script>privateMarker()</script>', 'robot_archive_title' => 'Redaktionell geänderter Titel', 'financial_boundary' => 'Redaktionelle Finanzgrenze', 'contact_label' => 'Redaktioneller Kontakt'])
             ->render();
         $this->assertStringContainsString('Redaktionell geänderter Titel', $html);
+        $this->assertStringContainsString('Redaktionelle Finanzgrenze', $html);
+        $this->assertStringContainsString('Redaktioneller Kontakt', $html);
         $this->assertStringContainsString('&lt;script&gt;privateMarker()', $html);
         $this->assertStringNotContainsString('<script>privateMarker()', $html);
     }
