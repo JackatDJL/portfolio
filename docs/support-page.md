@@ -41,3 +41,9 @@ Ein eigener Zuordnungsdatensatz verbindet bestätigte Transaktions-IDs eindeutig
 ## Nachweise
 
 `SupportPageTest` prüft Veröffentlichungssperre und Entwurfsdarstellung ohne erfundene Geldziele. `bun run build` prüft die Module. Echte immersive Mediensequenzen, Browsermotion, Accessibility und Performance sind noch offen. Die Kontakt-PR ist eine Abhängigkeit. Kein Merge oder Deployment.
+
+## Lesbare Dokumentdetails
+
+Das historische Poster bleibt vollständig und mit Bildnachweis zugänglich. Eine optionale, per Tastatur bedienbare Detailauswahl vergrößert seine tatsächlichen Zustandsdiagramme und Motor-/Halterungsaufnahmen. Die Prozentrechtecke und Beschreibungen stehen im Blueprint. Beim Austausch des Originalbildes müssen sie geprüft oder entfernt werden. Die Auswahl hebt die zugehörige vorhandene Erklärung hervor und liest sie am Ausschnitt mit; kein Text wird ausgeblendet. Der volle Bildlink bleibt bestehen.
+
+Die Detailansicht lädt erst nach einer bewussten Auswahl eine größere Bildvariante. Vergrößerung ist auf die vorhandene Quellenauflösung begrenzt. Sie erfindet oder schärft keine fehlenden Bildinformationen. GSAP bewegt nur den Bildausschnitt; reduzierte Bewegung setzt ihn direkt. Ohne JavaScript bleiben Gesamtbild, alle Erklärungen und Quelle erhalten. Der Übergang zum aktuellen Rescue-Line-Entwurf bündelt Status und Unterstützungszweck unmittelbar nebeneinander.

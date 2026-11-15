@@ -81,6 +81,37 @@ tabs:
               - editorial_images
               validate:
               - image
+          - handle: robot_document_help
+            field:
+              type: text
+              display: Hinweis zur Detailansicht
+          - handle: robot_document_overview
+            field:
+              type: text
+              display: Beschriftung Gesamtansicht
+          - handle: robot_document_details
+            field:
+              type: grid
+              display: Posterdetails
+              instructions: 'Ausschnitte in Prozent des Originalbildes. Beim Austausch des Posters prüfen oder entfernen.'
+              fields:
+                - handle: label
+                  field: { type: text, display: Beschriftung, validate: [required] }
+                - handle: description
+                  field: { type: textarea, display: Beschreibung, validate: [required] }
+                - handle: left
+                  field: { type: integer, display: Links, validate: ['numeric', 'min:0', 'max:99'] }
+                - handle: top
+                  field: { type: integer, display: Oben, validate: ['numeric', 'min:0', 'max:99'] }
+                - handle: width
+                  field: { type: integer, display: Breite, validate: ['numeric', 'min:1', 'max:100'] }
+                - handle: height
+                  field: { type: integer, display: Höhe, validate: ['numeric', 'min:1', 'max:100'] }
+                - handle: note
+                  field:
+                    type: select
+                    display: Zugehörige Erklärung
+                    options: { control: Steuerung, drive: Antrieb }
           - handle: robot_document
             field:
               type: assets
