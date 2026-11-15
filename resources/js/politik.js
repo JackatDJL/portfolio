@@ -19,10 +19,15 @@ for (const root of document.querySelectorAll('[data-politics-page]')) {
         // The rail marks chronology; branches sit in chapter gutters and frame the evidence.
         // Their geometry follows real media bounds, including the static reduced-motion state.
         let d = `M ${rail} 0`;
+        let previousTop = -Infinity;
         for (const chapter of chapters) {
             const top = chapter.offsetTop + 14;
             const bend = width < 768 ? 8 : 14;
-            d += ` V ${Math.max(0, top - 12)} Q ${rail} ${top} ${rail + bend} ${top} Q ${rail} ${top} ${rail} ${top + 12}`;
+            // The paired reflections share one junction, keeping the rail monotonic.
+            if (top > previousTop + 24) {
+                d += ` V ${Math.max(0, top - 12)} Q ${rail} ${top} ${rail + bend} ${top} Q ${rail} ${top} ${rail} ${top + 12}`;
+                previousTop = top;
+            }
             const image = chapter.querySelector('figure img');
             if (!image) continue;
             let branch = branches.get(chapter);
@@ -36,7 +41,7 @@ for (const root of document.querySelectorAll('[data-politics-page]')) {
             const figureBounds = image.closest('figure').getBoundingClientRect();
             const bodyBounds = chapter.querySelector('.politics-chapter__body').getBoundingClientRect();
             // Pass below both columns and the attribution, never through readable content.
-            const bottom = Math.max(figureBounds.bottom, bodyBounds.bottom) - bounds.top + 24;
+            const bottom = Math.max(figureBounds.bottom, bodyBounds.bottom) - bounds.top + 12;
             const edge = imageBounds.left - bounds.left - 12;
             const end = imageBounds.top - bounds.top + imageBounds.height * .72;
             const corner = Math.min(24, Math.max(4, (edge - rail) / 2));

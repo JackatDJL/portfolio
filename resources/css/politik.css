@@ -47,3 +47,14 @@ body:has(.politics-page) .site-header__wordmark { background-color: var(--site-b
 .politics-working-grid img { aspect-ratio: 4 / 3; object-fit: contain; }
 .politics-chapter--tech { padding-bottom: 2rem; }
 .politics-chapter--interests { padding-top: 2rem; }
+
+.politics-chapter--forum { padding-bottom: 2rem; }
+.politics-chapter--volt { padding-top: 2.5rem; padding-bottom: 3rem; }
+.politics-reflections { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 3rem; margin-left: 16rem; padding-block: 2rem 3rem; }
+.politics-reflections .politics-chapter { display: block; padding: 0; scroll-margin-top: 5rem; }
+.politics-reflections .politics-date { margin-bottom: 1rem; }
+.politics-reflections h2 { font-size: clamp(1.8rem, 2.5vw, 2.5rem); line-height: 1.12; }
+.politics-reflections .politics-chapter__intro { font-size: 1.05rem; line-height: 1.65; }
+.politics-chapter--personal { padding-top: 3rem; }
+@media (max-width: 63.99rem) { .politics-reflections { margin-left: 9.5rem; gap: 2rem; } }
+@media (max-width: 47.99rem) { .politics-reflections { grid-template-columns: 1fr; margin-left: 1.5rem; gap: 2rem; padding-block: 1rem 2rem; } .politics-reflections h2 { max-width: 25ch; font-size: 1.9rem; } }
