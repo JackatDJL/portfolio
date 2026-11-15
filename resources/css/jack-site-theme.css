@@ -816,7 +816,7 @@
     .pdf-viewer__pages[data-pdf-crop="bottom"] .pdf-viewer__page { max-height: none; }
     .pdf-viewer__page canvas { display: block; background: #fff; }
     .pdf-viewer__action { position: absolute; inset: 50% auto auto 50%; z-index: 2; width: max-content; max-width: calc(100% - 2rem); transform: translate(-50%, -40%); opacity: 0; pointer-events: none; transition: opacity 220ms var(--ease-standard), transform 220ms var(--ease-standard); }
-    .pdf-viewer:hover .pdf-viewer__page, .pdf-viewer:focus-within .pdf-viewer__page, .pdf-viewer__preview-stage[data-action-visible="true"] .pdf-viewer__page { filter: blur(2px) brightness(.78); }
+    .pdf-viewer:hover .pdf-viewer__page, .pdf-viewer:focus-within .pdf-viewer__page, .pdf-viewer__preview-stage[data-action-visible="true"] .pdf-viewer__page { filter: blur(2px); }
     .pdf-viewer:hover .pdf-viewer__action, .pdf-viewer:focus-within .pdf-viewer__action { transform: translate(-50%, -50%); opacity: 1; pointer-events: auto; }
     .pdf-viewer__preview-stage[data-action-visible="true"] .pdf-viewer__action { transform: translate(-50%, -50%); opacity: 1; pointer-events: auto; }
     .pdf-viewer__action:focus-visible { outline: 3px solid var(--site-focus); outline-offset: 4px; }

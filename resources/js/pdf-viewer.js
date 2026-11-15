@@ -20,7 +20,6 @@ const initPdfPreview = async (viewer) => {
 
     const setError = () => {
         loading?.setAttribute('hidden', '');
-        pagesElement.hidden = true;
         error?.removeAttribute('hidden');
     };
 

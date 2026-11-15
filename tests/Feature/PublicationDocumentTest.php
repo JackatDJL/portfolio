@@ -30,7 +30,7 @@ class PublicationDocumentTest extends TestCase
             $response = $this->get('/publikationen/'.$slug);
             $response->assertOk();
             $response->assertSee('data-pdf-url="'.$document.'"', false);
-            $response->assertSee('href="https://doi.org/'.$publication['doi'].'"', false);
+            $response->assertSee('<a class="btn btn-primary pdf-viewer__action" href="https://doi.org/'.$publication['doi'].'"', false);
             $response->assertSee('class="btn btn-primary pdf-viewer__action"', false);
             $response->assertSee('aria-label="Veröffentlichung anzeigen: '.$publication['title'].'"', false);
             $response->assertSee('>Veröffentlichung anzeigen</a>', false);
