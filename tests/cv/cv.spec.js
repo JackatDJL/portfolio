@@ -32,6 +32,63 @@ test('chronology parsing preserves year, month and exact day precision', () => {
     expect(parseChronology('2024-13')).toBeNull();
     expect(parseChronology('2024-04-00')).toBeNull();
 });
+
+test('portrait disclosure and credit stay visible inside the rounded frame at narrow widths', async ({ page }) => {
+    for (const width of [320, 390]) {
+        await page.setViewportSize({ width, height: 844 });
+        await page.goto('/cv');
+        const overlays = page.locator('.cv-portrait .media-overlays');
+        await expect(overlays).toHaveCount(1);
+        await overlays.evaluate(root => {
+            root.innerHTML = '<span class="media-overlay__ai media-overlay__ai--black" data-visibility-probe="ai" style="pointer-events:auto"><img class="media-overlay__ai-icon" src="/assets/ai-labels/fully-generated/black.svg" alt=""><span>AI-generated content</span></span><span class="media-overlay__credit" data-visibility-probe="credit" style="pointer-events:auto">Photographer: Stade Archives · CC BY-SA 4.0</span>';
+        });
+        await expect(overlays.locator('[data-visibility-probe="ai"]')).toBeVisible();
+        await expect(overlays.locator('[data-visibility-probe="credit"]')).toBeVisible();
+
+        const visibleCorners = await page.evaluate(() => {
+            const probe = (selector, side) => {
+                const element = document.querySelector(selector);
+                const box = element.getBoundingClientRect();
+                const x = side === 'left' ? box.left + 6 : box.right - 6;
+                const target = document.elementFromPoint(x, box.bottom - 6);
+                return target?.closest('[data-visibility-probe]')?.getAttribute('data-visibility-probe') ?? null;
+            };
+            return {
+                ai: probe('[data-visibility-probe="ai"]', 'left'),
+                credit: probe('[data-visibility-probe="credit"]', 'right'),
+            };
+        });
+
+        expect(visibleCorners).toEqual({ ai: 'ai', credit: 'credit' });
+    }
+});
+
+test('portrait credit-only attribution uses the full footer width at narrow sizes', async ({ page }) => {
+    for (const width of [320, 390]) {
+        await page.setViewportSize({ width, height: 844 });
+        await page.goto('/cv');
+        const overlays = page.locator('.cv-portrait .media-overlays');
+        await expect(overlays).toHaveCount(1);
+        await overlays.evaluate(root => {
+            root.innerHTML = '<span class="media-overlay__credit" data-visibility-probe="credit" style="pointer-events:auto">Photographer: Stade Archives · CC BY-SA 4.0</span>';
+        });
+
+        const placement = await page.evaluate(() => {
+            const row = document.querySelector('.cv-portrait .media-overlays').getBoundingClientRect();
+            const credit = document.querySelector('[data-visibility-probe="credit"]');
+            const box = credit.getBoundingClientRect();
+            const target = document.elementFromPoint(box.right - 6, box.bottom - 6);
+            return {
+                widthRatio: box.width / row.width,
+                visibleBottomRight: target?.closest('[data-visibility-probe]') === credit,
+            };
+        });
+
+        expect(placement.widthRatio).toBeGreaterThan(.8);
+        expect(placement.visibleBottomRight).toBe(true);
+    }
+});
+
 for (const width of [1440, 390]) for (const theme of ['light', 'dark']) {
     test(`${width}px ${theme}: CV pages render without overflow`, async ({ page }, testInfo) => {
         await page.setViewportSize({ width, height: width === 390 ? 844 : 1000 });

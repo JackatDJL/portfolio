@@ -14,7 +14,7 @@
     .media-overlay__credit { grid-column: 2; justify-self: end; color: #fff; background: rgb(0 0 0 / .76); text-align: right; pointer-events: auto; }
     .media-overlay__credit a { color: inherit; text-decoration: underline; text-underline-offset: .15em; }
     .media-overlays:empty { display: none; }
-    .home-publication__media { display: block; height: 12rem; flex: none; margin: auto 0 1.25rem; overflow: hidden; }
+    .home-publication__media { z-index: 3; display: block; height: 12rem; flex: none; margin: auto 0 1.25rem; overflow: hidden; pointer-events: none; }
     .home-publication__media .home-publication__preview { position: static; display: block; width: 100%; height: 100%; object-fit: contain; opacity: .55; mix-blend-mode: multiply; }
     .home-publication__media .media-overlays { right: .4rem; bottom: .4rem; left: .4rem; }
     .detail-hero__attribution { position: relative; z-index: 2; width: fit-content; max-width: 100%; margin-top: 1.25rem; padding: .25rem .5rem; background: var(--site-background); }
@@ -31,14 +31,22 @@
     .project-gallery { margin-top: 2rem; }
     .education-hero__figure .media-frame, .detail-hero__cover .media-frame { height: 100%; }
     .cv-portrait .media-frame { height: 100%; overflow: hidden; container-type: inline-size; }
-    @container (max-width: 10rem) {
-        .cv-portrait .media-overlays { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); right: .25rem; bottom: .25rem; left: .25rem; gap: .15rem; }
-        .cv-portrait .media-overlay__ai { grid-column: 1; grid-row: 1; display: flex; width: 100%; flex-direction: column; align-items: flex-start; justify-self: start; }
-        .cv-portrait .media-overlay__ai > span { display: block; width: 100%; max-width: 100%; }
-        .cv-portrait .media-overlay__credit { grid-column: 2; grid-row: 1; width: 100%; justify-self: end; }
-        .cv-portrait .media-overlay__ai,
-        .cv-portrait .media-overlay__credit { max-width: 100%; gap: .18rem; padding: .2rem .25rem; font-size: .55rem; }
-        .cv-portrait .media-overlays img.media-overlay__ai-icon { max-width: 2.75rem; height: .92rem; }
+    .cv-portrait:has(.media-overlay__ai, .media-overlay__credit) { aspect-ratio: auto; border-radius: .75rem; overflow: hidden; }
+    .cv-portrait:has(.media-overlay__ai, .media-overlay__credit) .cv-portrait__figure { height: auto; border-radius: inherit; }
+    .cv-portrait:has(.media-overlay__ai, .media-overlay__credit) .media-frame { height: auto; overflow: visible; container-type: normal; }
+    .cv-portrait:has(.media-overlay__ai, .media-overlay__credit) .cv-portrait__image { height: auto; aspect-ratio: 1; border-radius: .6rem .6rem 0 0; }
+    .cv-portrait:has(.media-overlay__ai, .media-overlay__credit) .media-overlays { position: relative; z-index: auto; inset: auto; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: .1rem; padding: .25rem; background: var(--site-surface-strong); pointer-events: none; }
+    .cv-portrait:has(.media-overlay__ai, .media-overlay__credit) .media-overlay__ai { grid-column: 1; display: flex; width: 100%; flex-direction: column; align-items: flex-start; justify-self: start; }
+    .cv-portrait:has(.media-overlay__ai, .media-overlay__credit) .media-overlay__ai > span { display: block; width: 100%; max-width: 100%; }
+    .cv-portrait:has(.media-overlay__ai, .media-overlay__credit) .media-overlay__credit { grid-column: 2; width: 100%; justify-self: end; }
+    .cv-portrait:not(:has(.media-overlay__ai)):has(.media-overlay__credit) .media-overlay__credit { grid-column: 1 / -1; }
+    .cv-portrait:has(.media-overlay__ai, .media-overlay__credit) .media-overlay__ai,
+    .cv-portrait:has(.media-overlay__ai, .media-overlay__credit) .media-overlay__credit { max-width: 100%; gap: .12rem; padding: .15rem .16rem; font-size: .55rem; line-height: 1.15; }
+    .cv-portrait:has(.media-overlay__ai, .media-overlay__credit) img.media-overlay__ai-icon { max-width: 100%; height: 1rem; }
+    @media (max-width: 22.99rem) {
+        .cv-portrait:has(.media-overlay__ai, .media-overlay__credit) .media-overlay__ai,
+        .cv-portrait:has(.media-overlay__ai, .media-overlay__credit) .media-overlay__credit { font-size: .5rem; }
+        .cv-portrait:has(.media-overlay__ai, .media-overlay__credit) img.media-overlay__ai-icon { height: .85rem; }
     }
     @media (max-width: 63.99rem) {
         .project-detail .detail-hero__cover { width: calc(100% + 2 * var(--spacing-gutter)); }
