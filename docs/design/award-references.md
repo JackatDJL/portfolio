@@ -4,9 +4,19 @@ Stand: 14. November 2026. Recherche, keine Umsetzung. Bezug: [Konzepte A/B/C](en
 
 ## Methode und Evidenzgrenzen
 
-Sechs Primärquellen, per Websuche und Textabruf geprüft. Keine Browserautomation, keine visuelle Inspektion der Websites, Bilder oder eingebetteten Filme. Aussagen über Komposition und Bewegung unten stammen aus den Texten der Urheber oder der Award-Einträge. Die vorgeschlagenen Regeln sind ausdrücklich eigene Designableitungen.
+Sechs Primärquellen wurden zunächst per Websuche und Textabruf geprüft. Die Aussagen zu historischen Auszeichnungen und beschriebenen Bewegungsabläufen unten stammen aus den Texten der Urheber oder der Award-Einträge. Eine ergänzende visuelle Sichtprüfung vom 15. November ist separat dokumentiert. Die vorgeschlagenen Regeln sind eigene Designableitungen.
 
 Award-Eintrag, Urheberbericht und heutige Website können unterschiedliche Versionen beschreiben. Auszeichnungen beweisen weder aktuelle Barrierefreiheit noch Performance, Conversion oder die Wirkung einzelner Animationen. Es wurde kein identischer Fall einer persönlichen politischen Biografie mit Schulrobotik-Sponsoring gefunden. Die Übertragung bleibt eine redaktionelle Entscheidung.
+
+### Ergänzende Sichtprüfung, 15. November 2026
+
+Im gemeinsamen Browser bei 1440 × 900 wurden folgende aktuelle Einstiege angesehen. Desktopframes wurden vom Host teilweise heruntergerechnet. Das ist eine begrenzte Kompositionsprüfung, keine vollständige Interaktions-, Film-, Accessibility- oder Performanceprüfung der Referenzen.
+
+- Die [Air-Company-Fallstudie von MOUTHWASH](https://mouthwash.studio/project/air-company/) eröffnet mit einer großen linksbündigen Aussage, deutlichem Leerraum und einem feinen horizontalen Trenner über dem Register für Kunde, Jahr und Leistungen. Erst danach beginnt die Medienfläche. Für Support folgt daraus eine klare Hierarchie zwischen verständlicher Aufgabe, überprüfbarem Projektstand und Beleg. Die konkrete Typografie und Seitenfolge werden nicht kopiert.
+- Der [Work-&-Co-Prozessbericht](https://work.co/news/obama-foundation-built-in/) setzt die Rubrik in eine schmale linke Spalte und Titel, Datum und Projektabbildung in die breitere rechte Spalte. Die Asymmetrie ordnet unterschiedliche Informationstypen. Für Leistungen ist dies ein Bezug für technische Randnotizen neben dem eigentlichen Fall, keine Vorlage für weitere identische Karten.
+- Die heutige [Obama-Foundation-Startseite](https://www.obama.org/) zeigt eine großflächige Aufnahme des Centers mit darüberliegender geteilter Typografie. Die aktuelle Seite thematisiert bereits den geöffneten Campus. Sie ist daher ausdrücklich nicht als unveränderter Webby-Stand von 2025 dokumentiert. Für Politik bleibt die eigene Entscheidung bestehen, die Einführung lesbar neben dem Bild und ohne Bildtext-Überlagerung zu setzen.
+
+Keine fremden Bilder, Videos oder Designelemente wurden in das Portfolio übernommen. Die historischen Awwwards-Interaktionen und eingebetteten Filme sind weiterhin nicht visuell abgenommen.
 
 ## Die sechs Quellen
 
