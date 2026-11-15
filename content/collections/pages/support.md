@@ -66,6 +66,13 @@ robot_document_details:
     width: 11
     height: 9
     note: drive
+  - label: Bühne
+    description: 'OnStage 2024: Bluetooth-Verbindungen unter Wettbewerbsbedingungen.'
+    left: 0
+    top: 0
+    width: 100
+    height: 100
+    note: test
 robot_archive_title: 'Was ein Umbau wirklich bedeutet.'
 robot_archive_intro: 'Das technische Poster von AtheBlues dokumentiert die OnStage-Arbeit von 2024. Die Bilder zeigen echte Elektronik und mehrere Bauzustände des Busses. Der heutige Rescue-Line-Entwurf ist ein anderes Vorhaben.'
 robot_document: projects/atheblues/atheblues-technical-poster-2024.png

@@ -81,3 +81,13 @@ body:has(.support-story) .site-header__wordmark { background-color: var(--site-b
 .support-present { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--site-border); }
 .support-present .support-current, .support-present .support-next { margin: 0; }
 @media (max-width: 47.99rem) { .support-present { grid-template-columns: 1fr; gap: 2rem; } }
+.support-document-controls { scroll-margin-top: 6rem; }
+.support-workshop-notes > [hidden] { display: none; }
+@media (max-width: 47.99rem) {
+    .support-workshop-record { display: flex; flex-direction: column; gap: 1.5rem; align-items: stretch; }
+    .support-workshop-record > div:first-child { display: contents; }
+    .support-workshop-record .support-document-controls { order: 0; margin: 0; }
+    .support-workshop-record .support-workshop-notes { order: 1; }
+    .support-workshop-record .media-figure { order: 2; }
+    .support-workshop-record > div:first-child > a { order: 3; }
+}

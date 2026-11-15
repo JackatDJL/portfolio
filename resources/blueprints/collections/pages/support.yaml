@@ -111,7 +111,7 @@ tabs:
                   field:
                     type: select
                     display: Zugehörige Erklärung
-                    options: { control: Steuerung, drive: Antrieb }
+                    options: { control: Steuerung, drive: Antrieb, test: Bühne }
           - handle: robot_document
             field:
               type: assets

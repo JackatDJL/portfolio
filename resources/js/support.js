@@ -43,6 +43,7 @@ for (const section of document.querySelectorAll('[data-support-section]')) {
 }
 
 // Inspect real source material. Overview and explanations remain complete without JS.
+let documentIndex = 0;
 for (const record of window.document.querySelectorAll('[data-support-document]')) {
     const image = record.querySelector('figure img');
     const controls = record.querySelector('[data-document-controls]');
@@ -54,6 +55,9 @@ for (const record of window.document.querySelectorAll('[data-support-document]')
     viewport.style.aspectRatio = `${image.getAttribute('width')} / ${image.getAttribute('height')}`;
     image.before(viewport);
     viewport.append(image);
+    const notes = [...record.querySelectorAll('[data-document-note]')];
+    const id = ++documentIndex;
+    notes.forEach((note, index) => { note.id = `support-document-${id}-note-${index}`; });
     const originalAlt = image.alt;
     let selected = choices[0];
     controls.hidden = false;
@@ -76,17 +80,22 @@ for (const record of window.document.querySelectorAll('[data-support-document]')
             gsap.killTweensOf(image);
             gsap.to(image, { x, y, scale, duration: animate && !context.conditions.reduce ? .55 : 0, ease: 'power2.inOut', overwrite: true });
         };
-        const select = event => {
-            selected = event.currentTarget;
+        const present = () => {
             choices.forEach(choice => choice.setAttribute('aria-pressed', String(choice === selected)));
             const note = [...record.querySelectorAll('[data-document-note]')].find(note => note.dataset.documentNote === selected.dataset.note);
-            record.querySelectorAll('[data-document-note]').forEach(item => item.classList.toggle('is-selected', item === note));
-            status.textContent = [selected.dataset.description, note?.querySelector('p')?.textContent].filter(Boolean).join(' ');
+            notes.forEach(item => { item.hidden = item !== note; item.classList.toggle('is-selected', item === note); });
+            choices.forEach(choice => { const target = notes.find(item => item.dataset.documentNote === choice.dataset.note); if (target) choice.setAttribute('aria-controls', target.id); });
+            status.textContent = selected.dataset.description;
             image.alt = selected === choices[0] ? originalAlt : `${selected.dataset.description} ${originalAlt}`;
+        };
+        const select = event => {
+            selected = event.currentTarget;
+            present();
             // Fetch one full-resolution derivative only after deliberate inspection.
             if (selected !== choices[0]) image.sizes = '1920px';
             draw(true);
         };
+        present();
         choices.forEach(choice => choice.addEventListener('click', select));
         const resize = new ResizeObserver(() => draw());
         resize.observe(viewport);
