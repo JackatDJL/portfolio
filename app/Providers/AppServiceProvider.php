@@ -64,6 +64,7 @@ class AppServiceProvider extends ServiceProvider
             URL::forceScheme('https');
         }
 
+        \App\Scopes\EditorialImages::register();
         ProtectedText::register();
         ApplicationPrivateGrid::register();
         ApplicationPrivateGroup::register();

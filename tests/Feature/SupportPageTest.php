@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use Statamic\Facades\Entry;
+use Statamic\View\View;
 use Tests\TestCase;
 
 class SupportPageTest extends TestCase
@@ -10,6 +11,24 @@ class SupportPageTest extends TestCase
     public function test_support_stays_unpublished_until_real_media_and_content_are_ready(): void
     {
         $this->get('/support')->assertNotFound();
+    }
+
+    public function test_unpublished_support_is_excluded_from_the_sitemap(): void
+    {
+        $this->get('/sitemap.xml')->assertOk()->assertDontSee('/support</loc>', false);
+    }
+
+    public function test_non_public_project_data_is_not_rendered_by_the_template(): void
+    {
+        $entry = Entry::query()->where('collection', 'pages')->where('slug', 'support')->first();
+        foreach ([['published' => false, 'project_status' => 'active'], ['published' => true, 'project_status' => 'confidential']] as $state) {
+            $hidden = [...$state, 'title' => 'Private project marker', 'summary' => 'Private summary marker', 'url' => '/private-project'];
+            $html = (new View)->template('support/index')->cascadeContent($entry)
+                ->with(['software_project' => [$hidden], 'robot_project' => [$hidden]])->render();
+            $this->assertStringNotContainsString('Private project marker', $html);
+            $this->assertStringNotContainsString('Private summary marker', $html);
+            $this->assertStringNotContainsString('/private-project', $html);
+        }
     }
 
     public function test_editorial_draft_separates_projects_and_does_not_invent_financial_totals(): void

@@ -37,6 +37,8 @@ tabs:
               display: Softwarebild
               container: assets
               max_files: 1
+              query_scopes: [editorial_images]
+              validate: [image]
           - handle: software_caption
             field:
               type: text
@@ -59,6 +61,8 @@ tabs:
               display: Rosenfoldbild
               container: assets
               max_files: 1
+              query_scopes: [editorial_images]
+              validate: [image]
           - handle: rosenfold_caption
             field:
               type: text
@@ -83,6 +87,8 @@ tabs:
               display: Robotikbild
               container: assets
               max_files: 1
+              query_scopes: [editorial_images]
+              validate: [image]
           - handle: robot_caption
             field:
               type: text
