@@ -46,7 +46,9 @@ Ein eigener Zuordnungsdatensatz verbindet bestätigte Transaktions-IDs eindeutig
 
 ## Nachweise
 
-`SupportPageTest` prüft Veröffentlichungssperre und Entwurfsdarstellung ohne erfundene Geldziele. `bun run build` prüft die Module. Echte immersive Mediensequenzen, Browsermotion, Accessibility und Performance sind noch offen. Die Kontakt-PR ist eine Abhängigkeit. Kein Merge oder Deployment.
+`SupportPageTest` prüft Veröffentlichungssperre und Entwurfsdarstellung ohne erfundene Geldziele. `bun run build` prüft die Module. Lokale Desktop-/Mobilaufnahmen, Scrollfilm, Tastatur-, Reflow-, Reduced-Motion- und automatisierte Accessibility-Prüfungen sowie Lighthouse-Messungen liegen außerhalb von Git. Sie ersetzen keine vollständige manuelle oder gehostete Abnahme. Die Kontakt-PR ist eine Abhängigkeit. Kein Merge oder Deployment.
+
+Die kurze Erklärung der Wettbewerbsaufgabe folgt der [offiziellen RoboCupJunior-Beschreibung von Rescue Line](https://junior.robocup.org/rcj-rescue-line/), geprüft am 15.11.2026. Sie beschreibt das Ziel der Disziplin, keine bereits nachgewiesene Fahrfunktion dieses Entwurfs.
 
 ## Lesbare Dokumentdetails
 

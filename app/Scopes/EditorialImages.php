@@ -8,6 +8,6 @@ final class EditorialImages extends Scope
 {
     public function apply($query, $values): void
     {
-        $query->where('type', 'image');
+        $query->where('is_image', true);
     }
 }

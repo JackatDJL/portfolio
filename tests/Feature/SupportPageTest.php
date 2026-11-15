@@ -8,6 +8,16 @@ use Tests\TestCase;
 
 class SupportPageTest extends TestCase
 {
+    public function test_editorial_image_scope_keeps_real_images_without_custom_type_metadata(): void
+    {
+        $query = \Statamic\Facades\Asset::query()->where('container', 'assets');
+        (new \App\Scopes\EditorialImages)->apply($query, []);
+        $assets = $query->get();
+        $this->assertTrue($assets->contains(fn ($asset) => $asset->path() === 'projects/rosenfold/rosenfold-ready.png'));
+        $this->assertTrue($assets->contains(fn ($asset) => $asset->path() === 'projects/atheblues/atheblues-rescue-line-cad-20261115.png'));
+        $this->assertTrue($assets->every(fn ($asset) => $asset->isImage()));
+    }
+
     public function test_support_stays_unpublished_until_real_media_and_content_are_ready(): void
     {
         $this->get('/support')->assertNotFound();
@@ -77,6 +87,7 @@ class SupportPageTest extends TestCase
         $entry = Entry::query()->where('collection', 'pages')->where('slug', 'support')->first();
         $html = (new View)->template('support/index')->cascadeContent($entry)->render();
         $this->assertStringContainsString('Rescue Line. Im Gesamtaufbau.', $html);
+        $this->assertStringContainsString('selbstständig einer schwarzen Linie folgen', $html);
         $this->assertStringContainsString('Sortierbaugruppe', $html);
         $this->assertStringContainsString('Fertigung und Fahrtests sind damit noch nicht nachgewiesen', $html);
         $this->assertStringContainsString('Kein fotografierter Arbeitsplatz', $html);

@@ -84,7 +84,7 @@ robot_drive_text: 'Die ersten Gleichstrommotoren waren für den schweren Bus zu 
 robot_test_title: 'Auf der Bühne zählt der ganze Aufbau.'
 robot_test_text: 'Der AG-Bericht aus Kassel beschreibt unterbrochene Bluetooth-Verbindungen während der Auftritte. Auch nach der Arbeit an Code und Mechanik musste das Zusammenspiel unter Wettbewerbsbedingungen funktionieren.'
 robot_current_title: 'Rescue Line. Im Gesamtaufbau.'
-robot_current_text: 'Grundplatte, Motorhalter, Räder und Elektronikdeck sind als Baugruppe zusammengeführt. Dieser CAD-Stand zeigt den Entwurf; Fertigung und Fahrtests sind damit noch nicht nachgewiesen.'
+robot_current_text: 'Bei Rescue Line soll ein Roboter selbstständig einer schwarzen Linie folgen und Hindernisse bewältigen. Dafür entwickeln wir den Antrieb. Grundplatte, Motorhalter, Räder und Elektronikdeck sind als Baugruppe zusammengeführt. Dieser CAD-Stand zeigt den Entwurf; Fertigung und Fahrtests sind damit noch nicht nachgewiesen.'
 robot_need: 'Wir arbeiten am Antriebsentwurf. Material, Komponenten und Fertigung sollen seine Umsetzung ermöglichen. Computer Vision ist als weiterer Ansatz geplant. Unterstützung klären wir ausschließlich mit einer dafür zuständigen Schule oder Teamorganisation und verwalten sie getrennt von persönlichen Projekten.'
 transparency_title: 'Erst der Zweck. Dann die Summe.'
 transparency_intro: 'Konkrete Budgets und bestätigte Beiträge erscheinen hier erst mit nachvollziehbarer Grundlage. Für diese Seite sind noch keine geprüften Beträge veröffentlicht. Fehlende Angaben bedeuten nicht null Euro.'
