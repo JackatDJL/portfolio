@@ -22,7 +22,8 @@
 .politics-school-records h3 { font-size: 1.3rem; margin-bottom: .4rem; }
 .politics-school-records p { line-height: 1.6; max-width: 50ch; }
 .politics-forum-photo { margin-top: 3rem; }
-.politics-forum-photo img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; }
+.politics-forum-photo img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; object-position: center 64%; }
+.politics-chapter--forum { padding-block: clamp(2.5rem, 5vw, 5rem); }
 .politics-working-grid { display: grid; grid-template-columns: 1.1fr 1fr; align-items: center; gap: clamp(2rem, 4vw, 4rem); }
 .politics-working-grid h2 { font-size: clamp(2rem, 3vw, 3.2rem); }
 .politics-working-grid img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; object-position: 48% center; }

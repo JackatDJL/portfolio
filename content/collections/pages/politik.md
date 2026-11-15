@@ -45,7 +45,7 @@ tech_experience:
 chapter_personal_title: 'Mehr als politisches Engagement.'
 personal_intro: 'Programmierung, Robotik und Musik gehören ebenso zu meinem Alltag. Politische Bildung und technische Arbeit treffen sich oft in meinen Projekten.'
 personal_image: photos/jack-20260614.jpg
-personal_caption: 'Jack Ruder in Stade.'
+personal_caption: 'Jack Ruder vor einer Ziegelwand.'
 interests:
   - acce6194-8e2c-4982-b98b-d04a3a1e2437
 ---
