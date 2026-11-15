@@ -211,7 +211,11 @@
             frame.sandbox = '';
             frame.srcdoc = data.html;
             panel.querySelector('[data-email-html-preview]').replaceChildren(frame);
-            if (status) status.textContent = data.attachments.length ? 'Anlagen: ' + data.attachments.join(', ') : 'Keine ausgewählte private PDF-Anlage wird in der Mail erwähnt.';
+            if (status) {
+                const pdfNotice = data.pdf_notice ? 'PDF-Überleitung aktiv; die exportierte PDF manuell anhängen.' : 'PDF-Überleitung aus.';
+                const attachments = data.attachments.length ? 'Anlagen: ' + data.attachments.join(', ') : 'Keine ausgewählte private PDF-Anlage wird in der Mail erwähnt.';
+                status.textContent = pdfNotice + ' ' + attachments;
+            }
         } catch (error) {
             if (status) status.textContent = error.message;
         }
@@ -303,9 +307,16 @@
     new MutationObserver(refreshProfileSummary).observe(document.documentElement, { attributes: true, attributeFilter: ['value'], childList: true, subtree: true });
 
     document.addEventListener('click', async event => {
-        const button = event.target.closest('[data-reset-application-date], [data-application-cv], [data-application-preview], [data-application-export], [data-application-grant-create], [data-application-grant-revoke], [data-application-grant-revoke-all], [data-application-copy-link], [data-application-cv-grant-create], [data-application-cv-grant-copy], [data-application-cv-grant-revoke], [data-email-refresh], [data-email-copy-text], [data-email-copy-html]');
+        const button = event.target.closest('[data-reset-application-date], [data-application-cv], [data-application-preview], [data-application-export], [data-application-grant-create], [data-application-grant-revoke], [data-application-grant-revoke-all], [data-application-copy-link], [data-application-cv-grant-create], [data-application-cv-grant-copy], [data-application-cv-grant-revoke], [data-email-pdf], [data-email-refresh], [data-email-copy-text], [data-email-copy-html]');
         if (!button) return;
         const base = appBase();
+        if (button.matches('[data-email-pdf]')) {
+            const status = button.closest('[data-application-email]')?.querySelector('[data-email-status]');
+            if (!base) { if (status) status.textContent = 'Bitte zuerst speichern.'; return; }
+            window.open(base + '/preview.pdf', '_blank', 'noopener,noreferrer');
+            if (status) status.textContent = 'Die PDF wird aus den gespeicherten Daten frisch geprüft. Änderungen zuerst speichern.';
+            return;
+        }
         if (button.matches('[data-email-refresh]')) { await loadEmail(base); return; }
         if (button.matches('[data-email-copy-text], [data-email-copy-html]')) {
             const panel = button.closest('[data-application-email]');

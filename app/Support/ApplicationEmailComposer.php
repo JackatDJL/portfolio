@@ -24,10 +24,12 @@ final class ApplicationEmailComposer
             'teaser' => $this->joinParagraphs(trim((string) ($email['intro'] ?? '')), $this->firstParagraph(ApplicationData::coverLetter($entry))),
             default => trim((string) ($email['intro'] ?? '')) ?: $this->shortBody($recipient),
         };
+        $mentionPdf = $mode !== 'manual' && in_array($email['mention_application_pdf'] ?? false, [true, 1, '1', 'true', 'on', 'yes'], true);
+        $pdfTransition = $mentionPdf ? 'Die vollständigen Bewerbungsunterlagen finden Sie in der beigefügten PDF.' : '';
         $attachments = $this->selectedAttachments($entry);
         $attachmentDescription = $attachments === [] ? '' : 'Als Anlage erhalten Sie: '.implode(', ', array_column($attachments, 'label')).'.';
 
-        $parts = array_values(array_filter([$salutation, $body, $attachmentDescription, $closing, $sender], fn ($part) => trim($part) !== ''));
+        $parts = array_values(array_filter([$salutation, $body, $pdfTransition, $attachmentDescription, $closing, $sender], fn ($part) => trim($part) !== ''));
         $text = implode("\n\n", $parts);
         $html = '<!doctype html><html lang="de"><body style="margin:0;padding:24px;color:#20242a;background:#fff;font:16px/1.6 Arial,Helvetica,sans-serif"><div style="max-width:640px;margin:0 auto">'
             .implode('', array_map(fn ($part) => $this->htmlParagraphs($part), $parts))
@@ -37,6 +39,7 @@ final class ApplicationEmailComposer
             'recipient' => trim((string) ($recipient['email'] ?? '')),
             'subject' => $subject,
             'mode' => $mode,
+            'pdf_notice' => $mentionPdf,
             'text' => $text,
             'html' => $html,
             'attachments' => array_column($attachments, 'label'),

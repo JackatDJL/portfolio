@@ -138,6 +138,7 @@ class ApplicationManagementTest extends TestCase
         $empty = app(ApplicationEmailComposer::class)->compose($entry);
         $this->assertSame('private@example.invalid', $empty['recipient']);
         $this->assertSame('', $empty['subject']);
+        $this->assertFalse($empty['pdf_notice']);
         $this->assertStringNotContainsString('Sehr geehrte', $empty['text']);
         $this->assertStringNotContainsString('Jack Ruder', $empty['text']);
         $response = $this->getJson('/cp/applications/'.$entry->id().'/email')->assertOk();
@@ -157,13 +158,15 @@ class ApplicationManagementTest extends TestCase
         ];
         $entry->set('letter', ApplicationData::encrypt([$letter]));
         $entry->set('signature', ApplicationData::encrypt([['mode' => 'typed', 'name' => 'Jack Ruder']]));
-        $entry->set('email', ApplicationData::encrypt([['mode' => 'teaser', 'intro' => 'Bewerbungsspezifischer Einstieg.', 'sender_name' => 'Jack Ruder']]));
+        $entry->set('email', ApplicationData::encrypt([['mode' => 'teaser', 'intro' => 'Bewerbungsspezifischer Einstieg.', 'mention_application_pdf' => true, 'sender_name' => 'Jack Ruder']]));
         $entry->save();
 
         $mail = app(ApplicationEmailComposer::class)->compose(Entry::find($entry->id()));
         $this->assertSame('bewerbung@example.invalid', $mail['recipient']);
         $this->assertSame('Bewerbung: Praktikum Forschung', $mail['subject']);
+        $this->assertTrue($mail['pdf_notice']);
         $this->assertStringContainsString("Bewerbungsspezifischer Einstieg.\n\nErster Absatz mit Formatierung.", $mail['text']);
+        $this->assertStringContainsString("Erster Absatz mit Formatierung.\n\nDie vollständigen Bewerbungsunterlagen finden Sie in der beigefügten PDF.", $mail['text']);
         $this->assertStringNotContainsString('Zweiter Absatz', $mail['text']);
         $this->assertStringContainsString('Sehr geehrte Frau Dr. Müller,', $mail['text']);
         $this->assertStringContainsString('Mit freundlichen Grüßen', $mail['text']);
@@ -171,13 +174,17 @@ class ApplicationManagementTest extends TestCase
         $this->assertStringNotContainsString('<img', $mail['html']);
         $this->assertStringNotContainsString('application-test', $mail['html']);
         $this->assertStringNotContainsString('recipient-link', $mail['html']);
+        $this->assertStringNotContainsString('/preview.pdf', $mail['html']);
+        $this->assertStringContainsString('Die vollständigen Bewerbungsunterlagen finden Sie in der beigefügten PDF.', $mail['html']);
         $this->assertSame([], $mail['attachments']);
 
-        $email = ['mode' => 'manual', 'manual_body' => "Manueller erster Absatz.\n\nManueller zweiter Absatz."];
+        $email = ['mode' => 'manual', 'manual_body' => "Manueller erster Absatz.\n\nManueller zweiter Absatz.", 'mention_application_pdf' => true];
         $entry->set('email', ApplicationData::encrypt([$email]));
         $entry->save();
         $manual = app(ApplicationEmailComposer::class)->compose(Entry::find($entry->id()));
+        $this->assertFalse($manual['pdf_notice']);
         $this->assertSame("Sehr geehrte Frau Dr. Müller,\n\nManueller erster Absatz.\n\nManueller zweiter Absatz.\n\nMit freundlichen Grüßen\n\nJack Ruder", $manual['text']);
+        $this->assertStringNotContainsString('beigefügten PDF', $manual['text']);
         $this->assertStringContainsString('<p style="margin:0 0 16px">Manueller erster Absatz.</p>', $manual['html']);
         $this->assertStringContainsString('<p style="margin:0 0 16px">Manueller zweiter Absatz.</p>', $manual['html']);
     }

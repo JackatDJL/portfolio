@@ -310,6 +310,15 @@ tabs:
               instructions: Leer lassen für einen kurzen, aus Stelle und Organisation erzeugten Satz. Im Teaser-Modus steht dieser Absatz vor dem ersten Absatz des Anschreibens.
               if:
                 mode: 'not manual'
+          - handle: mention_application_pdf
+            field:
+              type: toggle
+              display: Auf die Bewerbungs-PDF verweisen
+              instructions: Nur aktivieren, wenn du die vollständige PDF aus dem bestehenden PDF-Export manuell als Anlage hinzufügst. Vorher im PDF-Bereich prüfen. Es wird kein PDF-Link in die Mail kopiert.
+              default: false
+              always_save: true
+              if:
+                mode: 'not manual'
           - handle: manual_body
             field:
               type: textarea
@@ -339,7 +348,8 @@ tabs:
           html: |
             <section class="app-cp-card app-cp-email" data-application-email>
               <p>Empfänger und Betreff stammen aus der Bewerbung. Vorschau und Kopieren verwenden gespeicherte Daten. Die Mail wird nicht versendet und enthält keinen Empfängerlink.</p>
-              <button type="button" class="app-cp-button app-cp-button-primary" data-email-refresh>Vorschau aktualisieren</button>
+              <p>Die PDF bleibt im vorhandenen Export. Prüfe sie dort und füge sie beim Versand selbst an.</p>
+              <div class="app-cp-button-row"><button type="button" class="app-cp-button" data-email-pdf>PDF prüfen</button><button type="button" class="app-cp-button app-cp-button-primary" data-email-refresh>Vorschau aktualisieren</button></div>
               <dl class="app-cp-email-meta"><div><dt>An</dt><dd data-email-recipient>–</dd></div><div><dt>Betreff</dt><dd data-email-subject>–</dd></div></dl>
               <div class="app-cp-email-preview" data-email-html-preview aria-label="HTML-Vorschau der Begleitmail"></div>
               <label class="app-cp-field"><span>Reiner Text</span><textarea class="app-cp-control" rows="8" readonly data-email-text></textarea></label>
