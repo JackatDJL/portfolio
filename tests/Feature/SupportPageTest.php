@@ -79,7 +79,7 @@ class SupportPageTest extends TestCase
         $this->assertStringContainsString('Rescue Line. Im Gesamtaufbau.', $html);
         $this->assertStringContainsString('Sortierbaugruppe', $html);
         $this->assertStringContainsString('Fertigung und Fahrtests sind damit noch nicht nachgewiesen', $html);
-        $this->assertStringContainsString('Keine Fotografie eines realen Arbeitsplatzes oder gebauten Roboters', $html);
+        $this->assertStringContainsString('Kein fotografierter Arbeitsplatz', $html);
         $this->assertStringNotContainsString('cad.onshape.com/documents/', $html);
         $this->assertLessThan(strpos($html, 'support-archive'), strpos($html, 'support-current-design'));
 
