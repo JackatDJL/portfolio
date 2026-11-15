@@ -13,4 +13,6 @@ Die Dateien können lokal benannt werden. Eine vorhandene Datei ist noch kein Be
 
 Die noch leeren Medienfelder des Supporteintrags verhindern derzeit seine Veröffentlichungsreife. Die Seite bleibt `published: false`. Das ist kein Ersatz für die geforderte immersive Umsetzung und keine erreichte 9,0-Abnahme.
 
-Interaktive Browsernachweise fehlen wegen des nicht verfügbaren Screenshot-/Browserhosts. Statische Renderausschnitte belegen lediglich Komposition und Inhalt, keine Keyboard-, Scrollfilm- oder Performanceprüfung.
+Am 15. November 2026 wurden die Quellrepositories `rosenfold-org/rosenfold` und `JackatDJL/AtheBlues` über GitHub als privat bestätigt. Lokale Entwicklungsbilder und archivierte Schaltungsunterlagen daraus werden deshalb nicht automatisch zu öffentlichen Portfolioassets. Benötigt werden die konkrete Medienauswahl, ihr Entwicklungsstand und die Freigabe für diese Website.
+
+Der Browserhost liefert inzwischen wieder Bilder. Für Politik und Kontakt liegen lokale Desktop-/Mobilaufnahmen und für Politik ein Scrollfilm vor. Geprüft wurden außerdem reduzierte Bewegung einschließlich Umschalten, Inhalt ohne JavaScript, 320-px-Reflow, Skiplink und automatisierte axe-Scans in beiden Farbmodi. Lokale Lighthouse-Messungen mit Produktionsassets und komprimierter Auslieferung sind abgeschlossen. Diese Nachweise ersetzen weder die vollständige manuelle Barrierefreiheitsabnahme noch die visuelle 9,0-Abnahme. Support erhält dadurch keine Abnahme seiner noch fehlenden Werkstattkapitel.
