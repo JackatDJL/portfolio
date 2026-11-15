@@ -62,7 +62,8 @@
 .support-workshop-notes p { font-size: .95rem; }
 .support-current { margin-top: 4rem; max-width: 48rem; padding-left: 2rem; border-left: 2px solid var(--site-focus); }
 .support-story .asset-attribution { font-size: .75rem; line-height: 1.5; color: var(--site-text-muted); margin-top: .75rem; }
-body:has(.support-story) .site-header__wordmark { background-color: var(--site-background); box-shadow: 0 0 0 .5rem var(--site-background); }
+/* Keep identity in the header while visitors inspect technical documents below it. */
+body:has(.support-story) .site-header__wordmark { position: static; }
 @media (max-width: 63.99rem) { .support-workshop-record { grid-template-columns: 1fr; } .support-workshop-notes { max-width: 46rem; } }
 @media (max-width: 47.99rem) { .support-opening-layout { display: block; } .support-opening-layout h1 { font-size: clamp(3rem, 12vw, 5rem); max-width: none; } .support-laptop { margin-block: 2rem; } .support-code { margin-block: 2rem; } .support-screen { margin-top: 2rem; } .support-workshop-intro { display: block; margin-top: 3rem; } .support-robot-layout > [data-support-from] { display: block; } .support-current { padding-left: 1.25rem; } }
 
