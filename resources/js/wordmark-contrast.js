@@ -17,9 +17,19 @@ export function initWordmarkContrast() {
     const needsMarker = () => {
         const rect = wordmark.getBoundingClientRect();
         const text = luminance(rgb(getComputedStyle(document.body).color));
+        // Hit testing omits decorative media with pointer-events:none.
+        const decorativeMedia = [...document.querySelectorAll('img, video, canvas')]
+            .filter(element => {
+                const style = getComputedStyle(element);
+                return style.pointerEvents === 'none' && style.visibility === 'visible' && Number(style.opacity) > 0;
+            })
+            .map(element => element.getBoundingClientRect());
         // Sample both ends and centre so a section boundary cannot hide half the name.
         return [.1, .5, .9].some(position => {
-            const stack = document.elementsFromPoint(rect.left + rect.width * position, rect.top + rect.height / 2);
+            const x = rect.left + rect.width * position;
+            const y = rect.top + rect.height / 2;
+            if (decorativeMedia.some(media => x >= media.left && x < media.right && y >= media.top && y < media.bottom)) return true;
+            const stack = document.elementsFromPoint(x, y);
             for (const element of stack) {
                 if (element.closest('.site-header, .menu-dialog')) continue;
                 const style = getComputedStyle(element);

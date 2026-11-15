@@ -109,6 +109,15 @@ class CvNavigationTest extends TestCase
             ->assertJsonPath('place_of_birth', 'Synthetic birthplace');
     }
 
+    public function test_hero_comparison_variants_bypass_static_caching(): void
+    {
+        $excluder = new CvNavigationUrlExcluder(new DefaultUrlExcluder('https://example.invalid', ['/applications*']));
+        foreach (['original', 'transition'] as $variant) {
+            $this->assertTrue($excluder->isExcluded('https://example.invalid/projekte/erstwaehlerforum-stade?hero='.$variant));
+        }
+        $this->assertFalse($excluder->isExcluded('https://example.invalid/projekte/erstwaehlerforum-stade'));
+    }
+
     public function test_return_context_is_excluded_from_static_caching_without_losing_existing_exclusions(): void
     {
         $excluder = new CvNavigationUrlExcluder(new DefaultUrlExcluder('https://example.invalid', ['/applications*']));
