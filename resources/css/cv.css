@@ -119,12 +119,7 @@
     .cv-chapter-nav > span { color: var(--site-text-muted); }
     .experience-detail { padding-bottom: 4rem; }
     .experience-content { display: grid; grid-template-columns: minmax(0,1fr) 15rem; gap: 3rem; }
-    .experience-header { border-top: 2px solid var(--site-text); border-bottom: 1px solid var(--site-border); padding-block: 2.5rem; }
-    .experience-header h1 { margin: .7rem 0 0; font-size: clamp(2.5rem, 4.5vw, 4.2rem); line-height: 1.02; letter-spacing: -.045em; max-width: 20ch; }
-    .experience-header__meta { display: flex; flex-wrap: wrap; align-items: baseline; gap: .35rem 1rem; margin-top: 1rem; }
     .experience-organisation { margin: 0; font: 700 1rem/1.3 var(--font-display); letter-spacing: -.015em; }
-    .experience-header__meta .cv-period { margin: 0; }
-    .experience-summary { font-size: 1.1rem; line-height: 1.55; max-width: 58ch; margin-top: 1.4rem; }
     .experience-content { padding-top: 2.5rem; }
     .experience-rail { position: relative; grid-column: 2; }
     .experience-content > .detail-layout__main { grid-column: 1; grid-row: 1; }
@@ -178,8 +173,8 @@
     .cv-milestone__relations .semantic-link { font-weight: inherit; transition: background-size 260ms var(--ease-emphasized); }
     .cv-milestone__relations .semantic-link:active { font-weight: inherit; }
     .cv-timeline__sources { display: none; }
-    .education-hero { position: relative; display: flex; align-items: end; isolation: isolate; min-height: 30rem; padding-block: 4rem; }
-    .education-hero--image { min-height: calc(100svh - 5rem); color: #f5faf6; padding-block: 5rem 6.5rem; }
+    .education-hero, .experience-hero { position: relative; display: flex; align-items: end; isolation: isolate; min-height: 30rem; padding-block: 4rem; }
+    .education-hero--image, .experience-hero--image { min-height: calc(100svh - 5rem); color: #f5faf6; padding-block: 5rem 6.5rem; }
     .education-hero__image { position: absolute; inset: 0; z-index: -1; margin: 0; border-radius: 0; background: #07100c; }
     .education-hero__image img, .education-hero__figure { border-radius: 0 !important; }
     .education-hero__figure { width: 100%; height: 100%; margin: 0; }
@@ -210,7 +205,6 @@
         .cv-record { grid-template-columns: 1fr; gap: .35rem; }
         .cv-record--reference { grid-template-columns: 1fr; }
         .experience-content { display: flex; flex-direction: column; gap: 1.5rem; }
-        .experience-header { padding-block: 1.5rem; }
         .experience-organisation { font-size: 1.35rem; }
         .experience-content aside { order: 2; }
         .experience-rail, .experience-content > .detail-layout__main { grid-column: auto; grid-row: auto; }
@@ -222,7 +216,7 @@
         .cv-milestone__body h3 { font-size: clamp(1.3rem, 6vw, 1.8rem); }
         .cv-milestone__summary { margin-top: .9rem; }
         .cv-timeline__year { padding-left: .2rem; font-size: .56rem; }
-        .education-hero--image { min-height: calc(100svh - 5rem); padding-block: 10rem 7rem; }
+        .education-hero--image, .experience-hero--image { min-height: calc(100svh - 5rem); padding-block: 10rem 7rem; }
         .education-hero__image img { object-position: 55% center; }
         .education-hero__image::after { background: linear-gradient(0deg, rgb(3 12 8 / .96), rgb(3 12 8 / .72) 55%, rgb(3 12 8 / .08)); }
         .education-hero__content h1 { font-size: clamp(2.5rem, 10vw, 4rem); }
@@ -314,7 +308,10 @@ html[data-theme='dark'] .cv-document::before { opacity: .035; mix-blend-mode: sc
 }
 
 
-.education-hero__back { position: absolute; z-index: 4; top: 1.5rem; left: max(1.25rem, calc((100vw - 68rem) / 2)); --site-text: #f5faf6; --site-border: #ffffff80; --site-surface: #111a16; background: #111a16b8; }
+.education-hero__back { position: absolute; z-index: 4; top: 1.5rem; left: max(1.25rem, calc((100vw - 68rem) / 2)); }
+.education-hero--image .education-hero__back { --site-text: #f5faf6; --site-border: #ffffff80; --site-surface: #111a16; background: #111a16b8; }
+.experience-hero__back { align-self: flex-start; margin-bottom: 1.5rem; }
+.experience-hero--image .experience-hero__back { --site-text: #f5faf6; --site-border: #ffffff80; --site-surface: #111a16; background: #111a16b8; }
 
 @layer components {
     .cv-document__signature { display: grid; justify-items: start; }

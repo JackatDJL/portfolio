@@ -1,7 +1,7 @@
 <figure class="media-figure media-gallery__item" style="--image-ratio: {{ width }} / {{ height }}; --image-width: {{ width }}; --image-height: {{ height }}">
     <div class="media-frame">
         <img src="{{ glide:url width='1280' }}" srcset="{{ glide:url width='480' }} 480w, {{ glide:url width='800' }} 800w, {{ glide:url width='1280' }} 1280w" sizes="(min-width: 64rem) 56rem, 88vw" alt="{{ alt }}" width="{{ width }}" height="{{ height }}" loading="lazy" decoding="async">
-        <div class="media-overlays">{{ partial:media/overlays :ai_involvement="ai_involvement" :ai_disclosure="ai_disclosure" :ai_icon_appearance="ai_icon_appearance" :credit_override="cc" :rights_override="rights" }}</div>
+        <div class="media-overlays">{{ partial:media/overlays :ai_involvement="ai_involvement" :eu_ai_disclosure="eu_ai_disclosure" :ai_disclosure="ai_disclosure" :ai_icon_appearance="ai_icon_appearance" :credit_override="cc" :rights_override="rights" }}</div>
     </div>
-    {{ partial:media/attribution :caption_override="caption" hide_credit="true" }}
+    {{ partial:media/attribution :caption_override="caption" :credit_override="cc" :rights_override="rights" hide_credit="true" }}
 </figure>
