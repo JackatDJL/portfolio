@@ -10,6 +10,12 @@ use Tests\TestCase;
 
 class ContactPageTest extends TestCase
 {
+    public function test_contact_document_title_falls_back_when_optional_seo_title_is_empty(): void
+    {
+        $html = $this->get('/kontakt')->assertOk()->getContent();
+        $this->assertMatchesRegularExpression('/<title>Kontakt<\/title>/', $html);
+    }
+
     public function test_disabled_contact_never_sends_or_claims_delivery(): void
     {
         Mail::fake();
