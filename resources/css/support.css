@@ -44,7 +44,7 @@
 .support-rosenfold-layout > *, .support-workshop-record > * { min-width: 0; }
 .support-laptop img, .support-screen img, .support-workshop-photo img, .support-workshop-record img { width: 100%; height: auto; }
 .support-laptop img { border-radius: 0; }
-.support-code h3, .support-workshop-intro h3, .support-current h3 { font-size: clamp(1.8rem, 3vw, 3rem); line-height: 1.1; letter-spacing: -.035em; margin-bottom: 1.5rem; }
+.support-code h3, .support-workshop-intro h3 { font-size: clamp(1.8rem, 3vw, 3rem); line-height: 1.1; letter-spacing: -.035em; margin-bottom: 1.5rem; }
 .support-code pre { font-family: var(--font-mono); font-size: clamp(.75rem, 1.1vw, .95rem); line-height: 1.7; margin-block: 2rem 1rem; padding-block: 1.5rem; border-block: 1px solid var(--site-border); overflow-x: auto; }
 .support-code-source { font-size: .75rem; color: var(--site-text-muted); overflow-wrap: anywhere; }
 .support-screen { align-self: start; }
@@ -60,12 +60,11 @@
 .support-workshop-notes > div { border-top: 1px solid var(--site-border); padding-block: 1.5rem; }
 .support-workshop-notes h4 { font-size: 1.5rem; line-height: 1.2; margin-bottom: .75rem; }
 .support-workshop-notes p { font-size: .95rem; }
-.support-current { margin-top: 4rem; max-width: 48rem; padding-left: 2rem; border-left: 2px solid var(--site-focus); }
 .support-story .asset-attribution { font-size: .75rem; line-height: 1.5; color: var(--site-text-muted); margin-top: .75rem; }
 /* Keep identity in the header while visitors inspect technical documents below it. */
 body:has(.support-story) .site-header__wordmark { position: static; }
 @media (max-width: 63.99rem) { .support-workshop-record { grid-template-columns: 1fr; } .support-workshop-notes { max-width: 46rem; } }
-@media (max-width: 47.99rem) { .support-opening-layout { display: block; } .support-opening-layout h1 { font-size: clamp(3rem, 12vw, 5rem); max-width: none; } .support-laptop { margin-block: 2rem; } .support-code { margin-block: 2rem; } .support-screen { margin-top: 2rem; } .support-workshop-intro { display: block; margin-top: 3rem; } .support-robot-layout > [data-support-from] { display: block; } .support-current { padding-left: 1.25rem; } }
+@media (max-width: 47.99rem) { .support-opening-layout { display: block; } .support-opening-layout h1 { font-size: clamp(3rem, 12vw, 5rem); max-width: none; } .support-laptop { margin-block: 2rem; } .support-code { margin-block: 2rem; } .support-screen { margin-top: 2rem; } .support-workshop-intro { display: block; margin-top: 3rem; } .support-robot-layout > [data-support-from] { display: block; } }
 
 .support-document-controls { margin-bottom: 1.25rem; }
 .support-document-controls[hidden] { display: none; }
@@ -79,9 +78,6 @@ body:has(.support-story) .site-header__wordmark { position: static; }
 .support-document-viewport img { transform-origin: 0 0; max-width: none; }
 .support-workshop-notes .is-selected { border-color: var(--site-focus); }
 .support-workshop-intro { margin-block: 3rem 1.5rem; }
-.support-present { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--site-border); }
-.support-present .support-current, .support-present .support-next { margin: 0; }
-@media (max-width: 47.99rem) { .support-present { grid-template-columns: 1fr; gap: 2rem; } }
 .support-document-controls { scroll-margin-top: 6rem; }
 .support-workshop-notes > [hidden] { display: none; }
 .support-workshop-record { gap: 1.5rem 3rem; }
@@ -89,3 +85,15 @@ body:has(.support-story) .site-header__wordmark { position: static; }
 .support-workshop-notes { grid-column: 2; grid-row: 1 / span 2; }
 .support-document-media { grid-column: 1; grid-row: 2; }
 @media (max-width: 63.99rem) { .support-workshop-record { display: flex; flex-direction: column; gap: 1.5rem; align-items: stretch; } }
+
+.support-current-design { display: grid; grid-template-columns: 1.4fr 1fr; gap: 3rem; align-items: center; margin-top: 3rem; }
+/* The exported CAD canvas was viewed over Onshape's white page background. */
+.support-current-cad img { width: 100%; height: auto; background: #fff; }
+.support-current-copy > h3 { font-size: clamp(1.8rem, 3vw, 3rem); line-height: 1.1; letter-spacing: -.035em; margin-block: 1rem 1.5rem; }
+.support-current-copy .support-next { margin-top: 2rem; }
+.support-evidence { margin-top: 2.5rem; border-top: 1px solid var(--site-border); padding-top: 1rem; }
+.support-evidence > summary { cursor: pointer; min-height: 2.75rem; padding-block: .5rem; font-weight: 650; }
+.support-evidence > summary:focus-visible { outline: 2px solid var(--site-focus); outline-offset: .35rem; }
+.support-evidence[open] > summary { margin-bottom: 2rem; }
+.support-laptop-view .media-figure { max-width: 60rem; }
+@media (max-width: 63.99rem) { .support-current-design { grid-template-columns: 1fr; gap: 2rem; } .support-current-copy { max-width: 46rem; } }

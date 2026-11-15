@@ -24,7 +24,7 @@ for (const section of document.querySelectorAll('[data-support-section]')) {
             const x2 = Math.max(0, end.left - box.left - 20);
             svg.setAttribute('viewBox', `0 0 ${box.width} ${box.height}`);
             // Keep the return beneath a neighbouring figure, including its credit.
-            const media = owner.querySelector('.support-screen');
+            const media = owner.querySelector('.support-screen, .support-current-cad');
             const returnY = Math.max(y2, media ? media.getBoundingClientRect().bottom - box.top + 16 : y2);
             const radius = Math.min(24, Math.max(0, (returnY - y2) / 2));
             path.setAttribute('d', returnY > y2

@@ -182,6 +182,42 @@ tabs:
             field:
               type: textarea
               display: Text Test
+          - handle: robot_cad_label
+            field:
+              type: text
+              display: Status der CAD-Aufnahme
+          - handle: robot_cad_caption
+            field:
+              type: textarea
+              display: Bildunterschrift CAD-Aufnahme
+          - handle: robot_laptop_caption
+            field:
+              type: textarea
+              display: Bildunterschrift CAD-Laptop
+          - handle: robot_laptop_toggle
+            field:
+              type: text
+              display: Beschriftung Laptop-Ansicht
+          - handle: robot_archive_toggle
+            field:
+              type: text
+              display: Beschriftung historisches Archiv
+          - handle: robot_cad
+            field:
+              type: assets
+              display: Aktuelle CAD-Gesamtansicht
+              container: assets
+              max_files: 1
+              query_scopes: [editorial_images]
+              validate: [image]
+          - handle: robot_cad_laptop
+            field:
+              type: assets
+              display: Optionale Laptop-Visualisierung
+              container: assets
+              max_files: 1
+              query_scopes: [editorial_images]
+              validate: [image]
           - handle: robot_current_title
             field:
               type: text

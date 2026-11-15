@@ -93,7 +93,7 @@ bpy.ops.mesh.primitive_plane_add(
     size=1, location=center + normal * 0.059, rotation=(angle, 0, 0)
 )
 screen = bpy.context.object
-screen.name = "Actual Rosenfold development screenshot"
+screen.name = "Approved development capture"
 screen.scale = (3.14, 1.9625, 1)
 m = bpy.data.materials.new("Screenshot, unchanged")
 m.use_nodes = True
@@ -101,8 +101,26 @@ nodes = m.node_tree.nodes
 bsdf = nodes.get("Principled BSDF")
 tex = nodes.new("ShaderNodeTexImage")
 tex.image = bpy.data.images.load(a.screen)
-m.node_tree.links.new(tex.outputs["Color"], bsdf.inputs["Base Color"])
-m.node_tree.links.new(tex.outputs["Color"], bsdf.inputs["Emission Color"])
+# Preserve the capture's proportions on the 16:10 panel, including CAD canvases.
+image_ratio = tex.image.size[0] / tex.image.size[1]
+panel_ratio = 3.14 / 1.9625
+scale_u = max(1, panel_ratio / image_ratio)
+scale_v = max(1, image_ratio / panel_ratio)
+coordinates = nodes.new("ShaderNodeTexCoord")
+mapping = nodes.new("ShaderNodeMapping")
+mapping.inputs["Scale"].default_value = (scale_u, scale_v, 1)
+mapping.inputs["Location"].default_value = ((1 - scale_u) / 2, (1 - scale_v) / 2, 0)
+m.node_tree.links.new(coordinates.outputs["UV"], mapping.inputs["Vector"])
+m.node_tree.links.new(mapping.outputs["Vector"], tex.inputs["Vector"])
+tex.extension = "CLIP"
+# A CAD canvas may be transparent over the viewer's white page background.
+# Composite only that alpha; the captured geometry and interface remain intact.
+background = nodes.new("ShaderNodeMixRGB")
+background.inputs[1].default_value = (1, 1, 1, 1)
+m.node_tree.links.new(tex.outputs["Alpha"], background.inputs[0])
+m.node_tree.links.new(tex.outputs["Color"], background.inputs[2])
+m.node_tree.links.new(background.outputs[0], bsdf.inputs["Base Color"])
+m.node_tree.links.new(background.outputs[0], bsdf.inputs["Emission Color"])
 bsdf.inputs["Emission Strength"].default_value = 0.55
 bsdf.inputs["Roughness"].default_value = 0.28
 bsdf.inputs["Specular IOR Level"].default_value = 0.12

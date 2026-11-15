@@ -71,4 +71,28 @@ class SupportPageTest extends TestCase
         $this->assertStringContainsString('&lt;script&gt;privateMarker()', $html);
         $this->assertStringNotContainsString('<script>privateMarker()', $html);
     }
+
+    public function test_current_cad_is_distinct_from_the_optional_render_and_historical_archive(): void
+    {
+        $entry = Entry::query()->where('collection', 'pages')->where('slug', 'support')->first();
+        $html = (new View)->template('support/index')->cascadeContent($entry)->render();
+        $this->assertStringContainsString('Rescue Line. Im Gesamtaufbau.', $html);
+        $this->assertStringContainsString('Sortierbaugruppe', $html);
+        $this->assertStringContainsString('Fertigung und Fahrtests sind damit noch nicht nachgewiesen', $html);
+        $this->assertStringContainsString('Keine Fotografie eines realen Arbeitsplatzes oder gebauten Roboters', $html);
+        $this->assertStringNotContainsString('cad.onshape.com/documents/', $html);
+        $this->assertLessThan(strpos($html, 'support-archive'), strpos($html, 'support-current-design'));
+
+        $document = new \DOMDocument;
+        @$document->loadHTML('<?xml encoding="UTF-8">'.$html);
+        $xpath = new \DOMXPath($document);
+        $cad = $xpath->query('//figure[contains(@class,"support-current-cad")]//img');
+        $this->assertCount(1, $cad);
+        $this->assertSame('1354', $cad->item(0)->getAttribute('width'));
+        $this->assertSame('994', $cad->item(0)->getAttribute('height'));
+        $this->assertSame('lazy', $cad->item(0)->getAttribute('loading'));
+        $this->assertCount(1, $xpath->query('//details[contains(@class,"support-laptop-view")]//img'));
+        $this->assertCount(1, $xpath->query('//details[contains(@class,"support-archive")]//div[@data-support-document]'));
+    }
+
 }
