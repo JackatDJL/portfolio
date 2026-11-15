@@ -6,6 +6,6 @@
             {{ if summary }}<p>{{ summary }}</p>{{ /if }}
             {{ if featured_technology }}<ul class="home-project__technology" aria-label="Technologien">{{ featured_technology }}<li>{{ partial:components/chip :label="label" }}</li>{{ /featured_technology }}</ul>{{ /if }}
         </a>
-        {{ if cover }}<figure class="home-project__artifact"><img src="{{ glide:cover width=1200 }}" srcset="{{ glide:cover width=640 }} 640w, {{ glide:cover width=1200 }} 1200w" sizes="(min-width: 64rem) 48vw, 90vw" alt="{{ cover:alt }}" width="{{ cover:width }}" height="{{ cover:height }}" loading="lazy" decoding="async"></figure>{{ /if }}
+        {{ if cover }}<figure class="home-project__artifact"><div class="media-frame"><img src="{{ glide:cover width=1200 }}" srcset="{{ glide:cover width=640 }} 640w, {{ glide:cover width=1200 }} 1200w" sizes="(min-width: 64rem) 48vw, 90vw" alt="{{ cover:alt }}" width="{{ cover:width }}" height="{{ cover:height }}" loading="lazy" decoding="async"><div class="media-overlays">{{ partial:media/overlays :asset="cover" }}</div></div></figure>{{ /if }}
     </div>
 </article>

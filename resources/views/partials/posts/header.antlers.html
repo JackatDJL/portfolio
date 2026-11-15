@@ -8,3 +8,4 @@
         <p class="mt-6 text-lg text-foreground">{{ summary }}</p>
     {{ /if }}
 </header>
+{{ if cover }}<div class="reading-width mt-8">{{ partial:media/image :asset="cover" mode="content" figure_class="post-featured-image" width="1440" sizes="(min-width: 64rem) 56rem, 92vw" }}</div>{{ /if }}

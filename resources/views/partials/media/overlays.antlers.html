@@ -1,0 +1,29 @@
+{{ _ai_involvement = ai_involvement ?? asset:ai_involvement }}
+{{ _ai_disclosure = ai_disclosure ?? asset:ai_disclosure }}
+{{ _appearance = ai_icon_appearance ?? asset:ai_icon_appearance ?? 'black' }}
+{{ _credit = asset:cc ?? credit_override }}
+{{ _rights = asset:rights ?? rights_override }}
+{{ if _ai_involvement && _ai_involvement != 'none' }}
+    {{ _icon_kind = '' }}
+    {{ _default_disclosure = '' }}
+    {{ if _ai_involvement == 'fully_generated' }}{{ _icon_kind = 'fully-generated' }}{{ _default_disclosure = 'Vollständig KI-generiert' }}{{ /if }}
+    {{ if _ai_involvement == 'partially_modified' }}{{ _icon_kind = 'partially-modified' }}{{ _default_disclosure = 'Teilweise mit KI verändert' }}{{ /if }}
+    {{ if _ai_involvement == 'basic_disclosure' }}{{ _icon_kind = 'basic' }}{{ _default_disclosure = 'Mit KI erstellt oder verändert' }}{{ /if }}
+    {{ if _icon_kind }}
+    {{ _icon_appearance = 'black' }}
+    {{ if _appearance == 'white' }}{{ _icon_appearance = 'white' }}{{ /if }}
+    {{ if _appearance == 'black-50' }}{{ _icon_appearance = 'black-50' }}{{ /if }}
+    {{ if _appearance == 'white-50' }}{{ _icon_appearance = 'white-50' }}{{ /if }}
+    {{ _disclosure_label = _default_disclosure }}
+    {{ if _ai_disclosure }}{{ _disclosure_label = _ai_disclosure }}{{ /if }}
+    <span class="media-overlay__ai media-overlay__ai--{{ _icon_appearance }}" role="group" aria-label="{{ _disclosure_label | entities }}">
+        <img class="media-overlay__ai-icon" src="/assets/ai-labels/{{ _icon_kind }}/{{ _icon_appearance }}.svg" alt="" loading="lazy" decoding="async">
+        <span>{{ _disclosure_label | entities }}</span>
+    </span>
+    {{ /if }}
+{{ /if }}
+{{ if _rights == 'jack' && site:content_license_name }}
+    <span class="media-overlay__credit" role="group" aria-label="Bildnachweis">{{ site:name }} · <a href="{{ site:content_license_url }}" rel="license">{{ site:content_license_name }}</a></span>
+{{ elseif _credit && _rights != 'jack' }}
+    <span class="media-overlay__credit" role="group" aria-label="Bildnachweis">{{ attribution :text="_credit" }}</span>
+{{ /if }}

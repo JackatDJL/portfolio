@@ -189,8 +189,7 @@
     .education-hero--image .eyebrow { color: #93e8ba; }
     .education-hero__period { display: flex; flex-wrap: wrap; align-items: baseline; gap: .6rem 2rem; font-weight: 600; }
     .education-hero__summary { max-width: 58ch; margin-top: 1rem; font-size: 1rem; line-height: 1.65; }
-    .education-hero__image .asset-attribution { position: absolute; bottom: 1.2rem; right: max(1.5rem, calc((100% - 68rem) / 2)); left: 1.5rem; text-align: right; z-index: 2; color: #f5faf6; }
-    .education-hero__image .asset-attribution__credit { color: inherit; }
+    .education-hero__image .media-overlays { right: max(1rem, calc((100% - var(--container-content)) / 2 + 2rem)); bottom: 1.2rem; left: max(1rem, calc((100% - var(--container-content)) / 2 + 2rem)); }
     .education-detail .detail-layout { padding-top: 3rem; }
     @media (max-width: 47.99rem) {
         .cv-document { width: 100%; margin: 0; padding: 1rem; border-right: 0; border-left: 0; border-radius: 0; box-shadow: none; }
@@ -227,7 +226,7 @@
         .education-hero__image img { object-position: 55% center; }
         .education-hero__image::after { background: linear-gradient(0deg, rgb(3 12 8 / .96), rgb(3 12 8 / .72) 55%, rgb(3 12 8 / .08)); }
         .education-hero__content h1 { font-size: clamp(2.5rem, 10vw, 4rem); }
-        .education-hero__image .asset-attribution { text-align: left; right: 1.5rem; font-size: .7rem; }
+        .education-hero__image .media-overlays { right: 1rem; left: 1rem; }
     }
     @media (max-width: 30rem) {
         .cv-support { display: block; }

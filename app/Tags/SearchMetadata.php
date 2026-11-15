@@ -94,6 +94,17 @@ class SearchMetadata extends Tags
             }
         }
 
+        // Do not publish an unlabelled source as a social preview. A labelled
+        // derivative can be added later without changing or overwriting the source.
+        $asset = is_object($image) ? $image : (is_string($image) ? \Statamic\Facades\Asset::find($image) : null);
+        if (is_object($asset) && method_exists($asset, 'get')) {
+            $aiInvolvement = $asset->get('ai_involvement');
+            $aiInvolvement = $aiInvolvement instanceof Value ? $aiInvolvement->value() : $aiInvolvement;
+            if (is_string($aiInvolvement) && $aiInvolvement !== 'none' && $aiInvolvement !== '') {
+                return null;
+            }
+        }
+
         if (is_object($image)) {
             if (method_exists($image, 'absoluteUrl')) {
                 $image = $image->absoluteUrl();
