@@ -6,9 +6,17 @@ GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
 const initPdfPreview = async (viewer) => {
     const url = viewer.dataset.pdfUrl;
     const loading = viewer.querySelector('[data-pdf-loading]');
+    const loadingText = viewer.querySelector('[data-pdf-loading-text]');
     const pagesElement = viewer.querySelector('[data-pdf-pages]');
     const error = viewer.querySelector('[data-pdf-error]');
     if (!url || !(pagesElement instanceof HTMLElement)) return;
+
+    const previewStage = viewer.querySelector('[data-pdf-preview-stage]');
+    previewStage?.addEventListener('click', (event) => {
+        if (!window.matchMedia('(hover: none)').matches) return;
+        if (event.target instanceof Element && event.target.closest('.pdf-viewer__action')) return;
+        previewStage.dataset.actionVisible = 'true';
+    });
 
     const setError = () => {
         loading?.setAttribute('hidden', '');
@@ -19,7 +27,7 @@ const initPdfPreview = async (viewer) => {
     try {
         const loadingTask = getDocument({ url });
         loadingTask.onProgress = ({ loaded, total }) => {
-            if (loading instanceof HTMLElement && total) loading.textContent = `Dokument wird geladen … ${Math.round((loaded / total) * 100)} %`;
+            if (loadingText instanceof HTMLElement && total) loadingText.textContent = `PDF wird geladen … ${Math.round((loaded / total) * 100)} %`;
         };
         const documentProxy = await loadingTask.promise;
         const page = await documentProxy.getPage(1);

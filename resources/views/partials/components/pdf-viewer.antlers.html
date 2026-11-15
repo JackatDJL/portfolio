@@ -1,8 +1,12 @@
 {{# PDF.js renders a first-page preview. Only the centered action is a link. #}}
 <section class="pdf-viewer" data-pdf-viewer data-pdf-preview data-pdf-url="{{ url }}" aria-label="PDF-Vorschau">
-    <div class="pdf-viewer__preview-stage">
-        <div class="pdf-viewer__loading" data-pdf-loading role="status">Dokument wird geladen …</div>
-        <div class="pdf-viewer__pages" data-pdf-pages aria-label="Erste Seite der PDF-Vorschau"></div>
+    <div class="pdf-viewer__preview-stage" data-pdf-preview-stage>
+        <div class="pdf-viewer__pages" data-pdf-pages aria-label="Erste Seite der PDF-Vorschau">
+            <div class="pdf-viewer__loading" data-pdf-loading role="status">
+                <span class="pdf-viewer__spinner" aria-hidden="true"></span>
+                <span data-pdf-loading-text>PDF wird geladen …</span>
+            </div>
+        </div>
         {{ if action_url }}
             <a class="btn btn-primary pdf-viewer__action" href="{{ action_url }}" target="_blank" rel="noopener noreferrer" aria-label="{{ action_label }}: {{ title }}">{{ action_label }}</a>
         {{ /if }}

@@ -34,6 +34,12 @@ class PublicationDocumentTest extends TestCase
             $response->assertSee('class="btn btn-primary pdf-viewer__action"', false);
             $response->assertSee('aria-label="Veröffentlichung anzeigen: '.$publication['title'].'"', false);
             $response->assertSee('>Veröffentlichung anzeigen</a>', false);
+            $response->assertSeeInOrder([
+                'data-pdf-pages',
+                'data-pdf-loading',
+                'class="pdf-viewer__spinner"',
+                'data-pdf-loading-text',
+            ], false);
             $response->assertDontSee('href="'.$document.'"', false);
             $response->assertDontSee('class="pdf-viewer__preview-link"', false);
         }
