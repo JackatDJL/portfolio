@@ -51,7 +51,8 @@
     /* f7fa53c sheet typography and year composition, restored against the supplied image. */
     .home-publication__sheet { position: relative; top: 0; left: 0; display: flex; width: 100%; min-width: 0; min-height: max(28rem, calc(100cqw * var(--document-height, 1) / var(--document-width, 1))); flex-direction: column; justify-content: flex-end; padding: clamp(1.25rem, 3vw, 2.5rem); overflow: hidden; border: 1px solid #111; background: #fffefa; color: #07100c; box-shadow: 4px 4px 0 #111; transition: top 120ms var(--ease-standard), left 120ms var(--ease-standard), box-shadow 120ms var(--ease-standard); }
     .home-publication__link { position: absolute; inset: 0; z-index: 2; }
-    .home-publication__link:focus-visible { z-index: 4; outline: 3px solid var(--site-focus); outline-offset: 5px; }
+    .home-publication__link:focus-visible { outline: none; }
+    .home-publication__link:focus-visible + .home-publication__sheet { outline: 3px solid var(--site-focus); outline-offset: 5px; }
     .home-publication:hover .home-publication__sheet, .home-publication:focus-within .home-publication__sheet { top: -1px; left: -1px; box-shadow: 5px 5px 0 #111; }
     .home-publication:active .home-publication__sheet { top: 2px; left: 2px; box-shadow: none; }
     .home-publication__folio { position: absolute; top: -.9rem; right: .65rem; z-index: 0; color: #92e7ba; font-family: var(--font-display); font-size: clamp(8rem, 18vw, 15rem); font-weight: 800; line-height: 1; letter-spacing: -.09em; }

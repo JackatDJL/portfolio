@@ -154,7 +154,10 @@ class SearchMetadata extends Tags
             return null;
         }
 
-        $path = rawurldecode((string) ($parts['path'] ?? ''));
+        $path = $this->normalizePath((string) ($parts['path'] ?? ''));
+        if ($path === null) {
+            return null;
+        }
         $referenceHost = isset($parts['host']) ? strtolower($parts['host']) : null;
         $siteHost = strtolower((string) parse_url($baseUrl, PHP_URL_HOST));
 
@@ -172,9 +175,12 @@ class SearchMetadata extends Tags
                 continue;
             }
 
-            $containerPath = parse_url($containerUrl, PHP_URL_PATH) ?: $containerUrl;
-            $containerPath = '/'.trim($containerPath, '/');
-            $normalizedPath = '/'.ltrim($path, '/');
+            $containerPath = $this->normalizePath((string) (parse_url($containerUrl, PHP_URL_PATH) ?: $containerUrl));
+            if ($containerPath === null) {
+                continue;
+            }
+            $containerPath = rtrim($containerPath, '/') ?: '/';
+            $normalizedPath = $path;
 
             if ($referenceHost !== null) {
                 $containerAbsoluteUrl = method_exists($container, 'absoluteUrl') ? $container->absoluteUrl() : null;
@@ -204,8 +210,8 @@ class SearchMetadata extends Tags
                 continue;
             }
 
-            $assetPath = str_replace('\\', '/', $assetPath);
-            if ($assetPath === '' || preg_match('#(^|/)\.\.?(/|$)#', $assetPath)) {
+            $assetPath = ltrim($this->normalizeDecodedPath($assetPath) ?? '', '/');
+            if ($assetPath === '') {
                 continue;
             }
 
@@ -216,6 +222,38 @@ class SearchMetadata extends Tags
         }
 
         return null;
+    }
+
+    /** Resolves URL dot segments before matching a path to a Statamic asset. */
+    private function normalizePath(string $path): ?string
+    {
+        return $this->normalizeDecodedPath(rawurldecode($path));
+    }
+
+    /** Normalizes an already decoded path without changing literal percent sequences. */
+    private function normalizeDecodedPath(string $path): ?string
+    {
+        $segments = explode('/', str_replace('\\', '/', $path));
+        $normalized = [];
+
+        foreach ($segments as $segment) {
+            if ($segment === '' || $segment === '.') {
+                continue;
+            }
+
+            if ($segment === '..') {
+                array_pop($normalized);
+                continue;
+            }
+
+            if (str_contains($segment, "\0")) {
+                return null;
+            }
+
+            $normalized[] = $segment;
+        }
+
+        return '/'.implode('/', $normalized);
     }
 
     /** Unwraps a Statamic field value before using its underlying data. */
