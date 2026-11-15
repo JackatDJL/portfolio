@@ -76,18 +76,48 @@ class AssetAttributionTest extends TestCase
         $html = (string) Antlers::parse(file_get_contents(resource_path('views/partials/media/overlays.antlers.html')), [
             'asset' => [
                 'ai_involvement' => 'partially_modified',
-                'ai_disclosure' => 'Hintergrund teilweise mit KI ergänzt',
+                'eu_ai_disclosure' => 'Hintergrund teilweise mit KI ergänzt',
                 'ai_icon_appearance' => 'white-50',
+                'credit_appearance' => 'light',
                 'rights' => 'cc',
                 'cc' => 'Foto: Ada Beispiel, https://example.org/foto',
             ],
         ]);
 
         $this->assertStringContainsString('/assets/ai-labels/partially-modified/white-50.svg', $html);
-        $this->assertStringContainsString('Hintergrund teilweise mit KI erg&auml;nzt', $html);
+        $this->assertStringContainsString('aria-label="Hintergrund teilweise mit KI erg&auml;nzt"', $html);
+        $this->assertStringNotContainsString('Hintergrund teilweise mit KI erg&auml;nzt</span>', $html);
+        $this->assertStringContainsString('media-overlay__credit--light', $html);
         $this->assertStringContainsString('aria-label="Bildnachweis"', $html);
         $this->assertStringContainsString('Foto: Ada Beispiel', $html);
         $this->assertStringContainsString('href="https://example.org/foto"', $html);
+    }
+
+    public function test_unknown_credit_appearance_falls_back_to_the_existing_dark_treatment(): void
+    {
+        $html = (string) Antlers::parse(file_get_contents(resource_path('views/partials/media/overlays.antlers.html')), [
+            'asset' => [
+                'rights' => 'cc',
+                'cc' => 'Foto: Ada Beispiel',
+                'credit_appearance' => 'javascript:alert(1)',
+            ],
+        ]);
+
+        $this->assertStringContainsString('media-overlay__credit--dark', $html);
+        $this->assertStringNotContainsString('javascript:', $html);
+    }
+
+    public function test_legacy_ai_disclosure_remains_the_accessible_name_for_existing_metadata(): void
+    {
+        $html = (string) Antlers::parse(file_get_contents(resource_path('views/partials/media/overlays.antlers.html')), [
+            'asset' => [
+                'ai_involvement' => 'basic_disclosure',
+                'ai_disclosure' => 'Bestehender KI-Hinweis',
+            ],
+        ]);
+
+        $this->assertStringContainsString('aria-label="Bestehender KI-Hinweis"', $html);
+        $this->assertStringNotContainsString('Bestehender KI-Hinweis</span>', $html);
     }
 
     public function test_absent_and_none_ai_metadata_do_not_render_an_icon(): void
@@ -121,7 +151,8 @@ class AssetAttributionTest extends TestCase
         ]);
 
         $this->assertStringContainsString('/assets/ai-labels/partially-modified/black.svg', $html);
-        $this->assertStringContainsString('Teilweise mit KI ver&auml;ndert', $html);
+        $this->assertStringContainsString('aria-label="Teilweise mit KI ver&auml;ndert"', $html);
+        $this->assertStringNotContainsString('Teilweise mit KI ver&auml;ndert</span>', $html);
     }
 
     public function test_custom_disclosure_is_escaped_as_text(): void
@@ -134,7 +165,8 @@ class AssetAttributionTest extends TestCase
         ]);
 
         $this->assertStringNotContainsString('<script>', $html);
-        $this->assertStringContainsString('&lt;script&gt;', $html);
+        $this->assertStringContainsString('aria-label="&lt;script&gt;alert(1)&lt;/script&gt;"', $html);
+        $this->assertStringNotContainsString('&lt;script&gt;</span>', $html);
     }
 
     public function test_asset_credit_remains_authoritative_and_legacy_overrides_are_fallbacks(): void
@@ -159,7 +191,7 @@ class AssetAttributionTest extends TestCase
     public function test_ai_metadata_fields_extend_the_existing_asset_blueprint(): void
     {
         $blueprint = file_get_contents(resource_path('blueprints/assets/assets.yaml'));
-        foreach (['alt', 'caption', 'rights', 'cc', 'ai_involvement', 'ai_disclosure', 'ai_icon_appearance'] as $field) {
+        foreach (['alt', 'caption', 'rights', 'cc', 'ai_involvement', 'eu_ai_disclosure', 'ai_icon_appearance', 'credit_appearance'] as $field) {
             $this->assertStringContainsString('handle: '.$field, $blueprint);
         }
         $this->assertStringContainsString('default: none', $blueprint);

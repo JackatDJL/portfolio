@@ -40,9 +40,12 @@ test('portrait disclosure and credit stay visible inside the rounded frame at na
         const overlays = page.locator('.cv-portrait .media-overlays');
         await expect(overlays).toHaveCount(1);
         await overlays.evaluate(root => {
-            root.innerHTML = '<span class="media-overlay__ai media-overlay__ai--black" data-visibility-probe="ai" style="pointer-events:auto"><img class="media-overlay__ai-icon" src="/assets/ai-labels/fully-generated/black.svg" alt=""><span>AI-generated content</span></span><span class="media-overlay__credit" data-visibility-probe="credit" style="pointer-events:auto">Photographer: Stade Archives · CC BY-SA 4.0</span>';
+            root.innerHTML = '<span class="media-overlay__ai media-overlay__ai--black" role="img" aria-label="AI-generated content" data-visibility-probe="ai" style="pointer-events:auto"><img class="media-overlay__ai-icon" src="/assets/ai-labels/fully-generated/black.svg" alt=""></span><span class="media-overlay__credit media-overlay__credit--dark" data-visibility-probe="credit" style="pointer-events:auto">Photographer: Stade Archives · CC BY-SA 4.0</span>';
         });
         await expect(overlays.locator('[data-visibility-probe="ai"]')).toBeVisible();
+        await expect(overlays.locator('[data-visibility-probe="ai"]')).toHaveAttribute('aria-label', 'AI-generated content');
+        await expect(overlays.locator('[data-visibility-probe="ai"]')).toHaveText('');
+        await expect(overlays.locator('[data-visibility-probe="ai"] > span')).toHaveCount(0);
         await expect(overlays.locator('[data-visibility-probe="credit"]')).toBeVisible();
 
         const visibleCorners = await page.evaluate(() => {

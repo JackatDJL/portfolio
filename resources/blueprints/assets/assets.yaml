@@ -24,11 +24,11 @@ tabs:
                 - { key: partially_modified, value: 'Teilweise mit KI verändert' }
                 - { key: basic_disclosure, value: 'KI-Kennzeichnung (Basis)' }
           -
-            handle: ai_disclosure
+            handle: eu_ai_disclosure
             field:
-              display: 'KI-Hinweis'
+              display: 'EU-KI-Hinweis für Screenreader'
               type: text
-              instructions: 'Optionaler, verständlicher Hinweis neben dem offiziellen EU-Symbol.'
+              instructions: 'Optionaler, verständlicher Name für Screenreader. Sichtbar bleibt ausschließlich das offizielle EU-SVG.'
               validate:
                 - nullable
           -
@@ -43,6 +43,16 @@ tabs:
                 - { key: white, value: Weiß }
                 - { key: black-50, value: 'Schwarz, 50 % Deckkraft' }
                 - { key: white-50, value: 'Weiß, 50 % Deckkraft' }
+          -
+            handle: credit_appearance
+            field:
+              display: 'Darstellung des Bildnachweises'
+              type: select
+              default: dark
+              instructions: 'Wählt den Kontrast des Nachweisfelds. Urheber-, Quellen- und Lizenztext bleiben unverändert. Ohne Auswahl bleibt die bisherige dunkle Fläche erhalten.'
+              options:
+                - { key: dark, value: 'Heller Text auf dunkler Fläche' }
+                - { key: light, value: 'Dunkler Text auf heller Fläche' }
           -
             handle: caption
             field:

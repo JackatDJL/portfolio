@@ -5,13 +5,13 @@
     .asset-attribution a { text-decoration: underline; text-underline-offset: .15em; }
     .media-frame, .home-publication__media { position: relative; min-width: 0; }
     .media-overlays { position: absolute; z-index: 2; right: .65rem; bottom: .65rem; left: .65rem; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: end; gap: .5rem; pointer-events: none; }
-    .media-overlay__ai, .media-overlay__credit { display: inline-flex; width: fit-content; max-width: 100%; align-items: center; gap: .4rem; padding: .32rem .48rem; border-radius: .2rem; font-size: .7rem; font-weight: 600; line-height: 1.3; overflow-wrap: anywhere; box-decoration-break: clone; }
-    .media-overlay__ai { grid-column: 1; justify-self: start; }
-    .media-overlay__ai--black, .media-overlay__ai--black-50 { color: #101410; background: rgb(255 255 255 / .92); }
-    .media-overlay__ai--white, .media-overlay__ai--white-50 { color: #fff; background: rgb(0 0 0 / .76); }
+    .media-overlay__credit { display: inline-flex; width: fit-content; max-width: 100%; align-items: center; padding: .32rem .48rem; border-radius: .2rem; font-size: .7rem; font-weight: 600; line-height: 1.3; overflow-wrap: anywhere; box-decoration-break: clone; }
+    .media-overlay__ai { display: block; grid-column: 1; justify-self: start; width: fit-content; max-width: 100%; padding: 0; background: transparent; }
     .media-overlays img.media-overlay__ai-icon { display: block; width: auto; max-width: 5.4rem; height: 1.8rem; flex: none; object-fit: contain; }
     .media-figure .media-overlays img.media-overlay__ai-icon { border: 0; border-radius: 0; background: transparent; }
     .media-overlay__credit { grid-column: 2; justify-self: end; color: #fff; background: rgb(0 0 0 / .76); text-align: right; pointer-events: auto; }
+    .media-overlay__credit--dark { color: #fff; background: rgb(0 0 0 / .76); }
+    .media-overlay__credit--light { color: #101410; background: rgb(255 255 255 / .92); }
     .media-overlay__credit a { color: inherit; text-decoration: underline; text-underline-offset: .15em; }
     .media-overlays:empty { display: none; }
     .home-publication__media { z-index: 3; display: block; height: 12rem; flex: none; margin: auto 0 1.25rem; overflow: hidden; pointer-events: none; }
@@ -36,15 +36,12 @@
     .cv-portrait:has(.media-overlay__ai, .media-overlay__credit) .media-frame { height: auto; overflow: visible; container-type: normal; }
     .cv-portrait:has(.media-overlay__ai, .media-overlay__credit) .cv-portrait__image { height: auto; aspect-ratio: 1; border-radius: .6rem .6rem 0 0; }
     .cv-portrait:has(.media-overlay__ai, .media-overlay__credit) .media-overlays { position: relative; z-index: auto; inset: auto; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: .1rem; padding: .25rem; background: var(--site-surface-strong); pointer-events: none; }
-    .cv-portrait:has(.media-overlay__ai, .media-overlay__credit) .media-overlay__ai { grid-column: 1; display: flex; width: 100%; flex-direction: column; align-items: flex-start; justify-self: start; }
-    .cv-portrait:has(.media-overlay__ai, .media-overlay__credit) .media-overlay__ai > span { display: block; width: 100%; max-width: 100%; }
+    .cv-portrait:has(.media-overlay__ai, .media-overlay__credit) .media-overlay__ai { grid-column: 1; display: block; width: fit-content; justify-self: start; }
     .cv-portrait:has(.media-overlay__ai, .media-overlay__credit) .media-overlay__credit { grid-column: 2; width: 100%; justify-self: end; }
     .cv-portrait:not(:has(.media-overlay__ai)):has(.media-overlay__credit) .media-overlay__credit { grid-column: 1 / -1; }
-    .cv-portrait:has(.media-overlay__ai, .media-overlay__credit) .media-overlay__ai,
-    .cv-portrait:has(.media-overlay__ai, .media-overlay__credit) .media-overlay__credit { max-width: 100%; gap: .12rem; padding: .15rem .16rem; font-size: .55rem; line-height: 1.15; }
+    .cv-portrait:has(.media-overlay__ai, .media-overlay__credit) .media-overlay__credit { max-width: 100%; padding: .15rem .16rem; font-size: .55rem; line-height: 1.15; }
     .cv-portrait:has(.media-overlay__ai, .media-overlay__credit) img.media-overlay__ai-icon { max-width: 100%; height: 1rem; }
     @media (max-width: 22.99rem) {
-        .cv-portrait:has(.media-overlay__ai, .media-overlay__credit) .media-overlay__ai,
         .cv-portrait:has(.media-overlay__ai, .media-overlay__credit) .media-overlay__credit { font-size: .5rem; }
         .cv-portrait:has(.media-overlay__ai, .media-overlay__credit) img.media-overlay__ai-icon { height: .85rem; }
     }
