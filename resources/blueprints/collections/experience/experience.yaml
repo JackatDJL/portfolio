@@ -76,6 +76,23 @@ tabs:
                   field: { type: link, display: Link, validate: [required] }
           -
             import: bard_body
+  relations_media:
+    display: 'Beziehungen & Medien'
+    sections:
+      -
+        display: Medien
+        fields:
+          -
+            handle: cover
+            field:
+              container: assets
+              folder: cv/experience
+              dynamic: slug
+              restrict: true
+              max_files: 1
+              type: assets
+              display: Titelbild
+              instructions: Optionales Titelbild. Urheber, Bildunterschrift und KI-Hinweis werden am Asset gepflegt.
   sidebar:
     display: Sidebar
     sections:

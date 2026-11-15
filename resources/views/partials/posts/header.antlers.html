@@ -7,4 +7,8 @@
     {{ if summary }}
         <p class="mt-6 text-lg text-foreground">{{ summary }}</p>
     {{ /if }}
+
+    {{ if cover }}
+        {{ partial:media/image :asset="cover" mode="content" figure_class="blog-featured-image" image_class="blog-featured-image__image" width="1920" sizes="(min-width: 80rem) 72rem, 92vw" loading="eager" fetchpriority="high" }}
+    {{ /if }}
 </header>
