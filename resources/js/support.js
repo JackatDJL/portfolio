@@ -75,8 +75,10 @@ for (const record of window.document.querySelectorAll('[data-support-document]')
             const resolutionLimit = Math.min(8, Number(image.getAttribute('width')) / image.offsetWidth * 1.5);
             const scale = Math.min(resolutionLimit, viewport.clientWidth / (image.offsetWidth * width), viewport.clientHeight / (image.offsetHeight * height));
             if (!Number.isFinite(scale) || scale <= 0) return;
-            const x = gsap.utils.clamp(viewport.clientWidth - image.offsetWidth * scale, 0, viewport.clientWidth / 2 - (left + width / 2) * image.offsetWidth * scale);
-            const y = gsap.utils.clamp(viewport.clientHeight - image.offsetHeight * scale, 0, viewport.clientHeight / 2 - (top + height / 2) * image.offsetHeight * scale);
+            const renderedWidth = image.offsetWidth * scale;
+            const renderedHeight = image.offsetHeight * scale;
+            const x = renderedWidth <= viewport.clientWidth ? (viewport.clientWidth - renderedWidth) / 2 : gsap.utils.clamp(viewport.clientWidth - renderedWidth, 0, viewport.clientWidth / 2 - (left + width / 2) * renderedWidth);
+            const y = renderedHeight <= viewport.clientHeight ? (viewport.clientHeight - renderedHeight) / 2 : gsap.utils.clamp(viewport.clientHeight - renderedHeight, 0, viewport.clientHeight / 2 - (top + height / 2) * renderedHeight);
             gsap.killTweensOf(image);
             gsap.to(image, { x, y, scale, duration: animate && !context.conditions.reduce ? .55 : 0, ease: 'power2.inOut', overwrite: true });
         };
@@ -85,7 +87,7 @@ for (const record of window.document.querySelectorAll('[data-support-document]')
             const note = [...record.querySelectorAll('[data-document-note]')].find(note => note.dataset.documentNote === selected.dataset.note);
             notes.forEach(item => { item.hidden = item !== note; item.classList.toggle('is-selected', item === note); });
             choices.forEach(choice => { const target = notes.find(item => item.dataset.documentNote === choice.dataset.note); if (target) choice.setAttribute('aria-controls', target.id); });
-            status.textContent = selected.dataset.description;
+            status.textContent = selected === choices[0] ? '' : selected.dataset.description;
             image.alt = selected === choices[0] ? originalAlt : `${selected.dataset.description} ${originalAlt}`;
         };
         const select = event => {
