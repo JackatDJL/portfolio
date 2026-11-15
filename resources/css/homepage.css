@@ -39,6 +39,8 @@
     .home-project__artifact img { display: block; width: 100%; height: auto; max-height: 52svh; object-fit: contain; }
     .home-writing { display: grid; grid-template-columns: .6fr 1.4fr; gap: 5vw; padding-block: clamp(6rem, 14vw, 14rem); }
     .home-post > a { padding-block: 2rem 3rem; }
+    .home-post__cover { display: block; width: min(100%, 38rem); margin-bottom: 1.5rem; }
+    .home-post__cover-image { display: block; width: 100%; height: auto; border: 1px solid var(--site-border); }
     .home-post time { display: block; margin-bottom: 1.5rem; font: .8rem var(--font-mono); color: var(--site-text-muted); }
     .home-post h3 { margin: 0; font-size: clamp(2rem, 3.5vw, 4rem); line-height: 1.1; letter-spacing: -.045em; }
     .home-post p { max-width: 48rem; color: var(--site-text-muted); line-height: 1.65; margin-top: 1.5rem; }
