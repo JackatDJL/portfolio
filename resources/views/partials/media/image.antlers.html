@@ -7,6 +7,6 @@
             <img class="{{ image_class ?? '' }}" src="{{ glide:asset width='{width ?? 1280}' }}" alt="{{ alt_override ?? asset:alt }}" width="{{ asset:width }}" height="{{ asset:height }}" loading="{{ loading ?? 'lazy' }}" decoding="async"{{ if asset:focus_css }} style="object-position: {{ asset:focus_css }}"{{ /if }}{{ if fetchpriority }} fetchpriority="{{ fetchpriority }}"{{ /if }}{{ if sizes }} sizes="{{ sizes }}" srcset="{{ glide:asset width='480' }} 480w, {{ glide:asset width='800' }} 800w, {{ glide:asset width='1280' }} 1280w, {{ glide:asset width='1920' }} 1920w"{{ /if }}>
             {{ unless hide_attribution }}<div class="media-overlays">{{ partial:media/overlays :asset="asset" :credit_override="credit_override" :rights_override="rights_override" }}</div>{{ /unless }}
         </div>
-        {{ unless hide_attribution }}{{ partial:media/attribution :asset="asset" :caption_override="caption_override" :credit_override="credit_override" :rights_override="rights_override" hide_credit="true" }}{{ /unless }}
+        {{ unless hide_attribution }}{{ partial:media/attribution :asset="asset" :caption_override="caption_override" :credit_override="credit_override" :rights_override="rights_override" hide_credit="true" :hide_caption="hide_caption" }}{{ /unless }}
     </figure>
 {{ /if }}

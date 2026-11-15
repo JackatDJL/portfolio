@@ -45,6 +45,21 @@ class AssetAttributionTest extends TestCase
         $this->assertStringNotContainsString('figcaption', $html);
     }
 
+    public function test_hide_credit_keeps_caption_without_repeating_the_overlay_credit(): void
+    {
+        $html = (string) Antlers::parse(file_get_contents(resource_path('views/partials/media/attribution.antlers.html')), [
+            'asset' => [
+                'caption' => 'A caption below the image',
+                'rights' => 'cc',
+                'cc' => 'Source credit already shown in the overlay',
+            ],
+            'hide_credit' => true,
+        ]);
+
+        $this->assertStringContainsString('A caption below the image', $html);
+        $this->assertStringNotContainsString('Source credit already shown in the overlay', $html);
+    }
+
     public function test_own_images_use_the_central_license_without_a_stale_credit(): void
     {
         $html = (string) Antlers::parse(file_get_contents(resource_path('views/partials/media/attribution.antlers.html')), [
