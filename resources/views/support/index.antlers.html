@@ -15,7 +15,7 @@
         <div class="site-container support-rosenfold-layout">
             <svg class="support-connection" data-support-connection aria-hidden="true" focusable="false"><path data-support-path /></svg>
             <div data-support-from><p class="support-owner">Unabhängiges Projekt · In Entwicklung</p><h2 id="rosenfold-heading">{{ rosenfold_title | sanitize }}</h2><p>{{ rosenfold_intro | sanitize }}</p></div>
-            <div class="support-code"><h3>{{ rosenfold_code_title | sanitize }}</h3><p>{{ rosenfold_code_intro | sanitize }}</p><pre><code>{{ rosenfold_code | entities }}</code></pre><p class="support-code-source">{{ rosenfold_code_source | sanitize }}</p></div>
+            <div class="support-code"><h3 id="rosenfold-code-heading">{{ rosenfold_code_title | sanitize }}</h3><p>{{ rosenfold_code_intro | sanitize }}</p><pre tabindex="0" role="region" aria-labelledby="rosenfold-code-heading"><code>{{ rosenfold_code | entities }}</code></pre><p class="support-code-source">{{ rosenfold_code_source | sanitize }}</p></div>
             {{ if rosenfold_screen }}{{ partial:media/image image_format="webp" image_quality="85" :asset="rosenfold_screen" width="1280" sizes="(min-width: 1024px) 45vw, 94vw" :caption_override="rosenfold_screen_caption" figure_class="support-screen" }}{{ /if }}
             <div class="support-next" data-support-to><h3>Der nächste belegbare Schritt</h3><p>{{ rosenfold_need | sanitize }}</p></div>
         </div>
@@ -23,7 +23,7 @@
     <section id="atheblues" class="support-work support-work--robot site-container" data-support-section aria-labelledby="robot-heading">
         <svg class="support-connection" data-support-connection aria-hidden="true" focusable="false"><path data-support-path /></svg>
         <div class="support-robot-layout"><div data-support-from><p class="support-owner">AtheBlues · Schulteam</p><h2 id="robot-heading">{{ robot_title | sanitize }}</h2>{{ robot_project }}{{ if published && project_status != 'confidential' }}<p>{{ summary | sanitize }}</p><a class="semantic-link" href="{{ url }}">Die Robotikgeschichte lesen</a>{{ /if }}{{ /robot_project }}</div>
-        {{ if robot_image }}{{ partial:media/image image_format="webp" image_quality="80" :asset="robot_image" width="1600" sizes="94vw" :caption_override="robot_caption" figure_class="support-workshop-photo" }}{{ /if }}</div>
+        {{ if robot_image }}<div class="support-workshop-photo"><p class="support-owner">{{ robot_archive_label | sanitize }}</p>{{ partial:media/image image_format="webp" image_quality="80" :asset="robot_image" width="1600" sizes="94vw" :caption_override="robot_caption" }}</div>{{ /if }}</div>
         <div class="support-workshop-intro"><h3>{{ robot_archive_title | sanitize }}</h3><p>{{ robot_archive_intro | sanitize }}</p></div>
         <div class="support-workshop-record">
             <div>{{ if robot_document }}{{ partial:media/image image_format="webp" image_quality="85" :asset="robot_document" width="1600" sizes="(min-width: 1024px) 60vw, 94vw" :caption_override="robot_document_caption" }}{{ robot_document }}<a class="semantic-link" href="{{ url }}">Technisches Poster in voller Größe öffnen</a>{{ /robot_document }}{{ /if }}</div>

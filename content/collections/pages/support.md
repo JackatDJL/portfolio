@@ -39,6 +39,7 @@ robot_project:
   - 8e9f1f56-1feb-46a8-9ae5-a79ec9444c81
 robot_image: projects/atheblues/atheblues-workshop-2024.jpg
 robot_caption: 'AtheBlues mit Bus und Bühnenbild vor der OnStage-Europameisterschaft 2024. Archivaufnahme, nicht der aktuelle Rescue-Line-Roboter.'
+robot_archive_label: 'Werkstattarchiv 2024 · OnStage'
 robot_archive_title: 'Was ein Umbau wirklich bedeutet.'
 robot_archive_intro: 'Das technische Poster von AtheBlues dokumentiert die OnStage-Arbeit von 2024. Die Bilder zeigen echte Elektronik und mehrere Bauzustände des Busses. Der heutige Rescue-Line-Entwurf ist ein anderes Vorhaben.'
 robot_document: projects/atheblues/atheblues-technical-poster-2024.png

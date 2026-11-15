@@ -111,6 +111,10 @@ tabs:
             field:
               type: textarea
               display: Codeausschnitt
+          - handle: robot_archive_label
+            field:
+              type: text
+              display: Archivjahr und Disziplin
           - handle: robot_archive_title
             field:
               type: text
