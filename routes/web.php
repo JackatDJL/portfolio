@@ -26,6 +26,13 @@ Route::get('/politik', function () {
     return response((new View)->template('politik/index')->layout('layout')->cascadeContent($entry)->render());
 })->name('politics.show');
 
+Route::get('/support', function () {
+    $entry = \Statamic\Facades\Entry::query()->where('collection', 'pages')->where('slug', 'support')->first();
+    abort_unless($entry && $entry->published(), 404);
+
+    return response((new View)->template('support/index')->layout('layout')->cascadeContent($entry)->render());
+})->name('support.show');
+
 Route::get('/sitemap.xml', [SearchDocumentsController::class, 'sitemap'])->name('sitemap');
 Route::get('/llms.txt', [SearchDocumentsController::class, 'llms'])->name('llms');
 Route::get('/llms-full.txt', [SearchDocumentsController::class, 'llmsFull'])->name('llms.full');
