@@ -64,6 +64,10 @@ class CvNavigationTest extends TestCase
         $grant = CvCapabilities::issueTemporary('/cv/jobmesse-26');
         $this->postJson('/cv/token-exchange', ['path' => '/cv/jobmesse-26', 'token' => $grant['token']])->assertOk();
         $cv = app(CvViewModel::class)->make('jobmesse-26', true, $grant['token']);
+        $experienceUrl = $cv['experience'][0]['url'];
+        $this->assertStringContainsString('cv_return=%2Fcv%2Fjobmesse-26#cv='.$grant['token'], $experienceUrl);
+        $experiencePath = parse_url($experienceUrl, PHP_URL_PATH).'?'.parse_url($experienceUrl, PHP_URL_QUERY);
+        $this->get($experiencePath)->assertOk()->assertSee('href="/cv/jobmesse-26"', false);
         $url = $cv['education'][0]['url'];
         $this->assertStringContainsString('cv_return=%2Fcv%2Fjobmesse-26#cv='.$grant['token'], $url);
         $path = parse_url($url, PHP_URL_PATH).'?'.parse_url($url, PHP_URL_QUERY);
@@ -75,6 +79,15 @@ class CvNavigationTest extends TestCase
         }
         $this->postJson('/cv/private-data', ['path' => '/cv/jobmesse-26'])->assertOk();
         $this->postJson('/cv/private-data', ['path' => '/cv'])->assertNotFound();
+    }
+
+    public function test_experience_detail_has_a_safe_cv_return_for_direct_visits(): void
+    {
+        $this->get('/cv/exp/atheblues-robotik-und-teamarbeit')
+            ->assertOk()
+            ->assertSee('href="/cv"', false)
+            ->assertDontSee('<span>Erfahrung</span>', false)
+            ->assertDontSee('experience-hero__image', false);
     }
 
     public function test_return_context_cannot_redirect_to_arbitrary_urls(): void

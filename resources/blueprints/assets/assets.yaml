@@ -18,6 +18,12 @@ tabs:
               type: textarea
               instructions: 'Optionaler sichtbarer Text unter dem Bild.'
           -
+            handle: eu_ai_disclosure
+            field:
+              display: 'EU-KI-Hinweis'
+              type: text
+              instructions: 'Optionaler Transparenzhinweis zur KI-Erzeugung oder -Bearbeitung dieses Bildes.'
+          -
             handle: rights
             field:
               options:

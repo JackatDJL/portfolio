@@ -748,6 +748,14 @@ test('Jobmesse release renders at all target widths with its timeline off', asyn
             await page.evaluate(() => document.fonts.ready);
             await expect(page.locator('a.btn-ghost[href="/cv"]')).toBeVisible();
             expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+            if (kind === 'experience') {
+                await expect(page.locator('.experience-hero')).toBeVisible();
+                await expect(page.locator('.experience-hero__image')).toHaveCount(0);
+                await expect(page.locator('.cv-chapter-nav span')).toHaveCount(0);
+                const back = await page.locator('.experience-hero__back').boundingBox();
+                const siteHeader = await page.locator('.site-header').boundingBox();
+                expect(back.y).toBeGreaterThanOrEqual(siteHeader.y + siteHeader.height);
+            }
             await page.screenshot({ path: testInfo.outputPath(`${kind}-${width}.png`), fullPage: true });
         }
     }
