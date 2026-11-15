@@ -305,8 +305,10 @@ html[data-theme='dark'] .cv-document::before { opacity: .035; mix-blend-mode: sc
 }
 
 
-.education-hero__back { position: absolute; z-index: 4; top: 1.5rem; left: max(1.25rem, calc((100vw - 68rem) / 2)); --site-text: #f5faf6; --site-border: #ffffff80; --site-surface: #111a16; background: #111a16b8; }
-.experience-hero__back { align-self: flex-start; margin-bottom: 1.5rem; --site-text: #f5faf6; --site-border: #ffffff80; --site-surface: #111a16; background: #111a16b8; }
+.education-hero__back { position: absolute; z-index: 4; top: 1.5rem; left: max(1.25rem, calc((100vw - 68rem) / 2)); }
+.education-hero--image .education-hero__back { --site-text: #f5faf6; --site-border: #ffffff80; --site-surface: #111a16; background: #111a16b8; }
+.experience-hero__back { align-self: flex-start; margin-bottom: 1.5rem; }
+.experience-hero--image .experience-hero__back { --site-text: #f5faf6; --site-border: #ffffff80; --site-surface: #111a16; background: #111a16b8; }
 
 @layer components {
     .cv-document__signature { display: grid; justify-items: start; }
