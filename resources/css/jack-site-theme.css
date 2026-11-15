@@ -791,7 +791,17 @@
     .publication-metadata dd { margin: 0; font-size: 0.9375rem; }
     .publication-citation { overflow-wrap: anywhere; font-size: 0.875rem; line-height: 1.55; }
     .publication-preview { margin: 0 0 2.5rem; }
-    .publication-preview img { display: block; width: 100%; height: auto; border: 1px solid var(--site-border); border-radius: var(--radius-md); background: var(--site-surface); }
+    .publication-preview__link { position: relative; display: block; overflow: hidden; border: 1px solid var(--site-border); border-radius: var(--radius-md); background: var(--site-surface); }
+    .publication-preview img { display: block; width: 100%; height: auto; border: 0; border-radius: inherit; transition: filter 260ms var(--ease-standard), opacity 260ms var(--ease-standard); }
+    .publication-preview__action { position: absolute; inset: 50% auto auto 50%; width: max-content; max-width: calc(100% - 2rem); transform: translate(-50%, -40%); border: 1px solid currentColor; border-radius: var(--radius-sm); background: rgb(7 16 12 / .88); color: #fffefa; padding: .75rem 1rem; font-weight: 650; text-align: center; opacity: 0; transition: opacity 220ms var(--ease-standard), transform 220ms var(--ease-standard); }
+    .publication-preview__link:hover img, .publication-preview__link:focus-visible img { filter: blur(2px) brightness(.72); }
+    .publication-preview__link:hover .publication-preview__action, .publication-preview__link:focus-visible .publication-preview__action { transform: translate(-50%, -50%); opacity: 1; }
+    .publication-preview__link:focus-visible { outline: 3px solid var(--site-focus); outline-offset: 4px; }
+    @media (hover: none) {
+        .publication-preview__link img { filter: blur(1px) brightness(.8); }
+        .publication-preview__action { transform: translate(-50%, -50%); opacity: 1; }
+    }
+    @media (prefers-reduced-motion: reduce) { .publication-preview img, .publication-preview__action { transition: none; } }
     .publication-document { margin: 0 0 2.5rem; }
     .publication-document__header {
         display: flex;

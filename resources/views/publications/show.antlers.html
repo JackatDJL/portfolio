@@ -2,15 +2,22 @@
 <article>
     {{ partial:detail/layout intro="publications/header" aside="publications/rail" aside_label="Bibliografische Angaben" }}
         {{ partial:components/table-of-contents variant="mobile" }}
-        {{ if document_url }}
-            {{ partial:publications/document }}
-        {{ elseif cover && publication_url }}
+        {{ if cover }}
             <figure class="publication-preview article-breakout--wide">
-                <a href="{{ publication_url }}" target="_blank" rel="noreferrer" aria-label="{{ title }} öffnen">
+                {{ if publication_url || doi }}
+                    <a class="publication-preview__link" href="{{ if publication_url }}{{ publication_url }}{{ else }}https://doi.org/{{ doi }}{{ /if }}" target="_blank" rel="noopener noreferrer" aria-label="Veröffentlichung öffnen: {{ title }}">
+                        <img src="{{ glide:cover width=1440 }}" srcset="{{ glide:cover width=720 }} 720w, {{ glide:cover width=1440 }} 1440w" sizes="(min-width: 64rem) 56rem, 92vw" alt="{{ cover:alt }}" width="{{ cover:width }}" height="{{ cover:height }}" loading="lazy" decoding="async">
+                        <span class="publication-preview__action">Veröffentlichung öffnen</span>
+                    </a>
+                {{ else }}
                     <img src="{{ glide:cover width=1440 }}" srcset="{{ glide:cover width=720 }} 720w, {{ glide:cover width=1440 }} 1440w" sizes="(min-width: 64rem) 56rem, 92vw" alt="{{ cover:alt }}" width="{{ cover:width }}" height="{{ cover:height }}" loading="lazy" decoding="async">
-                </a>
+                {{ /if }}
                 {{ partial:media/attribution :asset="cover" }}
             </figure>
+        {{ /if }}
+
+        {{ if document_file || document_url }}
+            {{ partial:publications/document }}
         {{ /if }}
 
         {{ if content }}
