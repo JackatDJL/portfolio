@@ -1,0 +1,32 @@
+/* URL flag: ?name=island. The established marker remains the default. */
+@layer components {
+    .site-header__identity-slot .site-header__wordmark.name-island {
+        display: inline-flex;
+        align-items: center;
+        gap: 0;
+        top: 1rem;
+        padding: .55rem .9rem;
+        border: 1px solid #93e8ba;
+        border-radius: 2rem;
+        background: #07100c;
+        color: #f5faf6;
+        box-shadow: 2px 3px 0 var(--site-accent);
+        text-decoration: none;
+        transition: background-color 180ms var(--ease-standard), color 180ms var(--ease-standard), box-shadow 240ms var(--ease-emphasized);
+    }
+    .name-island__label { display: inline-flex; align-items: center; gap: .6rem; white-space: nowrap; }
+    .name-island__label::before { content: ''; width: .4rem; height: .4rem; flex: none; border-radius: 50%; background: #93e8ba; }
+    .name-island__hint { display: grid; grid-template-columns: 0fr; opacity: 0; transition: grid-template-columns 350ms var(--ease-emphasized), opacity 180ms var(--ease-standard); }
+    .name-island__hint > span { min-width: 0; overflow: hidden; white-space: nowrap; font: 500 .75rem/1.2 var(--font-sans); letter-spacing: 0; }
+    .name-island:is(:hover, :focus-visible) { box-shadow: 3px 4px 0 var(--site-accent); }
+    .name-island:is(:hover, :focus-visible) .name-island__hint { grid-template-columns: 1fr; opacity: 1; }
+    .name-island:is(:hover, :focus-visible) .name-island__hint > span { padding-left: 1rem; }
+    .site-header__identity-slot .site-header__wordmark.name-island[data-contrast-marker="true"] { background-color: #93e8ba; color: #06100c; border-color: #06100c; box-shadow: 2px 3px 0 #06100c; }
+    .name-island[data-contrast-marker="true"] .name-island__label::before { background: #06100c; }
+    @media (max-width: 47.99rem) {
+        .name-island__hint { display: none; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .site-header__identity-slot .site-header__wordmark.name-island, .name-island__hint { transition: none; }
+    }
+}

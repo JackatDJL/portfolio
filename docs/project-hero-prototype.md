@@ -13,7 +13,7 @@ The existing Fira Sans display type and theme colors connect the photograph to t
 
 The experimental gallery now uses CSS columns with natural image ratios: two columns on desktop and one on mobile. It has no horizontal carousel or hidden slides. Captions, source credits, focal metadata and lazy loading remain intact. Column reading order follows DOM order down each column.
 
-The fixed header wordmark uses the existing hover marker when underlying solid-surface contrast falls below 4.5:1. It samples three points behind the name. Images and gradients, including decorative media excluded from pointer hit testing, receive conservative protection rather than claiming a pixel-level contrast measurement. Activation waits 100 ms, removal 300 ms; a 5.5:1 exit threshold provides hysteresis. Hover and keyboard focus retain the same light green marker and dark text in both themes, without a second animation or size change. Without JavaScript the marker stays visible as a readable fallback.
+The fixed header wordmark uses the existing hover marker when underlying solid-surface contrast falls below 4.5:1. It samples three points behind the name. Images and gradients, including decorative media excluded from pointer hit testing, receive conservative protection rather than claiming a pixel-level contrast measurement. Activation waits 40 ms, removal 160 ms; a 5.5:1 exit threshold provides hysteresis. Hover and keyboard focus retain the same light green marker and dark text in both themes, without a second animation or size change. Without JavaScript the marker stays visible as a readable fallback.
 
 Reduced motion has a static header and no hero ScrollTrigger. Without JavaScript, the image, heading, summary, credit and article render normally; gallery images remain horizontally scrollable. Font readiness and image load refresh geometry. GSAP matchMedia reverts and rebuilds on breakpoint/motion changes; ScrollTrigger handles viewport resizing. Non-cached page exit removes the experiment's listeners and animation context, while browser back/forward cache restoration refreshes it.
 
@@ -25,3 +25,9 @@ The first iteration's desktop/mobile scroll, resize, reduced-motion and no-JavaS
 Performance observations: the experiment is dynamically imported only when its hero exists. Its production chunk is about 1.3 kB before gzip and shares the existing GSAP/ScrollTrigger chunks. Responsive image candidates range from 480 to 1920 pixels; gallery images remain lazy-loaded. Frame dimensions deliberately animate layout during this short interval, so this is not a compositor-only animation. No frame-rate or physical-device performance claim is made. Evaluate on a lower-end phone before broad CMS rollout.
 
 This is an opt-in prototype for review, not a decision to replace every project hero.
+
+## Name island experiment
+
+Append `&name=island` to the hero comparison URL to try a compact capsule around the fixed header wordmark. `&name=marker` or omitting the parameter restores the established marker. The flag is URL-only and never stored. The homepage's separate large-name animation is outside this experiment.
+
+The capsule keeps Fira Sans and the site green, adds a small hard shadow, and expands a short home-link hint on desktop hover or keyboard focus. It remains one home link with its original accessible name. On mobile the hint stays hidden so the capsule cannot collide with the menu. Over difficult media the capsule changes to light green with dark text using the same contrast buffer; sampling uses the stable name label, not the expanding capsule. Reduced motion disables the shape transition. Without JavaScript the existing wordmark and readable marker fallback remain.
