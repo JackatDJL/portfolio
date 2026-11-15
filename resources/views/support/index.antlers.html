@@ -26,7 +26,8 @@
         </div>
         <div class="support-current-design">
             {{ if robot_cad }}{{ partial:media/image image_format="webp" image_quality="85" :asset="robot_cad" width="1600" sizes="(min-width: 1024px) 55vw, 94vw" :caption_override="robot_cad_caption" figure_class="support-current-cad" }}{{ /if }}
-            <div class="support-current-copy"><p class="support-owner">{{ robot_cad_label | sanitize }}</p><h3>{{ robot_current_title | sanitize }}</h3><p>{{ robot_current_text | sanitize }}</p><div class="support-next" data-support-to><h3>{{ robot_need_heading | sanitize }}</h3><p>{{ robot_need | sanitize }}</p></div></div>
+            <div class="support-current-copy"><p class="support-owner">{{ robot_cad_label | sanitize }}</p><h3>{{ robot_current_title | sanitize }}</h3><p>{{ robot_current_text | sanitize }}</p></div>
+            <div class="support-next support-robot-needs" data-support-to><h3>{{ robot_need_heading | sanitize }}</h3><p>{{ robot_need | sanitize }}</p>{{ if robot_requirements }}<dl class="support-requirements">{{ robot_requirements }}<div><dt>{{ title | sanitize }}</dt><dd>{{ text | sanitize }}</dd></div>{{ /robot_requirements }}</dl>{{ /if }}<p class="support-team-boundary">{{ robot_team_boundary | sanitize }}</p></div>
         </div>
         {{ if robot_cad_laptop }}<details class="support-evidence support-laptop-view"><summary>{{ robot_laptop_toggle | sanitize }}</summary>{{ partial:media/image image_format="webp" image_quality="80" :asset="robot_cad_laptop" width="1600" sizes="(min-width: 1024px) 75vw, 94vw" :caption_override="robot_laptop_caption" }}</details>{{ /if }}
         <details class="support-evidence support-archive"><summary>{{ robot_archive_toggle | sanitize }}</summary>

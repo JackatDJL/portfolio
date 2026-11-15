@@ -90,7 +90,14 @@ body:has(.support-story) .site-header__wordmark { position: static; }
 /* The exported CAD canvas was viewed over Onshape's white page background. */
 .support-current-cad img { width: 100%; height: auto; background: #fff; }
 .support-current-copy > h3 { font-size: clamp(1.8rem, 3vw, 3rem); line-height: 1.1; letter-spacing: -.035em; margin-block: 1rem 1.5rem; }
-.support-current-copy .support-next { margin-top: 2rem; }
+.support-robot-needs { grid-column: 1 / -1; max-width: none; margin: 0; }
+.support-robot-needs > p { max-width: 55rem; }
+.support-requirements { margin-block: 2rem; }
+.support-requirements > div { display: grid; grid-template-columns: minmax(12rem, 1fr) 2fr; gap: 1rem 3rem; padding-block: 1.5rem; border-top: 1px solid var(--site-border); }
+.support-requirements dt { font-weight: 650; font-size: 1.15rem; line-height: 1.4; }
+.support-requirements dd { margin: 0; max-width: 45rem; }
+.support-team-boundary { color: var(--site-text-muted); font-size: .95rem; }
+@media (max-width: 39.99rem) { .support-requirements > div { grid-template-columns: 1fr; gap: .75rem; } }
 .support-evidence { margin-top: 2.5rem; border-top: 1px solid var(--site-border); padding-top: 1rem; }
 .support-evidence > summary { cursor: pointer; min-height: 2.75rem; padding-block: .5rem; font-weight: 650; }
 .support-evidence > summary:focus-visible { outline: 2px solid var(--site-focus); outline-offset: .35rem; }

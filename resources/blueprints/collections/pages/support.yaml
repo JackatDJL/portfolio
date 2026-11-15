@@ -252,6 +252,24 @@ tabs:
             field:
               type: textarea
               display: Bedarf Robotik
+          - handle: robot_requirements
+            field:
+              type: grid
+              display: Konkrete Robotikbedarfe
+              mode: stacked
+              fields:
+                - handle: title
+                  field:
+                    type: text
+                    display: Bedarf
+                - handle: text
+                  field:
+                    type: textarea
+                    display: Zweck und aktueller Engpass
+          - handle: robot_team_boundary
+            field:
+              type: textarea
+              display: Verwaltung der Teamunterstützung
           - handle: transparency_title
             field:
               type: text

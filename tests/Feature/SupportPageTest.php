@@ -88,6 +88,9 @@ class SupportPageTest extends TestCase
         $html = (new View)->template('support/index')->cascadeContent($entry)->render();
         $this->assertStringContainsString('Rescue Line. Im Gesamtaufbau.', $html);
         $this->assertStringContainsString('selbstständig einer schwarzen Linie folgen', $html);
+        foreach (['von Grund auf selbst', 'schnell austauschbare Motorhalterung', 'Kugelsorter, Kamera und Ballfänger', 'Motorhalterungen fertigen und am realen Aufbau testen', 'CNC-gefertigt', 'SLS-Druckpartner', 'Raspberry Pi 4 mit 4 GB RAM', 'KI-Beschleuniger', 'Rechenleistung für das Training', 'KI-gestützte Entwicklungswerkzeuge'] as $text) {
+            $this->assertStringContainsString($text, $html);
+        }
         $this->assertStringContainsString('Sortierbaugruppe', $html);
         $this->assertStringContainsString('Fertigung und Fahrtests sind damit noch nicht nachgewiesen', $html);
         $this->assertStringContainsString('Kein fotografierter Arbeitsplatz', $html);
