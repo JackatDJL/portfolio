@@ -1,3 +1,5 @@
+import { initWordmarkContrast } from './wordmark-contrast.js';
+initWordmarkContrast();
 if (document.querySelector('[data-project-hero]')) import('./project-hero-prototype.js');
 if (document.querySelector('[data-signature-pattern]')) import('./cv-signature-pattern.js');
 import { initCvExplore } from './cv-explore.js';

@@ -10,6 +10,10 @@
         {{ partial:components/table-of-contents variant="mobile" }}
         {{ partial:bard/prose :content="content" }}
 
-        {{ partial:gallery/figures :assets="gallery" classes="project-gallery" }}
+        {{ if _transition }}
+            {{ partial:projects/gallery-prototype }}
+        {{ else }}
+            {{ partial:gallery/figures :assets="gallery" classes="project-gallery" }}
+        {{ /if }}
     {{ /partial:detail/layout }}
 </article>
