@@ -47,20 +47,37 @@ for (const root of document.querySelectorAll('[data-politics-page]')) {
     };
     measure();
     media.add('(prefers-reduced-motion: no-preference)', () => {
-        let tweens = [];
-        const clear = () => { tweens.forEach(tween => { tween.scrollTrigger?.kill(); tween.kill(); }); tweens = []; };
+        let tween;
+        const clear = () => { tween?.scrollTrigger?.kill(); tween?.kill(); };
         const build = () => {
             clear();
             measure();
-            const draw = (line, trigger, start, end) => gsap.fromTo(line, { strokeDasharray: line.getTotalLength(), strokeDashoffset: line.getTotalLength() }, {
-                strokeDashoffset: 0, ease: 'none', scrollTrigger: {
-                    trigger, start, end, scrub: .2,
+            const length = path.getTotalLength();
+            const connections = [...branches.values()].map(line => {
+                const junctionY = line.getPointAtLength(0).y;
+                let low = 0;
+                let high = length;
+                // The rail is monotonic in y. Locate the actual junction along its curves.
+                for (let i = 0; i < 24; i++) {
+                    const middle = (low + high) / 2;
+                    if (path.getPointAtLength(middle).y < junctionY) low = middle;
+                    else high = middle;
+                }
+                const branchLength = line.getTotalLength();
+                gsap.set(line, { strokeDasharray: branchLength, strokeDashoffset: branchLength });
+                return { line, branchLength, junction: high, span: Math.max(1, Math.min(branchLength, length - high)) };
+            });
+            tween = gsap.fromTo(path, { strokeDasharray: length, strokeDashoffset: length }, {
+                strokeDashoffset: 0, ease: 'none',
+                scrollTrigger: { trigger: story, start: 'top 65%', end: 'bottom 65%', scrub: .2 },
+                onUpdate() {
+                    const drawn = length * this.progress();
+                    for (const connection of connections) {
+                        const progress = gsap.utils.clamp(0, 1, (drawn - connection.junction) / connection.span);
+                        connection.line.style.strokeDashoffset = connection.branchLength * (1 - progress);
+                    }
                 },
             });
-            tweens.push(draw(path, story, 'top 65%', 'bottom 65%'));
-            for (const [chapter, branch] of branches) {
-                tweens.push(draw(branch, chapter, 'top 60%', 'bottom 65%'));
-            }
         };
         build();
         const resize = new ResizeObserver(build);
