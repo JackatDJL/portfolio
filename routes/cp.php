@@ -19,6 +19,7 @@ Route::post('/applications/handwritten-signature/{source?}', [ApplicationHandwri
 Route::delete('/applications/handwritten-signature/{source?}', [ApplicationHandwrittenSignatureController::class, 'destroy'])->where('source', 'example')->name('applications.handwritten-signature.destroy');
 Route::get('/applications/{id}/cv.pdf', [ApplicationController::class, 'cv'])->name('applications.cv');
 Route::get('/applications/{id}/summary', [ApplicationController::class, 'summary'])->name('applications.summary');
+Route::get('/applications/{id}/email', [ApplicationController::class, 'email'])->name('applications.email');
 Route::get('/applications/{id}/cv-profile', [ApplicationController::class, 'cvProfile'])->name('applications.cv-profile');
 
 Route::middleware(ApplicationAccess::class)->group(function () {

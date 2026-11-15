@@ -9,7 +9,7 @@ use Statamic\Facades\GlobalSet;
 
 final class ApplicationData
 {
-    public const GROUPS = ['recipient', 'letter', 'cv', 'documents', 'signature', 'tracking'];
+    public const GROUPS = ['recipient', 'letter', 'cv', 'documents', 'signature', 'tracking', 'email'];
 
     public static function encrypt(array $value): string
     {

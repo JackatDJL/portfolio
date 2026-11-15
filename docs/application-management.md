@@ -15,6 +15,20 @@ For a standalone CV PDF or web view, open **Globals → Lebenslauf → Handschri
 
 The workflow status is separate from Statamic publication. Application saves force `published: false`, disable revisions and use an opaque slug. The collection has no route or preview target. No sample biographies, credentials or applications are seeded.
 
+## Begleitmail
+
+The private **Begleitmail** tab creates a local draft from saved application data. Save the application before refreshing the preview. The recipient email comes from Empfänger; the subject is `Bewerbung: ` plus the cover-letter subject. Missing values stay empty. The salutation and closing use the email-specific text when entered, otherwise the cover-letter values. The sender name uses the email value or an explicitly stored typed-signature name; handwritten signature images are never used.
+
+Choose **Kurze Begleitmail** for a concise application-specific sentence based on the stored position and organisation, with an editable introduction. **Teaser aus dem Anschreiben** appends only the first Bard paragraph after the editable introduction, keeping paragraph breaks. These modes can add a transition to the complete application PDF when **Auf die Bewerbungs-PDF verweisen** is selected. The control panel opens the existing PDF preview; the user must attach its exported PDF in their mail editor. No PDF link or access token is copied into the email. **Vollständig manuell** uses only the email body field. Other attachment labels are generated only from selected PDFs that still resolve in the private application-documents container.
+
+The saved email group is encrypted with the other private application fields. Preview is a same-origin authenticated Control Panel read, returns no-store/noindex content and makes no remote composition request. Copy as text works without rich clipboard support; Copy HTML uses the browser's rich clipboard API when available and includes plain text as a fallback. There is no sending action, tracking image, bearer link, signature image or `.eml` export. Check the result and send it yourself in your mail application.
+
+Example Control Panel screenshots below use synthetic data only.
+
+![Begleitmail fields in the private application editor](screenshots/application-email-fields.png)
+
+![Generated HTML and plain-text email preview](screenshots/application-email-preview.png)
+
 ## Storage and access
 
 `ApplicationPrivateGroup` extends Statamic's native Group fieldtype, so protected fields appear as ordinary form controls instead of a one-row Grid that must be opened first. Its nested fields use native Bard, Entries, Assets, Date and other existing CP controls. It encrypts the processed JSON using Laravel's authenticated encryption and decrypts only for CP preprocessing or an explicit application resolver. `ApplicationData::groupValue()` reads both the prior one-row Grid data shape and the new Group shape; existing encrypted application records need no content rewrite. Normal augmentation, shallow augmentation and query indexing return no private value. Invalid ciphertext fails closed. Save listeners also encrypt arrays supplied through PHP and reject unknown unprotected top-level entry fields.

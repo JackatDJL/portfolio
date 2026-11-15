@@ -193,6 +193,33 @@
             if (isCurrent()) card.querySelector('[data-application-cv-grant-state]').textContent = error.message;
         }
     }
+    async function loadEmail(base) {
+        const panel = document.querySelector('[data-application-email]');
+        if (!panel || !base || base !== appBase()) return;
+        const status = panel.querySelector('[data-email-status]');
+        try {
+            const response = await fetch(base + '/email', { headers: { Accept: 'application/json' } });
+            if (!response.ok) throw new Error('Begleitmail nicht verfügbar. Änderungen zuerst speichern.');
+            const data = await response.json();
+            if (base !== appBase() || panel !== document.querySelector('[data-application-email]')) return;
+            panel.querySelector('[data-email-recipient]').textContent = data.recipient || 'Keine E-Mail-Adresse eingetragen';
+            panel.querySelector('[data-email-subject]').textContent = data.subject || 'Kein Betreff eingetragen';
+            panel.querySelector('[data-email-text]').value = data.text;
+            panel.querySelector('[data-email-html]').value = data.html;
+            const frame = document.createElement('iframe');
+            frame.title = 'HTML-Vorschau der Begleitmail';
+            frame.sandbox = '';
+            frame.srcdoc = data.html;
+            panel.querySelector('[data-email-html-preview]').replaceChildren(frame);
+            if (status) {
+                const pdfNotice = data.pdf_notice ? 'PDF-Überleitung aktiv; die exportierte PDF manuell anhängen.' : 'PDF-Überleitung aus.';
+                const attachments = data.attachments.length ? 'Anlagen: ' + data.attachments.join(', ') : 'Keine ausgewählte private PDF-Anlage wird in der Mail erwähnt.';
+                status.textContent = pdfNotice + ' ' + attachments;
+            }
+        } catch (error) {
+            if (status) status.textContent = error.message;
+        }
+    }
     async function loadProfileSummary(base, profileId = undefined) {
         const target = document.querySelector('[data-application-profile-summary]');
         if (!target || !base) return;
@@ -280,9 +307,36 @@
     new MutationObserver(refreshProfileSummary).observe(document.documentElement, { attributes: true, attributeFilter: ['value'], childList: true, subtree: true });
 
     document.addEventListener('click', async event => {
-        const button = event.target.closest('[data-reset-application-date], [data-application-cv], [data-application-preview], [data-application-export], [data-application-grant-create], [data-application-grant-revoke], [data-application-grant-revoke-all], [data-application-copy-link], [data-application-cv-grant-create], [data-application-cv-grant-copy], [data-application-cv-grant-revoke]');
+        const button = event.target.closest('[data-reset-application-date], [data-application-cv], [data-application-preview], [data-application-export], [data-application-grant-create], [data-application-grant-revoke], [data-application-grant-revoke-all], [data-application-copy-link], [data-application-cv-grant-create], [data-application-cv-grant-copy], [data-application-cv-grant-revoke], [data-email-pdf], [data-email-refresh], [data-email-copy-text], [data-email-copy-html]');
         if (!button) return;
         const base = appBase();
+        if (button.matches('[data-email-pdf]')) {
+            const status = button.closest('[data-application-email]')?.querySelector('[data-email-status]');
+            if (!base) { if (status) status.textContent = 'Bitte zuerst speichern.'; return; }
+            window.open(base + '/preview.pdf', '_blank', 'noopener,noreferrer');
+            if (status) status.textContent = 'Die PDF wird aus den gespeicherten Daten frisch geprüft. Änderungen zuerst speichern.';
+            return;
+        }
+        if (button.matches('[data-email-refresh]')) { await loadEmail(base); return; }
+        if (button.matches('[data-email-copy-text], [data-email-copy-html]')) {
+            const panel = button.closest('[data-application-email]');
+            const status = panel?.querySelector('[data-email-status]');
+            const field = panel?.querySelector(button.matches('[data-email-copy-text]') ? '[data-email-text]' : '[data-email-html]');
+            if (!base) { if (status) status.textContent = 'Bitte zuerst speichern.'; return; }
+            if (!field?.value) { await loadEmail(base); if (status) status.textContent = 'Vorschau geladen. Erneut klicken, um den Inhalt zu kopieren.'; return; }
+            try {
+                if (button.matches('[data-email-copy-html]') && navigator.clipboard?.write && window.ClipboardItem) {
+                    await navigator.clipboard.write([new ClipboardItem({ 'text/html': new Blob([field.value], { type: 'text/html' }), 'text/plain': new Blob([panel.querySelector('[data-email-text]').value], { type: 'text/plain' }) })]);
+                } else {
+                    await navigator.clipboard.writeText(field.value);
+                }
+                if (status) status.textContent = 'Inhalt kopiert.';
+            } catch {
+                field.focus(); field.select();
+                if (status) status.textContent = 'Automatisches Kopieren nicht verfügbar. Inhalt ist markiert und kann manuell kopiert werden.';
+            }
+            return;
+        }
         const panel = button.closest('[data-application-actions]') || document.querySelector('[data-application-actions]');
         const status = panel?.querySelector('[data-application-status]') || document.querySelector('[data-application-status]');
         if (!base) { if (status) status.textContent = 'Bitte zuerst speichern.'; return; }

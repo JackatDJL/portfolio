@@ -26,6 +26,14 @@
     background: rgb(127 127 127 / 4%);
 }
 
+.app-cp-email-meta { display: grid; gap: 0.5rem; margin: 1rem 0; }
+.app-cp-email-meta > div { display: grid; grid-template-columns: 6rem minmax(0, 1fr); gap: 0.75rem; }
+.app-cp-email-meta dt { font-weight: 600; }
+.app-cp-email-meta dd { margin: 0; overflow-wrap: anywhere; }
+.app-cp-email-preview { overflow: hidden; border: 1px solid rgb(127 127 127 / 25%); border-radius: 0.4rem; background: white; }
+.app-cp-email-preview iframe { display: block; width: 100%; min-height: 18rem; border: 0; }
+.app-cp-email textarea { min-height: 8rem; font-family: ui-monospace, monospace; }
+
 .app-cp-section-heading {
     display: flex;
     align-items: flex-start;
