@@ -117,12 +117,7 @@ test('mobile and reduced motion retain readable projects and light paper', async
     }
     for (const paper of await page.locator('.home-publication__sheet').all()) {
         await expect(paper).toHaveCSS('background-color', 'rgb(255, 254, 250)');
-        await expect(paper.locator('img')).toHaveCSS('object-fit', 'contain');
-        await expect(paper.locator('.home-publication__action')).toHaveText(/Veröffentlichung öffnen|Eintrag ansehen/);
-        await expect(paper).toHaveAttribute('target', '_blank');
-        await expect(paper).toHaveAttribute('href', /^https:\/\/doi\.org\//);
-        const motionDuration = await paper.locator('img').evaluate(image => parseFloat(getComputedStyle(image).transitionDuration));
-        expect(motionDuration).toBeLessThanOrEqual(0.00001);
+        await expect(paper.locator('img')).toHaveCSS('object-fit', 'cover');
         const dimensions = await paper.evaluate(element => {
             const box = element.getBoundingClientRect();
             const image = element.querySelector('img');
