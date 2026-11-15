@@ -62,5 +62,8 @@ class PoliticsPageTest extends TestCase
             }
         }
         $this->assertSame(1, $priority);
+        foreach ($images as $image) {
+            $this->assertStringContainsString('fm=webp', $image->getAttribute('src'));
+        }
     }
 }

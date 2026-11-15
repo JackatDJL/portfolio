@@ -1,0 +1,1 @@
+{{ if image_format }}{{ glide:asset width='{width ?? 1280}' :format="image_format" quality='{image_quality ?? 80}' }}{{ else }}{{ glide:asset width='{width ?? 1280}' }}{{ /if }}

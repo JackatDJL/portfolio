@@ -5,7 +5,7 @@
             <h1>{{ heading | sanitize }}</h1>
             <div><p class="politics-lead">{{ intro | sanitize }}</p><p class="politics-context">{{ personal_boundary | sanitize }}</p></div>
         </div>
-        {{ if hero_image }}{{ partial:media/image :asset="hero_image" width="1920" sizes="(min-width: 1440px) 1408px, 96vw" loading="eager" fetchpriority="high" :caption_override="hero_caption" figure_class="politics-opening__image" }}{{ /if }}
+        {{ if hero_image }}{{ partial:media/image image_format="webp" image_quality="78" :asset="hero_image" width="1920" sizes="(min-width: 1440px) 1408px, 96vw" loading="eager" fetchpriority="high" :caption_override="hero_caption" figure_class="politics-opening__image" }}{{ /if }}
         <nav class="politics-chapters" aria-label="Auf dieser Seite"><a href="#schule">Schule</a><a href="#forum">Erstwählerforum</a><a href="#volt">Volt</a><a href="#technik">Technik</a><a href="#fragen">Politische Fragen</a><a href="#persoenlich">Persönlich</a></nav>
     </header>
     <div class="politics-story site-container" data-politics-story>
@@ -23,14 +23,14 @@
             <div class="politics-chapter__body">
                 <h2 id="forum-heading">{{ chapter_forum_title | sanitize }}</h2>
                 {{ forum_project }}{{ if published && project_status != 'confidential' }}<p class="politics-chapter__intro">{{ summary | sanitize }}</p><a class="semantic-link" href="{{ url }}">Die Geschichte des Erstwählerforums</a>{{ /if }}{{ /forum_project }}
-                {{ if forum_image }}{{ partial:media/image :asset="forum_image" width="1280" sizes="(min-width: 1024px) 70vw, 90vw" :caption_override="forum_caption" figure_class="politics-forum-photo" }}{{ /if }}
+                {{ if forum_image }}{{ partial:media/image image_format="webp" image_quality="78" :asset="forum_image" width="1280" sizes="(min-width: 1024px) 70vw, 90vw" :caption_override="forum_caption" figure_class="politics-forum-photo" }}{{ /if }}
             </div>
         </section>
         <section id="volt" class="politics-chapter politics-chapter--volt" data-politics-chapter aria-labelledby="volt-heading">
             <div class="politics-date">{{ volt_period | sanitize }}</div>
             <div class="politics-chapter__body">
                 <div class="politics-working-grid">
-                    {{ if volt_image }}{{ partial:media/image :asset="volt_image" width="800" sizes="(min-width: 1024px) 40vw, 90vw" :caption_override="volt_caption" }}{{ /if }}
+                    {{ if volt_image }}{{ partial:media/image image_format="webp" image_quality="78" :asset="volt_image" width="800" sizes="(min-width: 1024px) 40vw, 90vw" :caption_override="volt_caption" }}{{ /if }}
                     <div><h2 id="volt-heading">{{ chapter_volt_title | sanitize }}</h2>{{ volt_experience }}{{ if published }}<p class="politics-chapter__intro">{{ summary | sanitize }}</p>{{ /if }}{{ /volt_experience }}<p class="politics-context">{{ party_context | sanitize }}</p><a class="semantic-link" href="https://voltdeutschland.org/niedersachsen/menschen/jack-ruder" rel="external">Offizielles Profil bei Volt Niedersachsen</a></div>
                 </div>
             </div>
@@ -52,7 +52,7 @@
             <div class="politics-date">{{ personal_period | sanitize }}</div>
             <div class="politics-chapter__body politics-personal-grid">
                 <div><h2 id="personal-heading">{{ chapter_personal_title | sanitize }}</h2><p class="politics-chapter__intro">{{ personal_intro | sanitize }}</p>{{ interests }}{{ if published }}<p>{{ summary | sanitize }}</p>{{ /if }}{{ /interests }}</div>
-                {{ if personal_image }}{{ partial:media/image :asset="personal_image" width="800" sizes="(min-width: 1024px) 30vw, 90vw" :caption_override="personal_caption" }}{{ /if }}
+                {{ if personal_image }}{{ partial:media/image image_format="webp" image_quality="78" :asset="personal_image" width="800" sizes="(min-width: 1024px) 30vw, 90vw" :caption_override="personal_caption" }}{{ /if }}
             </div>
         </section>
     </div>
