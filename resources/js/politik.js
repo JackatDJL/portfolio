@@ -47,22 +47,25 @@ for (const root of document.querySelectorAll('[data-politics-page]')) {
     };
     measure();
     media.add('(prefers-reduced-motion: no-preference)', () => {
-        let tween;
+        let tweens = [];
+        const clear = () => { tweens.forEach(tween => { tween.scrollTrigger?.kill(); tween.kill(); }); tweens = []; };
         const build = () => {
-            tween?.scrollTrigger?.kill();
-            tween?.kill();
+            clear();
             measure();
-            const paths = [path, ...branches.values()];
-            tween = gsap.fromTo(paths, { strokeDasharray: (_, line) => line.getTotalLength(), strokeDashoffset: (_, line) => line.getTotalLength() }, {
+            const draw = (line, trigger, start, end) => gsap.fromTo(line, { strokeDasharray: line.getTotalLength(), strokeDashoffset: line.getTotalLength() }, {
                 strokeDashoffset: 0, ease: 'none', scrollTrigger: {
-                    trigger: story, start: 'top 65%', end: 'bottom 65%', scrub: .2,
+                    trigger, start, end, scrub: .2,
                 },
             });
+            tweens.push(draw(path, story, 'top 65%', 'bottom 65%'));
+            for (const [chapter, branch] of branches) {
+                tweens.push(draw(branch, chapter, 'top 60%', 'bottom 65%'));
+            }
         };
         build();
         const resize = new ResizeObserver(build);
         resize.observe(story);
-        return () => { resize.disconnect(); tween?.scrollTrigger?.kill(); tween?.kill(); [path, ...branches.values()].forEach(line => line.removeAttribute('style')); measure(); };
+        return () => { resize.disconnect(); clear(); [path, ...branches.values()].forEach(line => line.removeAttribute('style')); measure(); };
     });
     const observer = new ResizeObserver(measure);
     observer.observe(story);
