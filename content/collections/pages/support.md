@@ -66,8 +66,8 @@ robot_document_details:
     width: 11
     height: 9
     note: drive
-  - label: Bühne
-    description: 'OnStage 2024: Bluetooth-Verbindungen unter Wettbewerbsbedingungen.'
+  - label: Bühnenbericht
+    description: 'Ganzes OnStage-Poster von 2024; die Erklärung bezieht sich auf den verlinkten Wettbewerbsbericht.'
     left: 0
     top: 0
     width: 100
