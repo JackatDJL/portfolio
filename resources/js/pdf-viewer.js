@@ -14,7 +14,14 @@ const initPdfPreview = async (viewer) => {
     const previewStage = viewer.querySelector('[data-pdf-preview-stage]');
     previewStage?.addEventListener('click', (event) => {
         if (!window.matchMedia('(hover: none)').matches) return;
-        if (event.target instanceof Element && event.target.closest('.pdf-viewer__action')) return;
+        const action = event.target instanceof Element && event.target.closest('.pdf-viewer__action');
+        if (action && event.detail === 0) return;
+        if (previewStage.dataset.actionVisible !== 'true') {
+            if (action) event.preventDefault();
+            previewStage.dataset.actionVisible = 'true';
+            return;
+        }
+        if (action) return;
         previewStage.dataset.actionVisible = 'true';
     });
 
