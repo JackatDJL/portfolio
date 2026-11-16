@@ -1,5 +1,6 @@
 {{ _ai_involvement = ai_involvement ?? asset:ai_involvement }}
 {{ _ai_disclosure = asset:eu_ai_disclosure ?? eu_ai_disclosure ?? asset:ai_disclosure ?? ai_disclosure }}
+{{ if _ai_involvement != 'none' && !_ai_involvement && _ai_disclosure }}{{ _ai_involvement = 'basic_disclosure' }}{{ /if }}
 {{ _appearance = ai_icon_appearance ?? asset:ai_icon_appearance ?? 'black' }}
 {{ _credit = asset:cc ?? credit_override }}
 {{ _rights = asset:rights ?? rights_override }}

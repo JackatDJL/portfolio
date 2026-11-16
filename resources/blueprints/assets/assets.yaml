@@ -16,8 +16,7 @@ tabs:
             field:
               display: 'KI-Beteiligung'
               type: select
-              default: none
-              instructions: 'Nur tatsächliche KI-Erstellung oder -Veränderung dieser Datei eintragen. Gewöhnliche Bearbeitung allein ist kein Grund, eine KI-Veränderung zu behaupten.'
+              instructions: 'Nur tatsächliche KI-Erstellung oder -Veränderung dieser Datei eintragen. Gewöhnliche Bearbeitung allein ist kein Grund, eine KI-Veränderung zu behaupten. Bei fehlender Auswahl bleiben ältere Metadaten erkennbar; „Keine“ ausdrücklich wählen, wenn ein vorhandener KI-Hinweis nicht gelten soll.'
               options:
                 - { key: none, value: Keine }
                 - { key: fully_generated, value: 'Vollständig KI-generiert' }

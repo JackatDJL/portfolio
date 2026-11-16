@@ -1,6 +1,13 @@
 {{# Canonical asset renderer. Callers must explicitly choose content or decorative semantics. #}}
 {{ if mode == 'decorative' }}
-    <img class="{{ image_class ?? '' }}" src="{{ glide:asset width='{width ?? 1280}' }}" alt="" width="{{ asset:width }}" height="{{ asset:height }}" loading="{{ loading ?? 'lazy' }}" decoding="async"{{ if asset:focus_css }} style="object-position: {{ asset:focus_css }}"{{ /if }}{{ if sizes }} sizes="{{ sizes }}" srcset="{{ glide:asset width='480' }} 480w, {{ glide:asset width='800' }} 800w, {{ glide:asset width='1280' }} 1280w, {{ glide:asset width='1920' }} 1920w"{{ /if }}>
+    <figure class="media-figure {{ figure_class ?? '' }}">
+        <div class="media-frame">
+            {{ if link_href }}<a class="media-frame__image-link" href="{{ link_href }}" aria-label="{{ if link_label }}Beitrag öffnen: {{ link_label | entities }}{{ else }}Bild öffnen{{ /if }}">{{ /if }}
+            <img class="{{ image_class ?? '' }}" src="{{ glide:asset width='{width ?? 1280}' }}" alt="" width="{{ asset:width }}" height="{{ asset:height }}" loading="{{ loading ?? 'lazy' }}" decoding="async"{{ if asset:focus_css }} style="object-position: {{ asset:focus_css }}"{{ /if }}{{ if sizes }} sizes="{{ sizes }}" srcset="{{ glide:asset width='480' }} 480w, {{ glide:asset width='800' }} 800w, {{ glide:asset width='1280' }} 1280w, {{ glide:asset width='1920' }} 1920w"{{ /if }}>
+            {{ if link_href }}</a>{{ /if }}
+            {{ unless hide_attribution }}<div class="media-overlays">{{ partial:media/overlays :asset="asset" :credit_override="credit_override" :rights_override="rights_override" }}</div>{{ /unless }}
+        </div>
+    </figure>
 {{ else }}
     <figure class="media-figure {{ figure_class ?? '' }}"{{ if ratio }} style="--image-ratio: {{ ratio }}"{{ /if }}>
         <div class="media-frame">

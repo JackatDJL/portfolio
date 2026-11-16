@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use Statamic\Facades\Antlers;
+use Statamic\Facades\Asset;
 use Tests\TestCase;
 
 class AssetAttributionTest extends TestCase
@@ -120,6 +121,25 @@ class AssetAttributionTest extends TestCase
         $this->assertStringNotContainsString('Bestehender KI-Hinweis</span>', $html);
     }
 
+    public function test_legacy_eu_disclosure_gets_a_basic_icon_unless_involvement_is_explicitly_none(): void
+    {
+        $partial = file_get_contents(resource_path('views/partials/media/overlays.antlers.html'));
+        $asset = Asset::find('assets::projects/ai-ctx/effect-ai-ctx.png');
+        $this->assertNotNull($asset);
+        $this->assertFalse($asset->data()->has('ai_involvement'));
+        $asset->set('eu_ai_disclosure', 'Gespeicherter EU-KI-Hinweis');
+
+        $legacy = (string) Antlers::parse($partial, ['asset' => $asset]);
+
+        $asset->set('ai_involvement', 'none');
+        $explicitlyNone = (string) Antlers::parse($partial, ['asset' => $asset]);
+
+        $this->assertStringContainsString('/assets/ai-labels/basic/black.svg', $legacy);
+        $this->assertStringContainsString('aria-label="Gespeicherter EU-KI-Hinweis"', $legacy);
+        $this->assertStringNotContainsString('Gespeicherter EU-KI-Hinweis</span>', $legacy);
+        $this->assertStringNotContainsString('/assets/ai-labels/', $explicitlyNone);
+    }
+
     public function test_absent_and_none_ai_metadata_do_not_render_an_icon(): void
     {
         $partial = file_get_contents(resource_path('views/partials/media/overlays.antlers.html'));
@@ -194,7 +214,8 @@ class AssetAttributionTest extends TestCase
         foreach (['alt', 'caption', 'rights', 'cc', 'ai_involvement', 'eu_ai_disclosure', 'ai_icon_appearance', 'credit_appearance'] as $field) {
             $this->assertStringContainsString('handle: '.$field, $blueprint);
         }
-        $this->assertStringContainsString('default: none', $blueprint);
+        $this->assertStringContainsString('key: none', $blueprint);
+        $this->assertStringNotContainsString('default: none', $blueprint);
     }
 
     public function test_project_caption_only_appears_once_on_the_detail_page(): void
