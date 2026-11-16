@@ -34,7 +34,7 @@ class SupportPageTest extends TestCase
         foreach ([['published' => false, 'project_status' => 'active'], ['published' => true, 'project_status' => 'confidential']] as $state) {
             $hidden = [...$state, 'title' => 'Private project marker', 'summary' => 'Private summary marker', 'url' => '/private-project'];
             $html = (new View)->template('support/index')->cascadeContent($entry)
-                ->with(['software_project' => [$hidden], 'robot_project' => [$hidden]])->render();
+                ->with(['education_project' => [$hidden]])->render();
             $this->assertStringNotContainsString('Private project marker', $html);
             $this->assertStringNotContainsString('Private summary marker', $html);
             $this->assertStringNotContainsString('/private-project', $html);
@@ -62,52 +62,39 @@ class SupportPageTest extends TestCase
         });
         Entry::swap($mock);
         $response = $this->get('/support')->assertOk();
-        foreach (['prtop', 'Rosenfold. Noch in Entwicklung.', 'AtheBlues', 'Schulteam', 'keine Zahlungen', 'nicht null Euro', 'getrennt', 'vor der Auswahl einer Datei', 'Archivaufnahme', 'nicht der aktuelle Rescue-Line-Roboter', '3D-Druck', 'Bluetooth', 'db38debd'] as $text) {
+        foreach (['Rosenfold.', 'AtheBlues', 'Schulteam', 'getrennt', 'Projektwoche', 'Rust-Paketmanager', 'Meine Projekte unterstützen'] as $text) {
             $response->assertSee($text);
         }
-        $response->assertSee('Ich bin Jack. Ich entwickle eigene Software.')->assertSee('https://www.atheblues.de/donate', false)
+        $response->assertDontSee('prtop')->assertDontSee('<details', false)->assertDontSee('Erst der Zweck')
             ->assertDontSee('<progress', false)->assertDontSee('360 €')->assertDontSee('900 €')->assertDontSee('700 €')
-            ->assertSee('/kontakt?thema=sponsoring', false);
+            ->assertSee('data-support-root', false)->assertSee('https://www.atheblues.de/donate', false);
+
     }
 
-    public function test_code_excerpt_is_editable_and_escaped_as_text(): void
+    public function test_widgets_and_intro_remain_editable_and_escape_markup(): void
     {
         $entry = Entry::query()->where('collection', 'pages')->where('slug', 'support')->first();
-        $html = (new View)->template('support/index')->cascadeContent($entry)
-            ->with(['rosenfold_code' => '<script>privateMarker()</script>', 'robot_archive_title' => 'Redaktionell geänderter Titel', 'financial_boundary' => 'Redaktionelle Finanzgrenze', 'contact_label' => 'Redaktioneller Kontakt'])
-            ->render();
-        $this->assertStringContainsString('Redaktionell geänderter Titel', $html);
-        $this->assertStringContainsString('Redaktionelle Finanzgrenze', $html);
+        $html = (new View)->template('support/index')->cascadeContent($entry)->with([
+            'intro' => '<script>privateMarker()</script>',
+            'support_options' => [['title' => 'Mein Widget aus dem CMS', 'text' => 'Bedarf aus dem CMS', 'label' => 'Kontakt', 'link' => '/kontakt']],
+            'contact_label' => 'Redaktioneller Kontakt',
+        ])->render();
+        $this->assertStringContainsString('Mein Widget aus dem CMS', $html);
+        $this->assertStringContainsString('Bedarf aus dem CMS', $html);
         $this->assertStringContainsString('Redaktioneller Kontakt', $html);
-        $this->assertStringContainsString('&lt;script&gt;privateMarker()', $html);
         $this->assertStringNotContainsString('<script>privateMarker()', $html);
     }
 
-    public function test_current_cad_is_distinct_from_the_optional_render_and_historical_archive(): void
+    public function test_cad_is_current_and_the_opening_uses_the_root_photo_structure(): void
     {
         $entry = Entry::query()->where('collection', 'pages')->where('slug', 'support')->first();
         $html = (new View)->template('support/index')->cascadeContent($entry)->render();
-        $this->assertStringContainsString('Rescue Line. Im Gesamtaufbau.', $html);
-        $this->assertStringContainsString('selbstständig einer schwarzen Linie folgen', $html);
-        foreach (['von Grund auf selbst', 'schnell austauschbare Motorhalterung', 'Kugelsorter, Kamera und Ballfänger', 'Motorhalterungen fertigen und am realen Aufbau testen', 'CNC-gefertigt', 'SLS-Druckpartner', 'Raspberry Pi 4 mit 4 GB RAM', 'KI-Beschleuniger', 'Rechenleistung für das Training', 'KI-gestützte Entwicklungswerkzeuge'] as $text) {
-            $this->assertStringContainsString($text, $html);
-        }
-        $this->assertStringContainsString('Sortierbaugruppe', $html);
-        $this->assertStringContainsString('Fertigung und Fahrtests sind damit noch nicht nachgewiesen', $html);
-        $this->assertStringContainsString('Kein fotografierter Arbeitsplatz', $html);
+        $this->assertStringContainsString('schnell austauschbare Motorhalterung', $html);
+        $this->assertStringContainsString('Sortiermodul', $html);
         $this->assertStringNotContainsString('cad.onshape.com/documents/', $html);
-        $this->assertLessThan(strpos($html, 'support-archive'), strpos($html, 'support-current-design'));
-
-        $document = new \DOMDocument;
-        @$document->loadHTML('<?xml encoding="UTF-8">'.$html);
-        $xpath = new \DOMXPath($document);
-        $cad = $xpath->query('//figure[contains(@class,"support-current-cad")]//img');
-        $this->assertCount(1, $cad);
-        $this->assertSame('1354', $cad->item(0)->getAttribute('width'));
-        $this->assertSame('994', $cad->item(0)->getAttribute('height'));
-        $this->assertSame('lazy', $cad->item(0)->getAttribute('loading'));
-        $this->assertCount(1, $xpath->query('//details[contains(@class,"support-laptop-view")]//img'));
-        $this->assertCount(1, $xpath->query('//details[contains(@class,"support-archive")]//div[@data-support-document]'));
+        $this->assertStringContainsString('data-home-person-media', $html);
+        $this->assertStringContainsString('data-home-thread-path', $html);
+        $this->assertStringContainsString('data-entry-cta', $html);
+        $this->assertStringNotContainsString('prtop', $html);
     }
-
 }

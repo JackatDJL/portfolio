@@ -1,48 +1,35 @@
-<article class="support-story" data-support-story>
-    <header class="support-opening site-container">
-        <p class="support-person">{{ byline | sanitize }}</p>
-        <div class="support-opening-layout"><div><h1>{{ heading | sanitize }}</h1><p class="support-opening__intro">{{ intro | sanitize }}</p></div>
-        {{ if opening_image }}{{ partial:media/image image_format="webp" image_quality="78" :asset="opening_image" width="960" sizes="(min-width: 1024px) 38vw, 94vw" loading="eager" fetchpriority="high" :caption_override="opening_caption" figure_class="support-person-photo" }}{{ /if }}</div>
-        <nav aria-label="Projekte auf dieser Seite"><a href="#rosenfold">Mein aktuelles Projekt</a><a href="#offene-software">Offene Werkzeuge</a><a href="#atheblues">Robotik im Team</a></nav>
-    </header>
-    <section id="rosenfold" class="support-work support-work--rosenfold" data-support-section aria-labelledby="rosenfold-heading">
-        <div class="site-container support-rosenfold-layout">
-            <svg class="support-connection" data-support-connection aria-hidden="true" focusable="false"><path data-support-path /></svg>
-            <div data-support-from><p class="support-owner">{{ rosenfold_owner_label | sanitize }}</p><h2 id="rosenfold-heading">{{ rosenfold_title | sanitize }}</h2><p>{{ rosenfold_intro | sanitize }}</p></div>
-            {{ if rosenfold_screen }}{{ partial:media/image image_format="webp" image_quality="85" :asset="rosenfold_screen" width="1280" sizes="(min-width: 1024px) 45vw, 94vw" :caption_override="rosenfold_screen_caption" figure_class="support-screen" }}{{ /if }}
-            <details class="support-code support-code-details"><summary>Ein Blick in die Implementierung</summary><div><h3 id="rosenfold-code-heading">{{ rosenfold_code_title | sanitize }}</h3><p>{{ rosenfold_code_intro | sanitize }}</p><pre tabindex="0" role="region" aria-labelledby="rosenfold-code-heading"><code>{{ rosenfold_code | entities }}</code></pre><p class="support-code-source">{{ rosenfold_code_source | sanitize }}</p></div></details>
-            <div class="support-next" data-support-to><h3>{{ rosenfold_need_heading | sanitize }}</h3><p>{{ rosenfold_need | sanitize }}</p></div>
+<article class="home-archive entry-support" data-support-root>
+    <span class="entry-home-dock" data-home-dock aria-hidden="true">Jack Ruder</span>
+    <svg class="home-thread" data-home-thread aria-hidden="true" focusable="false"><path data-home-thread-path /></svg>
+    <div class="home-cinema" data-home-cinema>
+        <header class="home-person" data-home-opening>
+            <div class="home-person__grid site-container">
+                <div class="home-name-slot" data-home-name-slot><h1 class="home-name wordmark" data-home-name aria-label="Jack Ruder"><span class="semantic-link" aria-hidden="true">Jack</span><span class="semantic-link" aria-hidden="true">Ruder</span></h1></div>
+                <div class="home-person__media" data-home-person-media>{{ opening_image }}{{ partial:entry/photo hero="true" }}{{ /opening_image }}</div>
+                <div class="home-person__intro" data-home-intro><p>{{ intro | sanitize }}</p></div>
+            </div>
+            <div class="home-gallery" data-home-gallery aria-label="Einblicke in meine Arbeit">{{ support_media }}{{ partial:entry/photo }}{{ /support_media }}</div>
+        </header>
+    </div>
+    <section id="projekte" class="home-projects" data-home-projects aria-labelledby="projects-title">
+        <div class="home-projects__stage site-container" data-home-project-stage>
+            <h2 id="projects-title" data-home-heading>{{ projects_heading | sanitize }}</h2>
+            <div class="home-projects__records">
+                <article id="rosenfold" class="home-project" data-home-project>
+                    <div class="home-project__link">
+                        <div class="home-project__copy"><p class="home-project__meta">{{ rosenfold_owner_label | sanitize }}</p><h3>{{ rosenfold_title | sanitize }}</h3><p>{{ rosenfold_intro | sanitize }}</p><p class="entry-next">{{ rosenfold_need | sanitize }}</p></div>
+                        <div class="home-project__artifact">{{ partial:media/image image_format="webp" image_quality="85" :asset="rosenfold_screen" width="1280" sizes="(min-width:1024px) 48vw,90vw" :caption_override="rosenfold_screen_caption" }}</div>
+                    </div>
+                </article>
+                <article id="bildung" class="home-project entry-education" data-home-project>
+                    <div class="home-project__link"><div class="home-project__copy"><h3>{{ education_heading | sanitize }}</h3><p>{{ education_intro | sanitize }}</p>{{ education_project }}{{ if published && project_status != 'confidential' }}{{ partial:components/outlink :href="url" label="Zur Projektwoche" }}{{ /if }}{{ /education_project }}</div><div class="home-project__artifact">{{ partial:media/image image_format="webp" :asset="education_image" width="1200" sizes="(min-width:1024px) 48vw,90vw" :caption_override="education_caption" }}</div></div>
+                </article>
+                <article id="atheblues" class="home-project entry-team" data-home-project>
+                    <div class="home-project__link"><div class="home-project__copy"><p class="home-project__meta">{{ robot_owner_label | sanitize }}</p><h3>{{ robot_title | sanitize }}</h3><p>{{ robot_brief | sanitize }}</p><p class="entry-next">{{ robot_team_boundary | sanitize }}</p><a class="related-reference related-reference--text" href="{{ robot_team_url | entities }}" rel="external"><span class="semantic-link">{{ robot_team_label | sanitize }}</span></a></div><div class="home-project__artifact">{{ partial:media/image image_format="webp" :asset="robot_cad" width="1280" sizes="(min-width:1024px) 48vw,90vw" :caption_override="robot_cad_caption" }}</div></div>
+                </article>
+            </div>
         </div>
     </section>
-    <section id="offene-software" class="support-work support-work--software site-container" aria-labelledby="software-heading">
-        <div class="support-work__intro" data-support-from><h2 id="software-heading">{{ software_title | sanitize }}</h2><p>{{ software_intro | sanitize }}</p></div>
-        <details class="support-tool-evidence"><summary>{{ software_evidence_label | sanitize }}</summary><div class="support-software-artifact">{{ if software_image }}{{ partial:media/image image_format="webp" image_quality="80" :asset="software_image" width="1280" sizes="(min-width: 1024px) 65vw, 94vw" :caption_override="software_caption" }}{{ /if }}<div class="support-artifact-note">{{ software_project }}{{ if published && project_status != 'confidential' }}<a class="semantic-link" href="{{ url }}">Projekt und Quellcode ansehen</a>{{ /if }}{{ /software_project }}</div></div>
-        <div class="support-next" data-support-to><h3>{{ software_need_heading | sanitize }}</h3><p>{{ software_need | sanitize }}</p><span class="support-owner">{{ software_owner_label | sanitize }}</span></div>
-        </details>
-    </section>
-    <section id="atheblues" class="support-work support-work--robot site-container" aria-labelledby="robot-heading">
-
-        <div class="support-team-layout"><div class="support-team-intro"><p class="support-owner">{{ robot_owner_label | sanitize }}</p><h2 id="robot-heading">{{ robot_title | sanitize }}</h2><p>{{ robot_brief | sanitize }}</p><p class="support-team-boundary">{{ robot_team_boundary | sanitize }}</p><a class="semantic-link" href="{{ robot_team_url | entities }}" rel="external">{{ robot_team_label | sanitize }}</a></div>
-            {{ if robot_cad }}{{ partial:media/image image_format="webp" image_quality="85" :asset="robot_cad" width="1600" sizes="(min-width: 1024px) 55vw, 94vw" :caption_override="robot_cad_caption" figure_class="support-current-cad" }}{{ /if }}
-        </div>
-        <details class="support-team-details"><summary>{{ robot_details_label | sanitize }}</summary>
-        <div class="support-current-design">
-
-            <div class="support-current-copy"><p class="support-owner">{{ robot_cad_label | sanitize }}</p><h3>{{ robot_current_title | sanitize }}</h3><p>{{ robot_current_text | sanitize }}</p></div>
-            <div class="support-next support-robot-needs" data-support-to><h3>{{ robot_need_heading | sanitize }}</h3><p>{{ robot_need | sanitize }}</p>{{ if robot_requirements }}<dl class="support-requirements">{{ robot_requirements }}<div><dt>{{ title | sanitize }}</dt><dd>{{ text | sanitize }}</dd></div>{{ /robot_requirements }}</dl>{{ /if }}</div>
-        </div>
-        {{ if robot_cad_laptop }}<details class="support-evidence support-laptop-view"><summary>{{ robot_laptop_toggle | sanitize }}</summary>{{ partial:media/image image_format="webp" image_quality="80" :asset="robot_cad_laptop" width="1600" sizes="(min-width: 1024px) 75vw, 94vw" :caption_override="robot_laptop_caption" }}</details>{{ /if }}
-        <details class="support-evidence support-archive"><summary>{{ robot_archive_toggle | sanitize }}</summary>
-        {{ if robot_image }}<div class="support-workshop-photo"><p class="support-owner">{{ robot_archive_label | sanitize }}</p>{{ partial:media/image image_format="webp" image_quality="80" :asset="robot_image" width="1600" sizes="94vw" :caption_override="robot_caption" }}</div>{{ /if }}
-        <div class="support-workshop-intro"><h3 id="workshop-document-heading">{{ robot_archive_title | sanitize }}</h3></div>
-        <div class="support-workshop-record" data-support-document>
-            {{ if robot_document }}<div class="support-document-controls" data-document-controls hidden><p>{{ robot_document_help | sanitize }}</p><div role="group" aria-label="Posterausschnitt"><button type="button" data-document-choice data-note="overview" data-left="0" data-top="0" data-width="100" data-height="100" data-description="{{ robot_document_overview | entities }}" aria-pressed="true">{{ robot_document_overview | sanitize }}</button>{{ robot_document_details }}<button type="button" data-document-choice data-left="{{ left }}" data-top="{{ top }}" data-width="{{ width }}" data-height="{{ height }}" data-note="{{ note | entities }}" data-description="{{ description | entities }}" aria-pressed="false">{{ label | sanitize }}</button>{{ /robot_document_details }}</div><p class="support-document-status" data-document-status aria-live="polite"></p></div>{{ /if }}
-            <div class="support-workshop-notes"><div data-document-note="overview"><h4>{{ robot_archive_label | sanitize }}</h4><p>{{ robot_archive_intro | sanitize }}</p></div><div data-document-note="control"><h4>{{ robot_control_title | sanitize }}</h4><p>{{ robot_control_text | sanitize }}</p></div><div data-document-note="drive"><h4>{{ robot_drive_title | sanitize }}</h4><p>{{ robot_drive_text | sanitize }}</p></div><div data-document-note="test"><h4>{{ robot_test_title | sanitize }}</h4><p>{{ robot_test_text | sanitize }}</p></div><a class="semantic-link" href="https://athenetz.de/ag-robotik/rcj_2024_kassel/rcj_2024_kassel.html" rel="external">Werkstatt- und Wettbewerbsbericht der Robotik-AG</a></div>
-            <div class="support-document-media">{{ if robot_document }}{{ partial:media/image image_format="webp" image_quality="85" :asset="robot_document" width="1600" sizes="(min-width: 1024px) 60vw, 94vw" :caption_override="robot_document_caption" }}{{ robot_document }}<a class="semantic-link" href="{{ url }}">Technisches Poster in voller Größe öffnen</a>{{ /robot_document }}{{ /if }}</div>
-        </div>
-        </details>
-        </details>
-    </section>
-    <section class="support-transparency site-container" aria-labelledby="transparency-heading"><h2 id="transparency-heading">{{ transparency_title | sanitize }}</h2><div><p>{{ transparency_intro | sanitize }}</p><p>{{ financial_boundary | sanitize }}</p></div></section>
-    <footer class="support-ending site-container"><h2>{{ contact_title | sanitize }}</h2><p>{{ contact_intro | sanitize }}</p>{{ partial:components/button href="/kontakt?thema=sponsoring" :label="contact_label" }}</footer>
+    <section class="entry-support-options site-container" aria-labelledby="options-heading"><h2 id="options-heading" data-home-heading>{{ options_heading | sanitize }}</h2><div class="entry-widget-stream">{{ support_options }}<article class="entry-widget"><h3>{{ title | sanitize }}</h3><p>{{ text | sanitize }}</p>{{ partial:components/button :href="link" :label="label" }}</article>{{ /support_options }}</div></section>
+    <section class="entry-support-finale site-container" aria-labelledby="finale-heading"><h2 id="finale-heading" data-home-heading>{{ contact_title | sanitize }}</h2><p>{{ contact_intro | sanitize }}</p><div class="entry-cta-stage" data-entry-cta><svg class="entry-cta-arrows" aria-hidden="true" viewBox="0 0 1000 330"><g data-cta-arrow><path d="M30 35 C200 30 140 190 350 210 M330 190 L350 210 322 216"/></g><g data-cta-arrow><path d="M970 35 C800 30 860 190 650 210 M670 190 L650 210 678 216"/></g><g data-cta-arrow><path d="M320 10 Q500 45 470 155 M450 130 L470 155 488 130"/></g><g data-cta-arrow><path d="M700 15 Q620 70 570 150 M565 121 L570 150 595 138"/></g><g data-cta-arrow><path d="M80 300 Q220 330 365 275 M335 269 L365 275 348 295"/></g><g data-cta-arrow><path d="M920 300 Q780 330 635 275 M665 269 L635 275 652 295"/></g></svg><div class="entry-cta-button" data-entry-cta-button>{{ partial:components/button href="/kontakt?thema=sponsoring" :label="contact_label" }}</div></div></section>
 </article>

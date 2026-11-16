@@ -1,3 +1,4 @@
+if (document.querySelector('[data-support-root], [data-politics-root]')) import('./support-root.js');
 if (document.querySelector('[data-support-story]')) import('./support.js');
 if (document.querySelector('[data-politics-page]')) import('./politik.js');
 if (document.querySelector('[data-signature-pattern]')) import('./cv-signature-pattern.js');
