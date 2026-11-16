@@ -26,8 +26,8 @@ Performance observations: the experiment is dynamically imported only when its h
 
 This is an opt-in prototype for review, not a decision to replace every project hero.
 
-## Name island experiment
+## Name glass experiment
 
-Append `&name=island` to the hero comparison URL to try a compact capsule around the fixed header wordmark. `&name=marker` or omitting the parameter restores the established marker. The flag is URL-only and never stored. The homepage's separate large-name animation is outside this experiment.
+Append `&name=island` to try a small CSS glass capsule around the fixed header name. `&name=marker` or omitting the parameter restores the standard marker. The flag is URL-only and never stored. The homepage's separate large-name animation is outside this experiment.
 
-The capsule keeps Fira Sans and the site green, adds a small hard shadow, and expands a short home-link hint on desktop hover or keyboard focus. It remains one home link with its original accessible name. On mobile the hint stays hidden so the capsule cannot collide with the menu. Over difficult media the capsule changes to light green with dark text using the same contrast buffer; sampling uses the stable name label, not the expanding capsule. Reduced motion disables the shape transition. Without JavaScript the existing wordmark and readable marker fallback remain.
+The capsule is white and translucent in light mode, with a quiet dark surface in dark mode. A small backdrop blur, faint border and inset highlight soften its edge. It keeps the original home link unchanged. There is no dot, extra label, expansion, hover animation or scroll-driven color change. The contrast sampler is bypassed for this static, readable surface; the original marker retains its 40/160 ms buffer. Browsers without backdrop-filter retain the mostly opaque surface. Without JavaScript the standard wordmark and marker fallback remain.

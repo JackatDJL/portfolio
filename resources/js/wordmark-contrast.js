@@ -5,7 +5,7 @@ import { initNameIsland } from './name-island-prototype.js';
 export function initWordmarkContrast() {
     const wordmark = document.querySelector('.site-header__wordmark');
     if (!wordmark) return;
-    initNameIsland(wordmark);
+    if (initNameIsland(wordmark)) return;
     wordmark.dataset.contrastMarker = 'false';
     let frame = 0;
     let timer = 0;
@@ -18,7 +18,7 @@ export function initWordmarkContrast() {
     }).reduce((sum, value, index) => sum + value * [.2126, .7152, .0722][index], 0);
     const contrast = (a, b) => (Math.max(a, b) + .05) / (Math.min(a, b) + .05);
     const needsMarker = () => {
-        const rect = (wordmark.querySelector('[data-name-contrast-label]') || wordmark).getBoundingClientRect();
+        const rect = wordmark.getBoundingClientRect();
         const text = luminance(rgb(getComputedStyle(document.body).color));
         // Hit testing omits decorative media with pointer-events:none.
         const decorativeMedia = [...document.querySelectorAll('img, video, canvas')]

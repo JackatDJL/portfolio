@@ -48,19 +48,19 @@ test('protects decorative images excluded from pointer hit testing', async ({ pa
     await expect(name).toHaveAttribute('data-contrast-marker', 'true');
 });
 
-test('URL flag opts into the island while keeping one accessible home link', async ({ page }) => {
+test('glass flag keeps the name static across hover, focus and dark sections', async ({ page }) => {
     await page.goto('/tests/browser/fixtures/wordmark-contrast.html?name=island');
     const name = page.getByRole('link', { name: 'Jack Ruder', exact: true });
     await expect(name).toHaveClass(/name-island/);
     await expect(name).toHaveAttribute('href', '#');
-    await expect(name.locator('.name-island__hint')).toHaveCSS('opacity', '0');
+    await expect(name.locator('*')).toHaveCount(0);
+    const initial = await name.evaluate(element => ({ width: element.offsetWidth, background: getComputedStyle(element).backgroundColor, color: getComputedStyle(element).color }));
+    await name.hover();
     await name.focus();
-    await expect(name.locator('.name-island__hint')).toHaveCSS('opacity', '1');
-    const labelWidth = await name.locator('.name-island__label').evaluate(element => element.getBoundingClientRect().width);
     await page.evaluate(() => scrollTo(0, 760));
-    await expect(name).toHaveAttribute('data-contrast-marker', 'true');
-    await expect(name).toHaveCSS('background-color', 'rgb(147, 232, 186)');
-    expect(await name.locator('.name-island__label').evaluate(element => element.getBoundingClientRect().width)).toBe(labelWidth);
+    await page.waitForTimeout(200);
+    expect(await name.evaluate(element => ({ width: element.offsetWidth, background: getComputedStyle(element).backgroundColor, color: getComputedStyle(element).color }))).toEqual(initial);
+    await expect(name).not.toHaveAttribute('data-contrast-marker');
     await page.goto('/tests/browser/fixtures/wordmark-contrast.html?name=marker');
     await expect(page.locator('.site-header__wordmark')).not.toHaveClass(/name-island/);
 });
