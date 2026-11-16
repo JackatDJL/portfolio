@@ -36,7 +36,7 @@
     </div>
 
     {{ if cover }}
-        {{ partial:media/image :asset="cover" mode="content" figure_class="detail-hero__cover" width="1280" sizes="(min-width: 64rem) 42vw, 92vw" loading="eager" fetchpriority="high" hide_attribution="true" }}
+        {{ partial:media/image :asset="cover" mode="content" figure_class="detail-hero__cover" width="1280" sizes="(min-width: 64rem) 42vw, 92vw" loading="eager" fetchpriority="high" hide_caption="true" }}
     {{ /if }}
 </div>
-{{ if cover }}<div class="detail-hero__attribution">{{ partial:media/attribution :asset="cover" standalone="true" }}</div>{{ /if }}
+{{ if cover:caption }}<div class="detail-hero__attribution">{{ partial:media/attribution :asset="cover" standalone="true" hide_credit="true" }}</div>{{ /if }}
