@@ -128,9 +128,9 @@ for (const root of document.querySelectorAll('[data-support-root], [data-politic
                     invalidateOnRefresh: true,
                 } });
                 const phase = () => Math.min(.2, innerHeight * .2 / (innerHeight + project.offsetHeight));
-                motion.fromTo(parts, { x: i => i ? 20 : -20, y: 24, opacity: i => i ? .65 : 1 },
+                motion.fromTo(parts, { x: i => i ? 20 : -20, y: 24, opacity: 1 },
                     { x: 0, y: 0, opacity: 1, duration: phase(), ease: 'power2.out' }, 0)
-                    .to(parts, { x: i => i ? 16 : -16, y: -20, opacity: i => i ? .7 : 1,
+                    .to(parts, { x: i => i ? 16 : -16, y: -20, opacity: 1,
                         duration: phase(), ease: 'power2.in' }, 1 - phase());
             });
         }
@@ -207,7 +207,7 @@ for (const stage of document.querySelectorAll('[data-entry-cta]')) {
     const media = gsap.matchMedia();
     media.add('(prefers-reduced-motion: no-preference)', () => {
         const arrows = [...stage.querySelectorAll('[data-cta-arrow]')];
-        const motion = gsap.timeline({ scrollTrigger: { trigger: stage, start: 'top 85%', end: 'bottom 70%', scrub: .4 } });
+        const motion = gsap.timeline({ scrollTrigger: { trigger: stage, start: 'top 85%', end: 'clamp(bottom 70%)', scrub: .4 } });
         arrows.forEach((arrow, index) => {
             const path = arrow.querySelector('path');
             const length = path.getTotalLength();
