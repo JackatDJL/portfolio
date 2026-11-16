@@ -67,3 +67,5 @@ body:has(.politics-page) .site-header__wordmark { background-color: var(--site-b
 .politics-opening { padding-top: clamp(2.5rem, 5vw, 5rem); }
 .politics-opening__copy { align-items: center; margin-bottom: 2.5rem; }
 .politics-opening h1 { max-width: 14ch; font-size: clamp(3.2rem, 6.5vw, 7rem); }
+
+body:has(.politics-page) .site-header__wordmark { position: static; }
