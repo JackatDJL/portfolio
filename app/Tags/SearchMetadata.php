@@ -106,10 +106,12 @@ class SearchMetadata extends Tags
             }
 
             if ($aiInvolvement === null || $aiInvolvement === '') {
-                $disclosure = $asset->get('eu_ai_disclosure') ?? $asset->get('ai_disclosure');
-                $disclosure = $disclosure instanceof Value ? $disclosure->value() : $disclosure;
-                if (is_string($disclosure) && trim($disclosure) !== '') {
-                    return null;
+                foreach (['eu_ai_disclosure', 'ai_disclosure'] as $disclosureHandle) {
+                    $disclosure = $asset->get($disclosureHandle);
+                    $disclosure = $disclosure instanceof Value ? $disclosure->value() : $disclosure;
+                    if (is_string($disclosure) && trim($disclosure) !== '') {
+                        return null;
+                    }
                 }
             }
         }

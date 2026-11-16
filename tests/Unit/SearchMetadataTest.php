@@ -96,7 +96,8 @@ class SearchMetadataTest extends TestCase
         $asset = Asset::find('assets::projects/ai-ctx/effect-ai-ctx.png');
         $this->assertNotNull($asset);
         $this->assertFalse($asset->data()->has('ai_involvement'));
-        $asset->set('eu_ai_disclosure', 'Gespeicherter KI-Hinweis');
+        $asset->set('eu_ai_disclosure', '');
+        $asset->set('ai_disclosure', 'Gespeicherter Legacy-KI-Hinweis');
 
         $this->assertNull($this->imageUrl($asset));
 
