@@ -18,6 +18,12 @@
         background-repeat: no-repeat;
         background-size: 100% 100%;
     }
+    .site-header__identity-slot .site-header__wordmark.name-glass-enabled:not(.name-island):hover,
+    .site-header__identity-slot .site-header__wordmark.name-glass-enabled:not(.name-island):focus-visible {
+        --link-marker: #93e8ba;
+        color: #06100c;
+        background-image: linear-gradient(var(--link-marker), var(--link-marker));
+    }
     .name-glass-effect {
         --name-glass: rgb(255 255 255 / .78);
         display: block;

@@ -44,6 +44,17 @@ test('rechecks after theme changes and retains a readable hover marker', async (
     await page.goto('/tests/browser/fixtures/wordmark-contrast.html');
     const name = page.locator('.site-header__wordmark');
     await expect(name).toHaveAttribute('data-contrast-marker', 'false');
+    await name.hover();
+    expect(await name.evaluate(element => getComputedStyle(element).backgroundImage)).not.toBe('none');
+    await expect(name).toHaveCSS('background-size', '100% 100%');
+    await expect(name).toHaveCSS('color', 'rgb(6, 16, 12)');
+    await page.mouse.move(500, 400);
+    await page.keyboard.press('Tab');
+    await expect(name).toBeFocused();
+    expect(await name.evaluate(element => getComputedStyle(element).backgroundImage)).not.toBe('none');
+    await expect(name).toHaveCSS('background-size', '100% 100%');
+    await expect(name).toHaveCSS('color', 'rgb(6, 16, 12)');
+    await page.mouse.move(500, 400);
     await page.evaluate(() => {
         document.body.style.color = '#f5faf6';
         document.documentElement.dataset.theme = 'dark';
@@ -113,6 +124,25 @@ test('glass loads only after the entire header leaves and restores the plain nam
     await expect(name.locator('.name-glass-effect')).toHaveCSS('opacity', '0');
     await expect(name.locator('.glass')).toHaveCount(0);
     await expect(name).toHaveAttribute('href', '#');
+});
+
+test('dark glass keeps its readable label color on hover and keyboard focus', async ({ page }) => {
+    await page.goto('/tests/browser/fixtures/wordmark-contrast.html');
+    const name = page.locator('.site-header__wordmark');
+    await page.evaluate(() => {
+        document.body.style.color = '#f5faf6';
+        document.documentElement.dataset.theme = 'dark';
+        scrollTo(0, 760);
+    });
+    await expect(name).toHaveClass(/name-island/);
+    const glassTextColor = await name.evaluate(element => getComputedStyle(element).color);
+
+    await name.hover();
+    await expect(name).toHaveCSS('color', glassTextColor);
+    await page.mouse.move(500, 400);
+    await page.keyboard.press('Tab');
+    await expect(name).toBeFocused();
+    await expect(name).toHaveCSS('color', glassTextColor);
 });
 
 test('glass fades both ways and a reversed scroll cancels delayed unmount', async ({ page }) => {
