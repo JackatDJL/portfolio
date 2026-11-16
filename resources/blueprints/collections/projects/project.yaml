@@ -158,6 +158,13 @@ tabs:
               type: assets
               display: Titelbild
           -
+            handle: hero_transition
+            field:
+              type: toggle
+              default: false
+              display: 'Experimenteller Hero-Übergang'
+              instructions: 'Optionaler Prototyp. Ohne Titelbild bleibt der bisherige Hero erhalten.'
+          -
             handle: gallery
             field:
               container: assets

@@ -8,6 +8,22 @@ use Tests\TestCase;
 
 class AssetAttributionTest extends TestCase
 {
+    public function test_project_hero_places_caption_after_the_image_frame_without_duplicating_credit(): void
+    {
+        $cover = clone Asset::find('assets::projects/erstwaehlerforum-stade/img-20260602-wa0030.jpg');
+        $cover->set('caption', 'Synthetic hero caption');
+        $cover->set('rights', 'cc');
+        $cover->set('cc', 'Synthetic photographer');
+        $html = view('partials.projects.hero-transition', [
+            'cover' => $cover,
+            'title' => 'Synthetic project',
+        ])->render();
+        $this->assertSame(1, substr_count($html, 'Synthetic hero caption'));
+        $this->assertSame(1, substr_count($html, 'Synthetic photographer'));
+        $this->assertStringContainsString('project-hero-prototype__caption', $html);
+        $this->assertGreaterThan(strpos($html, 'project-hero-prototype__copy'), strpos($html, 'Synthetic hero caption'));
+    }
+
     public function test_third_party_credit_and_caption_render_without_duplication(): void
     {
         $html = (string) Antlers::parse(file_get_contents(resource_path('views/partials/media/attribution.antlers.html')), [

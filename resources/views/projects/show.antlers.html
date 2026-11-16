@@ -1,10 +1,19 @@
 {{# Projekt-Detailseite: Intro, Lesebereich, Kontext-Rail. #}}
-<article class="project-detail">
-    {{ partial:detail/layout intro="projects/hero" aside="projects/rail" }}
+{{ _transition = false }}
+{{ if cover && get:hero != 'original' && (hero_transition || (slug == 'erstwaehlerforum-stade' && get:hero == 'transition')) }}{{ _transition = true }}{{ /if }}
+<article class="project-detail {{ if _transition }}project-detail--prototype{{ /if }}">
+    {{ if _transition }}{{ partial:projects/hero-transition }}{{ /if }}
+    {{ _intro = 'projects/hero' }}
+    {{ if _transition }}{{ _intro = false }}{{ /if }}
+    {{ partial:detail/layout :intro="_intro" aside="projects/rail" }}
         {{ if {cv_navigation:has_context} }}<nav class="cv-chapter-nav mb-6" aria-label="Lebenslauf"><a class="btn btn-ghost" href="{{ cv_navigation }}">← Lebenslauf</a></nav>{{ /if }}
         {{ partial:components/table-of-contents variant="mobile" }}
         {{ partial:bard/prose :content="content" }}
 
-        {{ partial:gallery/figures :assets="gallery" classes="project-gallery" }}
+        {{ if _transition }}
+            {{ partial:projects/gallery-prototype }}
+        {{ else }}
+            {{ partial:gallery/figures :assets="gallery" classes="project-gallery" }}
+        {{ /if }}
     {{ /partial:detail/layout }}
 </article>

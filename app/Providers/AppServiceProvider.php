@@ -16,6 +16,7 @@ use App\Signatures\UnavailableSignatureProvider;
 use App\Support\ApplicationPdfExporter;
 use App\Support\ApplicationPdfPostProcessor;
 use App\Support\ApplicationPrivacy;
+use App\Support\ProjectVariantFileCacher;
 use App\Support\SearchPath;
 use App\Support\UnmodifiedApplicationPdf;
 use App\Tags\CvTitle;
@@ -26,11 +27,13 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\URL;
-use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
 use Statamic\Facades\CP\Nav;
+use Statamic\Facades\StaticCache;
 use Statamic\Statamic;
+use Statamic\StaticCaching\Cachers\Writer;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -56,6 +59,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        StaticCache::extend('file', function ($app, $config) {
+            return new ProjectVariantFileCacher(new Writer($config['permissions'] ?? []), StaticCache::cacheStore(), $config);
+        });
+
         if ($hotFile = env('HOMEPAGE_PREVIEW_HOT_FILE')) {
             Vite::useHotFile($hotFile);
         }
