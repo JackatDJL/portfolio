@@ -7,7 +7,7 @@ Start with `bun run preview -- up hero-prototype`. On the returned app URL, comp
 - `/projekte/erstwaehlerforum-stade?hero=transition`
 - `/projekte/erstwaehlerforum-stade?hero=original`
 
-The original remains the default. Requests with a `hero` query parameter bypass static caching so comparison variants cannot populate or read the default response cache. The query experiment is limited to Erstwählerforum Stade. The project blueprint also offers an off-by-default `hero_transition` toggle. `?hero=original` overrides that toggle. Missing covers always use the original. No entry content, cover selection, relationships or canonical URLs change.
+The original remains the default. Requests with a `hero` query parameter bypass static cache writes and file-cache reads so comparison variants cannot populate or read the default response cache. The query experiment is limited to Erstwählerforum Stade. The project blueprint also offers an off-by-default `hero_transition` toggle. `?hero=original` overrides that toggle. Missing covers always use the original. No entry content, cover selection, relationships or canonical URLs change.
 
 The existing Fira Sans display type and theme colors connect the photograph to the reading column. The frame narrows and shortens with a 0.65-second scrub catch-up and sine easing. Title and summary scale together from the left bottom; their unscaled text width stays stable to prevent reflow during the transition. Only the bottom corners round. The project status replaces the redundant project eyebrow; the standalone divider and status row are removed. There is no pin or scroll interception.
 
@@ -19,7 +19,7 @@ Reduced motion has a static header and no hero ScrollTrigger. Without JavaScript
 
 ## Local proof
 
-The first iteration's desktop/mobile scroll, resize, reduced-motion and no-JavaScript checks passed. The revision adds focused browser regression tests for marker activation, short crossings, stable release and theme changes. The original dark-hero repro failed before the change and passed afterwards. Build and the 25-test PHP subset / 181 assertions pass. Revised visual checks cover desktop, mobile, dark theme, reduced motion and all four masonry captions/credits. Temporary screenshots remain outside Git.
+The first iteration's desktop/mobile scroll, resize, reduced-motion and no-JavaScript checks passed. The revision adds focused browser regression tests for marker activation, short crossings, stable release and theme changes. The original dark-hero repro failed before the change and passed afterwards. Build and the 52-test PHP subset / 302 assertions pass. Revised visual checks cover desktop, mobile, dark theme, reduced motion and all four masonry captions/credits. Temporary screenshots remain outside Git.
 
 
 Performance observations: the experiment is dynamically imported only when its hero exists. Its production chunk is about 1.3 kB before gzip and shares the existing GSAP/ScrollTrigger chunks. Responsive image candidates range from 480 to 1920 pixels; gallery images remain lazy-loaded. Frame dimensions deliberately animate layout during this short interval, so this is not a compositor-only animation. No frame-rate or physical-device performance claim is made. Evaluate on a lower-end phone before broad CMS rollout.
@@ -33,3 +33,5 @@ Append `&name=island` to try the fixed header name with `liquid-glass-react`. Th
 React, ReactDOM and liquid-glass-react are dynamically imported on the first header exit, only for this flag. The original home link remains the only interactive element and keeps its accessible name. The React root is an aria-hidden, pointer-transparent decorative layer. It unmounts the glass while the header is visible and cleans up on non-cached page exit. Font/label resize redraws its dimensions.
 
 The capsule is whitish in light mode and dark translucent in dark mode, with modest refraction and a soft border. No dot, extra text, expansion or elastic mouse movement is enabled. Reduced motion sets displacement to zero; CSS supplies a readable fallback if the import fails. The library documents only partial displacement support in Safari and Firefox. Tests cover header visibility, lazy mounting, hover stability and returning to the plain name, alongside the default marker tests.
+
+Cover captions render in normal document flow below the hero image, right-aligned. Source credits remain overlaid inside the image at bottom right, so multiline captions and multiline credits cannot overlap. A warm-default-file middleware regression verifies that hero variants bypass cached reads and do not overwrite the ordinary file.
