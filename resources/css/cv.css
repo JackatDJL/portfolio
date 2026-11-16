@@ -184,15 +184,13 @@
     .education-hero--image .eyebrow { color: #93e8ba; }
     .education-hero__period { display: flex; flex-wrap: wrap; align-items: baseline; gap: .6rem 2rem; font-weight: 600; }
     .education-hero__summary { max-width: 58ch; margin-top: 1rem; font-size: 1rem; line-height: 1.65; }
-    .education-hero__image .asset-attribution { position: absolute; bottom: 1.2rem; right: max(1.5rem, calc((100% - 68rem) / 2)); left: 1.5rem; text-align: right; z-index: 2; color: #f5faf6; }
-    .education-hero__image .asset-attribution__credit { color: inherit; }
-    .education-hero__image .asset-attribution__ai-disclosure { color: inherit; }
+    .education-hero__image .media-overlays { right: max(1rem, calc((100% - var(--container-content)) / 2 + 2rem)); bottom: 1.2rem; left: max(1rem, calc((100% - var(--container-content)) / 2 + 2rem)); }
     .education-detail .detail-layout { padding-top: 3rem; }
     @media (max-width: 47.99rem) {
         .cv-document { width: 100%; margin: 0; padding: 1rem; border-right: 0; border-left: 0; border-radius: 0; box-shadow: none; }
-        .cv-document__header { grid-template-columns: minmax(0, 1fr) 7.1rem; min-height: 13.5rem; padding: 1.25rem; }
-        .cv-document__header h1 { font-size: clamp(2.7rem, 15vw, 4rem); }
-        .cv-portrait { width: 6.7rem; margin-bottom: -.4rem; }
+        .cv-document__header { grid-template-columns: minmax(0, 1fr) clamp(7.1rem, 42vw, 10.5rem); min-height: 13.5rem; padding: 1.25rem; }
+        .cv-document__header h1 { font-size: clamp(2.25rem, 12vw, 3rem); }
+        .cv-portrait { width: calc(100% - .5rem); margin: 0 .5rem -.4rem auto; }
         .cv-document__body { display: block; padding-top: 1.5rem; }
         .cv-support { display: grid; grid-template-columns: 1fr 1fr; gap: 0 1.2rem; margin-bottom: 1.7rem; }
         .cv-support__section { min-width: 0; }
@@ -222,7 +220,12 @@
         .education-hero__image img { object-position: 55% center; }
         .education-hero__image::after { background: linear-gradient(0deg, rgb(3 12 8 / .96), rgb(3 12 8 / .72) 55%, rgb(3 12 8 / .08)); }
         .education-hero__content h1 { font-size: clamp(2.5rem, 10vw, 4rem); }
-        .education-hero__image .asset-attribution { text-align: left; right: 1.5rem; font-size: .7rem; }
+        .education-hero__image .media-overlays { right: 1rem; left: 1rem; }
+    }
+    @media (max-width: 22.99rem) {
+        .cv-document__header { grid-template-columns: minmax(0, 1fr) 8rem; }
+        .cv-document__header h1 { font-size: clamp(2.25rem, 12vw, 2.7rem); }
+        .cv-portrait { width: 7.5rem; margin: 0 .5rem -.4rem auto; }
     }
     @media (max-width: 30rem) {
         .cv-support { display: block; }

@@ -10,6 +10,7 @@ use App\Http\Controllers\CvTokenExchangeController;
 use App\Http\Controllers\SearchDocumentsController;
 use App\Http\Middleware\ApplicationAccess;
 use Illuminate\Support\Facades\Route;
+use Statamic\Facades\Antlers;
 use Statamic\View\View;
 
 // Route::statamic('example', 'example-view', [
@@ -31,6 +32,81 @@ Route::get('/design-system', function () {
     )->header('X-Robots-Tag', 'noindex, nofollow, noarchive')
         ->header('Cache-Control', 'private, no-store');
 })->name('design-system');
+
+Route::get('/__preview/media-credits', function () {
+    abort_unless(app()->environment(['local', 'testing']), 404);
+
+    $partial = file_get_contents(resource_path('views/partials/media/overlays.antlers.html'));
+    $samples = [
+        [
+            'title' => 'Project hero · Erstwählerforum Stade',
+            'page' => '/projekte/erstwaehlerforum-stade/',
+            'image' => '/assets/projects/erstwaehlerforum-stade/img-20260602-wa0030.jpg',
+            'alt' => 'Blick von der Bühne auf das Publikum im großen Saal.',
+            'frame' => 'media-preview__frame--wide',
+            'icon_appearance' => 'white-50',
+            'ai_involvement' => 'partially_modified',
+            'credit_appearance' => 'dark',
+            'credit' => 'Foto: Erstwählerforum Stade',
+            'rights' => 'cc',
+        ],
+        [
+            'title' => 'Education · Athenaeum Stade',
+            'page' => '/cv/edu/gymnasium-athenaeum-stade/',
+            'image' => '/assets/cv/education/gymnasium-athenaeum-stade/exterior_of_the_athenaeum_stade.jpg',
+            'alt' => 'Athenaeum Stade',
+            'frame' => 'media-preview__frame--wide media-preview__frame--school',
+            'icon_appearance' => 'black-50',
+            'ai_involvement' => 'basic_disclosure',
+            'credit_appearance' => 'dark',
+            'credit' => 'Von Marvin Ruder - Eigenes Werk, CC BY-SA 3.0, https://commons.wikimedia.org/w/index.php?curid=30528076',
+            'rights' => 'cc',
+        ],
+        [
+            'title' => 'CV · Portrait',
+            'page' => '/cv/',
+            'image' => '/assets/jack/profile_pictures/jack-20251020.jpg',
+            'alt' => 'Jack Ruder',
+            'frame' => 'media-preview__frame--portrait',
+            'icon_appearance' => 'white',
+            'ai_involvement' => 'fully_generated',
+            'credit_appearance' => 'dark',
+            'credit' => 'Jack Ruder · CC BY-SA 4.0',
+            'rights' => 'cc',
+            'portrait' => true,
+        ],
+        [
+            'title' => 'Project hero · AI-CTX code image',
+            'page' => '/projekte/ai-ctx/',
+            'image' => '/assets/projects/ai-ctx/effect-ai-ctx.png',
+            'alt' => 'TypeScript-Code definiert den Befehl ai-ctx und seine Unterbefehle.',
+            'frame' => 'media-preview__frame--code',
+            'icon_appearance' => 'black',
+            'ai_involvement' => 'partially_modified',
+            'credit_appearance' => 'light',
+            'credit' => 'Quelle: ai-ctx',
+            'rights' => 'cc',
+        ],
+    ];
+
+    $samples = array_map(function (array $sample) use ($partial): array {
+        $sample['overlay'] = (string) Antlers::parse($partial, [
+            'asset' => [],
+            'ai_involvement' => $sample['ai_involvement'],
+            'eu_ai_disclosure' => 'Vorschau-Fixture; keine Aussage über diese Datei.',
+            'ai_icon_appearance' => $sample['icon_appearance'],
+            'credit_appearance' => $sample['credit_appearance'],
+            'credit_override' => $sample['credit'],
+            'rights_override' => $sample['rights'],
+        ]);
+
+        return $sample;
+    }, $samples);
+
+    return response()->view('previews.media-credits', ['samples' => $samples])
+        ->header('X-Robots-Tag', 'noindex, nofollow, noarchive')
+        ->header('Cache-Control', 'private, no-store');
+})->name('preview.media-credits');
 
 Route::get('/cv/signature-example', [\App\Http\Controllers\ApplicationHandwrittenSignatureController::class, 'exampleImage'])->name('cv.signature-example');
 

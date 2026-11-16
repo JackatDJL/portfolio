@@ -138,6 +138,59 @@ test('mobile and reduced motion retain readable projects and light paper', async
     await expect(page.locator('.home-now__items')).toHaveCount(0);
 });
 
+test('publication source attribution stays clickable while the paper card is hovered or keyboard-focused', async ({ page }) => {
+    await page.goto('/');
+    const publication = page.locator('.home-publication:has(.home-publication__media)').first();
+    await expect(publication).toBeVisible();
+    await publication.evaluate(article => {
+        const overlays = article.querySelector('.home-publication__media .media-overlays');
+        overlays.innerHTML = '<span class="media-overlay__credit"><a href="https://credit.test/source">Test source</a></span>';
+    });
+
+    await publication.hover();
+    const source = publication.locator('.media-overlay__credit a');
+    await expect(source).toBeVisible();
+    const box = await source.boundingBox();
+    const point = {
+        x: box.x + box.width / 2,
+        y: box.y + box.height / 2,
+    };
+    const { hit, stack } = await page.evaluate(({ x, y }) => ({
+        hit: document.elementFromPoint(x, y)?.closest('a')?.href,
+        stack: document.elementsFromPoint(x, y).slice(0, 6).map(element => ({
+            tag: element.tagName,
+            className: element.className?.baseVal ?? element.className,
+            href: element.href ?? null,
+            zIndex: getComputedStyle(element).zIndex,
+            position: getComputedStyle(element).position,
+        })),
+    }), point);
+
+    expect(hit, JSON.stringify(stack)).toBe('https://credit.test/source');
+
+    await page.keyboard.press('Tab');
+    const cardLink = publication.locator('.home-publication__link');
+    await cardLink.focus();
+    await expect(cardLink).toBeFocused();
+    const focusState = await page.evaluate(({ x, y }) => ({
+        focusVisible: document.activeElement.matches(':focus-visible'),
+        hit: document.elementFromPoint(x, y)?.closest('a')?.href,
+        outlineWidth: getComputedStyle(document.querySelector('.home-publication__sheet')).outlineWidth,
+    }), point);
+    expect(focusState.focusVisible).toBe(true);
+    expect(focusState.outlineWidth).toBe('3px');
+    expect(focusState.hit).toBe('https://credit.test/source');
+
+    const media = await publication.locator('.home-publication__media').boundingBox();
+    const cardHref = await cardLink.getAttribute('href');
+    const cardHit = await page.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.closest('a')?.href, {
+        x: media.x + media.width / 2,
+        y: media.y + media.height / 2,
+    });
+
+    expect(cardHit).toContain(cardHref);
+});
+
 
 test('gallery source count never changes pacing, and every image exits by project 1', async ({ browser }) => {
     const measurements = [];

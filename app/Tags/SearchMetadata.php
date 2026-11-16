@@ -4,6 +4,7 @@ namespace App\Tags;
 
 use App\Support\SearchPath;
 use App\Support\SocialLinks;
+use Statamic\Facades\AssetContainer;
 use Statamic\Facades\GlobalSet;
 use Statamic\Fields\Value;
 use Statamic\Tags\Tags;
@@ -94,6 +95,27 @@ class SearchMetadata extends Tags
             }
         }
 
+        // Do not publish an unlabelled source as a social preview. A labelled
+        // derivative can be added later without changing or overwriting the source.
+        $asset = $this->assetForImage($image, $baseUrl);
+        if (is_object($asset) && method_exists($asset, 'get')) {
+            $aiInvolvement = $asset->get('ai_involvement');
+            $aiInvolvement = $aiInvolvement instanceof Value ? $aiInvolvement->value() : $aiInvolvement;
+            if (is_string($aiInvolvement) && $aiInvolvement !== 'none' && $aiInvolvement !== '') {
+                return null;
+            }
+
+            if ($aiInvolvement === null || $aiInvolvement === '') {
+                foreach (['eu_ai_disclosure', 'ai_disclosure'] as $disclosureHandle) {
+                    $disclosure = $asset->get($disclosureHandle);
+                    $disclosure = $disclosure instanceof Value ? $disclosure->value() : $disclosure;
+                    if (is_string($disclosure) && trim($disclosure) !== '') {
+                        return null;
+                    }
+                }
+            }
+        }
+
         if (is_object($image)) {
             if (method_exists($image, 'absoluteUrl')) {
                 $image = $image->absoluteUrl();
@@ -117,6 +139,131 @@ class SearchMetadata extends Tags
         }
 
         return $baseUrl.'/assets/'.ltrim($image, '/');
+    }
+
+    /** Resolves an Asset value, container-relative path, or local asset URL. */
+    private function assetForImage(mixed $image, string $baseUrl): ?object
+    {
+        if (is_object($image) && method_exists($image, 'get')) {
+            return $image;
+        }
+
+        if (! is_string($image) || trim($image) === '') {
+            return null;
+        }
+
+        $reference = trim($image);
+        if (str_contains($reference, '::')) {
+            $asset = \Statamic\Facades\Asset::find($reference);
+
+            return is_object($asset) ? $asset : null;
+        }
+
+        $parts = parse_url($reference);
+        if ($parts === false) {
+            return null;
+        }
+
+        $path = $this->normalizePath((string) ($parts['path'] ?? ''));
+        if ($path === null) {
+            return null;
+        }
+        $referenceHost = isset($parts['host']) ? strtolower($parts['host']) : null;
+        $siteHost = strtolower((string) parse_url($baseUrl, PHP_URL_HOST));
+
+        foreach (AssetContainer::all() as $container) {
+            if (! is_object($container) || ! method_exists($container, 'url') || ! method_exists($container, 'asset')) {
+                continue;
+            }
+
+            if (method_exists($container, 'private') && $container->private()) {
+                continue;
+            }
+
+            $containerUrl = $container->url();
+            if (! is_string($containerUrl) || $containerUrl === '') {
+                continue;
+            }
+
+            $containerPath = $this->normalizePath((string) (parse_url($containerUrl, PHP_URL_PATH) ?: $containerUrl));
+            if ($containerPath === null) {
+                continue;
+            }
+            $containerPath = rtrim($containerPath, '/') ?: '/';
+            $normalizedPath = $path;
+
+            if ($referenceHost !== null) {
+                $containerAbsoluteUrl = method_exists($container, 'absoluteUrl') ? $container->absoluteUrl() : null;
+                $containerHost = is_string($containerAbsoluteUrl)
+                    ? strtolower((string) parse_url($containerAbsoluteUrl, PHP_URL_HOST))
+                    : '';
+
+                if (! in_array($referenceHost, array_filter([$siteHost, $containerHost]), true)) {
+                    continue;
+                }
+
+                $prefix = rtrim($containerPath, '/');
+                if ($prefix !== '' && ! str_starts_with($normalizedPath, $prefix.'/')) {
+                    continue;
+                }
+
+                $assetPath = ltrim(substr($normalizedPath, strlen($prefix)), '/');
+            } elseif (str_starts_with($normalizedPath, rtrim($containerPath, '/').'/')) {
+                $assetPath = ltrim(substr($normalizedPath, strlen(rtrim($containerPath, '/'))), '/');
+            } elseif (! str_starts_with($reference, '/')) {
+                $assetPath = ltrim($path, '/');
+                $containerPrefix = trim($containerPath, '/').'/';
+                if (str_starts_with($assetPath, $containerPrefix)) {
+                    $assetPath = substr($assetPath, strlen($containerPrefix));
+                }
+            } else {
+                continue;
+            }
+
+            $assetPath = ltrim($this->normalizeDecodedPath($assetPath) ?? '', '/');
+            if ($assetPath === '') {
+                continue;
+            }
+
+            $asset = $container->asset($assetPath);
+            if (is_object($asset)) {
+                return $asset;
+            }
+        }
+
+        return null;
+    }
+
+    /** Resolves URL dot segments before matching a path to a Statamic asset. */
+    private function normalizePath(string $path): ?string
+    {
+        return $this->normalizeDecodedPath(rawurldecode($path));
+    }
+
+    /** Normalizes an already decoded path without changing literal percent sequences. */
+    private function normalizeDecodedPath(string $path): ?string
+    {
+        $segments = explode('/', str_replace('\\', '/', $path));
+        $normalized = [];
+
+        foreach ($segments as $segment) {
+            if ($segment === '' || $segment === '.') {
+                continue;
+            }
+
+            if ($segment === '..') {
+                array_pop($normalized);
+                continue;
+            }
+
+            if (str_contains($segment, "\0")) {
+                return null;
+            }
+
+            $normalized[] = $segment;
+        }
+
+        return '/'.implode('/', $normalized);
     }
 
     /** Unwraps a Statamic field value before using its underlying data. */

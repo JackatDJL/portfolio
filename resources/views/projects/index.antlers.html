@@ -11,8 +11,7 @@
                         {{ if featured_technology }}<ul class="project-technologies" aria-label="Technologien">{{ featured_technology }}<li><span class="chip chip-topic">{{ label ?? value }}</span></li>{{ /featured_technology }}</ul>{{ /if }}
                     </a>
                     <figure class="project-artifact" data-project-artifact>
-                        {{ if cover }}<img src="{{ glide:cover width="960" }}" srcset="{{ glide:cover width="480" }} 480w, {{ glide:cover width="960" }} 960w" sizes="(min-width: 1024px) 42vw, 90vw" alt="{{ cover:alt }}" width="{{ cover:width }}" height="{{ cover:height }}" loading="lazy" decoding="async">{{ else }}<div class="project-artifact__type"><span class="eyebrow">{{ project_status:label }}</span><p>{{ title }}</p>{{ if featured_technology }}<span>{{ featured_technology }}{{ label ?? value }}{{ unless last }} / {{ /unless }}{{ /featured_technology }}</span>{{ /if }}</div>{{ /if }}
-                        {{ if cover }}{{ partial:media/attribution :asset="cover" hide_caption="true" }}{{ /if }}
+                        {{ if cover }}<div class="media-frame"><img src="{{ glide:cover width="960" }}" srcset="{{ glide:cover width="480" }} 480w, {{ glide:cover width="960" }} 960w" sizes="(min-width: 1024px) 42vw, 90vw" alt="{{ cover:alt }}" width="{{ cover:width }}" height="{{ cover:height }}" loading="lazy" decoding="async"><div class="media-overlays">{{ partial:media/overlays :asset="cover" }}</div></div>{{ else }}<div class="project-artifact__type"><span class="eyebrow">{{ project_status:label }}</span><p>{{ title }}</p>{{ if featured_technology }}<span>{{ featured_technology }}{{ label ?? value }}{{ unless last }} / {{ /unless }}{{ /featured_technology }}</span>{{ /if }}</div>{{ /if }}
                     </figure>
                 </article>
             {{ /collection:projects }}
