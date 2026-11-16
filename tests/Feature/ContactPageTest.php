@@ -22,7 +22,7 @@ class ContactPageTest extends TestCase
         config(['contact.enabled' => false]);
         $this->get('/kontakt?thema=sponsoring')->assertOk()->assertSee('mailto:jack@djl.foundation?subject=Sponsoring', false)
             ->assertDontSee('<form', false)->assertDontSee(' disabled', false)->assertHeader('Cache-Control', 'no-store, private');
-        $this->post('/kontakt', $this->payload())->assertStatus(503)->assertSee('nichts versendet');
+        $this->post('/kontakt', $this->payload())->assertStatus(503)->assertSee('nichts versendet')->assertDontSee('href="#contact-topic"', false);
         Mail::assertNothingSent();
     }
 

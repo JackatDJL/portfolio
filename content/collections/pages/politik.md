@@ -23,8 +23,8 @@ heading: 'Ich übernehme Verantwortung.'
 intro: 'Ich bin Jack Ruder aus Stade. Seit 2019 engagiere ich mich in der Schülervertretung. Aus der Arbeit an meiner Schule wurde die Idee, junge Menschen über Schulgrenzen hinweg mit Politik ins Gespräch zu bringen. Heute organisiere ich politische Bildung und übernehme Kommunikations- und technische Aufgaben bei Volt.'
 hero_image: projects/erstwaehlerforum-stade/img-20260602-wa0030.jpg
 hero_caption: 'Beim Erstwählerforum Stade. Der Blick von der Bühne in den Saal.'
-chapter_school_title: 'An meiner Schule hat es angefangen.'
-chapter_school_intro: 'In der Schülervertretung begann mein Engagement. Später kamen die Aufgaben als stellvertretender Schülersprecher und im Schulvorstand hinzu. Aus dieser Arbeit entwickelte sich auch mein Engagement über die eigene Schule hinaus.'
+chapter_school_title: 'An meiner Schule.'
+chapter_school_intro: ''
 school_milestones:
   - ad79c3f3-ac9f-4fe8-ba6b-fca12fdb7ae3
   - 432a2d8b-1efd-442b-929b-a4286026cf7f

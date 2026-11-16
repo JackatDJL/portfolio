@@ -14,11 +14,11 @@
             <div class="support-next" data-support-to><h3>{{ rosenfold_need_heading | sanitize }}</h3><p>{{ rosenfold_need | sanitize }}</p></div>
         </div>
     </section>
-    <section id="offene-software" class="support-work support-work--software site-container" data-support-section aria-labelledby="software-heading">
-        <svg class="support-connection" data-support-connection aria-hidden="true" focusable="false"><path data-support-path /></svg>
+    <section id="offene-software" class="support-work support-work--software site-container" aria-labelledby="software-heading">
         <div class="support-work__intro" data-support-from><h2 id="software-heading">{{ software_title | sanitize }}</h2><p>{{ software_intro | sanitize }}</p></div>
-        <div class="support-software-artifact">{{ if software_image }}{{ partial:media/image image_format="webp" image_quality="80" :asset="software_image" width="1280" sizes="(min-width: 1024px) 65vw, 94vw" :caption_override="software_caption" }}{{ /if }}<div class="support-artifact-note">{{ software_project }}{{ if published && project_status != 'confidential' }}<h3>{{ title | sanitize }}</h3><p>{{ summary | sanitize }}</p><a class="semantic-link" href="{{ url }}">Arbeitsstand ansehen</a>{{ /if }}{{ /software_project }}</div></div>
+        <details class="support-tool-evidence"><summary>{{ software_evidence_label | sanitize }}</summary><div class="support-software-artifact">{{ if software_image }}{{ partial:media/image image_format="webp" image_quality="80" :asset="software_image" width="1280" sizes="(min-width: 1024px) 65vw, 94vw" :caption_override="software_caption" }}{{ /if }}<div class="support-artifact-note">{{ software_project }}{{ if published && project_status != 'confidential' }}<a class="semantic-link" href="{{ url }}">Projekt und Quellcode ansehen</a>{{ /if }}{{ /software_project }}</div></div>
         <div class="support-next" data-support-to><h3>{{ software_need_heading | sanitize }}</h3><p>{{ software_need | sanitize }}</p><span class="support-owner">{{ software_owner_label | sanitize }}</span></div>
+        </details>
     </section>
     <section id="atheblues" class="support-work support-work--robot site-container" aria-labelledby="robot-heading">
 

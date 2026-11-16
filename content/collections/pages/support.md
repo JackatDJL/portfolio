@@ -16,8 +16,8 @@ robot_need_heading: 'Die Motorhalterung muss auf den Prüfstand.'
 robot_owner_label: 'AtheBlues · Schulteam'
 financial_boundary: 'Unterstützung für meine Softwareprojekte und für AtheBlues wird getrennt vereinbart. Diese Seite nimmt keine Zahlungen entgegen.'
 contact_label: 'Unterstützung besprechen'
-software_title: 'Auch kleine Werkzeuge brauchen Pflege.'
-software_intro: 'Neben Rosenfold entwickle ich offene Werkzeuge wie prtop: eine Terminaloberfläche für Pull Requests aus verschiedenen Git-Plattformen. Die Oberfläche ist gebaut; ein veröffentlichtes Release gibt es noch nicht.'
+software_title: 'prtop bündelt Pull Requests.'
+software_intro: 'Mit prtop entwickle ich eine tastaturbedienbare Terminaloberfläche für Pull Requests aus verschiedenen Git-Plattformen. Ein Release ist noch nicht veröffentlicht.'
 software_project:
   - 4739fabf-5726-4d17-ad72-5a5f574e33cd
 software_image: projects/prtop/prtop-live-dashboard.png
@@ -111,4 +111,5 @@ robot_brief: 'Mit einem Teamkollegen entwickle ich einen Rescue-Line-Roboter von
 robot_details_label: 'Entwicklungsstand und konkrete Team-Bedarfe'
 robot_team_url: 'https://www.atheblues.de/donate'
 robot_team_label: 'AtheBlues als Team unterstützen'
+software_evidence_label: 'prtop im Terminal ansehen'
 ---

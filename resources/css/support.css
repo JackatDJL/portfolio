@@ -131,3 +131,11 @@ body:has(.support-story) .site-header__wordmark { position: static; }
  .support-person-photo img { aspect-ratio: 4 / 3; object-position: center 25%; }
  .support-rosenfold-layout > .support-screen { margin-top: 1.5rem; }
 }
+
+.support-work--software { padding-block: 2.5rem; }
+.support-work--software h2 { font-size: clamp(2rem, 3.2vw, 3.5rem); }
+.support-work--software .support-work__intro { margin-bottom: 1.5rem; gap: 1.5rem 3rem; }
+.support-work--software .support-work__intro p { font-size: 1.05rem; }
+.support-tool-evidence > summary { cursor: pointer; min-height: 2.75rem; padding-block: .75rem; font-weight: 650; }
+.support-tool-evidence > summary:focus-visible { outline: 2px solid var(--site-focus); outline-offset: .25rem; }
+.support-tool-evidence[open] .support-software-artifact { margin-top: 1.5rem; }

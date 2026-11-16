@@ -35,6 +35,8 @@ tabs:
             field: { type: link, display: Zuständige Teamwebsite }
           - handle: robot_team_label
             field: { type: text, display: Link zur Teamförderung }
+          - handle: software_evidence_label
+            field: { type: text, display: Titel der optionalen Terminalansicht }
           - handle: software_title
             field:
               type: text
