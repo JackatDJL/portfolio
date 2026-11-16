@@ -25,7 +25,8 @@ for (const section of document.querySelectorAll('[data-support-section]')) {
             svg.setAttribute('viewBox', `0 0 ${box.width} ${box.height}`);
             // Keep the return beneath a neighbouring figure, including its credit.
             const media = owner.querySelector('.support-screen, .support-current-cad');
-            const returnY = Math.max(y2, media ? media.getBoundingClientRect().bottom - box.top + 16 : y2);
+            const disclosure = owner.querySelector('.support-code-details');
+            const returnY = Math.max(y2, media ? media.getBoundingClientRect().bottom - box.top + 16 : y2, disclosure ? disclosure.getBoundingClientRect().bottom - box.top + 16 : y2);
             const radius = Math.min(24, Math.max(0, (returnY - y2) / 2));
             path.setAttribute('d', returnY > y2
                 ? `M -18 ${y1} V ${returnY - 24} Q -18 ${returnY} 6 ${returnY} H ${x2 - radius} Q ${x2} ${returnY} ${x2} ${returnY - radius} V ${y2}`

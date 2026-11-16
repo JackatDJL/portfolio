@@ -2,7 +2,7 @@
 
 `/kontakt` verbindet Projektanfragen, Sponsoring, Politik und allgemeinen Kontakt in einem Formular. Einleitung und Datenschutzhinweis liegen in der Statamic-Seite `content/collections/pages/kontakt.md` mit dem Blueprint `contact`.
 
-Der Versand ist standardmäßig aus. Vor Aktivierung müssen Empfänger, Transport, Absender, Datenschutzinformationen und Aufbewahrung geprüft sein. Anschließend ausschließlich serverseitig konfigurieren:
+Der Versand ist standardmäßig aus. In diesem Zustand wird kein Formular ausgegeben. Stattdessen erscheinen die öffentliche E-Mail-Adresse aus dem Site-Global und ein themenspezifischer mailto-Link. Private CV-Globals werden nicht gelesen. Erst mit tatsächlich aktiviertem, gültigem Transport erscheint das bestehende Formular. Vor Aktivierung müssen Empfänger, Transport, Absender, Datenschutzinformationen und Aufbewahrung geprüft sein. Anschließend ausschließlich serverseitig konfigurieren:
 
 ```dotenv
 CONTACT_MAIL_ENABLED=true

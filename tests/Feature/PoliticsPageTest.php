@@ -10,19 +10,19 @@ class PoliticsPageTest extends TestCase
     public function test_biography_renders_public_sources_and_personal_party_boundary(): void
     {
         $response = $this->get('/politik')->assertOk();
-        foreach (['Raum für eigene Fragen.', 'Schülervertretung', 'Erstwählerforum', 'Kommunikation', 'Technik', 'Jugendchor', 'Kein offizieller Parteiauftritt.', 'Mobilität ohne Auto', 'digitale Bildung', 'Europa'] as $text) {
+        foreach (['Schülervertretung', 'Erstwählerforum', 'Kommunikation', 'Volt.link', 'Kein offizieller Parteiauftritt.', 'Mobilität', 'digitale Bildung', 'Europa'] as $text) {
             $response->assertSee($text);
         }
         $response->assertSee('https://voltdeutschland.org/niedersachsen/menschen/jack-ruder', false)
-            ->assertSee('/kontakt?thema=politik', false)->assertSee('data-politics-page', false);
+            ->assertSee('/kontakt?thema=politik', false)->assertSee('data-politics-root', false);
     }
 
     public function test_editable_biographical_copy_is_taken_from_the_entry(): void
     {
         $repository = Entry::getFacadeRoot();
         $entry = clone $repository->query()->where('collection', 'pages')->where('slug', 'politik')->first();
-        $entry->set('school_period', 'Zeitangabe aus dem CMS')->set('tech_intro', 'Technische Motivation aus dem CMS')
-            ->set('political_interests_text', 'Politische Interessen aus dem CMS')->set('invitation_label', 'Kontaktabschluss aus dem CMS');
+        $entry->set('school_context', 'Zeitangabe aus dem CMS')->set('tech_detail', 'Technische Motivation aus dem CMS')
+            ->set('political_topics', [['title' => 'Politische Interessen aus dem CMS', 'text' => 'Redaktionelle Einordnung']])->set('invitation_label', 'Kontaktabschluss aus dem CMS');
         $query = \Mockery::mock();
         $query->shouldReceive('where')->andReturnSelf();
         $query->shouldReceive('first')->andReturn($entry);
@@ -48,8 +48,8 @@ class PoliticsPageTest extends TestCase
         $document = new \DOMDocument;
         @$document->loadHTML('<?xml encoding="UTF-8">'.$html);
         $xpath = new \DOMXPath($document);
-        $images = $xpath->query('//article[contains(@class,"politics-page")]//img');
-        $this->assertCount(4, $images);
+        $images = $xpath->query('//article[contains(@class,"entry-politics")]//img');
+        $this->assertCount(6, $images);
         $priority = 0;
         foreach ($images as $image) {
             $this->assertNotEmpty($image->getAttribute('alt'));

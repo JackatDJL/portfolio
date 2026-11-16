@@ -14,4 +14,8 @@
 .contact-notice, .contact-errors { border-left: 3px solid var(--site-focus); padding: 1rem 1.25rem; background: var(--site-surface); margin-bottom: 1.5rem; }
 .contact-errors h2 { font-size: 1.3rem; }
 .contact-errors ul { list-style: disc; padding-left: 1.25rem; margin-block: .75rem; }
+.contact-direct h2 { font-size: clamp(1.8rem, 3vw, 2.7rem); line-height: 1.15; margin-bottom: 1rem; }
+.contact-direct > p { max-width: 48ch; line-height: 1.7; margin-block: 1.25rem; overflow-wrap: anywhere; }
 @media (max-width: 47.99rem) { .contact-page__intro { grid-template-columns: 1fr; gap: 1.5rem; } .contact-page__body { display: block; margin-top: 2rem; } .contact-page__line { height: 4rem; width: 6rem; } }
+
+body:has(.contact-page) .site-header__wordmark { position: static; }

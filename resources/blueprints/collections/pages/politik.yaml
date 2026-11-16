@@ -3,170 +3,151 @@ tabs:
   main:
     display: Inhalt
     sections:
-      - fields:
-          - handle: title
+      -
+        fields:
+          -
+            handle: title
             field:
               type: text
               display: Seitentitel
-              validate: [required]
-          - handle: heading
+              validate:
+                - required
+          -
+            handle: work_heading
             field:
               type: text
-              display: Überschrift
-              validate: [required]
-          - handle: intro
+              display: 'Überschrift politische Arbeit'
+          -
+            handle: school_context
+            field:
+              type: textarea
+              display: 'Schulisches Engagement'
+          -
+            handle: political_origin
+            field:
+              type: textarea
+              display: 'Weg zur Mitarbeit'
+          -
+            handle: tech_detail
+            field:
+              type: textarea
+              display: 'Konkrete technische Mitarbeit'
+          -
+            handle: political_topics
+            field:
+              type: grid
+              mode: stacked
+              display: 'Persönliche politische Themen'
+              fields:
+                -
+                  handle: title
+                  field:
+                    type: text
+                    display: Thema
+                -
+                  handle: text
+                  field:
+                    type: textarea
+                    display: 'Persönliche Einordnung'
+          -
+            handle: intro
             field:
               type: textarea
               display: Einleitung
-              validate: [required]
-          - handle: hero_image
+              validate:
+                - required
+          -
+            handle: hero_image
             field:
               type: assets
               display: Einstiegsbild
               container: assets
               max_files: 1
-          - handle: hero_caption
+          -
+            handle: chapter_forum_title
             field:
               type: text
-              display: Bildunterschrift Einstieg
-          - handle: chapter_school_title
-            field:
-              type: text
-              display: Kapitel Schule
-          - handle: chapter_school_intro
-            field:
-              type: textarea
-              display: Einleitung Schule
-          - handle: school_milestones
+              display: 'Kapitel Erstwählerforum'
+          -
+            handle: forum_project
             field:
               type: entries
-              display: Schulische Stationen
-              collections: [cv_milestones]
-          - handle: chapter_forum_title
-            field:
-              type: text
-              display: Kapitel Erstwählerforum
-          - handle: forum_project
-            field:
-              type: entries
-              display: Projekt Erstwählerforum
-              collections: [projects]
+              display: 'Projekt Erstwählerforum'
+              collections:
+                - projects
               max_items: 1
-          - handle: forum_image
+          -
+            handle: forum_image
             field:
               type: assets
               display: Forumfoto
               container: assets
               max_files: 1
-          - handle: forum_caption
+          -
+            handle: forum_caption
             field:
               type: text
-              display: Bildunterschrift Forum
-          - handle: chapter_volt_title
+              display: 'Bildunterschrift Forum'
+          -
+            handle: chapter_volt_title
             field:
               type: text
-              display: Kapitel Volt
-          - handle: volt_experience
+              display: 'Kapitel Volt'
+          -
+            handle: volt_experience
             field:
               type: entries
-              display: Mitarbeit Volt Stade
-              collections: [experience]
-          - handle: volt_image
+              display: 'Mitarbeit Volt Stade'
+              collections:
+                - experience
+          -
+            handle: volt_image
             field:
               type: assets
-              display: Foto Zusammenarbeit
+              display: 'Foto Zusammenarbeit'
               container: assets
               max_files: 1
-          - handle: volt_caption
+          -
+            handle: volt_caption
             field:
               type: text
-              display: Bildunterschrift Zusammenarbeit
-          - handle: chapter_tech_title
-            field:
-              type: text
-              display: Kapitel Technik
-          - handle: tech_experience
-            field:
-              type: entries
-              display: Technische Mitarbeit
-              collections: [experience]
-          - handle: chapter_personal_title
-            field:
-              type: text
-              display: Persönliches Kapitel
-          - handle: personal_intro
+              display: 'Bildunterschrift Zusammenarbeit'
+          -
+            handle: personal_intro
             field:
               type: textarea
-              display: Persönliche Einleitung
-          - handle: personal_image
+              display: 'Persönliche Einleitung'
+          -
+            handle: personal_image
             field:
               type: assets
-              display: Persönliches Bild
+              display: 'Persönliches Bild'
               container: assets
               max_files: 1
-          - handle: personal_caption
-            field:
-              type: text
-              display: Persönliche Bildunterschrift
-          - handle: interests
-            field:
-              type: entries
-              display: Persönliche Stationen
-              collections: [cv_milestones]
-          - handle: byline
+          -
+            handle: personal_boundary
             field:
               type: textarea
-              display: Kontextzeile
-          - handle: personal_boundary
-            field:
-              type: textarea
-              display: Persönliche Abgrenzung
-          - handle: school_period
-            field:
-              type: textarea
-              display: Zeitangabe Schule
-          - handle: forum_period
-            field:
-              type: textarea
-              display: Zeitangabe Forum
-          - handle: volt_period
-            field:
-              type: textarea
-              display: Zeitangabe Volt
-          - handle: tech_period
-            field:
-              type: textarea
-              display: Kontext Technik
-          - handle: personal_period
-            field:
-              type: textarea
-              display: Kontext Persönliches
-          - handle: tech_intro
-            field:
-              type: textarea
-              display: Technische Motivation
-          - handle: party_context
-            field:
-              type: textarea
-              display: Hinweis Parteiseite
-          - handle: invitation_heading
+              display: 'Persönliche Abgrenzung'
+          -
+            handle: invitation_heading
             field:
               type: textarea
               display: Kontaktfrage
-          - handle: invitation_label
+          -
+            handle: invitation_label
             field:
               type: textarea
               display: Kontaktlink
-          - handle: political_interests_title
+          -
+            handle: political_interests_title
             field:
               type: textarea
-              display: Kapitel politische Interessen
-          - handle: political_interests_text
-            field:
-              type: textarea
-              display: Politische Interessen
+              display: 'Kapitel politische Interessen'
   search:
     display: SEO
     sections:
-      - fields:
-          - import: seo
+      -
+        fields:
+          -
+            import: seo

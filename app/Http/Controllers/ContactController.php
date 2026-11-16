@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Statamic\Facades\Entry;
+use Statamic\Facades\GlobalSet;
 use Statamic\View\View;
 use Throwable;
 
@@ -139,6 +140,8 @@ final class ContactController extends Controller
             $topics[] = ['value' => $value, 'label' => $label, 'selected' => ($input['topic'] ?? 'allgemein') === $value];
         }
         $token = Crypt::encryptString(json_encode(['time' => time(), 'session' => hash('sha256', $request->session()->token())], JSON_THROW_ON_ERROR));
+        $email = GlobalSet::findByHandle('site')?->inDefaultSite()?->get('email');
+        $email = is_string($email) && filter_var($email, FILTER_VALIDATE_EMAIL) ? $email : null;
 
         return response((new View)->template('contact/index')->layout('layout')->cascadeContent($entry)->with([
             'noindex' => true,
@@ -146,6 +149,8 @@ final class ContactController extends Controller
             'contact_intro' => $entry->value('intro'),
             'contact_privacy' => $entry->value('privacy_note'),
             'contact_enabled' => $this->configured(),
+            'contact_email' => $email,
+            'contact_email_url' => $email ? 'mailto:'.str_replace('%40', '@', rawurlencode($email)).'?subject='.rawurlencode(self::TOPICS[$input['topic'] ?? 'allgemein'] ?? self::TOPICS['allgemein']) : null,
             'contact_sent' => $request->session()->get('contact_sent', false),
             'contact_errors' => $errors,
             'contact_has_errors' => $errors !== [],

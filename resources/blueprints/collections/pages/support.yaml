@@ -3,327 +3,215 @@ tabs:
   main:
     display: Inhalt
     sections:
-      - fields:
-          - handle: title
+      -
+        fields:
+          -
+            handle: title
             field:
               type: text
               display: Seitentitel
-              validate: [required]
-          - handle: heading
-            field:
-              type: text
-              display: Überschrift
-          - handle: intro
+              validate:
+                - required
+          -
+            handle: intro
             field:
               type: textarea
               display: Einleitung
-          - handle: software_title
-            field:
-              type: text
-              display: Kapitel Software
-          - handle: software_intro
-            field:
-              type: textarea
-              display: Einleitung Software
-          - handle: software_project
-            field:
-              type: entries
-              display: Softwareprojekt
-              collections: [projects]
-              max_items: 1
-          - handle: software_image
+          -
+            handle: opening_image
             field:
               type: assets
-              display: Softwarebild
-              container: assets
-              max_files: 1
-              query_scopes: [editorial_images]
-              validate: [image]
-          - handle: software_caption
-            field:
-              type: text
-              display: Bildunterschrift Software
-          - handle: software_need
-            field:
-              type: textarea
-              display: Bedarf Software
-          - handle: rosenfold_title
-            field:
-              type: text
-              display: Kapitel Rosenfold
-          - handle: rosenfold_intro
-            field:
-              type: textarea
-              display: Einleitung Rosenfold
-          - handle: rosenfold_image
-            field:
-              type: assets
-              display: Rosenfoldbild
-              container: assets
-              max_files: 1
-              query_scopes: [editorial_images]
-              validate: [image]
-          - handle: rosenfold_caption
-            field:
-              type: text
-              display: Bildunterschrift Rosenfold
-          - handle: rosenfold_need
-            field:
-              type: textarea
-              display: Bedarf Rosenfold
-          - handle: rosenfold_screen
-            field:
-              type: assets
-              display: Rosenfold Screenshot
               container: assets
               max_files: 1
               query_scopes:
-              - editorial_images
+                - editorial_images
               validate:
-              - image
-          - handle: robot_document_help
+                - image
+              display: 'Persönliches Einstiegsfoto'
+          -
+            handle: robot_brief
+            field:
+              type: textarea
+              display: 'Kurzes Teamkapitel'
+          -
+            handle: robot_team_url
+            field:
+              type: link
+              display: 'Zuständige Teamwebsite'
+          -
+            handle: robot_team_label
             field:
               type: text
-              display: Hinweis zur Detailansicht
-          - handle: robot_document_overview
+              display: 'Link zur Teamförderung'
+          -
+            handle: projects_heading
             field:
               type: text
-              display: Beschriftung Gesamtansicht
-          - handle: robot_document_details
-            field:
-              type: grid
-              display: Posterdetails
-              instructions: 'Ausschnitte in Prozent des Originalbildes. Beim Austausch des Posters prüfen oder entfernen.'
-              fields:
-                - handle: label
-                  field: { type: text, display: Beschriftung, validate: [required] }
-                - handle: description
-                  field: { type: textarea, display: Beschreibung, validate: [required] }
-                - handle: left
-                  field: { type: integer, display: Links, validate: ['numeric', 'min:0', 'max:99'] }
-                - handle: top
-                  field: { type: integer, display: Oben, validate: ['numeric', 'min:0', 'max:99'] }
-                - handle: width
-                  field: { type: integer, display: Breite, validate: ['numeric', 'min:1', 'max:100'] }
-                - handle: height
-                  field: { type: integer, display: Höhe, validate: ['numeric', 'min:1', 'max:100'] }
-                - handle: note
-                  field:
-                    type: select
-                    display: Zugehörige Erklärung
-                    options: { control: Steuerung, drive: Antrieb, test: Bühne }
-          - handle: robot_document
+              display: 'Überschrift Projekte'
+          -
+            handle: support_media
             field:
               type: assets
-              display: Technisches Robotikposter
+              container: assets
+              max_files: 8
+              query_scopes:
+                - editorial_images
+              validate:
+                - image
+              display: 'Fotostrom der Root-Inszenierung'
+          -
+            handle: education_heading
+            field:
+              type: text
+              display: 'Überschrift Bildungsprojekt'
+          -
+            handle: education_intro
+            field:
+              type: textarea
+              display: 'Text Bildungsprojekt'
+          -
+            handle: education_project
+            field:
+              type: entries
+              collections:
+                - projects
+              max_items: 1
+              display: 'Öffentliches Bildungsprojekt'
+          -
+            handle: education_image
+            field:
+              type: assets
               container: assets
               max_files: 1
               query_scopes:
-              - editorial_images
+                - editorial_images
               validate:
-              - image
-          - handle: rosenfold_screen_caption
+                - image
+              display: 'Bild Bildungsprojekt'
+          -
+            handle: education_caption
             field:
               type: text
-              display: Bildunterschrift Screenshot
-          - handle: rosenfold_code_title
+              display: 'Bildunterschrift Bildungsprojekt'
+          -
+            handle: options_heading
             field:
               type: text
-              display: Überschrift Code
-          - handle: rosenfold_code_intro
-            field:
-              type: textarea
-              display: Einleitung Code
-          - handle: rosenfold_code_source
-            field:
-              type: text
-              display: Quellstand Code
-          - handle: rosenfold_code
-            field:
-              type: textarea
-              display: Codeausschnitt
-          - handle: robot_archive_label
-            field:
-              type: text
-              display: Archivjahr und Disziplin
-          - handle: robot_archive_title
-            field:
-              type: text
-              display: Überschrift Werkstattarchiv
-          - handle: robot_archive_intro
-            field:
-              type: textarea
-              display: Einleitung Werkstattarchiv
-          - handle: robot_document_caption
-            field:
-              type: text
-              display: Bildunterschrift Poster
-          - handle: robot_control_title
-            field:
-              type: text
-              display: Überschrift Steuerung
-          - handle: robot_control_text
-            field:
-              type: textarea
-              display: Text Steuerung
-          - handle: robot_drive_title
-            field:
-              type: text
-              display: Überschrift Antrieb
-          - handle: robot_drive_text
-            field:
-              type: textarea
-              display: Text Antrieb
-          - handle: robot_test_title
-            field:
-              type: text
-              display: Überschrift Test
-          - handle: robot_test_text
-            field:
-              type: textarea
-              display: Text Test
-          - handle: robot_cad_label
-            field:
-              type: text
-              display: Status der CAD-Aufnahme
-          - handle: robot_cad_caption
-            field:
-              type: textarea
-              display: Bildunterschrift CAD-Aufnahme
-          - handle: robot_laptop_caption
-            field:
-              type: textarea
-              display: Bildunterschrift CAD-Laptop
-          - handle: robot_laptop_toggle
-            field:
-              type: text
-              display: Beschriftung Laptop-Ansicht
-          - handle: robot_archive_toggle
-            field:
-              type: text
-              display: Beschriftung historisches Archiv
-          - handle: robot_cad
-            field:
-              type: assets
-              display: Aktuelle CAD-Gesamtansicht
-              container: assets
-              max_files: 1
-              query_scopes: [editorial_images]
-              validate: [image]
-          - handle: robot_cad_laptop
-            field:
-              type: assets
-              display: Optionale Laptop-Visualisierung
-              container: assets
-              max_files: 1
-              query_scopes: [editorial_images]
-              validate: [image]
-          - handle: robot_current_title
-            field:
-              type: text
-              display: Überschrift aktueller Entwurf
-          - handle: robot_current_text
-            field:
-              type: textarea
-              display: Text aktueller Entwurf
-          - handle: robot_title
-            field:
-              type: text
-              display: Kapitel Robotik
-          - handle: robot_project
-            field:
-              type: entries
-              display: Robotikprojekt
-              collections: [projects]
-              max_items: 1
-          - handle: robot_image
-            field:
-              type: assets
-              display: Robotikbild
-              container: assets
-              max_files: 1
-              query_scopes: [editorial_images]
-              validate: [image]
-          - handle: robot_caption
-            field:
-              type: text
-              display: Bildunterschrift Robotik
-          - handle: robot_need
-            field:
-              type: textarea
-              display: Bedarf Robotik
-          - handle: robot_requirements
+              display: 'Überschrift Unterstützung'
+          -
+            handle: support_options
             field:
               type: grid
-              display: Konkrete Robotikbedarfe
               mode: stacked
+              max_rows: 4
+              display: Unterstützungs-Widgets
               fields:
-                - handle: title
+                -
+                  handle: title
                   field:
                     type: text
-                    display: Bedarf
-                - handle: text
+                    display: Titel
+                -
+                  handle: text
                   field:
                     type: textarea
-                    display: Zweck und aktueller Engpass
-          - handle: robot_team_boundary
+                    display: Beschreibung
+                -
+                  handle: label
+                  field:
+                    type: text
+                    display: Linktext
+                -
+                  handle: link
+                  field:
+                    type: link
+                    display: Ziel
+          -
+            handle: rosenfold_title
+            field:
+              type: text
+              display: 'Kapitel Rosenfold'
+          -
+            handle: rosenfold_intro
             field:
               type: textarea
-              display: Verwaltung der Teamunterstützung
-          - handle: transparency_title
-            field:
-              type: text
-              display: Überschrift Transparenz
-          - handle: transparency_intro
+              display: 'Einleitung Rosenfold'
+          -
+            handle: rosenfold_need
             field:
               type: textarea
-              display: Transparenztext
-          - handle: byline
+              display: 'Bedarf Rosenfold'
+          -
+            handle: rosenfold_screen
+            field:
+              type: assets
+              display: 'Rosenfold Screenshot'
+              container: assets
+              max_files: 1
+              query_scopes:
+                - editorial_images
+              validate:
+                - image
+          -
+            handle: rosenfold_screen_caption
             field:
               type: text
-              display: Absenderzeile
-          - handle: software_need_heading
-            field:
-              type: text
-              display: Überschrift nächster Software-Schritt
-          - handle: software_owner_label
-            field:
-              type: text
-              display: Verwaltungskreis Software
-          - handle: rosenfold_need_heading
-            field:
-              type: text
-              display: Überschrift nächster Rosenfold-Schritt
-          - handle: rosenfold_owner_label
-            field:
-              type: text
-              display: Projektstatus Rosenfold
-          - handle: robot_need_heading
-            field:
-              type: text
-              display: Überschrift nächster Robotik-Schritt
-          - handle: robot_owner_label
-            field:
-              type: text
-              display: Verwaltungskreis Robotik
-          - handle: financial_boundary
+              display: 'Bildunterschrift Screenshot'
+          -
+            handle: robot_cad_caption
             field:
               type: textarea
-              display: Trennung der Finanzen
-          - handle: contact_label
+              display: 'Bildunterschrift CAD-Aufnahme'
+          -
+            handle: robot_cad
+            field:
+              type: assets
+              display: 'Aktuelle CAD-Gesamtansicht'
+              container: assets
+              max_files: 1
+              query_scopes:
+                - editorial_images
+              validate:
+                - image
+          -
+            handle: robot_title
+            field:
+              type: text
+              display: 'Kapitel Robotik'
+          -
+            handle: robot_team_boundary
+            field:
+              type: textarea
+              display: 'Verwaltung der Teamunterstützung'
+          -
+            handle: rosenfold_owner_label
+            field:
+              type: text
+              display: 'Projektstatus Rosenfold'
+          -
+            handle: robot_owner_label
+            field:
+              type: text
+              display: 'Verwaltungskreis Robotik'
+          -
+            handle: contact_label
             field:
               type: text
               display: Kontaktaktion
-          - handle: contact_title
+          -
+            handle: contact_title
             field:
               type: text
               display: Kontaktüberschrift
-          - handle: contact_intro
+          -
+            handle: contact_intro
             field:
               type: textarea
               display: Kontakttext
   search:
     display: SEO
     sections:
-      - fields:
-          - import: seo
+      -
+        fields:
+          -
+            import: seo
