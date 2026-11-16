@@ -6,7 +6,7 @@
             <div><p class="politics-lead">{{ intro | sanitize }}</p><p class="politics-context">{{ personal_boundary | sanitize }}</p></div>
         </div>
         {{ if hero_image }}{{ partial:media/image image_format="webp" image_quality="62" :asset="hero_image" width="1920" sizes="(min-width: 1440px) 1408px, 96vw" loading="eager" fetchpriority="high" :caption_override="hero_caption" figure_class="politics-opening__image" }}{{ /if }}
-        <nav class="politics-chapters" aria-label="Auf dieser Seite"><a href="#schule">Schule</a><a href="#forum">Erstwählerforum</a><a href="#volt">Volt</a><a href="#technik">Technik</a><a href="#fragen">Politische Fragen</a><a href="#persoenlich">Persönlich</a></nav>
+        <nav class="politics-chapters" aria-label="Auf dieser Seite"><a href="#forum">Politische Bildung</a><a href="#volt">Meine Mitarbeit</a><a href="#fragen">Was mich beschäftigt</a></nav>
     </header>
     <div class="politics-story site-container" data-politics-story>
         <svg class="politics-thread" data-politics-thread aria-hidden="true" focusable="false"><path data-politics-path /></svg>
@@ -15,7 +15,7 @@
             <div class="politics-chapter__body">
                 <h2 id="school-heading">{{ chapter_school_title | sanitize }}</h2>
                 <p class="politics-chapter__intro">{{ chapter_school_intro | sanitize }}</p>
-                <ol class="politics-school-records">{{ school_milestones }}{{ if published }}<li><span>{{ date_label | sanitize }}</span><div><h3>{{ title | sanitize }}</h3><p>{{ summary | sanitize }}</p></div></li>{{ /if }}{{ /school_milestones }}</ol>
+                <ol class="politics-school-records">{{ school_milestones }}{{ if published }}<li><span>{{ date_label | sanitize }}</span><div><h3>{{ title | sanitize }}</h3></div></li>{{ /if }}{{ /school_milestones }}</ol>
             </div>
         </section>
         <section id="forum" class="politics-chapter politics-chapter--forum" data-politics-chapter aria-labelledby="forum-heading">

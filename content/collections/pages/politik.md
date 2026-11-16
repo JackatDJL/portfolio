@@ -19,17 +19,17 @@ invitation_heading: 'Eine Frage oder eine Idee?'
 invitation_label: 'Lass uns sprechen.'
 political_interests_title: 'Was mich politisch beschäftigt.'
 political_interests_text: 'Mich interessieren Mobilität ohne Auto, digitale Bildung und die Frage, wie junge Menschen demokratische Entscheidungen mitgestalten können. Europa gehört für mich dazu.'
-heading: 'Raum für eigene Fragen.'
-intro: 'Ich bin Jack Ruder aus Stade. Mein Engagement begann in der Schülervertretung. Heute organisiere ich politische Bildung und arbeite an Kommunikation und digitalen Werkzeugen.'
+heading: 'Ich übernehme Verantwortung.'
+intro: 'Ich bin Jack Ruder aus Stade. Seit 2019 engagiere ich mich in der Schülervertretung. Aus der Arbeit an meiner Schule wurde die Idee, junge Menschen über Schulgrenzen hinweg mit Politik ins Gespräch zu bringen. Heute organisiere ich politische Bildung und übernehme Kommunikations- und technische Aufgaben bei Volt.'
 hero_image: projects/erstwaehlerforum-stade/img-20260602-wa0030.jpg
 hero_caption: 'Beim Erstwählerforum Stade. Der Blick von der Bühne in den Saal.'
-chapter_school_title: 'In der Schule anfangen.'
-chapter_school_intro: 'Bevor ich Veranstaltungen organisierte, brachte ich mich an meiner Schule ein. Aus der Schülervertretung kamen weitere Aufgaben hinzu.'
+chapter_school_title: 'An meiner Schule hat es angefangen.'
+chapter_school_intro: 'In der Schülervertretung begann mein Engagement. Später kamen die Aufgaben als stellvertretender Schülersprecher und im Schulvorstand hinzu. Aus dieser Arbeit entwickelte sich auch mein Engagement über die eigene Schule hinaus.'
 school_milestones:
   - ad79c3f3-ac9f-4fe8-ba6b-fca12fdb7ae3
   - 432a2d8b-1efd-442b-929b-a4286026cf7f
   - 39248867-2c4a-4d7f-82ab-22758b8d97e3
-chapter_forum_title: 'Politik begegnen. Eigene Fragen stellen.'
+chapter_forum_title: 'Aus einer Idee wurde das Erstwählerforum.'
 forum_project:
   - 1b4ba371-c0b4-4fae-8a93-1f2fabf11477
 forum_image: projects/erstwaehlerforum-stade/img-20260602-wa0085.jpg

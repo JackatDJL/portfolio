@@ -5,8 +5,8 @@ title: Projekte unterstützen
 template: support/index
 published: false
 noindex: true
-heading: 'Was der nächste Versuch braucht.'
-intro: 'Ich arbeite an offener Software und technischen Projekten. Unterstützung soll an einer konkreten Aufgabe ankommen. Hier zeige ich, woran ich arbeite und welche nächsten Schritte noch offen sind.'
+heading: 'Ich bin Jack. Ich entwickle eigene Software.'
+intro: 'Ich bin Jack Ruder aus Stade. Ich entwickle Webanwendungen und offene Werkzeuge. Mit Rosenfold arbeite ich daran, Dateien und Text zwischen Geräten auszutauschen. Hier zeige ich, was schon entstanden ist, was noch fehlt und wo Unterstützung meine Arbeit weiterbringen kann.'
 byline: 'Jack Ruder · Software und Robotik'
 software_need_heading: 'Ein noch unveröffentlichtes Werkzeug fertigbauen.'
 software_owner_label: 'Persönliche Softwareprojekte'
@@ -16,15 +16,15 @@ robot_need_heading: 'Die Motorhalterung muss auf den Prüfstand.'
 robot_owner_label: 'AtheBlues · Schulteam'
 financial_boundary: 'Persönliche Projekte, mögliche geschäftliche Vorhaben und das Schulteam bleiben finanziell getrennt. Diese Seite nimmt keine Zahlungen entgegen.'
 contact_label: 'Unterstützung besprechen'
-software_title: 'Offene Software endet nicht beim Code.'
-software_intro: 'Entwicklung, Dokumentation und verlässlicher Betrieb kosten Zeit. Hosting und technische Infrastruktur gehören zu dieser Arbeit.'
+software_title: 'Auch kleine Werkzeuge brauchen Pflege.'
+software_intro: 'Neben Rosenfold entwickle ich offene Werkzeuge wie prtop: eine Terminaloberfläche für Pull Requests aus verschiedenen Git-Plattformen. Die Oberfläche ist gebaut; ein veröffentlichtes Release gibt es noch nicht.'
 software_project:
   - 4739fabf-5726-4d17-ad72-5a5f574e33cd
 software_image: projects/prtop/prtop-live-dashboard.png
 software_caption: 'prtop im Entwicklungsstand. Noch kein veröffentlichtes Release.'
-software_need: 'prtop ist noch nicht veröffentlicht. Ich möchte das Werkzeug fertigbauen, obwohl ich es selbst derzeit nicht nutze. Dafür geht es zunächst um Entwicklungszeit und Wartung. Bei meinen anderen Softwareprojekten kommen Dokumentation und verlässlicher Betrieb hinzu. Eine Unterstützung bekommt einen konkreten Zweck, bevor ich dafür einen Betrag nenne.'
+software_need: 'Aus einem Entwicklungsstand wird erst durch Wartung, Dokumentation und verlässlichen Betrieb ein nutzbares Werkzeug. Dafür brauche ich Zeit und Infrastruktur. Welche Aufgabe eine Unterstützung ermöglicht, klären wir am konkreten Projekt.'
 rosenfold_title: 'Rosenfold. Noch in Entwicklung.'
-rosenfold_intro: 'Rosenfold soll Dateien und Text zwischen Geräten austauschen. Ich entwickle die Anwendung als unabhängiges Projekt. Der gezeigte Stand ist eine lokale Entwicklungsversion, kein fertiges Produkt.'
+rosenfold_intro: 'Rosenfold soll Dateien und Text zwischen Geräten austauschen. Oberfläche und Übertragungslogik sind in Entwicklung. Der echte Screenshot zeigt die lokale Anwendung vor der Dateiauswahl. Die nächsten Hürden liegen bei realen Netzwerkbedingungen und der Mobil-App auf Geräten.'
 rosenfold_image: projects/rosenfold/rosenfold-laptop-render.png
 rosenfold_caption: '3D-Rendering mit einem echten Screenshot der lokalen Rosenfold-Entwicklungsversion vom 15. November 2026.'
 rosenfold_screen: projects/rosenfold/rosenfold-ready.png
@@ -43,7 +43,7 @@ rosenfold_code: |
     }
   },
 rosenfold_need: 'Im Projektplan stehen noch reale Netzwerkprüfungen und Tests der Mobil-App auf Geräten. Dazu gehören auch Verbindungen über TURN-Server. Hier können Testinfrastruktur, Geräte und Entwicklungszeit helfen. Einen Kostenplan veröffentliche ich, sobald Bedarf und Verwaltung geklärt sind.'
-robot_title: 'Am Antrieb weiterarbeiten.'
+robot_title: 'Robotik im Team. Von Grund auf gebaut.'
 robot_project:
   - 8e9f1f56-1feb-46a8-9ae5-a79ec9444c81
 robot_image: projects/atheblues/atheblues-workshop-2024.jpg
@@ -93,11 +93,11 @@ robot_requirements:
     text: 'Für uns steht in der AG derzeit nur ein Raspberry Pi 4 mit 4 GB RAM zur Verfügung. Für unsere geplante Bildverarbeitung reicht das nicht aus. Wir brauchen passende Rechenhardware und einen KI-Beschleuniger für das Visionmodell.'
   - title: 'Modelle trainieren und Software entwickeln'
     text: 'Das Visionmodell braucht Rechenleistung für das Training. Wir nutzen außerdem KI-gestützte Entwicklungswerkzeuge, für deren Betrieb Kosten entstehen. Sachleistungen und Zugang zu geeigneter Hardware können ebenso helfen wie finanzielle Unterstützung.'
-robot_team_boundary: 'Unterstützung für AtheBlues klären wir ausschließlich mit einer dafür zuständigen Schule oder Teamorganisation und verwalten sie getrennt von persönlichen Projekten.'
+robot_team_boundary: 'AtheBlues ist ein eigenständiges Team. Sponsoring und Teamfinanzen laufen getrennt von meinen persönlichen Softwareprojekten. Wer die Robotik unterstützen möchte, findet die zuständige Anlaufstelle auf der Teamwebsite.'
 transparency_title: 'Erst der Zweck. Dann die Summe.'
 transparency_intro: 'Konkrete Budgets und bestätigte Beiträge erscheinen hier erst mit nachvollziehbarer Grundlage. Für diese Seite sind noch keine geprüften Beträge veröffentlicht. Fehlende Angaben bedeuten nicht null Euro.'
-contact_title: 'Etwas möglich machen.'
-contact_intro: 'Hosting, Bauteile, Fertigung oder eine andere Form der Zusammenarbeit? Beschreib kurz, welches Projekt du unterstützen möchtest. Zweck, Rahmen und Verwaltung klären wir vor einer Zusage.'
+contact_title: 'Meine Entwicklung unterstützen.'
+contact_intro: 'Du möchtest Rosenfold oder eines meiner Softwareprojekte weiterbringen? Schreib mir, wobei du helfen kannst: mit Infrastruktur, Testgeräten oder finanzieller Unterstützung für einen konkreten Entwicklungsschritt.'
 robot_cad_label: 'CAD-Arbeitsstand'
 robot_cad: projects/atheblues/atheblues-rescue-line-cad-20261115.png
 robot_cad_caption: 'Gesamtbaugruppe „Roboter gesamt“ in Onshape; Sortiermodul für die Aufnahme ausgeblendet.'
@@ -105,4 +105,10 @@ robot_cad_laptop: projects/atheblues/atheblues-cad-laptop-render.png
 robot_laptop_toggle: 'Die CAD-Aufnahme auf einem Laptop ansehen'
 robot_laptop_caption: 'Programmatische 3D-Laptopansicht mit derselben CAD-Aufnahme. Kein fotografierter Arbeitsplatz.'
 robot_archive_toggle: 'Was wir 2024 gelernt haben · OnStage-Archiv'
+opening_image: photos/jack-20260614.jpg
+opening_caption: 'Jack Ruder.'
+robot_brief: 'Mit einem Teamkollegen entwickle ich einen Rescue-Line-Roboter von Grund auf. Die schnell austauschbare Motorhalterung ist entworfen; als Nächstes wollen wir sie fertigen und am realen Aufbau testen. Dafür braucht das Team CNC- und SLS-Fertigung sowie passende Rechenhardware. Kugelsorter, Kamera und Ballfänger sind noch in Arbeit.'
+robot_details_label: 'Entwicklungsstand und konkrete Team-Bedarfe'
+robot_team_url: 'https://www.atheblues.de/donate'
+robot_team_label: 'AtheBlues als Team unterstützen'
 ---

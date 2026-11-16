@@ -20,8 +20,8 @@ class ContactPageTest extends TestCase
     {
         Mail::fake();
         config(['contact.enabled' => false]);
-        $this->get('/kontakt?thema=sponsoring')->assertOk()->assertSee('selected>Sponsoring', false)
-            ->assertSee('nicht eingerichtet')->assertHeader('Cache-Control', 'no-store, private');
+        $this->get('/kontakt?thema=sponsoring')->assertOk()->assertSee('mailto:jack@djl.foundation?subject=Sponsoring', false)
+            ->assertDontSee('<form', false)->assertDontSee(' disabled', false)->assertHeader('Cache-Control', 'no-store, private');
         $this->post('/kontakt', $this->payload())->assertStatus(503)->assertSee('nichts versendet');
         Mail::assertNothingSent();
     }
@@ -125,6 +125,7 @@ class ContactPageTest extends TestCase
 
     public function test_topic_query_does_not_accept_arbitrary_values(): void
     {
+        $this->enable();
         $this->get('/kontakt?thema[]=politik')->assertOk()->assertSee('selected>Allgemeiner Kontakt', false);
     }
 

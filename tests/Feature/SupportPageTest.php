@@ -62,10 +62,11 @@ class SupportPageTest extends TestCase
         });
         Entry::swap($mock);
         $response = $this->get('/support')->assertOk();
-        foreach (['prtop', 'Rosenfold. Noch in Entwicklung.', 'AtheBlues', 'Schulteam', 'keine Zahlungen', 'nicht null Euro', 'getrennt', '3D-Rendering', 'vor der Auswahl einer Datei', 'Archivaufnahme', 'nicht der aktuelle Rescue-Line-Roboter', '3D-Druck', 'Bluetooth', 'db38debd'] as $text) {
+        foreach (['prtop', 'Rosenfold. Noch in Entwicklung.', 'AtheBlues', 'Schulteam', 'keine Zahlungen', 'nicht null Euro', 'getrennt', 'vor der Auswahl einer Datei', 'Archivaufnahme', 'nicht der aktuelle Rescue-Line-Roboter', '3D-Druck', 'Bluetooth', 'db38debd'] as $text) {
             $response->assertSee($text);
         }
-        $response->assertDontSee('<progress', false)->assertDontSee('360 €')->assertDontSee('900 €')->assertDontSee('700 €')
+        $response->assertSee('Ich bin Jack. Ich entwickle eigene Software.')->assertSee('https://www.atheblues.de/donate', false)
+            ->assertDontSee('<progress', false)->assertDontSee('360 €')->assertDontSee('900 €')->assertDontSee('700 €')
             ->assertSee('/kontakt?thema=sponsoring', false);
     }
 

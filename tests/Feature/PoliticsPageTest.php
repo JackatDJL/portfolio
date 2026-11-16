@@ -10,7 +10,7 @@ class PoliticsPageTest extends TestCase
     public function test_biography_renders_public_sources_and_personal_party_boundary(): void
     {
         $response = $this->get('/politik')->assertOk();
-        foreach (['Raum für eigene Fragen.', 'Schülervertretung', 'Erstwählerforum', 'Kommunikation', 'Technik', 'Jugendchor', 'Kein offizieller Parteiauftritt.', 'Mobilität ohne Auto', 'digitale Bildung', 'Europa'] as $text) {
+        foreach (['Ich übernehme Verantwortung.', 'Schülervertretung', 'Erstwählerforum', 'Kommunikation', 'Technik', 'Jugendchor', 'Kein offizieller Parteiauftritt.', 'Mobilität ohne Auto', 'digitale Bildung', 'Europa'] as $text) {
             $response->assertSee($text);
         }
         $response->assertSee('https://voltdeutschland.org/niedersachsen/menschen/jack-ruder', false)

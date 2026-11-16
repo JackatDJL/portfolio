@@ -17,6 +17,24 @@ tabs:
             field:
               type: textarea
               display: Einleitung
+          - handle: opening_image
+            field:
+              type: assets
+              container: assets
+              max_files: 1
+              query_scopes: [editorial_images]
+              validate: [image]
+              display: Persönliches Einstiegsfoto
+          - handle: opening_caption
+            field: { type: text, display: Bildunterschrift Einstieg }
+          - handle: robot_brief
+            field: { type: textarea, display: Kurzes Teamkapitel }
+          - handle: robot_details_label
+            field: { type: text, display: Titel der Teamdetails }
+          - handle: robot_team_url
+            field: { type: link, display: Zuständige Teamwebsite }
+          - handle: robot_team_label
+            field: { type: text, display: Link zur Teamförderung }
           - handle: software_title
             field:
               type: text

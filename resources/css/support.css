@@ -104,3 +104,28 @@ body:has(.support-story) .site-header__wordmark { position: static; }
 .support-evidence[open] > summary { margin-bottom: 2rem; }
 .support-laptop-view .media-figure { max-width: 60rem; }
 @media (max-width: 63.99rem) { .support-current-design { grid-template-columns: 1fr; gap: 2rem; } .support-current-copy { max-width: 46rem; } }
+
+/* Personal introduction, then the current application; supplementary material stays optional. */
+.support-opening { padding-top: clamp(2.5rem, 5vw, 5rem); padding-bottom: 1rem; }
+.support-opening-layout { grid-template-columns: 1.25fr .75fr; gap: clamp(2rem, 5vw, 5rem); align-items: center; }
+.support-opening h1 { max-width: 15ch; font-size: clamp(3rem, 5.5vw, 6rem); line-height: 1.04; }
+.support-opening__intro { margin: 1.75rem 0; max-width: 47ch; }
+.support-person-photo img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; object-position: 53% center; }
+.support-work { padding-block: clamp(2.5rem, 5vw, 5rem); }
+.support-rosenfold-layout { align-items: start; }
+.support-rosenfold-layout > .support-screen { margin: 0; }
+.support-rosenfold-layout > .support-code-details { grid-column: 1 / -1; margin-top: 0; }
+.support-code-details > summary, .support-team-details > summary { cursor: pointer; min-height: 2.75rem; padding-block: 1rem; font-weight: 650; }
+.support-code-details > summary:focus-visible, .support-team-details > summary:focus-visible { outline: 2px solid var(--site-focus); outline-offset: .25rem; }
+.support-code-details[open] > div { margin-top: 1rem; }
+.support-team-layout { display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 3rem; }
+.support-team-intro > p { margin-block: 1.25rem; }
+.support-team-details { border-top: 1px solid var(--site-border); margin-top: 2rem; }
+.support-team-details .support-current-design { grid-template-columns: 1fr; }
+.support-team-details .support-current-copy { max-width: 55rem; }
+@media (max-width: 47.99rem) {
+ .support-opening-layout, .support-team-layout { display: flex; flex-direction: column; align-items: stretch; gap: 1.5rem; }
+ .support-opening h1 { font-size: clamp(2.8rem, 11vw, 4.8rem); }
+ .support-person-photo img { aspect-ratio: 4 / 3; object-position: center 40%; }
+ .support-rosenfold-layout > .support-screen { margin-top: 1.5rem; }
+}

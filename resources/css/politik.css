@@ -58,3 +58,12 @@ body:has(.politics-page) .site-header__wordmark { background-color: var(--site-b
 .politics-chapter--personal { padding-top: 3rem; }
 @media (max-width: 63.99rem) { .politics-reflections { margin-left: 9.5rem; gap: 2rem; } }
 @media (max-width: 47.99rem) { .politics-reflections { grid-template-columns: 1fr; margin-left: 1.5rem; gap: 2rem; padding-block: 1rem 2rem; } .politics-reflections h2 { max-width: 25ch; font-size: 1.9rem; } }
+
+/* Short context leads into the event story, rather than repeating CV records. */
+.politics-chapter--school { padding-block: 2rem 2.5rem; }
+.politics-school-records { margin-top: 1.5rem; }
+.politics-school-records li { padding-block: 1rem; }
+.politics-chapter--personal { padding-bottom: 3rem; }
+.politics-opening { padding-top: clamp(2.5rem, 5vw, 5rem); }
+.politics-opening__copy { align-items: center; margin-bottom: 2.5rem; }
+.politics-opening h1 { max-width: 14ch; font-size: clamp(3.2rem, 6.5vw, 7rem); }

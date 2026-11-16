@@ -10,6 +10,10 @@ tabs:
             field: { type: textarea, display: Einleitung, validate: [required] }
           - handle: privacy_note
             field: { type: textarea, display: Datenschutzhinweis, validate: [required] }
+          - handle: direct_heading
+            field: { type: text, display: Überschrift direkter Kontakt }
+          - handle: direct_intro
+            field: { type: textarea, display: Einleitung E-Mail-Kontakt }
   search:
     display: SEO
     sections:
