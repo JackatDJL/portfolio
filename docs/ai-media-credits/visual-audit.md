@@ -27,4 +27,4 @@ Missing and none metadata, unknown icon values, escaped disclosure text, metadat
 
 ## Saving and sharing
 
-The overlay is a visible page treatment; it is not baked into the original image and does not permanently label an image saved from the browser. The site currently has no image-download or image-sharing control. AI-involved assets are excluded from image social previews unless a labelled derivative path is added. Originals remain separate and unchanged.
+The overlay is a visible page treatment; it is not baked into the original image and does not permanently label an image saved from the browser. The site currently has no image-download or image-sharing control. Assets with non-none AI involvement, or a legacy disclosure without an explicit `none`, are excluded from image social previews unless a labelled derivative path is added. Originals remain separate and unchanged.

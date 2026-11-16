@@ -9,7 +9,7 @@
     .media-overlay__credit { display: inline-flex; width: fit-content; max-width: 100%; align-items: center; padding: .32rem .48rem; border-radius: .2rem; font-size: .7rem; font-weight: 600; line-height: 1.3; overflow-wrap: anywhere; box-decoration-break: clone; }
     .media-overlay__ai { display: block; grid-column: 1; justify-self: start; width: fit-content; max-width: 100%; padding: 0; background: transparent; }
     .media-overlays img.media-overlay__ai-icon { display: block; width: auto; max-width: 5.4rem; height: 1.8rem; flex: none; object-fit: contain; }
-    .media-figure .media-overlays img.media-overlay__ai-icon { border: 0; border-radius: 0; background: transparent; }
+    .media-overlays img.media-overlay__ai-icon { border: 0; border-radius: 0; background: transparent; }
     .media-overlay__credit { grid-column: 2; justify-self: end; color: #fff; background: rgb(0 0 0 / .76); text-align: right; pointer-events: auto; }
     .media-overlay__credit--dark { color: #fff; background: rgb(0 0 0 / .76); }
     .media-overlay__credit--light { color: #101410; background: rgb(255 255 255 / .92); }

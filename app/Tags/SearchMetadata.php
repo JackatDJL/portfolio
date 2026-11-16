@@ -104,6 +104,14 @@ class SearchMetadata extends Tags
             if (is_string($aiInvolvement) && $aiInvolvement !== 'none' && $aiInvolvement !== '') {
                 return null;
             }
+
+            if ($aiInvolvement === null || $aiInvolvement === '') {
+                $disclosure = $asset->get('eu_ai_disclosure') ?? $asset->get('ai_disclosure');
+                $disclosure = $disclosure instanceof Value ? $disclosure->value() : $disclosure;
+                if (is_string($disclosure) && trim($disclosure) !== '') {
+                    return null;
+                }
+            }
         }
 
         if (is_object($image)) {

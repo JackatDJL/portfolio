@@ -3,6 +3,7 @@
 namespace Tests\Unit;
 
 use App\Tags\SearchMetadata;
+use Statamic\Facades\Asset;
 use Statamic\Facades\AssetContainer;
 use ReflectionClass;
 use ReflectionMethod;
@@ -44,6 +45,70 @@ class SearchMetadataTest extends TestCase
         };
 
         $this->assertSame('https://example.org/source.png', $this->imageUrl($asset));
+    }
+
+    public function test_legacy_disclosure_is_not_emitted_without_an_image_label(): void
+    {
+        foreach (['eu_ai_disclosure', 'ai_disclosure'] as $disclosureHandle) {
+            $asset = new class($disclosureHandle)
+            {
+                public function __construct(private string $disclosureHandle) {}
+
+                public function get(string $key): ?string
+                {
+                    return $key === $this->disclosureHandle ? 'Gespeicherter KI-Hinweis' : null;
+                }
+
+                public function absoluteUrl(): string
+                {
+                    return 'https://example.org/source.png';
+                }
+            };
+
+            $this->assertNull($this->imageUrl($asset));
+        }
+    }
+
+    public function test_explicit_none_keeps_legacy_disclosure_source_available_for_social_preview(): void
+    {
+        $asset = new class
+        {
+            public function get(string $key): ?string
+            {
+                return match ($key) {
+                    'ai_involvement' => 'none',
+                    'eu_ai_disclosure' => 'Gespeicherter KI-Hinweis',
+                    default => null,
+                };
+            }
+
+            public function absoluteUrl(): string
+            {
+                return 'https://example.org/source.png';
+            }
+        };
+
+        $this->assertSame('https://example.org/source.png', $this->imageUrl($asset));
+    }
+
+    public function test_real_asset_with_legacy_disclosure_is_excluded_unless_none_is_explicit(): void
+    {
+        $asset = Asset::find('assets::projects/ai-ctx/effect-ai-ctx.png');
+        $this->assertNotNull($asset);
+        $this->assertFalse($asset->data()->has('ai_involvement'));
+        $asset->set('eu_ai_disclosure', 'Gespeicherter KI-Hinweis');
+
+        $this->assertNull($this->imageUrl($asset));
+
+        $asset->set('ai_involvement', 'none');
+        $this->assertSame($asset->absoluteUrl(), $this->imageUrl($asset));
+    }
+
+    public function test_ai_icon_css_reset_applies_outside_media_figure_wrappers(): void
+    {
+        $css = file_get_contents(resource_path('css/gallery.css'));
+
+        $this->assertMatchesRegularExpression('/\.media-overlays img\.media-overlay__ai-icon\s*\{[^}]*border:\s*0/', $css);
     }
 
     public function test_ai_asset_is_found_from_bare_path_rooted_path_and_absolute_url_with_dot_segments(): void
