@@ -48,19 +48,24 @@ test('protects decorative images excluded from pointer hit testing', async ({ pa
     await expect(name).toHaveAttribute('data-contrast-marker', 'true');
 });
 
-test('glass flag keeps the name static across hover, focus and dark sections', async ({ page }) => {
+test('glass loads only after the entire header leaves and restores the plain name', async ({ page }) => {
     await page.goto('/tests/browser/fixtures/wordmark-contrast.html?name=island');
     const name = page.getByRole('link', { name: 'Jack Ruder', exact: true });
-    await expect(name).toHaveClass(/name-island/);
-    await expect(name).toHaveAttribute('href', '#');
-    await expect(name.locator('*')).toHaveCount(0);
-    const initial = await name.evaluate(element => ({ width: element.offsetWidth, background: getComputedStyle(element).backgroundColor, color: getComputedStyle(element).color }));
-    await name.hover();
-    await name.focus();
+    await expect(name).not.toHaveClass(/name-island/);
+    await expect(name.locator('.name-glass-effect')).toBeHidden();
+    await expect(name.locator('.glass')).toHaveCount(0);
+    const headerBottom = await page.locator('.site-header').evaluate(e => e.getBoundingClientRect().bottom);
+    // Keep even a small piece of the header in view.
+    await page.evaluate(y => scrollTo(0, y), Math.max(0, headerBottom - 2));
+    await expect(name).not.toHaveClass(/name-island/);
     await page.evaluate(() => scrollTo(0, 760));
-    await page.waitForTimeout(200);
-    expect(await name.evaluate(element => ({ width: element.offsetWidth, background: getComputedStyle(element).backgroundColor, color: getComputedStyle(element).color }))).toEqual(initial);
-    await expect(name).not.toHaveAttribute('data-contrast-marker');
-    await page.goto('/tests/browser/fixtures/wordmark-contrast.html?name=marker');
-    await expect(page.locator('.site-header__wordmark')).not.toHaveClass(/name-island/);
+    await expect(name).toHaveClass(/name-island/);
+    await expect(name.locator('.glass')).toHaveCount(1);
+    const before = await name.boundingBox();
+    await name.hover();
+    expect(await name.boundingBox()).toEqual(before);
+    await page.evaluate(() => scrollTo(0, 0));
+    await expect(name).not.toHaveClass(/name-island/);
+    await expect(name.locator('.glass')).toHaveCount(0);
+    await expect(name).toHaveAttribute('href', '#');
 });
