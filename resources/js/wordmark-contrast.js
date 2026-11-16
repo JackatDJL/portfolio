@@ -1,11 +1,11 @@
-import { initNameIsland } from './name-island-prototype.js';
+import { initNameGlass } from './name-glass.js';
 
 // Solid surfaces use WCAG luminance. Images/gradients are treated conservatively:
 // their painted pixels cannot be inferred reliably from computed CSS alone.
 export function initWordmarkContrast() {
     const wordmark = document.querySelector('.site-header__wordmark');
     if (!wordmark) return;
-    if (initNameIsland(wordmark)) return;
+    initNameGlass(wordmark);
     wordmark.dataset.contrastMarker = 'false';
     let frame = 0;
     let timer = 0;
@@ -46,7 +46,7 @@ export function initWordmarkContrast() {
     };
     const check = () => {
         frame = 0;
-        const next = needsMarker();
+        const next = wordmark.classList.contains('name-island') ? false : needsMarker();
         if (next === pending) return;
         pending = next;
         clearTimeout(timer);
@@ -63,6 +63,7 @@ export function initWordmarkContrast() {
     window.addEventListener('resize', schedule);
     window.addEventListener('pageshow', schedule);
     document.addEventListener('load', schedule, true);
+    document.addEventListener('wordmark:glass-change', schedule);
     document.fonts?.ready.then(schedule);
     schedule();
     window.addEventListener('pagehide', event => {
@@ -74,5 +75,6 @@ export function initWordmarkContrast() {
         window.removeEventListener('resize', schedule);
         window.removeEventListener('pageshow', schedule);
         document.removeEventListener('load', schedule, true);
+        document.removeEventListener('wordmark:glass-change', schedule);
     });
 }

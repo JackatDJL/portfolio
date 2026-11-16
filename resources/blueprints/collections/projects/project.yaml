@@ -162,8 +162,8 @@ tabs:
             field:
               type: toggle
               default: false
-              display: 'Experimenteller Hero-Übergang'
-              instructions: 'Optionaler Prototyp. Ohne Titelbild bleibt der bisherige Hero erhalten.'
+              display: 'Hero-Übergang'
+              instructions: 'Zeigt den animierten Projektkopf und das Masonry-Layout, wenn ein Titelbild vorhanden ist.'
           -
             handle: gallery
             field:

@@ -3,8 +3,8 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 gsap.registerPlugin(ScrollTrigger);
 const hero = document.querySelector('[data-project-hero]');
-const frame = hero.querySelector('.project-hero-prototype__frame');
-const copy = hero.querySelector('.project-hero-prototype__copy');
+const frame = hero.querySelector('.project-hero-transition__frame');
+const copy = hero.querySelector('.project-hero-transition__copy');
 const media = gsap.matchMedia();
 let active = true;
 

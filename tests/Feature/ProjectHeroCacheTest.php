@@ -22,7 +22,7 @@ class ProjectHeroCacheTest extends TestCase
         try {
             $cacher->cachePage($default, response('cached original hero'));
             $this->assertTrue($cacher->hasCachedPage($default));
-            foreach (['original', 'transition'] as $hero) {
+            foreach (['original'] as $hero) {
                 $request = Request::create($url.'?hero='.$hero);
                 $middleware = new CacheMiddleware($cacher, new Session($request->fullUrl()));
                 $response = $middleware->handle($request, fn () => response('fresh '.$hero.' hero'));

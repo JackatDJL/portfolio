@@ -1,7 +1,7 @@
 {{# Projekt-Detailseite: Intro, Lesebereich, Kontext-Rail. #}}
 {{ _transition = false }}
-{{ if cover && get:hero != 'original' && (hero_transition || (slug == 'erstwaehlerforum-stade' && get:hero == 'transition')) }}{{ _transition = true }}{{ /if }}
-<article class="project-detail {{ if _transition }}project-detail--prototype{{ /if }}">
+{{ if cover && hero_transition && get:hero != 'original' }}{{ _transition = true }}{{ /if }}
+<article class="project-detail {{ if _transition }}project-detail--transition{{ /if }}">
     {{ if _transition }}{{ partial:projects/hero-transition }}{{ /if }}
     {{ _intro = 'projects/hero' }}
     {{ if _transition }}{{ _intro = false }}{{ /if }}
@@ -11,7 +11,7 @@
         {{ partial:bard/prose :content="content" }}
 
         {{ if _transition }}
-            {{ partial:projects/gallery-prototype }}
+            {{ partial:projects/gallery-masonry }}
         {{ else }}
             {{ partial:gallery/figures :assets="gallery" classes="project-gallery" }}
         {{ /if }}

@@ -1,13 +1,22 @@
-/* ?name=island: the original fixed name stays plain until its header is gone. */
+/* The fixed name turns into a glass capsule only after the header leaves view. */
 @layer components {
     .name-glass-label { position: relative; z-index: 1; }
     .site-header__identity-slot .site-header__wordmark.name-glass-enabled {
-        background: none;
+        background-color: transparent;
+        background-image: none;
         color: var(--site-text);
         font-weight: 800;
         white-space: nowrap;
         text-decoration: none;
         transition: none;
+    }
+    .site-header__identity-slot .site-header__wordmark.name-glass-enabled[data-contrast-marker="true"] {
+        --link-marker: #93e8ba;
+        color: #06100c;
+        background-image: linear-gradient(var(--link-marker), var(--link-marker));
+        background-position: 0 100%;
+        background-repeat: no-repeat;
+        background-size: 100% 100%;
     }
     .name-glass-effect {
         --name-glass: rgb(255 255 255 / .78);

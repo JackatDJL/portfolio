@@ -1,21 +1,42 @@
 import { expect, test } from '@playwright/test';
 
-test('protects the fixed name over dark surfaces and buffers short crossings', async ({ page }) => {
+test('protects the fixed name over dark surfaces and buffers short crossings before the glass state', async ({ page }) => {
     await page.goto('/tests/browser/fixtures/wordmark-contrast.html');
     const name = page.locator('.site-header__wordmark');
     await expect(name).toHaveAttribute('data-contrast-marker', 'false');
-    await page.evaluate(() => scrollTo(0, 760));
+    await page.evaluate(() => {
+        const surface = document.createElement('div');
+        surface.className = 'test-dark-surface';
+        surface.style.cssText = 'position:fixed;top:0;left:0;width:400px;height:100px;background:#07100c;z-index:1';
+        document.body.append(surface);
+        window.dispatchEvent(new Event('scroll'));
+    });
     await expect(name).toHaveAttribute('data-contrast-marker', 'true');
     await name.hover();
     await expect(name).toHaveCSS('color', 'rgb(6, 16, 12)');
     await page.mouse.move(500, 400);
-    // A brief excursion into the light section must not turn the marker off.
-    await page.evaluate(() => scrollTo(0, 1500));
+    // A brief light-surface interval must not turn the marker off.
+    await page.locator('.test-dark-surface').evaluate(element => {
+        element.remove();
+        window.dispatchEvent(new Event('scroll'));
+    });
     await page.waitForTimeout(80);
-    await page.evaluate(() => scrollTo(0, 760));
+    await page.evaluate(() => {
+        const surface = document.createElement('div');
+        surface.className = 'test-dark-surface';
+        surface.style.cssText = 'position:fixed;top:0;left:0;width:400px;height:100px;background:#07100c;z-index:1';
+        document.body.append(surface);
+        window.dispatchEvent(new Event('scroll'));
+    });
     await page.waitForTimeout(350);
     await expect(name).toHaveAttribute('data-contrast-marker', 'true');
-    await page.evaluate(() => scrollTo(0, 1500));
+    await page.locator('.test-dark-surface').evaluate(element => {
+        element.remove();
+        window.dispatchEvent(new Event('scroll'));
+    });
+    await expect(name).toHaveAttribute('data-contrast-marker', 'false');
+    await page.evaluate(() => scrollTo(0, 760));
+    await expect(name).toHaveClass(/name-island/);
     await expect(name).toHaveAttribute('data-contrast-marker', 'false');
 });
 
@@ -39,17 +60,17 @@ test('protects decorative images excluded from pointer hit testing', async ({ pa
     await page.evaluate(() => {
         const image = document.createElement('img');
         image.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="200"><rect width="400" height="200" fill="black"/></svg>';
-        image.style.cssText = 'position:absolute;top:720px;left:0;width:400px;height:200px;pointer-events:none';
+        image.style.cssText = 'position:fixed;top:0;left:0;width:400px;height:200px;pointer-events:none;z-index:1';
         document.querySelector('main').append(image);
+        window.dispatchEvent(new Event('scroll'));
     });
-    // Make the underlying section light before scrolling: only the image creates the risk.
+    // Make the underlying page light: only the non-hit-testable image creates the risk.
     await page.locator('.test-dark').evaluate(element => element.style.background = '#fbfefa');
-    await page.evaluate(() => scrollTo(0, 760));
     await expect(name).toHaveAttribute('data-contrast-marker', 'true');
 });
 
 test('glass loads only after the entire header leaves and restores the plain name', async ({ page }) => {
-    await page.goto('/tests/browser/fixtures/wordmark-contrast.html?name=island');
+    await page.goto('/tests/browser/fixtures/wordmark-contrast.html');
     const name = page.getByRole('link', { name: 'Jack Ruder', exact: true });
     await expect(name).not.toHaveClass(/name-island/);
     await expect(name.locator('.name-glass-effect')).toBeHidden();
@@ -73,7 +94,7 @@ test('glass loads only after the entire header leaves and restores the plain nam
 });
 
 test('glass fades both ways and a reversed scroll cancels delayed unmount', async ({ page }) => {
-    await page.goto('/tests/browser/fixtures/wordmark-contrast.html?name=island');
+    await page.goto('/tests/browser/fixtures/wordmark-contrast.html');
     await page.evaluate(() => scrollTo(0, 760));
     const surface = page.locator('.name-glass-effect');
     await page.waitForFunction(() => {
