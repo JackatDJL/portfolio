@@ -62,7 +62,7 @@
     .home-publication__preview { position: absolute; inset: 0; z-index: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; opacity: .22; mix-blend-mode: multiply; }
     .home-publication__media { position: absolute; inset: 0; display: block; margin: 0; overflow: hidden; pointer-events: none; }
     .home-publication__media .home-publication__preview { display: block; }
-    .home-publication__type, .home-publication__imprint, .home-publication__sheet strong, .home-publication__abstract, .home-publication__rule { position: relative; z-index: 2; }
+    .home-publication__type, .home-publication__imprint, .home-publication__sheet strong, .home-publication__abstract, .home-publication__rule { position: relative; z-index: 1; }
     .home-publication__type, .home-publication__imprint { font-family: var(--font-mono); font-size: .7rem; }
     .home-publication__sheet strong { max-width: 13ch; margin: .8rem 0; font-family: var(--font-display); font-size: clamp(2.25rem, 4vw, 4.3rem); line-height: .93; letter-spacing: -.06em; }
     .home-publication__media .media-overlays { z-index: 3; }

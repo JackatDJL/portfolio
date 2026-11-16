@@ -245,7 +245,7 @@ class AssetAttributionTest extends TestCase
         $caption = 'Workshop bei der Projektwoche des Athenaeums 2025.';
         $detail = $this->get('/projekte/hackclub-stade')->assertOk()->getContent();
         $this->assertSame(1, substr_count($detail, $caption));
-        $this->assertStringContainsString('Jack Ruder ·', $detail);
+        $this->assertStringNotContainsString('Jack Ruder ·', $detail);
         $this->assertStringNotContainsString($caption, $this->get('/projekte')->assertOk()->getContent());
     }
 }

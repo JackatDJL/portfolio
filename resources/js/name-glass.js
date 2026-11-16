@@ -2,7 +2,6 @@
 export function initNameGlass(wordmark) {
     const header = wordmark.closest('.site-header');
     if (!header) return false;
-    wordmark.dataset.contrastMarker = 'false';
     wordmark.classList.add('name-glass-enabled');
     const label = document.createElement('span');
     label.className = 'name-glass-label';
@@ -27,14 +26,13 @@ export function initNameGlass(wordmark) {
         clearTimeout(hideTimer);
         if (show) {
             mounted = true;
-            wordmark.dataset.contrastMarker = 'false';
         }
         else hideTimer = setTimeout(() => {
             mounted = false;
             draw();
         }, motion.matches ? 0 : 420);
         wordmark.classList.toggle('name-island', show);
-        wordmark.dispatchEvent(new CustomEvent('wordmark:glass-change', { bubbles: true }));
+        wordmark.dispatchEvent(new CustomEvent('wordmark:glass-change', { bubbles: true, detail: { visible: show } }));
         if (show && !loading) {
             loading = import('./name-liquid-glass.js').then(({ mountNameGlass }) => {
                 if (!active) return;

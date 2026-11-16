@@ -57,13 +57,27 @@ export function initWordmarkContrast() {
         }, next ? 40 : 160);
     };
     const schedule = () => { if (!frame) frame = requestAnimationFrame(check); };
+    const onGlassChange = event => {
+        if (!event.detail?.visible) {
+            schedule();
+            return;
+        }
+
+        cancelAnimationFrame(frame);
+        frame = 0;
+        clearTimeout(timer);
+        timer = 0;
+        pending = false;
+        marked = false;
+        wordmark.dataset.contrastMarker = 'false';
+    };
     const observer = new MutationObserver(schedule);
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
     window.addEventListener('scroll', schedule, { passive: true });
     window.addEventListener('resize', schedule);
     window.addEventListener('pageshow', schedule);
     document.addEventListener('load', schedule, true);
-    document.addEventListener('wordmark:glass-change', schedule);
+    document.addEventListener('wordmark:glass-change', onGlassChange);
     document.fonts?.ready.then(schedule);
     schedule();
     window.addEventListener('pagehide', event => {
@@ -75,6 +89,6 @@ export function initWordmarkContrast() {
         window.removeEventListener('resize', schedule);
         window.removeEventListener('pageshow', schedule);
         document.removeEventListener('load', schedule, true);
-        document.removeEventListener('wordmark:glass-change', schedule);
+        document.removeEventListener('wordmark:glass-change', onGlassChange);
     });
 }

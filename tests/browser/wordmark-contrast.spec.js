@@ -53,6 +53,28 @@ test('rechecks after theme changes and retains a readable hover marker', async (
     await expect(name).toHaveCSS('color', 'rgb(6, 16, 12)');
 });
 
+test('restores contrast state when returning from glass to a dark surface before the old marker timeout', async ({ page }) => {
+    await page.goto('/tests/browser/fixtures/wordmark-contrast.html');
+    const name = page.locator('.site-header__wordmark');
+    await page.evaluate(() => {
+        const surface = document.createElement('div');
+        surface.className = 'test-dark-surface';
+        surface.style.cssText = 'position:fixed;top:0;left:0;width:400px;height:100px;background:#07100c;z-index:1';
+        document.body.append(surface);
+        window.dispatchEvent(new Event('scroll'));
+    });
+    await expect(name).toHaveAttribute('data-contrast-marker', 'true');
+
+    await page.evaluate(() => scrollTo(0, 760));
+    await expect(name).toHaveClass(/name-island/);
+    await expect(name).toHaveAttribute('data-contrast-marker', 'false');
+    await page.waitForTimeout(80);
+
+    await page.evaluate(() => scrollTo(0, 0));
+    await expect(name).not.toHaveClass(/name-island/);
+    await expect(name).toHaveAttribute('data-contrast-marker', 'true');
+});
+
 test('protects decorative images excluded from pointer hit testing', async ({ page }) => {
     await page.goto('/tests/browser/fixtures/wordmark-contrast.html');
     const name = page.locator('.site-header__wordmark');
