@@ -28,7 +28,7 @@ This is an opt-in prototype for review, not a decision to replace every project 
 
 ## Name glass experiment
 
-Append `&name=island` to try the fixed header name with `liquid-glass-react`. The original name stays plain while any part of the header is visible. Only when the header has left above the viewport does its decorative glass surface appear. Scrolling back restores the normal name. `&name=marker` or omitting the parameter restores the buffered marker experiment. The URL flag is not stored; the homepage's separate large-name animation is outside this experiment.
+Append `&name=island` to try the fixed header name with `liquid-glass-react`. The original name stays plain while any part of the header is visible. Only when the header has left above the viewport does its decorative glass surface appear. The surface fades over 420 ms with easing in both directions. Scrolling back restores the normal name; the React glass remains mounted until the fade-out finishes. Reversing direction cancels pending unmount work. Reduced motion skips the fade. `&name=marker` or omitting the parameter restores the buffered marker experiment. The URL flag is not stored; the homepage's separate large-name animation is outside this experiment.
 
 React, ReactDOM and liquid-glass-react are dynamically imported on the first header exit, only for this flag. The original home link remains the only interactive element and keeps its accessible name. The React root is an aria-hidden, pointer-transparent decorative layer. It unmounts the glass while the header is visible and cleans up on non-cached page exit. Font/label resize redraws its dimensions.
 

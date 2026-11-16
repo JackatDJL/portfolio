@@ -1,8 +1,7 @@
 /* ?name=island: the original fixed name stays plain until its header is gone. */
 @layer components {
     .name-glass-label { position: relative; z-index: 1; }
-    .name-glass-effect { display: none; }
-    .site-header__identity-slot .site-header__wordmark.name-island {
+    .site-header__identity-slot .site-header__wordmark.name-glass-enabled {
         background: none;
         color: var(--site-text);
         font-weight: 800;
@@ -10,7 +9,7 @@
         text-decoration: none;
         transition: none;
     }
-    .name-island .name-glass-effect {
+    .name-glass-effect {
         --name-glass: rgb(255 255 255 / .78);
         display: block;
         position: absolute;
@@ -18,7 +17,11 @@
         border-radius: 999px;
         background: var(--name-glass);
         pointer-events: none;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 420ms cubic-bezier(.22, 1, .36, 1), visibility 0s linear 420ms;
     }
+    .name-island .name-glass-effect { opacity: 1; visibility: visible; transition-delay: 0s; }
     .name-glass-effect:has(.glass) { background: transparent; }
     .name-glass-effect > .bg-black { display: none; }
     .name-glass-effect .glass {
@@ -26,5 +29,9 @@
     }
     .name-glass-effect .glass__warp { background: var(--name-glass); }
     .name-glass-effect * { transition: none !important; }
-    [data-theme="dark"] .name-island .name-glass-effect { --name-glass: rgb(16 26 21 / .85); }
+    [data-theme="dark"] .name-glass-enabled .name-glass-effect { --name-glass: rgb(16 26 21 / .85); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .name-glass-effect { transition: none !important; }
 }

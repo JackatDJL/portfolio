@@ -4,6 +4,7 @@ export function initNameIsland(wordmark) {
     const header = wordmark.closest('.site-header');
     if (!header) return false;
     wordmark.dataset.contrastMarker = 'false';
+    wordmark.classList.add('name-glass-enabled');
     const label = document.createElement('span');
     label.className = 'name-glass-label';
     label.textContent = wordmark.textContent.trim();
@@ -13,14 +14,23 @@ export function initNameIsland(wordmark) {
     wordmark.replaceChildren(surface, label);
     let active = true;
     let visible = false;
+    let mounted = false;
+    let hideTimer;
+    const motion = matchMedia('(prefers-reduced-motion: reduce)');
     let glass;
     let loading;
     const draw = () => {
         if (!active || !glass) return;
-        glass.render(visible, label.offsetWidth, label.offsetHeight);
+        glass.render(mounted, label.offsetWidth, label.offsetHeight);
     };
     const update = (show) => {
         visible = show;
+        clearTimeout(hideTimer);
+        if (show) mounted = true;
+        else hideTimer = setTimeout(() => {
+            mounted = false;
+            draw();
+        }, motion.matches ? 0 : 420);
         wordmark.classList.toggle('name-island', show);
         if (show && !loading) {
             loading = import('./name-liquid-glass.js').then(({ mountNameGlass }) => {
@@ -37,14 +47,15 @@ export function initNameIsland(wordmark) {
     observer.observe(header);
     const resize = new ResizeObserver(draw);
     resize.observe(label);
-    const motion = matchMedia('(prefers-reduced-motion: reduce)');
-    motion.addEventListener('change', draw);
+    const updateMotion = () => update(visible);
+    motion.addEventListener('change', updateMotion);
     window.addEventListener('pagehide', event => {
         if (event.persisted) return;
         active = false;
         observer.disconnect();
         resize.disconnect();
-        motion.removeEventListener('change', draw);
+        clearTimeout(hideTimer);
+        motion.removeEventListener('change', updateMotion);
         glass?.destroy();
     });
     return true;

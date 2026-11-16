@@ -61,11 +61,35 @@ test('glass loads only after the entire header leaves and restores the plain nam
     await page.evaluate(() => scrollTo(0, 760));
     await expect(name).toHaveClass(/name-island/);
     await expect(name.locator('.glass')).toHaveCount(1);
+    await expect(name.locator('.name-glass-effect')).toHaveCSS('opacity', '1');
     const before = await name.boundingBox();
     await name.hover();
     expect(await name.boundingBox()).toEqual(before);
     await page.evaluate(() => scrollTo(0, 0));
     await expect(name).not.toHaveClass(/name-island/);
+    await expect(name.locator('.name-glass-effect')).toHaveCSS('opacity', '0');
     await expect(name.locator('.glass')).toHaveCount(0);
     await expect(name).toHaveAttribute('href', '#');
+});
+
+test('glass fades both ways and a reversed scroll cancels delayed unmount', async ({ page }) => {
+    await page.goto('/tests/browser/fixtures/wordmark-contrast.html?name=island');
+    await page.evaluate(() => scrollTo(0, 760));
+    const surface = page.locator('.name-glass-effect');
+    await page.waitForFunction(() => {
+        const opacity = Number(getComputedStyle(document.querySelector('.name-glass-effect')).opacity);
+        return opacity > 0 && opacity < 1;
+    });
+    await expect(surface).toHaveCSS('opacity', '1');
+    await expect(surface.locator('.glass')).toHaveCount(1);
+    await page.evaluate(() => scrollTo(0, 0));
+    await page.waitForFunction(() => {
+        const opacity = Number(getComputedStyle(document.querySelector('.name-glass-effect')).opacity);
+        return opacity > 0 && opacity < 1;
+    });
+    await expect(surface.locator('.glass')).toHaveCount(1);
+    await page.evaluate(() => scrollTo(0, 760));
+    await expect(surface).toHaveCSS('opacity', '1');
+    await page.waitForTimeout(450);
+    await expect(surface.locator('.glass')).toHaveCount(1);
 });
