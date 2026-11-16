@@ -61,7 +61,7 @@ for (const root of document.querySelectorAll('[data-support-root], [data-politic
             const mediaRect = media.getBoundingClientRect();
             const cinemaRect = cinema.getBoundingClientRect();
             media.style.cssText = savedMedia;
-            size = { originX: rect.left, originY: rect.top - cinemaRect.top + root.getBoundingClientRect().top + scrollY, mediaX: mediaRect.left, mediaY: mediaRect.top - cinemaRect.top, mediaWidth: mediaRect.width, mediaScale: innerHeight * .32 / mediaRect.height, width: rect.width, height: rect.height, font, scale: 24 / font,
+            size = { originX: rect.left, originY: rect.top - cinemaRect.top + root.getBoundingClientRect().top + scrollY, mediaX: mediaRect.left, mediaY: mediaRect.top - cinemaRect.top, mediaWidth: mediaRect.width, mediaScale: innerHeight * .32 / Math.max(1, mediaRect.height), width: rect.width, height: rect.height, font, scale: 24 / font,
                 wordWidths: wordRects.map(r => r.width), line: wordRects[1].top - wordRects[0].top,
                 dockX: destination.left, dockY: destination.top,
                 rail: headings[0].getBoundingClientRect().left - (innerWidth < 768 ? 23 : 38) };
