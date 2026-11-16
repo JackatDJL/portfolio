@@ -1,6 +1,6 @@
 /* Support starts from the unmodified Root components and their motion. */
 .entry-home-dock { position: fixed; top: 1.5rem; left: max(2rem, calc((100vw - 96rem) / 2 + 2rem)); visibility: hidden; font: 800 24px/1.2 var(--font-display); pointer-events: none; }
-body:has(.entry-support.is-home-enhanced) .site-header__wordmark { visibility: hidden; }
+body:has(.entry-support) .site-header__wordmark { visibility: hidden; }
 .entry-support .asset-attribution { color: var(--site-text-muted); font-size: .75rem; line-height: 1.5; margin-top: .75rem; }
 .entry-support .entry-next { margin-top: 1.5rem; }
 .entry-support .home-project__copy .related-reference { margin-top: 1.5rem; }

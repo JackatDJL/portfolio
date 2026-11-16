@@ -8,7 +8,7 @@
                 <div class="home-person__media" data-home-person-media>{{ opening_image }}{{ partial:entry/photo hero="true" }}{{ /opening_image }}</div>
                 <div class="home-person__intro" data-home-intro><p>{{ intro | sanitize }}</p></div>
             </div>
-            <div class="home-gallery" data-home-gallery aria-label="Einblicke in meine Arbeit">{{ support_media }}{{ partial:entry/photo }}{{ /support_media }}</div>
+            <div class="home-gallery" data-home-gallery role="region" tabindex="0" aria-label="Einblicke in meine Arbeit">{{ support_media }}{{ partial:entry/photo }}{{ /support_media }}</div>
         </header>
     </div>
     <section id="projekte" class="home-projects" data-home-projects aria-labelledby="projects-title">

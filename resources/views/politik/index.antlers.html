@@ -5,7 +5,7 @@
         <div class="home-name-slot" data-home-name-slot><h1 class="home-name wordmark" data-home-name aria-label="Jack Ruder"><span class="semantic-link" aria-hidden="true">Jack</span><span class="semantic-link" aria-hidden="true">Ruder</span></h1></div>
         <div class="home-person__media" data-home-person-media>{{ personal_image }}{{ partial:entry/photo hero="true" }}{{ /personal_image }}</div>
         <div class="home-person__intro" data-home-intro><p>{{ intro | sanitize }}</p><p class="entry-personal-boundary">{{ personal_boundary | sanitize }}</p></div>
-    </div><div class="home-gallery" data-home-gallery aria-label="Politische Bildung und Arbeit vor Ort">{{ hero_image }}{{ partial:entry/photo }}{{ /hero_image }}{{ forum_image }}{{ partial:entry/photo }}{{ /forum_image }}{{ volt_image }}{{ partial:entry/photo }}{{ /volt_image }}</div></header></div>
+    </div><div class="home-gallery" data-home-gallery role="region" tabindex="0" aria-label="Politische Bildung und Arbeit vor Ort">{{ hero_image }}{{ partial:entry/photo }}{{ /hero_image }}{{ forum_image }}{{ partial:entry/photo }}{{ /forum_image }}{{ volt_image }}{{ partial:entry/photo }}{{ /volt_image }}</div></header></div>
     <section class="home-projects" data-home-projects aria-labelledby="projects-title"><div class="home-projects__stage site-container" data-home-project-stage>
         <h2 id="projects-title" data-home-heading>{{ work_heading | sanitize }}</h2>
         <div class="home-projects__records">

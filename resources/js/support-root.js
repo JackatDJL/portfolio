@@ -37,6 +37,8 @@ for (const root of document.querySelectorAll('[data-support-root], [data-politic
         labels['project-1'] = 7.5; // Existing photo-stream endpoint.
         let timeline, size, stickyHeading, headingShift = 0, alive = true, refreshTimer;
         root.classList.toggle('is-home-enhanced', full);
+        gallery.tabIndex = full ? -1 : 0;
+        if (full) gallery.setAttribute('aria-hidden', 'true'); else gallery.removeAttribute('aria-hidden');
         const thread = homepageThread({ root, svg: root.querySelector('[data-home-thread]'), path: root.querySelector('[data-home-thread-path]'), headings, projects, full, reduce: context.conditions.reduce });
         const stream = full ? homepageStream(gallery, [...media.querySelectorAll('.home-photo'), ...gallery.querySelectorAll('.home-photo')], gsap) : null;
 
@@ -184,6 +186,7 @@ for (const root of document.querySelectorAll('[data-support-root], [data-politic
             timeline?.scrollTrigger?.kill();
             timeline?.kill();
             stream?.destroy(); thread.destroy();
+            gallery.tabIndex = 0; gallery.removeAttribute('aria-hidden');
             name.classList.remove('is-travelling');
             name.style.cssText = ''; words.forEach(word => { word.style.cssText = ''; });
             slot.style.height = ''; slot.append(name);

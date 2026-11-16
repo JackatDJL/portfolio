@@ -1,4 +1,4 @@
-body:has(.entry-politics.is-home-enhanced) .site-header__wordmark { visibility: hidden; }
+body:has(.entry-politics) .site-header__wordmark { visibility: hidden; }
 .entry-politics .home-person__intro .entry-personal-boundary { color: var(--site-text-muted); font-size: .85rem; margin-top: 1.5rem; }
 .entry-politics .asset-attribution { color: var(--site-text-muted); font-size: .75rem; line-height: 1.5; margin-top: .75rem; }
 .entry-politics .entry-next { margin-top: 1.5rem; }
