@@ -6,7 +6,7 @@ template: support/index
 published: false
 noindex: true
 heading: 'Ich bin Jack. Ich entwickle eigene Software.'
-intro: 'Ich bin Jack Ruder aus Stade. Ich entwickle Webanwendungen und offene Werkzeuge. Mit Rosenfold arbeite ich daran, Dateien und Text zwischen Geräten auszutauschen. Hier zeige ich, was schon entstanden ist, was noch fehlt und wo Unterstützung meine Arbeit weiterbringen kann.'
+intro: 'In Stade entwickle ich Webanwendungen und offene Werkzeuge. Mit Rosenfold arbeite ich daran, Dateien und Text zwischen Geräten auszutauschen. Hier zeige ich, was schon entstanden ist, was noch fehlt und wo Unterstützung meine Arbeit weiterbringen kann.'
 byline: 'Jack Ruder · Software und Robotik'
 software_need_heading: 'Ein noch unveröffentlichtes Werkzeug fertigbauen.'
 software_owner_label: 'Persönliche Softwareprojekte'
@@ -14,7 +14,7 @@ rosenfold_need_heading: 'Unter realen Netzwerkbedingungen prüfen.'
 rosenfold_owner_label: 'Unabhängiges Projekt · In Entwicklung'
 robot_need_heading: 'Die Motorhalterung muss auf den Prüfstand.'
 robot_owner_label: 'AtheBlues · Schulteam'
-financial_boundary: 'Persönliche Projekte, mögliche geschäftliche Vorhaben und das Schulteam bleiben finanziell getrennt. Diese Seite nimmt keine Zahlungen entgegen.'
+financial_boundary: 'Unterstützung für meine Softwareprojekte und für AtheBlues wird getrennt vereinbart. Diese Seite nimmt keine Zahlungen entgegen.'
 contact_label: 'Unterstützung besprechen'
 software_title: 'Auch kleine Werkzeuge brauchen Pflege.'
 software_intro: 'Neben Rosenfold entwickle ich offene Werkzeuge wie prtop: eine Terminaloberfläche für Pull Requests aus verschiedenen Git-Plattformen. Die Oberfläche ist gebaut; ein veröffentlichtes Release gibt es noch nicht.'

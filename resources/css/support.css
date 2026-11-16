@@ -114,7 +114,9 @@ body:has(.support-story) .site-header__wordmark { position: static; }
 .support-work { padding-block: clamp(2.5rem, 5vw, 5rem); }
 .support-rosenfold-layout { align-items: start; }
 .support-rosenfold-layout > .support-screen { margin: 0; }
-.support-rosenfold-layout > .support-code-details { grid-column: 1 / -1; margin-top: 0; }
+.support-rosenfold-layout > .support-code-details { grid-column: 1; grid-row: 2; margin-top: 0; }
+.support-rosenfold-layout > .support-next { grid-column: 2; grid-row: 2; margin-top: 0; }
+.support-work--robot h2 { font-size: clamp(2rem, 3.4vw, 3.6rem); }
 .support-code-details > summary, .support-team-details > summary { cursor: pointer; min-height: 2.75rem; padding-block: 1rem; font-weight: 650; }
 .support-code-details > summary:focus-visible, .support-team-details > summary:focus-visible { outline: 2px solid var(--site-focus); outline-offset: .25rem; }
 .support-code-details[open] > div { margin-top: 1rem; }
@@ -126,6 +128,6 @@ body:has(.support-story) .site-header__wordmark { position: static; }
 @media (max-width: 47.99rem) {
  .support-opening-layout, .support-team-layout { display: flex; flex-direction: column; align-items: stretch; gap: 1.5rem; }
  .support-opening h1 { font-size: clamp(2.8rem, 11vw, 4.8rem); }
- .support-person-photo img { aspect-ratio: 4 / 3; object-position: center 40%; }
+ .support-person-photo img { aspect-ratio: 4 / 3; object-position: center 25%; }
  .support-rosenfold-layout > .support-screen { margin-top: 1.5rem; }
 }
