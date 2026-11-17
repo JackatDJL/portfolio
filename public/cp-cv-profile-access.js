@@ -127,8 +127,8 @@
         if (root.dataset.namedBound) return;
         root.dataset.namedBound = 'true';
         const nativeButton = 'relative inline-flex items-center justify-center whitespace-nowrap font-medium antialiased cursor-pointer no-underline disabled:opacity-60 disabled:cursor-not-allowed bg-linear-to-b from-white to-gray-50 hover:to-gray-100 text-gray-900 border border-gray-300 shadow-ui-sm dark:from-gray-850 dark:to-gray-900 dark:border-gray-700/80 dark:text-gray-300 px-4 h-10 text-sm gap-2 rounded-lg';
-        root.querySelectorAll('button').forEach(button => { button.className = nativeButton; button.style.marginBlockEnd = '.5rem'; });
-        root.querySelectorAll('input, select').forEach(input => { input.className = nativeButton + ' min-w-64'; });
+        root.querySelectorAll('button').forEach(button => { button.className = nativeButton; });
+        root.querySelectorAll('input, select').forEach(input => { input.className = nativeButton; });
         const match = location.pathname.match(/\/collections\/cv_profiles\/entries\/([^/]+)/);
         const path = match ? '/cv/' + decodeURIComponent(match[1]) : '/cv';
         const list = root.querySelector('[data-cv-grant-list]');
