@@ -101,7 +101,9 @@ class AppServiceProvider extends ServiceProvider
 
             return true;
         }, ':attribute darf nur gültige öffentliche HTTPS-URLs enthalten.');
-        Statamic::externalScript(asset('/cp-cv-profile-access.js'));
+        Statamic::externalScript(asset('/cp-cv-profile-access.js').'?v='.hash_file('sha256', public_path('cp-cv-profile-access.js')));
+        Statamic::externalStyle(asset('/cp-cv-profile-access.css').'?v='.hash_file('sha256', public_path('cp-cv-profile-access.css')));
+        Statamic::externalScript(asset('/cp-content-sync.js').'?v='.hash_file('sha256', public_path('cp-content-sync.js')));
         Statamic::externalScript(asset('/cp-applications.js').'?v='.hash_file('sha256', public_path('cp-applications.js')));
         Statamic::externalScript(asset('/cp-handwritten-signature.js').'?v='.hash_file('sha256', public_path('cp-handwritten-signature.js')));
         Statamic::externalStyle(asset('/cp-applications.css').'?v='.hash_file('sha256', public_path('cp-applications.css')));
@@ -117,6 +119,10 @@ class AppServiceProvider extends ServiceProvider
                 ->section('Tools')
                 ->route('search-agent-optimization.index')
                 ->icon('search');
+            $nav->create('Content Sync')
+                ->section('Tools')
+                ->route('content-sync.index')
+                ->icon('refresh');
         });
     }
 }

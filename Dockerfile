@@ -32,6 +32,7 @@ RUN apt-get update \
         supervisor \
         python3-venv \
         sqlite3 \
+        util-linux \
         texlive-fonts-recommended \
         texlive-latex-extra \
         texlive-lang-german \
@@ -75,6 +76,7 @@ RUN install -m 0644 /tmp/portfolio-docker/nginx.conf /etc/nginx/sites-available/
     && install -m 0644 /tmp/portfolio-docker/php.ini /usr/local/etc/php/conf.d/zz-portfolio.ini \
     && install -m 0644 /tmp/portfolio-docker/php-fpm-pool.conf /usr/local/etc/php-fpm.d/zz-portfolio.conf \
     && install -m 0755 /tmp/portfolio-docker/entrypoint.sh /usr/local/bin/portfolio-entrypoint \
+    && install -m 0755 /tmp/portfolio-docker/content-sync-cron.sh /usr/local/bin/portfolio-content-sync-cron \
     && install -m 0644 /tmp/portfolio-docker/cron.d/content-sync /etc/cron.d/portfolio-content-sync \
     && rm -rf /tmp/portfolio-docker \
     && php -r 'exit(extension_loaded("pdo_sqlite") && extension_loaded("gd") && extension_loaded("intl") && extension_loaded("sockets") ? 0 : 1);' \
