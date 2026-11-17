@@ -5,6 +5,7 @@ use App\Http\Controllers\ApplicationHandwrittenSignatureController;
 use App\Http\Controllers\ApplicationPdfController;
 use App\Http\Controllers\ApplicationSignatureController;
 use App\Http\Controllers\SearchAgentOptimizationController;
+use App\Http\Controllers\ContentSyncControlController;
 use App\Http\Middleware\ApplicationAccess;
 use Illuminate\Support\Facades\Route;
 
@@ -12,6 +13,10 @@ Route::get('/search-agent-optimization', [SearchAgentOptimizationController::cla
     ->name('search-agent-optimization.index');
 Route::post('/search-agent-optimization', [SearchAgentOptimizationController::class, 'update'])
     ->name('search-agent-optimization.update');
+
+Route::get('/content-sync', [ContentSyncControlController::class, 'index'])->name('content-sync.index');
+Route::get('/content-sync/status', [ContentSyncControlController::class, 'status'])->name('content-sync.status');
+Route::post('/content-sync', [ContentSyncControlController::class, 'start'])->name('content-sync.start');
 
 Route::post('/applications/{id}/reset-date', [ApplicationController::class, 'resetDate'])->name('applications.reset-date');
 Route::get('/applications/handwritten-signature/{source?}', [ApplicationHandwrittenSignatureController::class, 'show'])->where('source', 'example')->name('applications.handwritten-signature.show');
