@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AiDisclosureIconController;
 use App\Http\Controllers\ApplicationPdfController;
 use App\Http\Controllers\CvPageController;
 use App\Http\Controllers\CvPdfController;
@@ -20,6 +21,12 @@ use Statamic\View\View;
 Route::get('/sitemap.xml', [SearchDocumentsController::class, 'sitemap'])->name('sitemap');
 Route::get('/llms.txt', [SearchDocumentsController::class, 'llms'])->name('llms');
 Route::get('/llms-full.txt', [SearchDocumentsController::class, 'llmsFull'])->name('llms.full');
+Route::get('/media/ai-disclosures/{kind}/{appearance}.svg', AiDisclosureIconController::class)
+    ->where([
+        'kind' => 'basic|fully-generated|partially-modified',
+        'appearance' => 'black|white|black-50|white-50',
+    ])
+    ->name('media.ai-disclosure-icon');
 
 Route::get('/design-system', function () {
     abort_unless(app()->environment(['local', 'testing']) && config('design-system.enabled'), 404);

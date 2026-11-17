@@ -21,7 +21,7 @@ class MediaAttributionTest extends TestCase
             'eu_ai_disclosure' => 'KI-Hinweis-Test',
         ])->render();
 
-        $this->assertStringContainsString('/assets/ai-labels/partially-modified/white-50.svg', $html);
+        $this->assertStringContainsString('/media/ai-disclosures/partially-modified/white-50.svg', $html);
         $this->assertStringContainsString('aria-label="KI-Hinweis-Test"', $html);
         $this->assertStringNotContainsString('KI-Hinweis-Test</span>', $html);
         $this->assertStringNotContainsString('asset-attribution__ai-disclosure', $html);
