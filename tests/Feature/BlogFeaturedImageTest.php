@@ -8,10 +8,16 @@ use Tests\TestCase;
 
 class BlogFeaturedImageTest extends TestCase
 {
-    public function test_selected_cover_renders_in_the_article_hero_and_missing_cover_keeps_the_header_compact(): void
+    public function test_posts_use_the_shared_transition_with_or_without_a_cover(): void
     {
         $existing = $this->get('/blog/warum-ich-projekte-zu-codeberg-verschiebe')->assertOk();
-        $existing->assertDontSee('blog-featured-image', false);
+        $existing->assertSee('class="editorial-hero-transition" data-editorial-hero', false)
+            ->assertDontSee('blog-featured-image', false);
+
+        $document = new \DOMDocument();
+        @$document->loadHTML($existing->getContent());
+        $xpath = new \DOMXPath($document);
+        $this->assertSame(0, $xpath->query('//header[contains(concat(" ", normalize-space(@class), " "), " editorial-hero-transition ")]//img')->length);
 
         $slug = 'featured-image-rendering-fixture';
         $entry = Entry::make()
@@ -31,16 +37,17 @@ class BlogFeaturedImageTest extends TestCase
         try {
             $response = $this->get('/blog/'.$slug)->assertOk();
             $response
-                ->assertSee('class="media-figure blog-featured-image"', false)
-                ->assertSee('blog-featured-image__image', false)
+                ->assertSee('class="editorial-hero-transition" data-editorial-hero', false)
+                ->assertSee('editorial-hero-transition__frame', false)
                 ->assertSee('src="/img/asset/', false);
+            $response->assertDontSee('blog-featured-image', false);
 
             $document = new \DOMDocument();
             @$document->loadHTML($response->getContent());
             $xpath = new \DOMXPath($document);
 
-            $this->assertSame(1, $xpath->query('//*[contains(concat(" ", normalize-space(@class), " "), " blog-featured-image ")]')->length);
-            $this->assertSame(0, $xpath->query('//*[contains(concat(" ", normalize-space(@class), " "), " post-featured-image ")]')->length);
+            $this->assertSame(1, $xpath->query('//*[contains(concat(" ", normalize-space(@class), " "), " editorial-hero-transition ")]')->length);
+            $this->assertSame(1, $xpath->query('//h1[normalize-space()="Featured image fixture"]')->length);
         } finally {
             $entry->delete();
         }

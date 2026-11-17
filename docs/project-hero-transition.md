@@ -1,6 +1,6 @@
 # Project hero transition
 
-The fullscreen-to-compact hero and masonry gallery are enabled on Erstwählerforum Stade. The CMS `Hero-Übergang` toggle makes the same treatment available to another project with a cover; other projects retain their current layout. `?hero=original` forces the former hero for comparison or rollback. Pages without a cover always retain the compact original header. Entry content, cover selections, relations and canonical URLs are unchanged.
+The fullscreen-to-compact hero and masonry gallery are enabled on Erstwählerforum Stade. The CMS `Hero-Übergang` toggle makes the same treatment available to another project with a cover; other projects retain their current layout. Blog posts use the shared transition: selected covers fill the hero, and posts without a cover use the dark text canvas. `?hero=original` forces the former project hero for comparison or rollback. Entry content, cover selections, relations and canonical URLs are unchanged.
 
 The frame narrows and shortens during ordinary scrolling with a 0.65-second scrub catch-up and sine easing. Title and summary scale together from the left bottom while keeping their text width stable. Only the bottom corners round. There is no pinning or scroll interception. The project status appears in the hero; the old project eyebrow and divider are omitted.
 

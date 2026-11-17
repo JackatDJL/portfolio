@@ -40,11 +40,12 @@ test('protects the fixed name over dark surfaces and buffers short crossings bef
     await expect(name).toHaveAttribute('data-contrast-marker', 'false');
 });
 
-test('rechecks after theme changes and retains a readable hover marker', async ({ page }) => {
+test('rechecks after theme changes and retains an animated readable hover marker', async ({ page }) => {
     await page.goto('/tests/browser/fixtures/wordmark-contrast.html');
     const name = page.locator('.site-header__wordmark');
     await expect(name).toHaveAttribute('data-contrast-marker', 'false');
     await name.hover();
+    await expect(name).toHaveCSS('transition-duration', '0.26s, 0.18s, 0.16s');
     expect(await name.evaluate(element => getComputedStyle(element).backgroundImage)).not.toBe('none');
     await expect(name).toHaveCSS('background-size', '100% 100%');
     await expect(name).toHaveCSS('color', 'rgb(6, 16, 12)');
