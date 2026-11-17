@@ -1,16 +1,17 @@
 <?php
 
+use App\Support\ContentSyncControl;
+use App\Support\ContentSyncFailure;
+use App\Support\PortfolioContentSync;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
-use App\Support\ContentSyncFailure;
-use App\Support\PortfolioContentSync;
 
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-Artisan::command('portfolio:content-sync {--dry-run : Report pending repository state without committing, fetching, or merging}', function (PortfolioContentSync $sync, \App\Support\ContentSyncControl $control): int {
+Artisan::command('portfolio:content-sync {--dry-run : Report pending repository state without committing, fetching, or merging}', function (PortfolioContentSync $sync, ContentSyncControl $control): int {
     $runPid = $control->begin();
     try {
         $result = $sync->run((bool) $this->option('dry-run'));
@@ -25,7 +26,7 @@ Artisan::command('portfolio:content-sync {--dry-run : Report pending repository 
         $control->finish('Lauf fehlgeschlagen: '.$failure->getMessage(), $runPid);
 
         return self::FAILURE;
-    } catch (\Throwable $failure) {
+    } catch (Throwable $failure) {
         Log::error('Portfolio content synchronization failed unexpectedly.', ['exception' => $failure::class]);
         $this->error('Content synchronization failed unexpectedly. Check the application log for the exception type.');
         $control->finish('Lauf fehlgeschlagen. Siehe Laravel-Anwendungslog.', $runPid);
@@ -57,3 +58,10 @@ Artisan::command('portfolio:content-sync {--dry-run : Report pending repository 
 
     return self::SUCCESS;
 })->purpose('Safely reconcile Statamic editorial content with Git');
+
+Artisan::command('portfolio:content-sync:compact-log {--run-pid=}', function (ContentSyncControl $control): int {
+    $runPid = $this->option('run-pid');
+    $control->compactLog(is_numeric($runPid) ? (int) $runPid : null);
+
+    return self::SUCCESS;
+})->purpose('Compact the retained content sync log');

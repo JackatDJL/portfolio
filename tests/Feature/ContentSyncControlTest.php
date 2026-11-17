@@ -121,6 +121,30 @@ class ContentSyncControlTest extends TestCase
         $this->assertStringContainsString('latest concurrent marker', $statusAfterWrite['logs']);
     }
 
+    public function test_post_run_compaction_bounds_the_log_and_releases_the_manual_wrapper_state(): void
+    {
+        $logPath = (string) config('content-sync.control_log_path');
+        file_put_contents($logPath, str_repeat("older log line\n", 120000));
+        $control = app(ContentSyncControl::class);
+        $wrapperPid = getmypid();
+        $lock = fopen($logPath.'.lock', 'c');
+        flock($lock, LOCK_SH);
+        $control->begin($wrapperPid);
+        $control->log('latest post-run marker');
+
+        $this->assertGreaterThan(1_048_576, filesize($logPath));
+
+        flock($lock, LOCK_UN);
+        fclose($lock);
+
+        $this->artisan('portfolio:content-sync:compact-log', ['--run-pid' => $wrapperPid])->assertExitCode(0);
+
+        $status = $control->status();
+        $this->assertLessThanOrEqual(1_048_576, filesize($logPath));
+        $this->assertStringContainsString('latest post-run marker', $status['logs']);
+        $this->assertFalse($status['running']);
+    }
+
     public function test_only_superusers_can_open_the_content_sync_control_page(): void
     {
         $this->actingAs(User::make()->id('content-sync-cp-test')->email('content-sync@example.invalid')->makeSuper());

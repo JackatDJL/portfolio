@@ -10,18 +10,44 @@
         let nextRun;
         let refreshInterval;
         let tickInterval;
+        let refreshPromise;
+        let refreshRequested = false;
         const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
-        const refresh = async () => {
+        const refreshStatus = async () => {
             const response = await fetch(root.dataset.statusUrl, { headers: { Accept: 'application/json' }, cache: 'no-store', signal: controller.signal });
             if (!response.ok) throw new Error('Status konnte nicht geladen werden.');
             const data = await response.json();
+            const wasNearBottom = logs.scrollHeight - logs.scrollTop - logs.clientHeight <= 16;
+            const previousScrollTop = logs.scrollTop;
             status.textContent = data.running
                 ? `Lauf aktiv seit ${data.started_at ? new Date(data.started_at).toLocaleString('de-DE') : 'soeben'}`
                 : 'Kein Lauf aktiv';
             logs.textContent = data.logs || 'Noch keine Läufe protokolliert.';
-            logs.scrollTop = logs.scrollHeight;
+            logs.scrollTop = wasNearBottom ? logs.scrollHeight : previousScrollTop;
             nextRun = new Date(data.next_run_at);
             button.disabled = data.running;
+        };
+        const refresh = () => {
+            refreshRequested = true;
+            if (refreshPromise) return refreshPromise;
+
+            refreshPromise = (async () => {
+                let lastError;
+                while (refreshRequested && !controller.signal.aborted) {
+                    refreshRequested = false;
+                    try {
+                        await refreshStatus();
+                        lastError = null;
+                    } catch (error) {
+                        if (error.name === 'AbortError') throw error;
+                        lastError = error;
+                        status.textContent = error.message;
+                    }
+                }
+                if (lastError) throw lastError;
+            })().finally(() => { refreshPromise = undefined; });
+
+            return refreshPromise;
         };
         const tick = () => {
             if (!nextRun || !Number.isFinite(nextRun.getTime())) return;

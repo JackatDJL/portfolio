@@ -44,7 +44,12 @@ final class ContentSyncControl
 
             $logPath = (string) config('content-sync.control_log_path');
             File::ensureDirectoryExists(dirname($logPath));
-            $command = 'nohup /usr/bin/flock -s -F '.escapeshellarg($this->logLockPath($logPath)).' '.escapeshellarg(php_binary()).' '.escapeshellarg(base_path('artisan')).' portfolio:content-sync >> '.escapeshellarg($logPath).' 2>&1 < /dev/null & echo $!';
+            $artisan = escapeshellarg(base_path('artisan'));
+            $php = escapeshellarg(php_binary());
+            $syncCommand = '/usr/bin/flock -s -F '.escapeshellarg($this->logLockPath($logPath)).' '.$php.' '.$artisan.' portfolio:content-sync >> '.escapeshellarg($logPath).' 2>&1';
+            $compactCommand = $php.' '.$artisan.' portfolio:content-sync:compact-log --run-pid=$$ >/dev/null 2>&1';
+            $runner = $syncCommand.'; sync_status=$?; '.$compactCommand.'; exit "$sync_status"';
+            $command = 'nohup /bin/sh -c '.escapeshellarg($runner).' >/dev/null 2>&1 < /dev/null & echo $!';
             $process = proc_open(['/bin/sh', '-c', $command], [0 => ['pipe', 'r'], 1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $pipes, base_path());
             if (! is_resource($process)) {
                 return false;
@@ -100,6 +105,18 @@ final class ContentSyncControl
     public function log(string $message): void
     {
         $this->append($message);
+    }
+
+    public function compactLog(?int $runPid = null): void
+    {
+        $this->trimLog((string) config('content-sync.control_log_path'), waitForWriters: true);
+
+        if ($runPid !== null) {
+            $this->mutateState(function (array &$state) use ($runPid): void {
+                unset($state['runs'][(string) $runPid]);
+                $this->pruneStaleRuns($state);
+            });
+        }
     }
 
     /** @return array{runs: array<string, array{started_at: string|null, process_identity?: string|null}>} */
@@ -270,13 +287,14 @@ final class ContentSyncControl
         return implode("\n", array_slice($lines, -120));
     }
 
-    private function trimLog(string $path): void
+    private function trimLog(string $path, bool $waitForWriters = false): void
     {
         $coordinationLock = @fopen($this->logLockPath($path), 'c');
         if (! is_resource($coordinationLock)) {
             return;
         }
-        if (! flock($coordinationLock, LOCK_EX | LOCK_NB)) {
+        $lockMode = LOCK_EX | ($waitForWriters ? 0 : LOCK_NB);
+        if (! flock($coordinationLock, $lockMode)) {
             fclose($coordinationLock);
 
             return;
