@@ -1,6 +1,6 @@
 {{# Projekt-Detailseite: Intro, Lesebereich, Kontext-Rail. #}}
 {{ _transition = false }}
-{{ _transition_enabled = hero_transition ?? true }}
+{{ _transition_enabled = hero_transition ??? true }}
 {{ if cover && _transition_enabled && get:hero != 'original' }}{{ _transition = true }}{{ /if }}
 <article class="project-detail {{ if _transition }}project-detail--transition{{ /if }}">
     {{ if _transition }}{{ partial:projects/hero-transition }}{{ /if }}
