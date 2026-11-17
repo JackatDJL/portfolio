@@ -23,7 +23,7 @@ final class PortfolioContentSync
     /** @var array<string, string> */
     private array $gitEnvironment;
 
-    public function run(bool $dryRun = false): array
+    public function run(bool $dryRun = false, ?callable $started = null, ?callable $progress = null): array
     {
         $configuredRepository = (string) config('content-sync.repository');
         $this->repository = realpath($configuredRepository) ?: '';
@@ -55,7 +55,18 @@ final class PortfolioContentSync
         }
 
         try {
-            return $this->synchronize($dryRun);
+            if ($started !== null) {
+                try {
+                    $started();
+                } catch (\Throwable $exception) {
+                    Log::warning('Could not record the content synchronization start.', [
+                        'exception' => $exception::class,
+                    ]);
+                }
+            }
+            $this->report($progress, 'Synchronisierungssperre erhalten.');
+
+            return $this->synchronize($dryRun, $progress);
         } finally {
             flock($this->lockHandle, LOCK_UN);
             fclose($this->lockHandle);
@@ -63,9 +74,10 @@ final class PortfolioContentSync
         }
     }
 
-    private function synchronize(bool $dryRun): array
+    private function synchronize(bool $dryRun, ?callable $progress = null): array
     {
         $root = $this->repository;
+        $this->report($progress, 'Prüfe das persistente Content-Repository.');
         $gitRoot = $this->git(['rev-parse', '--show-toplevel'])->getOutput();
         if (realpath(trim($gitRoot)) !== $root) {
             throw new ContentSyncFailure('The configured content path is not the root of its Git working tree.');
@@ -77,6 +89,7 @@ final class PortfolioContentSync
             throw new ContentSyncFailure("The persistent content working tree must be on {$expectedBranch}; found {$branch}.");
         }
 
+        $this->report($progress, 'Repository und content-sync-Branch sind gültig.');
         $this->stopForRootMergeState($root);
 
         $status = $this->workingTreeStatus($root);
@@ -89,9 +102,12 @@ final class PortfolioContentSync
         }
 
         if ($dryRun) {
+            $this->report($progress, 'Ermittle den GitHub-Stand für den Trockenlauf.');
+
             return $this->dryRun($status);
         }
 
+        $this->report($progress, 'Sichere lokale Statamic-Änderungen im Content-Branch.');
         $localChangesCommitted = $this->commitEditorialChanges();
         $remainingStatus = $this->workingTreeStatus($root);
         if ($remainingStatus !== []) {
@@ -99,11 +115,13 @@ final class PortfolioContentSync
         }
 
         $this->refreshStacheIfPending();
+        $this->report($progress, 'Hole main und content-sync von GitHub.');
         $candidateBranch = $this->assertCandidateCanBeResumed();
         $this->git(['fetch', '--no-tags', (string) config('content-sync.remote'),
             'refs/heads/main:refs/remotes/'.config('content-sync.remote').'/main',
             'refs/heads/'.config('content-sync.branch').':refs/remotes/'.config('content-sync.remote').'/'.config('content-sync.branch'),
         ]);
+        $this->report($progress, 'GitHub-Referenzen wurden geladen.');
 
         $remoteMain = $this->revParse('refs/remotes/'.config('content-sync.remote').'/main');
         $remoteContent = $this->revParse('refs/remotes/'.config('content-sync.remote').'/'.config('content-sync.branch'));
@@ -115,12 +133,14 @@ final class PortfolioContentSync
             || ! $this->isAncestor($root, $remoteContent, $rootHead);
 
         if (! $candidateExists && $needsIntegration) {
+            $this->report($progress, 'Erstelle einen isolierten Kandidaten für die Zusammenführung.');
             $candidateBranch = $this->createCandidate($rootHead);
             $candidateExists = true;
         }
 
         $integratedContent = false;
         if ($candidateExists && $candidateBranch !== null) {
+            $this->report($progress, 'Führe Content-Branch und main im Kandidaten zusammen.');
             $candidateHead = $this->revParse('HEAD', $this->candidatePath);
             if (! $this->isAncestor($root, $rootHead, $candidateHead)) {
                 $this->mergeTarget($this->candidatePath, $rootHead);
@@ -137,12 +157,14 @@ final class PortfolioContentSync
                 $this->git(['merge', '--ff-only', $candidateBranch], $root);
                 $rootHead = $this->revParse('HEAD');
             }
+            $this->report($progress, 'Der Kandidat wurde konfliktfrei in das Content-Repository übernommen.');
         }
 
         $remoteContent = $this->revParse('refs/remotes/'.config('content-sync.remote').'/'.config('content-sync.branch'));
         $localHead = $this->revParse('HEAD');
         $pushed = false;
         if ($localHead !== $remoteContent) {
+            $this->report($progress, 'Schiebe den aktualisierten Content-Branch nach GitHub.');
             if (! $this->isAncestor($root, $remoteContent, $localHead)) {
                 throw new ContentSyncFailure('The local content branch no longer contains the fetched content-sync tip; no push was attempted.');
             }
@@ -151,6 +173,7 @@ final class PortfolioContentSync
         }
 
         if ($integratedContent) {
+            $this->report($progress, 'Aktualisiere den Statamic-Stache mit dem neuen Content.');
             $this->refreshStacheIfPending();
         }
 
@@ -160,6 +183,7 @@ final class PortfolioContentSync
 
         if (! $localChangesCommitted && ! $pushed && ! $integratedContent) {
             Log::info('Portfolio content synchronization found no changes.');
+            $this->report($progress, 'Keine Änderungen gefunden; der Content-Branch ist aktuell.');
 
             return ['status' => 'noop'];
         }
@@ -171,8 +195,24 @@ final class PortfolioContentSync
             'content_branch_pushed' => $pushed,
         ];
         Log::info('Portfolio content synchronization completed.', $result);
+        $this->report($progress, 'Synchronisierung erfolgreich abgeschlossen.');
 
         return $result;
+    }
+
+    private function report(?callable $progress, string $message): void
+    {
+        if ($progress === null) {
+            return;
+        }
+
+        try {
+            $progress($message);
+        } catch (\Throwable $exception) {
+            Log::warning('Could not record a content synchronization progress event.', [
+                'exception' => $exception::class,
+            ]);
+        }
     }
 
     /** @param list<string> $status */

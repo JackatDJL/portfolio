@@ -117,6 +117,8 @@ The script uses temporary containers, a test key, and Git-tracked content. It ch
 php artisan portfolio:content-sync --dry-run
 ```
 
+Super admins can start a run and inspect the latest run log and next scheduled time from **Control Panel → Tools → Content Sync**. The page polls status while a run is active; its private status file lives in the persistent `storage` volume.
+
 After the first redeploy, run it as UID `33` to verify that both read-only file mounts are readable by the application process:
 
 ```sh

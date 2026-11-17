@@ -32,6 +32,7 @@ use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
 use Statamic\Facades\CP\Nav;
 use Statamic\Facades\StaticCache;
+use Statamic\Facades\User as StatamicUser;
 use Statamic\Statamic;
 use Statamic\StaticCaching\Cachers\Writer;
 
@@ -117,6 +118,13 @@ class AppServiceProvider extends ServiceProvider
                 ->section('Tools')
                 ->route('search-agent-optimization.index')
                 ->icon('search');
+
+            if (StatamicUser::current()?->isSuper()) {
+                $nav->create('Content Sync')
+                    ->section('Tools')
+                    ->route('content-sync.index')
+                    ->icon('sync');
+            }
         });
     }
 }
