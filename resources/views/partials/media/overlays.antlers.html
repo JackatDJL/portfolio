@@ -22,7 +22,7 @@
     {{ _disclosure_label = _default_disclosure }}
     {{ if _ai_disclosure }}{{ _disclosure_label = _ai_disclosure }}{{ /if }}
     <span class="media-overlay__ai media-overlay__ai--{{ _icon_appearance }} media-overlay__ai--{{ _icon_kind }}" role="img" aria-label="{{ _disclosure_label | entities }}">
-        <img class="media-overlay__ai-icon" src="/assets/ai-labels/{{ _icon_kind }}/{{ _icon_appearance }}.svg" alt="" loading="lazy" decoding="async">
+        <img class="media-overlay__ai-icon" src="/media/ai-disclosures/{{ _icon_kind }}/{{ _icon_appearance }}.svg" alt="" loading="lazy" decoding="async">
     </span>
     {{ /if }}
 {{ /if }}
