@@ -20,8 +20,8 @@ class AssetAttributionTest extends TestCase
         ])->render();
         $this->assertSame(1, substr_count($html, 'Synthetic hero caption'));
         $this->assertSame(1, substr_count($html, 'Synthetic photographer'));
-        $this->assertStringContainsString('project-hero-prototype__caption', $html);
-        $this->assertGreaterThan(strpos($html, 'project-hero-prototype__copy'), strpos($html, 'Synthetic hero caption'));
+        $this->assertStringContainsString('project-hero-transition__caption', $html);
+        $this->assertGreaterThan(strpos($html, 'project-hero-transition__copy'), strpos($html, 'Synthetic hero caption'));
     }
 
     public function test_third_party_credit_and_caption_render_without_duplication(): void
@@ -77,15 +77,21 @@ class AssetAttributionTest extends TestCase
         $this->assertStringNotContainsString('Source credit already shown in the overlay', $html);
     }
 
-    public function test_own_images_use_the_central_license_without_a_stale_credit(): void
+    public function test_own_images_do_not_show_redundant_credits_or_licenses(): void
     {
-        $html = (string) Antlers::parse(file_get_contents(resource_path('views/partials/media/attribution.antlers.html')), [
+        $context = [
             'asset' => ['rights' => 'jack', 'cc' => 'Old attribution'],
             'site' => ['name' => 'Jack Ruder', 'content_license_name' => 'CC BY-SA 4.0', 'content_license_url' => 'https://creativecommons.org/licenses/by-sa/4.0/deed.de'],
-        ]);
-        $this->assertStringContainsString('Jack Ruder', $html);
-        $this->assertStringContainsString('CC BY-SA 4.0', $html);
-        $this->assertStringNotContainsString('Old attribution', $html);
+        ];
+        $attribution = (string) Antlers::parse(file_get_contents(resource_path('views/partials/media/attribution.antlers.html')), $context);
+        $overlay = (string) Antlers::parse(file_get_contents(resource_path('views/partials/media/overlays.antlers.html')), $context);
+
+        foreach ([$attribution, $overlay] as $html) {
+            $this->assertStringNotContainsString('Jack Ruder', $html);
+            $this->assertStringNotContainsString('CC BY-SA 4.0', $html);
+            $this->assertStringNotContainsString('Old attribution', $html);
+        }
+        $this->assertStringNotContainsString('media-overlay__credit', $overlay);
     }
 
     public function test_asset_ai_metadata_inherits_into_the_shared_media_overlay(): void
@@ -239,7 +245,7 @@ class AssetAttributionTest extends TestCase
         $caption = 'Workshop bei der Projektwoche des Athenaeums 2025.';
         $detail = $this->get('/projekte/hackclub-stade')->assertOk()->getContent();
         $this->assertSame(1, substr_count($detail, $caption));
-        $this->assertStringContainsString('Jack Ruder ·', $detail);
+        $this->assertStringNotContainsString('Jack Ruder ·', $detail);
         $this->assertStringNotContainsString($caption, $this->get('/projekte')->assertOk()->getContent());
     }
 }

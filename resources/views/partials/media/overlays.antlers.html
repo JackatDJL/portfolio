@@ -26,8 +26,6 @@
     </span>
     {{ /if }}
 {{ /if }}
-{{ if _rights == 'jack' && site:content_license_name }}
-    <span class="media-overlay__credit media-overlay__credit--{{ _credit_appearance }}" role="group" aria-label="Bildnachweis">{{ site:name }} · <a href="{{ site:content_license_url }}" rel="license">{{ site:content_license_name }}</a></span>
-{{ elseif _credit && _rights != 'jack' }}
+{{ if _credit && _rights != 'jack' }}
     <span class="media-overlay__credit media-overlay__credit--{{ _credit_appearance }}" role="group" aria-label="Bildnachweis">{{ attribution :text="_credit" }}</span>
 {{ /if }}

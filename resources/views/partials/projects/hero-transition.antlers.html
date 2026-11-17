@@ -1,19 +1,19 @@
-{{# Experiment: fullscreen image settles into an editorial header without pinning. #}}
-<header class="project-hero-prototype" data-project-hero>
-    <div class="project-hero-prototype__frame">
-        {{ partial:media/image :asset="cover" mode="content" figure_class="project-hero-prototype__figure" width="1920" sizes="100vw" loading="eager" fetchpriority="high" hide_caption="true" }}
-        <div class="project-hero-prototype__copy">
-            {{ if project_status }}<span class="chip project-hero-prototype__status">{{ project_status:label }}</span>{{ /if }}
+{{# The fullscreen image settles into an editorial header without pinning. #}}
+<header class="project-hero-transition" data-project-hero>
+    <div class="project-hero-transition__frame">
+        {{ partial:media/image :asset="cover" mode="content" figure_class="project-hero-transition__figure" width="1920" sizes="100vw" loading="eager" fetchpriority="high" hide_caption="true" }}
+        <div class="project-hero-transition__copy">
+            {{ if project_status }}<span class="chip project-hero-transition__status">{{ project_status:label }}</span>{{ /if }}
             <h1>{{ title }}</h1>
             {{ if summary }}<p>{{ summary }}</p>{{ /if }}
         </div>
     </div>
     {{ if cover:caption }}
-        <div class="detail-container project-hero-prototype__caption">{{ partial:media/attribution :asset="cover" hide_credit="true" standalone="true" }}</div>
+        <div class="detail-container project-hero-transition__caption">{{ partial:media/attribution :asset="cover" hide_credit="true" standalone="true" }}</div>
     {{ /if }}
 </header>
 {{ if repository_url || website_url }}
-<div class="detail-container project-hero-prototype__after">
+<div class="detail-container project-hero-transition__after">
     <div class="flex flex-wrap gap-3 items-center">
         {{ if repository_url }}{{ partial:components/button variant="secondary" :href="repository_url" label="Repository ↗" attributes="target=_blank rel=noreferrer" }}{{ /if }}
         {{ if website_url }}{{ partial:components/button variant="secondary" :href="website_url" label="Webseite ↗" attributes="target=_blank rel=noreferrer" }}{{ /if }}

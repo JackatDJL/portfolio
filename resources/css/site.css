@@ -229,7 +229,7 @@
 @import "./cv.css";
 @import "./gallery.css";
 
-@import "./project-hero-prototype.css";
+@import "./project-hero-transition.css";
 
 @layer components {
     .site-header__wordmark:not([data-contrast-marker="false"]) {
@@ -243,4 +243,4 @@
     }
 }
 
-@import "./name-island-prototype.css";
+@import "./name-glass.css";

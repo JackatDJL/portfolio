@@ -1,9 +1,7 @@
-// URL-only experiment. React/glass are loaded only after the header leaves view.
-export function initNameIsland(wordmark) {
-    if (new URLSearchParams(window.location.search).get('name') !== 'island') return false;
+// Keep the home link plain while its header is visible; load glass only after it exits.
+export function initNameGlass(wordmark) {
     const header = wordmark.closest('.site-header');
     if (!header) return false;
-    wordmark.dataset.contrastMarker = 'false';
     wordmark.classList.add('name-glass-enabled');
     const label = document.createElement('span');
     label.className = 'name-glass-label';
@@ -26,12 +24,15 @@ export function initNameIsland(wordmark) {
     const update = (show) => {
         visible = show;
         clearTimeout(hideTimer);
-        if (show) mounted = true;
+        if (show) {
+            mounted = true;
+        }
         else hideTimer = setTimeout(() => {
             mounted = false;
             draw();
         }, motion.matches ? 0 : 420);
         wordmark.classList.toggle('name-island', show);
+        wordmark.dispatchEvent(new CustomEvent('wordmark:glass-change', { bubbles: true, detail: { visible: show } }));
         if (show && !loading) {
             loading = import('./name-liquid-glass.js').then(({ mountNameGlass }) => {
                 if (!active) return;
