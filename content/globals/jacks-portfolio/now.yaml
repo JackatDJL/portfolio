@@ -4,11 +4,18 @@ intro:
     content:
       -
         type: text
-        text: 'Zurzeit entwickle ich prtop, übernehme Presse- und Webkommunikation bei Volt Stade und singe im Jugendchor Neukloster sowie im Klangwerk.'
-updated_at: '2026-10-03 00:00'
+        text: 'Zurzeit arbeite ich vor allem am Erstwählerforum Stade und an AtheBlues. Mit dem Team des Erstwählerforums plane ich die nächste Ausgabe für 2027. Bei Volt Stade verantworte ich Pressearbeit, soziale Medien, Website und öffentliche Kommunikation. Außerdem singe ich als Bass im Jugendchor Neukloster und seit September 2026 zusätzlich im Klangwerk.'
+updated_at: '2026-11-16 23:00'
 items:
-  - 4739fabf-5726-4d17-ad72-5a5f574e33cd
   - 1b4ba371-c0b4-4fae-8a93-1f2fabf11477
+  - 8e9f1f56-1feb-46a8-9ae5-a79ec9444c81
+homepage_summary:
+  -
+    type: paragraph
+    content:
+      -
+        type: text
+        text: 'Meine aktuellen Schwerpunkte sind das Erstwählerforum Stade und AtheBlues. Daneben verantworte ich die Kommunikation von Volt Stade und singe im Jugendchor Neukloster sowie im Klangwerk.'
 homepage_links:
   -
     id: yu5fSEJUHWeHbozK_uYol

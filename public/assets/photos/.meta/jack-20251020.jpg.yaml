@@ -1,7 +1,10 @@
 data:
   alt: 'Jack Ruder'
+  ai_icon_appearance: black
+  credit_appearance: dark
+  rights: jack
 size: 985962
-last_modified: 1788686093
+last_modified: 1791489359
 width: 2474
 height: 1828
 mime_type: image/jpeg

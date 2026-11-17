@@ -1,6 +1,11 @@
-data: {}
+data:
+  alt: 'Podiumsdiskussion "Soziales" im Erstwählerforum im Stadeum in Stade'
+  ai_involvement: none
+  ai_icon_appearance: black
+  credit_appearance: dark
+  rights: jack
 size: 702426
-last_modified: 1789303723
+last_modified: 1791489359
 width: 4000
 height: 2252
 mime_type: image/jpeg

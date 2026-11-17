@@ -1,8 +1,10 @@
 data:
   alt: 'Jack Ruder auf dem Planetarium in Hamburg'
   rights: jack
+  ai_icon_appearance: black
+  credit_appearance: dark
 size: 108998
-last_modified: 1789240033
+last_modified: 1791489359
 width: 899
 height: 1600
 mime_type: image/jpeg
