@@ -2,11 +2,13 @@
 
 namespace App\Support;
 
+use Illuminate\Support\Carbon;
 use Illuminate\Validation\ValidationException;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use RuntimeException;
 use Statamic\Contracts\Entries\Entry;
+use Statamic\Facades\GlobalSet;
 use Symfony\Component\Process\Process;
 
 class CvPdfRenderer
@@ -21,20 +23,85 @@ class CvPdfRenderer
     public function render(?string $profileSlug = null, bool $authorized = false, ?string $capabilityToken = null): string
     {
         $cv = $this->viewModel->make($profileSlug, $authorized, $capabilityToken);
-        $tex = view('latex.cv', compact('cv'))->render();
-
         if ($authorized) {
-            return $this->compile($tex);
+            return $this->renderAuthorized($cv);
         }
+
+        $tex = view('latex.cv', compact('cv'))->render();
 
         return $this->cachedPublicPdf($cv, $tex);
     }
 
+    private function renderAuthorized(array $cv): string
+    {
+        $settings = GlobalSet::find('cv')?->inDefaultSite();
+        if (! $settings || ! filter_var($settings->value('private_cv_signature_enabled', false), FILTER_VALIDATE_BOOLEAN)) {
+            return $this->compile(view('latex.cv', compact('cv'))->render());
+        }
+
+        $root = rtrim((string) config('applications.work_path'), DIRECTORY_SEPARATOR);
+        if ($root === '' || $root === DIRECTORY_SEPARATOR || is_link($root)) {
+            throw new RuntimeException('Could not create the private CV signature work directory.');
+        }
+        if (! is_dir($root) && ! @mkdir($root, 0700, true) && ! is_dir($root)) {
+            throw new RuntimeException('Could not create the private CV signature work directory.');
+        }
+        chmod($root, 0700);
+        $work = $root.'/cv-signature-'.bin2hex(random_bytes(12));
+        if (! @mkdir($work, 0700)) {
+            throw new RuntimeException('Could not create the private CV signature work directory.');
+        }
+
+        try {
+            $typed = $settings->value('private_cv_signature_mode', 'handwritten') === 'typed';
+            $source = $typed ? null : app(PrivateHandwrittenSignature::class)->materialize($work.'/signature.png');
+            if (! $typed && ! $source) {
+                return $this->compile(view('latex.cv', compact('cv'))->render());
+            }
+
+            $date = trim((string) ($cv['print']['date'] ?? ''));
+            $cv['signature_image'] = $source['path'] ?? null;
+            $cv['signature_text'] = $typed ? $cv['name'] : null;
+            $cv['signature_digest'] = $source['sha256'] ?? null;
+            $cv['signature_width_mm'] = max(30, min(75, (int) ($settings->value('private_cv_signature_width_mm') ?? 46)));
+            $cv['signature_baseline_mm'] = max(-3, min(3, (int) $settings->value('private_cv_signature_baseline_mm', 0)));
+            $cv['signature_alignment'] = in_array($settings->value('private_cv_signature_alignment', 'left'), ['left', 'center', 'right'], true)
+                ? $settings->value('private_cv_signature_alignment', 'left')
+                : 'left';
+            $cv['signed_by'] = (string) ($cv['name'] ?? '');
+            $cv['signed_place'] = trim((string) ($cv['print']['place'] ?? '')) ?: trim((string) ($cv['location'] ?? ''));
+            $cv['signed_date'] = $date !== '' ? $date : Carbon::now()->locale('de')->translatedFormat('j. F Y');
+
+            return $this->compile(view('latex.cv', compact('cv'))->render());
+        } finally {
+            foreach (glob($work.'/*') ?: [] as $file) {
+                @unlink($file);
+            }
+            @rmdir($work);
+        }
+    }
+
     public function renderApplication(Entry $application): string
     {
-        $cv = $this->viewModel->forApplication($application);
+        $work = config('applications.work_path').'/cv-'.bin2hex(random_bytes(12));
+        if (! is_dir($work) && ! mkdir($work, 0700, true) && ! is_dir($work)) {
+            throw new RuntimeException('Could not create a private application CV work directory.');
+        }
+        chmod($work, 0700);
+        try {
+            $settings = ApplicationData::group($application, 'signature');
+            $signature = ($settings['mode'] ?? 'none') === 'handwritten'
+                ? app(PrivateHandwrittenSignature::class)->materialize($work.'/signature.png')
+                : null;
+            $cv = $this->viewModel->forApplication($application, $signature);
 
-        return $this->compile(view('latex.cv', compact('cv'))->render());
+            return $this->compile(view('latex.cv', compact('cv'))->render());
+        } finally {
+            foreach (glob($work.'/*') ?: [] as $file) {
+                @unlink($file);
+            }
+            @rmdir($work);
+        }
     }
 
     public function renderViewModel(array $cv, ?float $deadline = null): string
@@ -140,7 +207,7 @@ class CvPdfRenderer
                             throw ValidationException::withMessages([$error['field'] => $error['message']]);
                         }
                     }
-                    throw new RuntimeException('PDF compilation failed. Compiler output is suppressed to protect private fields.');
+                    throw LatexCompilationFailure::fromCompilerLog($log, $pass + 1);
                 }
             }
 
@@ -188,6 +255,9 @@ class CvPdfRenderer
 
         if (is_string($cv['photo'] ?? null) && $cv['photo'] !== '') {
             $files[] = $cv['photo'];
+        }
+        if (is_string($cv['signature_image'] ?? null) && $cv['signature_image'] !== '') {
+            $files[] = $cv['signature_image'];
         }
 
         $files = array_values(array_unique($files));

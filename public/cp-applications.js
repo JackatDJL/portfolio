@@ -1,56 +1,513 @@
-document.addEventListener('click', async (event) => {
-    const button = event.target.closest('[data-reset-application-date], [data-application-cv], [data-application-preview], [data-application-export], [data-application-link], [data-application-revoke]');
-    if (!button) return;
-    const match = location.pathname.match(/\/collections\/applications\/entries\/([^/]+)(?:\/|$)/);
-    const status = button.closest('[data-application-actions]').querySelector('[data-application-status]');
-    if (!match) { status.textContent = 'Bitte zuerst speichern.'; return; }
-    if (match[1] === 'create') { status.textContent = 'Bitte zuerst speichern.'; return; }
-    const base = location.pathname.split('/collections/')[0] + '/applications/' + encodeURIComponent(match[1]);
-    if (button.hasAttribute('data-application-preview') || button.hasAttribute('data-application-export')) {
-        window.open(base + (button.hasAttribute('data-application-preview') ? '/preview.pdf' : '/export.pdf'), '_blank', 'noopener,noreferrer');
-        status.textContent = 'Es werden die gespeicherten Daten exportiert. Ungespeicherte Änderungen vorher speichern.';
-        return;
-    }
-    if (button.hasAttribute('data-application-link') || button.hasAttribute('data-application-revoke')) {
-        const revoke = button.hasAttribute('data-application-revoke');
-        if (!window.confirm(revoke ? 'Empfängerlink und bestehende Zugriffssitzungen widerrufen?' : 'Empfängerlink erstellen? Ein bestehender Link wird ersetzt. Der neue Link gibt die vollständige private Bewerbung frei und wird nur einmal angezeigt.')) return;
-        button.disabled = true;
-        const field = button.closest('[data-application-actions]').querySelector('[data-application-recipient-link]');
-        try {
-            const response = await fetch(base + '/recipient-link', { method: revoke ? 'DELETE' : 'POST', headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '' } });
-            if (!response.ok) throw new Error('link failed');
-            const data = await response.json();
-            if (!revoke) { field.value = data.url; field.hidden = false; field.style.width = '100%'; field.focus(); field.select(); }
-            else { field.value = ''; field.hidden = true; }
-            status.textContent = revoke ? 'Empfängerzugriff widerrufen.' : 'Link jetzt kopieren und sicher verwahren. Er wird nach dem Verlassen dieser Seite nicht mehr angezeigt. Änderungen an den Bewerbungsdaten aktualisieren die freigegebene PDF.';
-        } catch { status.textContent = 'Linkverwaltung fehlgeschlagen. Der angezeigte Link bleibt erhalten, seine Gültigkeit ist aber unklar, weil der Server die Anfrage möglicherweise bereits verarbeitet hat.'; }
-        finally { button.disabled = false; }
-        return;
-    }
-    if (button.hasAttribute('data-application-cv')) {
-        const cpRoot = location.pathname.split('/collections/')[0];
-        window.open(cpRoot + '/applications/' + encodeURIComponent(match[1]) + '/cv.pdf', '_blank', 'noopener,noreferrer');
-        return;
-    }
-    if (!window.confirm('Gespeichertes Datum auf heute setzen? Ungespeicherte Änderungen zuerst speichern.')) return;
-    button.disabled = true;
-    try {
-        const cpRoot = location.pathname.split('/collections/')[0];
-        const response = await fetch(cpRoot + '/applications/' + encodeURIComponent(match[1]) + '/reset-date', {
-            method: 'POST', headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '' },
-        });
-        if (!response.ok) throw new Error('reset failed');
-        location.reload();
-    } catch { status.textContent = 'Datum konnte nicht zurückgesetzt werden.'; button.disabled = false; }
-});
-
-// Use the same Statamic 6 button utilities as the existing CV profile actions.
 (() => {
-    const decorate = () => document.querySelectorAll('[data-application-actions] button').forEach(button => {
-        button.className = 'relative inline-flex items-center justify-center whitespace-nowrap font-medium antialiased cursor-pointer no-underline disabled:opacity-60 disabled:cursor-not-allowed bg-linear-to-b from-white to-gray-50 hover:to-gray-100 text-gray-900 border border-gray-300 shadow-ui-sm dark:from-gray-850 dark:to-gray-900 dark:border-gray-700/80 dark:text-gray-300 px-4 h-10 text-sm gap-2 rounded-lg';
+    const entryId = () => location.pathname.match(/\/collections\/applications\/entries\/([^/]+)(?:\/|$)/)?.[1];
+    const cpRoot = () => location.pathname.split('/collections/')[0];
+    const appBase = () => {
+        const id = entryId();
+        return id && id !== 'create' ? cpRoot() + '/applications/' + encodeURIComponent(id) : null;
+    };
+    const csrf = () => document.querySelector('meta[name="csrf-token"]')?.content || '';
+    const showDate = value => value ? new Date(value).toLocaleString('de-DE') : '–';
+    const showDateOnly = value => {
+        if (!value) return '–';
+        const date = new Date(value + 'T12:00:00');
+        return Number.isNaN(date.getTime()) ? value : date.toLocaleDateString('de-DE', { day: '2-digit', month: 'long', year: 'numeric' });
+    };
+
+    let overviewRequest = 0;
+    async function loadOverview(base) {
+        const summary = document.querySelector('[data-application-summary]');
+        const latest = document.querySelector('[data-application-latest]');
+        const followUp = document.querySelector('[data-application-follow-up]');
+        const notesWrap = document.querySelector('[data-application-notes-wrap]');
+        const notes = document.querySelector('[data-application-notes]');
+        const grants = document.querySelector('[data-application-grants]');
+        if (!summary || !base || base !== appBase()) return;
+        const request = ++overviewRequest;
+        const isCurrent = () => request === overviewRequest
+            && base === appBase()
+            && summary === document.querySelector('[data-application-summary]');
+        try {
+            const response = await fetch(base + '/summary', { headers: { Accept: 'application/json' } });
+            if (!response.ok) throw new Error('Übersicht nicht verfügbar.');
+            const data = await response.json();
+            if (!isCurrent()) return;
+            const title = document.createElement('h4');
+            title.className = 'app-cp-organisation';
+            title.textContent = data.organisation || 'Organisation noch nicht eingetragen';
+            const position = document.createElement('p');
+            position.className = 'app-cp-position';
+            position.textContent = data.position || 'Position noch nicht eingetragen';
+            const facts = document.createElement('dl');
+            facts.className = 'app-cp-facts';
+            const addFact = (label, value) => {
+                if (!value) return;
+                const group = document.createElement('div');
+                const term = document.createElement('dt'); term.textContent = label;
+                const detail = document.createElement('dd'); detail.textContent = value;
+                group.append(term, detail); facts.append(group);
+            };
+            addFact('Interne Referenz', data.reference);
+            addFact('Ansprechperson', data.recipient_name);
+            addFact('Bewerbungszeitraum', data.period_start || data.period_end
+                ? [showDateOnly(data.period_start), showDateOnly(data.period_end)].filter(value => value !== '–').join(' bis ')
+                : null);
+            addFact('Bewerbungsdatum', data.application_date ? showDateOnly(data.application_date) + (data.has_date_override ? ' · manuell festgelegt' : '') : null);
+            addFact('Ort', data.location);
+            addFact('Bewerbungsjahr', data.year ? String(data.year) : null);
+            summary.replaceChildren(title, position, facts);
+            if (latest) latest.textContent = data.latest_correspondence
+                ? [showDateOnly(data.latest_correspondence.date), data.latest_correspondence.direction, data.latest_correspondence.summary].filter(Boolean).join(' · ')
+                : 'Noch keine Korrespondenz erfasst.';
+            if (followUp) followUp.textContent = data.follow_up_date
+                ? showDateOnly(data.follow_up_date)
+                : data.follow_up_status === 'planned' ? 'Geplant, aber noch ohne Datum.' : 'Keine Wiedervorlage geplant.';
+            if (notesWrap && notes) {
+                notes.textContent = data.notes || 'Keine privaten Notizen erfasst.';
+                notesWrap.hidden = false;
+            }
+        } catch (error) {
+            if (isCurrent()) {
+                summary.textContent = error.message;
+                if (latest) latest.textContent = 'Nicht verfügbar.';
+                if (followUp) followUp.textContent = 'Nicht verfügbar.';
+            }
+        }
+
+        if (!isCurrent() || !grants) return;
+        try {
+            const response = await fetch(base + '/recipient-grants', { headers: { Accept: 'application/json' } });
+            if (!response.ok) throw new Error('Empfängerzugriffe konnten nicht geladen werden.');
+            const data = await response.json();
+            if (!isCurrent() || grants !== document.querySelector('[data-application-grants]')) return;
+            grants.replaceChildren();
+            for (const grant of data.grants) {
+                const row = document.createElement('div');
+                row.className = 'app-cp-grant';
+                const info = document.createElement('div');
+                info.className = 'app-cp-grant-info';
+                const heading = document.createElement('div');
+                heading.className = 'app-cp-grant-heading';
+                const label = document.createElement('strong');
+                label.textContent = grant.label;
+                const expiryTime = grant.expires_at ? Date.parse(grant.expires_at) : null;
+                const expired = expiryTime !== null && Number.isFinite(expiryTime) && expiryTime < Date.now();
+                const state = document.createElement('span');
+                state.className = 'app-cp-grant-state';
+                state.dataset.state = grant.revoked_at ? 'revoked' : expired ? 'expired' : 'active';
+                state.textContent = grant.revoked_at ? 'Widerrufen' : expired ? 'Abgelaufen' : 'Aktiv';
+                heading.append(label, state);
+                const meta = document.createElement('dl');
+                meta.className = 'app-cp-grant-meta';
+                const addGrantFact = (termText, value) => {
+                    const item = document.createElement('div');
+                    const term = document.createElement('dt'); term.textContent = termText;
+                    const detail = document.createElement('dd'); detail.textContent = value;
+                    item.append(term, detail); meta.append(item);
+                };
+                addGrantFact('Erstellt', showDate(grant.created_at));
+                addGrantFact('Zuletzt geöffnet', grant.last_accessed_at ? showDate(grant.last_accessed_at) : 'Noch nicht geöffnet');
+                if (grant.expires_at) addGrantFact('Läuft ab', showDate(grant.expires_at));
+                info.append(heading, meta);
+                row.append(info);
+                if (!grant.revoked_at) {
+                    const revoke = document.createElement('button');
+                    revoke.type = 'button';
+                    revoke.className = 'app-cp-button app-cp-button-danger';
+                    revoke.textContent = 'Diesen Link widerrufen';
+                    revoke.dataset.applicationGrantRevoke = grant.id;
+                    row.append(revoke);
+                }
+                grants.append(row);
+            }
+            if (!data.grants.length) {
+                const empty = document.createElement('p');
+                empty.className = 'app-cp-empty';
+                empty.textContent = 'Es gibt noch keine Empfängerlinks.';
+                grants.append(empty);
+            }
+            if (data.grants.some(grant => !grant.revoked_at)) {
+                const revokeAll = document.createElement('button');
+                revokeAll.type = 'button';
+                revokeAll.className = 'app-cp-button app-cp-button-danger';
+                revokeAll.textContent = 'Alle aktiven Links widerrufen';
+                revokeAll.dataset.applicationGrantRevokeAll = '1';
+                grants.append(revokeAll);
+            }
+        } catch (error) {
+            if (isCurrent() && grants === document.querySelector('[data-application-grants]')) grants.textContent = error.message;
+        }
+    }
+
+    let profileRequest = 0;
+    let cvGrantRequest = 0;
+    const clearApplicationCvGrantUrl = card => {
+        const field = card?.querySelector('[data-application-cv-grant-url]');
+        const wrapper = card?.querySelector('[data-application-cv-grant-url-wrap]');
+        if (field) field.value = '';
+        if (wrapper) wrapper.hidden = true;
+    };
+    const invalidateApplicationCvGrant = () => {
+        cvGrantRequest++;
+        const card = document.querySelector('[data-application-cv-grant]');
+        if (!card) return;
+        clearApplicationCvGrantUrl(card);
+        card.querySelector('[data-application-cv-grant-list]')?.replaceChildren();
+        const state = card.querySelector('[data-application-cv-grant-state]');
+        if (state) state.textContent = 'CV-Profil wird aktualisiert …';
+    };
+    async function loadApplicationCvGrant(context = null) {
+        const card = document.querySelector('[data-application-cv-grant]');
+        const path = context?.path ?? card?.dataset.path;
+        const label = context?.label ?? card?.dataset.label;
+        if (!card || !path || !label) return;
+        const request = ++cvGrantRequest;
+        const isCurrent = () => request === cvGrantRequest
+            && card.isConnected
+            && card === document.querySelector('[data-application-cv-grant]')
+            && card.dataset.path === path
+            && card.dataset.label === label;
+        try {
+            const response = await fetch('/cp/cv/private-link/grants?path=' + encodeURIComponent(path), { headers: { Accept: 'application/json' }, cache: 'no-store' });
+            if (!response.ok) throw new Error('CV-Zugriffe können im CV-Profilmanager geprüft werden.');
+            const data = await response.json();
+            if (!isCurrent()) return;
+            const grants = data.grants.filter(grant => grant.label === label);
+            const list = card.querySelector('[data-application-cv-grant-list]');
+            list.replaceChildren();
+            const active = grants
+                .filter(grant => !grant.revoked_at && (!grant.expires_at || Date.parse(grant.expires_at) > Date.now()))
+                .sort((first, second) => (first.kind === 'permanent' ? -1 : 1) - (second.kind === 'permanent' ? -1 : 1))[0];
+            card.querySelector('[data-application-cv-grant-state]').textContent = active
+                ? `Aktiver ${active.kind === 'temporary' ? 'temporärer' : 'dauerhafter'} CV-Link. Verwaltung im CV-Profilmanager.`
+                : 'Noch kein aktiver Bewerbungs-CV-Link. Beim Export wird ein dauerhafter Grant erstellt.';
+            if (active) {
+                const revoke = document.createElement('button');
+                revoke.type = 'button'; revoke.className = 'app-cp-button app-cp-button-danger';
+                revoke.textContent = 'Bewerbungs-CV-Link widerrufen';
+                revoke.dataset.applicationCvGrantRevoke = String(active.id);
+                revoke.dataset.applicationCvGrantPath = path;
+                revoke.dataset.applicationCvGrantLabel = label;
+                list.append(revoke);
+            }
+        } catch (error) {
+            if (isCurrent()) card.querySelector('[data-application-cv-grant-state]').textContent = error.message;
+        }
+    }
+    async function loadEmail(base) {
+        const panel = document.querySelector('[data-application-email]');
+        if (!panel || !base || base !== appBase()) return;
+        const status = panel.querySelector('[data-email-status]');
+        try {
+            const response = await fetch(base + '/email', { headers: { Accept: 'application/json' } });
+            if (!response.ok) throw new Error('Begleitmail nicht verfügbar. Änderungen zuerst speichern.');
+            const data = await response.json();
+            if (base !== appBase() || panel !== document.querySelector('[data-application-email]')) return;
+            panel.querySelector('[data-email-recipient]').textContent = data.recipient || 'Keine E-Mail-Adresse eingetragen';
+            panel.querySelector('[data-email-subject]').textContent = data.subject || 'Kein Betreff eingetragen';
+            panel.querySelector('[data-email-text]').value = data.text;
+            panel.querySelector('[data-email-html]').value = data.html;
+            const frame = document.createElement('iframe');
+            frame.title = 'HTML-Vorschau der Begleitmail';
+            frame.sandbox = '';
+            frame.srcdoc = data.html;
+            panel.querySelector('[data-email-html-preview]').replaceChildren(frame);
+            if (status) {
+                const pdfNotice = data.pdf_notice ? 'PDF-Überleitung aktiv; die exportierte PDF manuell anhängen.' : 'PDF-Überleitung aus.';
+                const attachments = data.attachments.length ? 'Anlagen: ' + data.attachments.join(', ') : 'Keine ausgewählte private PDF-Anlage wird in der Mail erwähnt.';
+                status.textContent = pdfNotice + ' ' + attachments;
+            }
+        } catch (error) {
+            if (status) status.textContent = error.message;
+        }
+    }
+    async function loadProfileSummary(base, profileId = undefined) {
+        const target = document.querySelector('[data-application-profile-summary]');
+        if (!target || !base) return;
+        const request = ++profileRequest;
+        try {
+            const url = new URL(base + '/cv-profile', location.origin);
+            if (profileId !== undefined) url.searchParams.set('profile', profileId || '');
+            const response = await fetch(url, { headers: { Accept: 'application/json' } });
+            if (!response.ok) throw new Error('Profilzusammenfassung nicht verfügbar.');
+            const data = await response.json();
+            if (request !== profileRequest) return;
+            const cvGrantCard = document.querySelector('[data-application-cv-grant]');
+            if (cvGrantCard) {
+                const path = data.cv_link_path || '';
+                const label = data.cv_link_label || '';
+                if (cvGrantCard.dataset.path !== path || cvGrantCard.dataset.label !== label) {
+                    cvGrantRequest++;
+                    clearApplicationCvGrantUrl(cvGrantCard);
+                    cvGrantCard.querySelector('[data-application-cv-grant-list]')?.replaceChildren();
+                }
+                cvGrantCard.dataset.path = path;
+                cvGrantCard.dataset.label = label;
+                cvGrantCard.hidden = !path;
+                if (path && label) loadApplicationCvGrant({ path, label });
+            }
+            target.replaceChildren();
+            if (!data.selected) {
+                target.textContent = 'Standard-CV ausgewählt. Einleitung und Akzentfarbe können unten angepasst werden.';
+                return;
+            }
+            const title = document.createElement('strong');
+            title.textContent = data.title || 'CV-Profil';
+            const slug = document.createElement('span');
+            slug.textContent = ' · ' + data.slug;
+            target.append(title, slug, document.createElement('br'));
+            const addLink = (href, label) => {
+                if (!href) return;
+                const link = document.createElement('a');
+                link.href = href;
+                link.textContent = label;
+                link.rel = 'noopener noreferrer';
+                target.append(link, document.createTextNode(' · '));
+            };
+            addLink(data.edit_url, 'Profil bearbeiten');
+            if (data.public) addLink(data.public_url, 'Öffentliche Profilseite öffnen');
+            addLink(data.cv_pdf_url, 'Bewerbungs-CV als PDF prüfen');
+            target.lastChild?.textContent === ' · ' && target.lastChild.remove();
+        } catch (error) {
+            if (request !== profileRequest) return;
+            target.textContent = error.message;
+        }
+    }
+
+    const profileReference = () => {
+        const field = [...document.querySelectorAll('input[type="hidden"]')].find(input => input.name.endsWith('[profile]') || input.name.endsWith('.profile'));
+        if (!field) return { present: false, id: undefined, key: 'missing' };
+        let value = field.value;
+        try { value = JSON.parse(value); } catch { /* Statamic may provide a scalar reference. */ }
+        const id = Array.isArray(value) ? (value[0] || null) : (typeof value === 'string' && value ? value : null);
+        return { present: true, id, key: 'present:' + (id || 'empty') };
+    };
+    let lastProfileReference = null;
+    const refreshProfileSummary = () => {
+        const base = appBase();
+        if (!base || !document.querySelector('[data-application-profile-summary]')) return;
+        const reference = profileReference();
+        if (reference.key === lastProfileReference) return;
+        lastProfileReference = reference.key;
+        invalidateApplicationCvGrant();
+        profileRequest++;
+        loadProfileSummary(base, reference.present ? reference.id : undefined);
+    };
+    const onProfileSelectionChange = () => {
+        invalidateApplicationCvGrant();
+        profileRequest++;
+        setTimeout(refreshProfileSummary, 0);
+    };
+    document.addEventListener('input', event => {
+        if (event.target.name?.endsWith('[profile]') || event.target.name?.endsWith('.profile')) onProfileSelectionChange();
     });
-    decorate();
-    new MutationObserver(decorate).observe(document.documentElement, { childList: true, subtree: true });
+    document.addEventListener('change', event => {
+        if (event.target.name?.endsWith('[profile]') || event.target.name?.endsWith('.profile')) onProfileSelectionChange();
+    });
+    document.addEventListener('click', () => setTimeout(refreshProfileSummary, 30));
+    new MutationObserver(refreshProfileSummary).observe(document.documentElement, { attributes: true, attributeFilter: ['value'], childList: true, subtree: true });
+
+    document.addEventListener('click', async event => {
+        const button = event.target.closest('[data-reset-application-date], [data-application-cv], [data-application-preview], [data-application-export], [data-application-grant-create], [data-application-grant-revoke], [data-application-grant-revoke-all], [data-application-copy-link], [data-application-cv-grant-create], [data-application-cv-grant-copy], [data-application-cv-grant-revoke], [data-email-pdf], [data-email-refresh], [data-email-copy-text], [data-email-copy-html]');
+        if (!button) return;
+        const base = appBase();
+        if (button.matches('[data-email-pdf]')) {
+            const status = button.closest('[data-application-email]')?.querySelector('[data-email-status]');
+            if (!base) { if (status) status.textContent = 'Bitte zuerst speichern.'; return; }
+            window.open(base + '/preview.pdf', '_blank', 'noopener,noreferrer');
+            if (status) status.textContent = 'Die PDF wird aus den gespeicherten Daten frisch geprüft. Änderungen zuerst speichern.';
+            return;
+        }
+        if (button.matches('[data-email-refresh]')) { await loadEmail(base); return; }
+        if (button.matches('[data-email-copy-text], [data-email-copy-html]')) {
+            const panel = button.closest('[data-application-email]');
+            const status = panel?.querySelector('[data-email-status]');
+            const field = panel?.querySelector(button.matches('[data-email-copy-text]') ? '[data-email-text]' : '[data-email-html]');
+            if (!base) { if (status) status.textContent = 'Bitte zuerst speichern.'; return; }
+            if (!field?.value) { await loadEmail(base); if (status) status.textContent = 'Vorschau geladen. Erneut klicken, um den Inhalt zu kopieren.'; return; }
+            try {
+                if (button.matches('[data-email-copy-html]') && navigator.clipboard?.write && window.ClipboardItem) {
+                    await navigator.clipboard.write([new ClipboardItem({ 'text/html': new Blob([field.value], { type: 'text/html' }), 'text/plain': new Blob([panel.querySelector('[data-email-text]').value], { type: 'text/plain' }) })]);
+                } else {
+                    await navigator.clipboard.writeText(field.value);
+                }
+                if (status) status.textContent = 'Inhalt kopiert.';
+            } catch {
+                field.focus(); field.select();
+                if (status) status.textContent = 'Automatisches Kopieren nicht verfügbar. Inhalt ist markiert und kann manuell kopiert werden.';
+            }
+            return;
+        }
+        const panel = button.closest('[data-application-actions]') || document.querySelector('[data-application-actions]');
+        const status = panel?.querySelector('[data-application-status]') || document.querySelector('[data-application-status]');
+        if (!base) { if (status) status.textContent = 'Bitte zuerst speichern.'; return; }
+
+        if (button.hasAttribute('data-application-cv-grant-create')) {
+            const card = button.closest('[data-application-cv-grant]');
+            const cvStatus = card.querySelector('[data-application-cv-grant-status]');
+            const path = card.dataset.path;
+            const label = card.dataset.label;
+            const request = ++cvGrantRequest;
+            const isCurrent = () => request === cvGrantRequest && card.isConnected
+                && card === document.querySelector('[data-application-cv-grant]')
+                && card.dataset.path === path && card.dataset.label === label;
+            button.disabled = true;
+            try {
+                const response = await fetch('/cp/cv/private-link/grants', { method: 'POST', headers: { Accept: 'application/json', 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf() }, body: JSON.stringify({ path, label, kind: 'permanent', reuse: true }) });
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.message || 'CV-Link konnte nicht erstellt werden.');
+                if (!isCurrent()) return;
+                if (data.url) {
+                    card.querySelector('[data-application-cv-grant-url]').value = data.url;
+                    card.querySelector('[data-application-cv-grant-url-wrap]').hidden = false;
+                    cvStatus.textContent = 'Neuer Link erstellt. Er wird nur auf dieser Seite einmal angezeigt.';
+                } else {
+                    cvStatus.textContent = 'Der benannte Link besteht bereits. Er ist im CV-Profilmanager sichtbar. Beim PDF-Export wird er in den Lebenslauf eingebettet.';
+                }
+                await loadApplicationCvGrant({ path, label });
+            } catch (error) { if (isCurrent()) cvStatus.textContent = error.message; }
+            finally { button.disabled = false; }
+            return;
+        }
+        if (button.hasAttribute('data-application-cv-grant-copy')) {
+            const field = button.closest('[data-application-cv-grant]').querySelector('[data-application-cv-grant-url]');
+            await navigator.clipboard.writeText(field.value);
+            button.closest('[data-application-cv-grant]').querySelector('[data-application-cv-grant-status]').textContent = 'Link kopiert.';
+            return;
+        }
+        if (button.hasAttribute('data-application-cv-grant-revoke')) {
+            if (!confirm('Diesen CV-Link widerrufen? Der Zugriff aus damit bereits versendeten PDF-Dateien endet ebenfalls.')) return;
+            const card = button.closest('[data-application-cv-grant]');
+            const path = button.dataset.applicationCvGrantPath;
+            const label = button.dataset.applicationCvGrantLabel;
+            if (!path || !label || card.dataset.path !== path || card.dataset.label !== label) return;
+            const request = ++cvGrantRequest;
+            const isCurrent = () => request === cvGrantRequest && card.isConnected
+                && card === document.querySelector('[data-application-cv-grant]')
+                && card.dataset.path === path && card.dataset.label === label;
+            const url = '/cp/cv/private-link/grants/' + encodeURIComponent(button.dataset.applicationCvGrantRevoke) + '?path=' + encodeURIComponent(path);
+            button.disabled = true;
+            try {
+                const response = await fetch(url, { method: 'DELETE', headers: { Accept: 'application/json', 'X-CSRF-TOKEN': csrf() } });
+                if (!response.ok) throw new Error('CV-Link konnte nicht widerrufen werden.');
+                if (!isCurrent()) return;
+                card.querySelector('[data-application-cv-grant-status]').textContent = 'CV-Link widerrufen.';
+                await loadApplicationCvGrant({ path, label });
+            } catch (error) { if (isCurrent()) card.querySelector('[data-application-cv-grant-status]').textContent = error.message; }
+            finally { button.disabled = false; }
+            return;
+        }
+
+        if (button.hasAttribute('data-application-preview') || button.hasAttribute('data-application-export')) {
+            window.open(base + (button.hasAttribute('data-application-preview') ? '/preview.pdf' : '/export.pdf'), '_blank', 'noopener,noreferrer');
+            if (status) status.textContent = 'Es werden gespeicherte Daten verwendet. Vorherige Änderungen zuerst speichern.';
+            return;
+        }
+        if (button.hasAttribute('data-application-cv')) {
+            window.open(base + '/cv.pdf', '_blank', 'noopener,noreferrer');
+            return;
+        }
+        if (button.hasAttribute('data-application-copy-link')) {
+            const field = document.querySelector('[data-application-recipient-link]');
+            try {
+                await navigator.clipboard.writeText(field.value);
+                if (status) status.textContent = 'Link kopiert. Er wird nach dem Verlassen dieser Seite nicht erneut angezeigt.';
+            } catch {
+                field.focus(); field.select();
+                if (status) status.textContent = 'Kopieren war nicht möglich. Link markieren und manuell kopieren.';
+            }
+            return;
+        }
+        if (button.hasAttribute('data-application-grant-create')) {
+            const scope = button.closest('[data-application-actions]');
+            const label = scope.querySelector('[data-application-grant-label]').value.trim();
+            const expiryValue = scope.querySelector('[data-application-grant-expiry]').value;
+            const body = { label };
+            if (expiryValue) body.expires_at = new Date(expiryValue).toISOString();
+            if (!label) { status.textContent = 'Bitte eine Bezeichnung eingeben.'; return; }
+            if (!window.confirm('Diesen Empfängerzugriff erstellen? Der Link gibt Zugriff auf die vollständige private Bewerbung. Es wird keine E-Mail versendet.')) return;
+            button.disabled = true;
+            try {
+                const response = await fetch(base + '/recipient-grants', { method: 'POST', headers: { Accept: 'application/json', 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf() }, body: JSON.stringify(body) });
+                if (!response.ok) throw new Error((await response.json()).message || 'Empfängerzugriff konnte nicht erstellt werden.');
+                const data = await response.json();
+                const field = document.querySelector('[data-application-recipient-link]');
+                const labelField = document.querySelector('[data-application-new-link-label]');
+                const copy = document.querySelector('[data-application-copy-link]');
+                field.value = data.url;
+                labelField.hidden = false;
+                copy.hidden = false;
+                copy.closest('.app-cp-new-link')?.removeAttribute('hidden');
+                field.focus();
+                status.textContent = 'Der Link wird nur jetzt angezeigt. Kopiere und verwahre ihn sicher. Weitere Zugriffe widerrufen diesen Link nicht.';
+                await loadOverview(base);
+            } catch (error) { status.textContent = error.message; }
+            finally { button.disabled = false; }
+            return;
+        }
+        if (button.hasAttribute('data-application-grant-revoke') || button.hasAttribute('data-application-grant-revoke-all')) {
+            const all = button.hasAttribute('data-application-grant-revoke-all');
+            const grantId = button.dataset.applicationGrantRevoke;
+            if (!window.confirm(all ? 'Wirklich alle Empfängerzugriffe widerrufen? Bereits geöffnete Sitzungen verlieren ebenfalls den Zugriff.' : 'Diesen Empfängerzugriff widerrufen? Bereits geöffnete Sitzungen verlieren ebenfalls den Zugriff.')) return;
+            button.disabled = true;
+            try {
+                const response = await fetch(base + '/recipient-grants' + (all ? '' : '/' + encodeURIComponent(grantId)), { method: 'DELETE', headers: { Accept: 'application/json', 'X-CSRF-TOKEN': csrf() } });
+                if (!response.ok) throw new Error('Empfängerzugriff konnte nicht widerrufen werden.');
+                if (status) status.textContent = all ? 'Alle aktiven Empfängerzugriffe widerrufen.' : 'Empfängerzugriff widerrufen.';
+                await loadOverview(base);
+            } catch (error) { if (status) status.textContent = error.message; }
+            finally { button.disabled = false; }
+            return;
+        }
+        if (!window.confirm('Gespeichertes Datum auf heute setzen? Ungespeicherte Änderungen zuerst speichern.')) return;
+        button.disabled = true;
+        try {
+            const response = await fetch(base + '/reset-date', { method: 'POST', headers: { Accept: 'application/json', 'X-CSRF-TOKEN': csrf() } });
+            if (!response.ok) throw new Error('Datum konnte nicht zurückgesetzt werden.');
+            location.reload();
+        } catch (error) { if (status) status.textContent = error.message; button.disabled = false; }
+    });
+
+    let loadedOverviewEntry = null;
+    let loadedOverviewElement = null;
+    const refreshApplicationOverview = () => {
+        const id = entryId();
+        const base = appBase();
+        const summary = document.querySelector('[data-application-summary]');
+        if (!id || id === 'create' || !base || !summary) {
+            loadedOverviewEntry = null;
+            loadedOverviewElement = null;
+            return;
+        }
+        if (id === loadedOverviewEntry && summary === loadedOverviewElement) return;
+        loadedOverviewEntry = id;
+        loadedOverviewElement = summary;
+        loadOverview(base);
+        refreshProfileSummary();
+    };
+    const overviewObserver = new MutationObserver(refreshApplicationOverview);
+    overviewObserver.observe(document.documentElement, { childList: true, subtree: true });
+    window.addEventListener('popstate', refreshApplicationOverview);
+    refreshApplicationOverview();
+
+    window.Statamic?.$hooks?.on('entry.saved', async (resolve, _reject, payload) => {
+        try {
+            if (payload?.collection === 'applications') {
+                const base = appBase();
+                if (base) await loadOverview(base);
+            }
+        } catch {
+            // Overview loading reports its own error. The save hook must still unblock Statamic.
+        } finally {
+            resolve();
+        }
+    });
+})();
+
+// Keep actions visually consistent with the Statamic CP while giving primary and
+// destructive actions a clear hierarchy in this custom HTML field.
+(() => {
+    document.querySelectorAll('[data-application-actions] button:not([class*="app-cp-button"])').forEach(button => button.classList.add('app-cp-button'));
+    document.querySelectorAll('[data-application-actions] button[data-signature-action="prepare"]').forEach(button => button.classList.add('app-cp-button-primary'));
 })();
 
 // Private, explicit signature operations. No action runs on publish, preview or autosave.
@@ -105,7 +562,8 @@ document.addEventListener('click', async event => {
                 row.append(report);
             }
             const add = (action, text, signed = false) => {
-                const control = document.createElement('button'); control.type = 'button'; control.textContent = text;
+                const control = document.createElement('button'); control.type = 'button'; control.className = 'app-cp-button'; control.textContent = text;
+                if (action === 'activate') control.classList.add('app-cp-button-primary');
                 Object.assign(control.dataset, { signatureAction: action, version: item.id, sha256: item.sha256 });
                 if (signed) control.dataset.signed = '1';
                 row.append(control);

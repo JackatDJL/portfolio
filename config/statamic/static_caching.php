@@ -58,7 +58,7 @@ return [
 
     'exclude' => [
 
-        'class' => null,
+        'class' => \App\Support\CvNavigationUrlExcluder::class,
 
         'urls' => [
             '/applications*',

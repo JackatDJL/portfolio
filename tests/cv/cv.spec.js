@@ -32,6 +32,66 @@ test('chronology parsing preserves year, month and exact day precision', () => {
     expect(parseChronology('2024-13')).toBeNull();
     expect(parseChronology('2024-04-00')).toBeNull();
 });
+
+test('portrait disclosure and credit stay visible inside the rounded frame at narrow widths', async ({ page }) => {
+    for (const width of [320, 390]) {
+        await page.setViewportSize({ width, height: 844 });
+        await page.goto('/cv');
+        const overlays = page.locator('.cv-portrait .media-overlays');
+        await expect(overlays).toHaveCount(1);
+        await overlays.evaluate(root => {
+            root.innerHTML = '<span class="media-overlay__ai media-overlay__ai--black" role="img" aria-label="AI-generated content" data-visibility-probe="ai" style="pointer-events:auto"><img class="media-overlay__ai-icon" src="/assets/ai-labels/fully-generated/black.svg" alt=""></span><span class="media-overlay__credit media-overlay__credit--dark" data-visibility-probe="credit" style="pointer-events:auto">Photographer: Stade Archives · CC BY-SA 4.0</span>';
+        });
+        await expect(overlays.locator('[data-visibility-probe="ai"]')).toBeVisible();
+        await expect(overlays.locator('[data-visibility-probe="ai"]')).toHaveAttribute('aria-label', 'AI-generated content');
+        await expect(overlays.locator('[data-visibility-probe="ai"]')).toHaveText('');
+        await expect(overlays.locator('[data-visibility-probe="ai"] > span')).toHaveCount(0);
+        await expect(overlays.locator('[data-visibility-probe="credit"]')).toBeVisible();
+
+        const visibleCorners = await page.evaluate(() => {
+            const probe = (selector, side) => {
+                const element = document.querySelector(selector);
+                const box = element.getBoundingClientRect();
+                const x = side === 'left' ? box.left + 6 : box.right - 6;
+                const target = document.elementFromPoint(x, box.bottom - 6);
+                return target?.closest('[data-visibility-probe]')?.getAttribute('data-visibility-probe') ?? null;
+            };
+            return {
+                ai: probe('[data-visibility-probe="ai"]', 'left'),
+                credit: probe('[data-visibility-probe="credit"]', 'right'),
+            };
+        });
+
+        expect(visibleCorners).toEqual({ ai: 'ai', credit: 'credit' });
+    }
+});
+
+test('portrait credit-only attribution uses the full footer width at narrow sizes', async ({ page }) => {
+    for (const width of [320, 390]) {
+        await page.setViewportSize({ width, height: 844 });
+        await page.goto('/cv');
+        const overlays = page.locator('.cv-portrait .media-overlays');
+        await expect(overlays).toHaveCount(1);
+        await overlays.evaluate(root => {
+            root.innerHTML = '<span class="media-overlay__credit" data-visibility-probe="credit" style="pointer-events:auto">Photographer: Stade Archives · CC BY-SA 4.0</span>';
+        });
+
+        const placement = await page.evaluate(() => {
+            const row = document.querySelector('.cv-portrait .media-overlays').getBoundingClientRect();
+            const credit = document.querySelector('[data-visibility-probe="credit"]');
+            const box = credit.getBoundingClientRect();
+            const target = document.elementFromPoint(box.right - 6, box.bottom - 6);
+            return {
+                widthRatio: box.width / row.width,
+                visibleBottomRight: target?.closest('[data-visibility-probe]') === credit,
+            };
+        });
+
+        expect(placement.widthRatio).toBeGreaterThan(.8);
+        expect(placement.visibleBottomRight).toBe(true);
+    }
+});
+
 for (const width of [1440, 390]) for (const theme of ['light', 'dark']) {
     test(`${width}px ${theme}: CV pages render without overflow`, async ({ page }, testInfo) => {
         await page.setViewportSize({ width, height: width === 390 ? 844 : 1000 });
@@ -748,6 +808,18 @@ test('Jobmesse release renders at all target widths with its timeline off', asyn
             await page.evaluate(() => document.fonts.ready);
             await expect(page.locator('a.btn-ghost[href="/cv"]')).toBeVisible();
             expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+            if (kind === 'experience') {
+                await expect(page.locator('.experience-hero')).toBeVisible();
+                await expect(page.locator('.experience-hero__image')).toHaveCount(0);
+                expect(await page.locator('.experience-hero__back').evaluate(button => getComputedStyle(button).backgroundColor)).toBe('rgba(0, 0, 0, 0)');
+                await expect(page.locator('.cv-chapter-nav span')).toHaveCount(0);
+                const back = await page.locator('.experience-hero__back').boundingBox();
+                const siteHeader = await page.locator('.site-header').boundingBox();
+                expect(back.y).toBeGreaterThanOrEqual(siteHeader.y + siteHeader.height);
+            } else {
+                await expect(page.locator('.education-hero--image')).toBeVisible();
+                expect(await page.locator('.education-hero__back').evaluate(button => getComputedStyle(button).backgroundColor)).toBe('rgba(17, 26, 22, 0.72)');
+            }
             await page.screenshot({ path: testInfo.outputPath(`${kind}-${width}.png`), fullPage: true });
         }
     }

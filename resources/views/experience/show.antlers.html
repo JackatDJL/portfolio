@@ -1,12 +1,15 @@
-<article class="experience-detail detail-container">
-    <nav class="cv-chapter-nav" aria-label="Lebenslauf"><a class="btn btn-ghost" href="/cv">← Lebenslauf</a><span>Erfahrung</span></nav>
-    <header class="experience-header">
-        <h1>{{ title }}</h1>
-        <div class="experience-header__meta"><p class="experience-organisation">{{ organisation }}</p><p class="cv-period">{{ partial:cv/period detailed="true" }}</p></div>
-        {{ if summary }}<p class="experience-summary">{{ summary }}</p>{{ /if }}
+<article class="experience-detail">
+    <header class="experience-hero {{ if cover }}experience-hero--image{{ /if }}">
+        {{ if cover }}<div class="education-hero__image">{{ partial:media/image :asset="cover" mode="content" figure_class="education-hero__figure" image_class="education-hero__asset" width="1920" sizes="100vw" loading="eager" fetchpriority="high" }}</div>{{ /if }}
+        <div class="education-hero__content detail-container">
+            <a class="btn btn-ghost experience-hero__back" href="{{ cv_navigation }}">← Lebenslauf</a>
+            <h1>{{ title }}</h1>
+            <div class="education-hero__period"><p>{{ organisation }}</p><p>{{ partial:cv/period detailed="true" }}</p></div>
+            {{ if summary }}<p class="education-hero__summary">{{ summary }}</p>{{ /if }}
+        </div>
     </header>
     {{ partial:components/table-of-contents variant="mobile" label="Auf dieser Seite" aria_label="Inhalt dieser Erfahrung" }}
-    <div class="experience-content">
+    <div class="experience-content detail-container">
         <aside class="detail-layout__rail experience-rail" aria-label="Kontext">
             {{ partial:components/context-rail }}
                 {{ partial:components/table-of-contents variant="rail" label="Auf dieser Seite" aria_label="Inhalt dieser Erfahrung" }}

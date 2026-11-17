@@ -9,7 +9,7 @@ final class CvAccess
 {
     public function handle(Request $request, Closure $next)
     {
-        if (! $request->is('cv', 'cv/*')) {
+        if (! $request->is('cv', 'cv/*') && ! $request->query->has('cv_return')) {
             return $next($request);
         }
         $path = '/'.trim($request->path(), '/');
@@ -19,6 +19,9 @@ final class CvAccess
         $response = $next($request);
         $response->headers->set('Cache-Control', 'private, no-store');
         $response->headers->set('Referrer-Policy', 'no-referrer');
+        if ($request->query->has('cv_return')) {
+            $response->headers->set('X-Robots-Tag', 'noindex, nofollow, noarchive');
+        }
 
         return $response;
     }

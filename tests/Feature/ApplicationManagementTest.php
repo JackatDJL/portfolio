@@ -3,10 +3,12 @@
 namespace Tests\Feature;
 
 use App\Support\ApplicationData;
+use App\Support\ApplicationEmailComposer;
 use App\Support\CvPdfRenderer;
 use App\Support\CvPrivateData;
 use App\Support\CvProfileContentResolver;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 use Statamic\Facades\Asset;
@@ -20,6 +22,8 @@ use Tests\TestCase;
 
 class ApplicationManagementTest extends TestCase
 {
+    use RefreshDatabase;
+
     private array $entries = [];
 
     private array $users = [];
@@ -57,11 +61,12 @@ class ApplicationManagementTest extends TestCase
     {
         return [
             'title' => 'Test reference', 'application_status' => 'draft', 'published' => true,
-            'recipient' => [['organisation' => 'PRIVATE-ORG-SENTINEL', 'position' => 'Internship', 'email' => 'private@example.invalid']],
-            'letter' => [['body' => [['type' => 'paragraph', 'content' => [['type' => 'text', 'text' => 'PRIVATE-LETTER-SENTINEL']]]]]],
-            'cv' => [[]], 'documents' => [['mode' => 'override', 'items' => []]],
-            'signature' => [['mode' => 'none']],
-            'tracking' => [['application_date' => '2026-01-01', 'date_override' => '2026-02-01', 'notes' => 'PRIVATE-NOTE-SENTINEL']],
+            'recipient' => ['organisation' => 'PRIVATE-ORG-SENTINEL', 'position' => 'Internship', 'email' => 'private@example.invalid'],
+            'letter' => ['body' => [['type' => 'paragraph', 'content' => [['type' => 'text', 'text' => 'PRIVATE-LETTER-SENTINEL']]]]],
+            'cv' => [], 'documents' => ['mode' => 'override', 'items' => []],
+            'signature' => ['mode' => 'none'],
+            'email' => [],
+            'tracking' => ['application_date' => '2026-01-01', 'date_override' => '2026-02-01', 'notes' => 'PRIVATE-NOTE-SENTINEL'],
         ];
     }
 
@@ -91,7 +96,7 @@ class ApplicationManagementTest extends TestCase
         }
         $this->assertSame('PRIVATE-ORG-SENTINEL', ApplicationData::group($entry, 'recipient')['organisation']);
         $fields = $entry->blueprint()->fields()->addValues($entry->data()->all())->preProcess()->values()->all();
-        $this->assertSame('PRIVATE-ORG-SENTINEL', $fields['recipient'][0]['organisation']);
+        $this->assertSame('PRIVATE-ORG-SENTINEL', $fields['recipient']['organisation']);
         $this->assertNull($entry->toAugmentedArray(['recipient'])['recipient']->value());
         $this->get('/applications/'.$entry->slug())->assertNotFound();
         $this->get('/cp/collections/applications/entries/'.$entry->id())->assertOk();
@@ -123,16 +128,107 @@ class ApplicationManagementTest extends TestCase
     {
         $this->actingAs($this->user());
         $values = $this->values();
-        $values['recipient'][0]['email'] = 'not-an-email';
+        $values['recipient']['email'] = 'not-an-email';
         $this->postJson('/cp/collections/applications/entries/'.Site::default()->handle(), $values)->assertUnprocessable();
+    }
+
+    public function test_email_companion_modes_are_private_deterministic_and_do_not_include_signature_assets(): void
+    {
+        $entry = $this->createThroughCp();
+        $empty = app(ApplicationEmailComposer::class)->compose($entry);
+        $this->assertSame('private@example.invalid', $empty['recipient']);
+        $this->assertSame('', $empty['subject']);
+        $this->assertFalse($empty['pdf_notice']);
+        $this->assertStringNotContainsString('Sehr geehrte', $empty['text']);
+        $this->assertStringNotContainsString('Jack Ruder', $empty['text']);
+        $response = $this->getJson('/cp/applications/'.$entry->id().'/email')->assertOk();
+        $this->assertStringContainsString('no-store', $response->headers->get('Cache-Control'));
+        $this->assertStringContainsString('noindex', $response->headers->get('X-Robots-Tag'));
+        $this->assertStringNotContainsString('application=TOKEN', $response->getContent());
+        $recipient = ApplicationData::group($entry, 'recipient');
+        $recipient['email'] = 'bewerbung@example.invalid';
+        $entry->set('recipient', ApplicationData::encrypt([$recipient]));
+        $letter = ApplicationData::group($entry, 'letter');
+        $letter['subject'] = 'Praktikum Forschung';
+        $letter['salutation'] = 'Sehr geehrte Frau Dr. Müller,';
+        $letter['closing'] = 'Mit freundlichen Grüßen';
+        $letter['body'] = [
+            ['type' => 'paragraph', 'content' => [['type' => 'text', 'text' => 'Erster Absatz mit '], ['type' => 'text', 'text' => 'Formatierung', 'marks' => [['type' => 'bold']]], ['type' => 'text', 'text' => '.']]],
+            ['type' => 'paragraph', 'content' => [['type' => 'text', 'text' => 'Zweiter Absatz darf nicht übernommen werden.']]],
+        ];
+        $entry->set('letter', ApplicationData::encrypt([$letter]));
+        $entry->set('signature', ApplicationData::encrypt([['mode' => 'typed', 'name' => 'Jack Ruder']]));
+        $entry->set('email', ApplicationData::encrypt([['mode' => 'teaser', 'intro' => 'Bewerbungsspezifischer Einstieg.', 'mention_application_pdf' => true, 'sender_name' => 'Jack Ruder']]));
+        $entry->save();
+
+        $mail = app(ApplicationEmailComposer::class)->compose(Entry::find($entry->id()));
+        $this->assertSame('bewerbung@example.invalid', $mail['recipient']);
+        $this->assertSame('Bewerbung: Praktikum Forschung', $mail['subject']);
+        $this->assertTrue($mail['pdf_notice']);
+        $this->assertStringContainsString("Bewerbungsspezifischer Einstieg.\n\nErster Absatz mit Formatierung.", $mail['text']);
+        $this->assertStringContainsString("Erster Absatz mit Formatierung.\n\nDie vollständigen Bewerbungsunterlagen finden Sie in der beigefügten PDF.", $mail['text']);
+        $this->assertStringNotContainsString('Zweiter Absatz', $mail['text']);
+        $this->assertStringContainsString('Sehr geehrte Frau Dr. Müller,', $mail['text']);
+        $this->assertStringContainsString('Mit freundlichen Grüßen', $mail['text']);
+        $this->assertStringContainsString('<p', $mail['html']);
+        $this->assertStringNotContainsString('<img', $mail['html']);
+        $this->assertStringNotContainsString('application-test', $mail['html']);
+        $this->assertStringNotContainsString('recipient-link', $mail['html']);
+        $this->assertStringNotContainsString('/preview.pdf', $mail['html']);
+        $this->assertStringContainsString('Die vollständigen Bewerbungsunterlagen finden Sie in der beigefügten PDF.', $mail['html']);
+        $this->assertSame([], $mail['attachments']);
+
+        $email = ['mode' => 'manual', 'manual_body' => "Manueller erster Absatz.\n\nManueller zweiter Absatz.", 'mention_application_pdf' => true];
+        $entry->set('email', ApplicationData::encrypt([$email]));
+        $entry->save();
+        $manual = app(ApplicationEmailComposer::class)->compose(Entry::find($entry->id()));
+        $this->assertFalse($manual['pdf_notice']);
+        $this->assertSame("Sehr geehrte Frau Dr. Müller,\n\nManueller erster Absatz.\n\nManueller zweiter Absatz.\n\nMit freundlichen Grüßen\n\nJack Ruder", $manual['text']);
+        $this->assertStringNotContainsString('beigefügten PDF', $manual['text']);
+        $this->assertStringContainsString('<p style="margin:0 0 16px">Manueller erster Absatz.</p>', $manual['html']);
+        $this->assertStringContainsString('<p style="margin:0 0 16px">Manueller zweiter Absatz.</p>', $manual['html']);
+    }
+
+    public function test_email_attachment_description_requires_a_selected_existing_private_pdf(): void
+    {
+        $entry = $this->createThroughCp();
+        $entry->set('email', ApplicationData::encrypt([['mode' => 'short']]));
+        $entry->set('documents', ApplicationData::encrypt([['mode' => 'override', 'items' => [
+            ['label' => 'Fehlendes Zeugnis', 'file' => ['application_documents::missing.pdf']],
+        ]]]));
+        $entry->save();
+        $missing = app(ApplicationEmailComposer::class)->compose(Entry::find($entry->id()));
+        $this->assertSame([], $missing['attachments']);
+        $this->assertStringNotContainsString('Als Anlage erhalten Sie', $missing['text']);
+
+        $this->actingAs($this->user());
+        $upload = $this->post('/cp/assets', [
+            'container' => 'application_documents', 'folder' => '/',
+            'file' => UploadedFile::fake()->createWithContent('mail-attachment-'.bin2hex(random_bytes(5)).'.pdf', "%PDF-1.4\n%%EOF"),
+        ], ['Accept' => 'application/json'])->assertOk();
+        $asset = Asset::find($upload->json('data.id'));
+        try {
+            $entry->set('documents', ApplicationData::encrypt([['mode' => 'override', 'items' => [
+                ['label' => 'Ausbildungsnachweis', 'file' => [$asset->path()]],
+            ]]]));
+            $entry->save();
+            $selected = app(ApplicationEmailComposer::class)->compose(Entry::find($entry->id()));
+            $this->assertSame(['Ausbildungsnachweis'], $selected['attachments']);
+            $this->assertStringContainsString('Als Anlage erhalten Sie: Ausbildungsnachweis.', $selected['text']);
+        } finally {
+            $asset->deleteQuietly();
+        }
     }
 
     public function test_typed_signature_requires_a_name(): void
     {
         $this->actingAs($this->user());
         $values = $this->values();
-        $values['signature'] = [['mode' => 'typed', 'name' => '']];
-        $this->postJson('/cp/collections/applications/entries/'.Site::default()->handle(), $values)->assertUnprocessable();
+        $values['signature'] = ['mode' => 'typed', 'name' => ''];
+        $values['recipient']['email'] = 'not-an-email';
+        $this->postJson('/cp/collections/applications/entries/'.Site::default()->handle(), $values)
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['signature.name', 'recipient.email']);
     }
 
     public function test_private_document_disk_has_no_public_url_or_serving(): void
@@ -305,15 +401,116 @@ class ApplicationManagementTest extends TestCase
     {
         $entry = $this->createThroughCp();
         $values = $this->values();
-        $values['recipient'][0]['period_start'] = '2026-02-01';
-        $values['recipient'][0]['period_end'] = '2026-01-01';
+        $values['recipient']['period_start'] = '2026-02-01';
+        $values['recipient']['period_end'] = '2026-01-01';
         $url = '/cp/collections/applications/entries/'.$entry->id();
-        $this->patchJson($url, $values)->assertUnprocessable();
-        $values['recipient'][0]['period_end'] = '2026-03-01';
-        $values['recipient'][0]['organisation'] = 'UPDATED-PRIVATE-SENTINEL';
+        $this->patchJson($url, $values)->assertUnprocessable()->assertJsonValidationErrors(['recipient.period_end']);
+        $values['recipient']['period_end'] = '2026-03-01';
+        $values['recipient']['organisation'] = 'UPDATED-PRIVATE-SENTINEL';
         $this->patchJson($url, $values)->assertOk();
         $this->assertSame('UPDATED-PRIVATE-SENTINEL', ApplicationData::group(Entry::find($entry->id()), 'recipient')['organisation']);
         $this->assertStringNotContainsString('UPDATED-PRIVATE-SENTINEL', file_get_contents($entry->path()));
+    }
+
+    public function test_old_encrypted_one_row_groups_remain_editable_and_hidden_values_are_always_saved(): void
+    {
+        $profile = Entry::make()->collection('cv_profiles')->slug('legacy-cv-'.bin2hex(random_bytes(4)))->published(true)->data(['title' => 'Legacy CV']);
+        $profile->save();
+        $this->entries[] = $profile;
+        $values = $this->values();
+        $values['cv'] = [
+            'profile' => [$profile->id()],
+            'advanced_cv_overrides' => false,
+            'introduction' => 'LEGACY-INTRODUCTION-SENTINEL',
+            'accent_color' => '#123456',
+        ];
+        $values['cv']['profile'] = [$profile->id()];
+        $stored = ['title' => 'Legacy encrypted groups', 'application_status' => 'draft'];
+        foreach (ApplicationData::GROUPS as $handle) {
+            $stored[$handle] = ApplicationData::encrypt([$values[$handle]]);
+        }
+        $entry = Entry::make()->collection('applications')->slug('legacy-application-'.bin2hex(random_bytes(4)))->data($stored);
+        $entry->save();
+        $this->entries[] = $entry;
+
+        $this->assertSame('PRIVATE-ORG-SENTINEL', ApplicationData::group($entry, 'recipient')['organisation']);
+        $this->assertSame('LEGACY-INTRODUCTION-SENTINEL', ApplicationData::group($entry, 'cv')['introduction']);
+        $this->assertSame('#123456', ApplicationData::group($entry, 'cv')['accent_color']);
+        $this->assertSame('LEGACY-INTRODUCTION-SENTINEL', $entry->blueprint()->field('cv')->fieldtype()->preProcess($entry->get('cv'))['introduction']);
+
+        $formValues = $entry->blueprint()->fields()->addValues($entry->data()->all())->preProcess()->values()->all();
+        $this->assertSame('LEGACY-INTRODUCTION-SENTINEL', $formValues['cv']['introduction']);
+        $this->actingAs($this->user());
+        $updated = $this->values();
+        $updated['cv'] = $formValues['cv'];
+        $updated['recipient']['organisation'] = 'LEGACY-ENTRY-SAVED';
+        $this->patchJson('/cp/collections/applications/entries/'.$entry->id(), $updated)->assertOk();
+        $this->assertSame('LEGACY-INTRODUCTION-SENTINEL', ApplicationData::group(Entry::find($entry->id()), 'cv')['introduction']);
+
+        $blueprint = \Statamic\Facades\Blueprint::find('collections/applications/application');
+        $cvFields = collect($blueprint->field('cv')->fieldtype()->fields()->all());
+        $this->assertTrue($cvFields['introduction']->get('always_save'));
+        $this->assertTrue($cvFields['accent_color']->get('always_save'));
+        $documentsFields = collect($blueprint->field('documents')->fieldtype()->fields()->all());
+        $this->assertSame(['mode' => 'override'], $documentsFields['items']->conditions()['if']);
+        $this->assertTrue($documentsFields['items']->get('always_save'));
+        $this->assertSame('text', $blueprint->field('letter')->fieldtype()->fields()->get('subject')->type());
+    }
+
+    public function test_cv_profile_summary_uses_resolved_entry_urls_and_hides_unpublished_public_link(): void
+    {
+        $entry = $this->createThroughCp();
+        $profile = Entry::make()->collection('cv_profiles')->slug('grant-profile-'.bin2hex(random_bytes(4)))->published(true)->data(['title' => 'Public CV']);
+        $profile->save();
+        $unpublished = Entry::make()->collection('cv_profiles')->slug('private-profile-'.bin2hex(random_bytes(4)))->published(false)->data(['title' => 'Private CV']);
+        $unpublished->save();
+        try {
+            $publishedResponse = $this->getJson('/cp/applications/'.$entry->id().'/cv-profile?profile='.$profile->id())->assertOk();
+            $this->assertSame($profile->value('title'), $publishedResponse->json('title'));
+            $this->assertSame($profile->slug(), $publishedResponse->json('slug'));
+            $this->assertSame($profile->editUrl(), $publishedResponse->json('edit_url'));
+            $this->assertNotNull($publishedResponse->json('public_url'));
+            $this->assertStringContainsString('/applications/'.$entry->id().'/cv.pdf', $publishedResponse->json('cv_pdf_url'));
+            $this->assertNull($this->getJson('/cp/applications/'.$entry->id().'/cv-profile?profile='.$unpublished->id())->assertOk()->json('public_url'));
+            $this->getJson('/cp/applications/'.$entry->id().'/cv-profile?profile=not-a-cv-profile')->assertNotFound();
+        } finally {
+            Entry::delete($profile);
+            Entry::delete($unpublished);
+        }
+    }
+
+    public function test_application_overview_is_superuser_only_and_contains_only_private_cp_summary_data(): void
+    {
+        $entry = $this->createThroughCp();
+        $recipient = ApplicationData::group($entry, 'recipient');
+        $recipient = array_merge($recipient, [
+            'recipient' => 'Private contact', 'year' => 2027, 'location' => 'Hamburg',
+            'period_start' => '2027-02-08', 'period_end' => '2027-02-19',
+        ]);
+        $tracking = ApplicationData::group($entry, 'tracking');
+        $tracking['correspondence'] = [['date' => '2026-10-20', 'direction' => 'outgoing', 'summary' => 'Private follow-up']];
+        $tracking['follow_up_status'] = 'planned';
+        $tracking['follow_up_date'] = '2026-11-17';
+        $entry->set('recipient', ApplicationData::encrypt([$recipient]));
+        $entry->set('tracking', ApplicationData::encrypt([$tracking]));
+        $entry->save();
+
+        $response = $this->getJson('/cp/applications/'.$entry->id().'/summary')->assertOk()
+            ->assertJsonPath('reference', 'Test reference')
+            ->assertJsonPath('organisation', 'PRIVATE-ORG-SENTINEL')
+            ->assertJsonPath('position', 'Internship')
+            ->assertJsonPath('recipient_name', 'Private contact')
+            ->assertJsonPath('period_start', '2027-02-08')
+            ->assertJsonPath('period_end', '2027-02-19')
+            ->assertJsonPath('application_date', '2026-02-01')
+            ->assertJsonPath('has_date_override', true)
+            ->assertJsonPath('latest_correspondence.summary', 'Private follow-up')
+            ->assertJsonPath('follow_up_date', '2026-11-17')
+            ->assertJsonPath('notes', 'PRIVATE-NOTE-SENTINEL');
+        $this->assertStringContainsString('private', $response->headers->get('Cache-Control'));
+        $this->assertStringContainsString('no-store', $response->headers->get('Cache-Control'));
+        $this->actingAs($this->user(false));
+        $this->getJson('/cp/applications/'.$entry->id().'/summary')->assertForbidden();
     }
 
     public function test_application_cv_overrides_do_not_mutate_profile_or_globals(): void
@@ -349,8 +546,8 @@ class ApplicationManagementTest extends TestCase
 
             $resolved = app(CvProfileContentResolver::class)->resolveForApplication($entry);
 
-            $this->assertSame('Lebenslauf zur Bewerbung', $resolved['profile']['title']);
-            $this->assertNull($resolved['profile']['slug']);
+            $this->assertSame('', $resolved['profile']['title']);
+            $this->assertSame($profile->slug(), $resolved['profile']['slug']);
             $this->assertSame([], $resolved['sections']['about']['value']);
             $this->assertSame('Lufthansa Technik Praktikum 2027', $profile->value('title'));
         } finally {

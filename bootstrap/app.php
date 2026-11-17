@@ -17,6 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [CvAccess::class]);
         $middleware->validateCsrfTokens(except: [
             'cv/private-data',
+            'cv/private-signature',
             'cv/token-exchange',
         ]);
     })

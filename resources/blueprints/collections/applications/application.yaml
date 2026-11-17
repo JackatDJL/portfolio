@@ -27,24 +27,137 @@ tabs:
           default: draft
           validate:
           - in:draft,ready,sent,interview,accepted,rejected,withdrawn
+          width: 50
+      - handle: published
+        field:
+          type: toggle
+          display: Veröffentlicht
+          default: false
+          width: 50
       - handle: workflow
         field:
           type: html
-          display: Aktionen
-          html: <div data-application-actions><button type="button" class="btn" data-reset-application-date>Datum
-            auf heute setzen</button><button type="button" class="btn" data-application-cv>Privaten
-            CV herunterladen</button><button type="button" data-application-preview>Vollständige
-            PDF prüfen</button> <button type="button" data-application-export>PDF
-            exportieren</button> <button type="button" data-application-link>Empfängerlink
-            erstellen / ersetzen</button> <button type="button" data-application-revoke>Empfängerlink
-            widerrufen</button><input type="url" readonly hidden data-application-recipient-link
-            aria-label="Einmalig angezeigter Empfängerlink"><p role="status" data-application-status></p></div>
-          sanitize: false
-      - handle: electronic_signatures
-        field:
-          type: html
-          display: Elektronische Signaturen
-          html: '<div data-application-signatures data-application-actions><p>Externe Signaturen werden lokal auf Integrität geprüft. Zertifikatsvertrauen, Widerruf und QES-Qualifikation sind getrennt zu bewerten. Keine automatische Signierung.</p><button type="button" data-signature-action="status">Status laden</button> <button type="button" data-signature-action="prepare">Endgültige PDF einfrieren</button> <button type="button" data-signature-action="unsigned">Unsigniert ausliefern</button><div data-signature-versions></div><p role="status" data-signature-status></p></div>'
+          display: Bewerbungsübersicht und Aktionen
+          html: |
+            <div class="app-cp-workflow" data-application-overview data-application-actions>
+              <p class="app-cp-recommended"><strong>Empfohlener Ablauf</strong><span>Speichern → Vorschau → Export → selbst versenden</span></p>
+              <section class="app-cp-card" aria-labelledby="application-overview-title">
+                <div class="app-cp-section-heading">
+                  <div>
+                    <h3 id="application-overview-title">Bewerbung im Überblick</h3>
+                    <p>Organisation, Stelle und interne Referenz.</p>
+                  </div>
+                </div>
+                <div class="app-cp-summary" data-application-summary aria-live="polite">Bewerbungsübersicht wird geladen …</div>
+                <div class="app-cp-detail-grid">
+                  <section class="app-cp-detail" aria-labelledby="application-correspondence-title">
+                    <h4 id="application-correspondence-title">Letzte Korrespondenz</h4>
+                    <p data-application-latest>Wird geladen …</p>
+                  </section>
+                  <section class="app-cp-detail" aria-labelledby="application-follow-up-title">
+                    <h4 id="application-follow-up-title">Nächste Wiedervorlage</h4>
+                    <p data-application-follow-up>Wird geladen …</p>
+                  </section>
+                </div>
+                <div class="app-cp-overview-tools">
+                  <p>Setzt das gespeicherte Bewerbungsdatum auf heute und entfernt eine manuelle Datumsüberschreibung.</p>
+                  <button type="button" class="app-cp-button" data-reset-application-date>Datum auf heute setzen</button>
+                </div>
+                <section class="app-cp-notes" data-application-notes-wrap hidden>
+                  <h4>Private Notizen</h4>
+                  <p data-application-notes></p>
+                </section>
+              </section>
+
+              <section class="app-cp-card" aria-labelledby="application-preview-title">
+                <div class="app-cp-section-heading">
+                  <div>
+                    <h3 id="application-preview-title">Vorschau</h3>
+                    <p>Die Vorschau wird frisch erzeugt und bleibt unsigniert. Prüfe die gespeicherte Bewerbung; Änderungen zuerst speichern.</p>
+                  </div>
+                </div>
+                <div class="app-cp-button-row">
+                  <button type="button" class="app-cp-button app-cp-button-primary" data-application-preview>Anschreiben und Bewerbung ansehen</button>
+                </div>
+              </section>
+
+              <section class="app-cp-card" aria-labelledby="application-cv-link-title" data-application-cv-grant hidden>
+                <div class="app-cp-section-heading">
+                  <div>
+                    <h3 id="application-cv-link-title">CV-Prüflink</h3>
+                    <p>Der dauerhafte Zugriff wird im CV-Profilmanager geführt. Der Export verwendet denselben, benannten Grant.</p>
+                  </div>
+                </div>
+                <p data-application-cv-grant-state>Wird geladen …</p>
+                <div class="app-cp-grants" data-application-cv-grant-list></div>
+                <div class="app-cp-button-row">
+                  <button type="button" class="app-cp-button" data-application-cv-grant-create>CV-Link erstellen oder öffnen</button>
+                </div>
+                <div class="app-cp-new-link" data-application-cv-grant-url-wrap hidden>
+                  <label class="app-cp-field"><span>Neuer Link, nur einmal angezeigt</span><input class="app-cp-control" type="url" readonly data-application-cv-grant-url></label>
+                  <button type="button" class="app-cp-button" data-application-cv-grant-copy>Link kopieren</button>
+                </div>
+                <p class="app-cp-status" role="status" data-application-cv-grant-status></p>
+              </section>
+
+              <section class="app-cp-card" aria-labelledby="application-export-title">
+                <div class="app-cp-section-heading">
+                  <div>
+                    <h3 id="application-export-title">Download und Export</h3>
+                    <p>Der private Download lädt die vollständige PDF in der ausgewählten Auslieferung herunter. Du versendest sie selbst.</p>
+                  </div>
+                </div>
+                <div class="app-cp-button-row">
+                  <button type="button" class="app-cp-button app-cp-button-primary" data-application-export>Vollständige Bewerbung herunterladen</button>
+                </div>
+              </section>
+
+              <section class="app-cp-card" aria-labelledby="application-access-title">
+                <div class="app-cp-section-heading">
+                  <div>
+                    <h3 id="application-access-title">Empfängerzugriff</h3>
+                    <p>Ein Link öffnet die aktuelle private PDF und lässt sich später widerrufen. Er wird nicht per E-Mail verschickt. Ein Download ist dagegen eine eigenständige Datei.</p>
+                  </div>
+                </div>
+                <div class="app-cp-access-form">
+                  <label class="app-cp-field">
+                    <span>Bezeichnung für den Link</span>
+                    <input class="app-cp-control" type="text" maxlength="100" data-application-grant-label value="Empfänger">
+                    <small>Nur für deine Verwaltung. Der Empfänger sieht diese Bezeichnung nicht.</small>
+                  </label>
+                  <label class="app-cp-field">
+                    <span>Ablaufdatum und Uhrzeit <span class="app-cp-muted">(optional)</span></span>
+                    <input class="app-cp-control" type="datetime-local" data-application-grant-expiry aria-label="Ablaufdatum und Uhrzeit für den Empfängerzugriff">
+                    <small>Ohne Datum bleibt der Link aktiv, bis du ihn widerrufst.</small>
+                  </label>
+                </div>
+                <div class="app-cp-button-row">
+                  <button type="button" class="app-cp-button app-cp-button-primary" data-application-grant-create>Empfängerlink erstellen</button>
+                </div>
+                <div class="app-cp-grants" data-application-grants aria-live="polite"></div>
+                <div class="app-cp-new-link" hidden>
+                  <label class="app-cp-field" data-application-new-link-label>
+                    <span>Neuer Link. Nur hier einmal sichtbar.</span>
+                    <input class="app-cp-control" type="url" readonly data-application-recipient-link>
+                  </label>
+                  <button type="button" class="app-cp-button" hidden data-application-copy-link>Link kopieren</button>
+                  <p>Bewahre diesen Link sicher auf. Wenn du ihn verlierst, kannst du einen weiteren Link erstellen.</p>
+                </div>
+              </section>
+
+              <details class="app-cp-card app-cp-advanced">
+                <summary>Elektronische Signaturen</summary>
+                <p>Fortgeschrittene Verwaltung externer Signaturen. Die Vorschau bleibt unsigniert. Der Export verwendet die ausgewählte Auslieferung. Eine Grafik oder Testsignatur ist keine QES.</p>
+                <div class="app-cp-button-row" data-application-signatures>
+                  <button type="button" class="app-cp-button" data-signature-action="status">Signaturstatus laden</button>
+                  <button type="button" class="app-cp-button" data-signature-action="prepare">Endgültige PDF einfrieren</button>
+                  <button type="button" class="app-cp-button" data-signature-action="unsigned">Unsignierte PDF auswählen</button>
+                  <div class="app-cp-signature-versions" data-signature-versions></div>
+                  <p class="app-cp-status" role="status" data-signature-status></p>
+                </div>
+              </details>
+              <p class="app-cp-status" role="status" data-application-status></p>
+            </div>
           sanitize: false
   recipient:
     display: Empfänger
@@ -52,8 +165,9 @@ tabs:
     - fields:
       - handle: recipient
         field:
-          type: application_private_grid
+          type: application_private_group
           display: Empfänger
+          border: false
           fields:
           - handle: organisation
             field:
@@ -116,28 +230,20 @@ tabs:
               format: Y-m-d
               mode: single
               time_enabled: false
-          mode: stacked
-          max_rows: 1
-          min_rows: 1
-          default:
-          - {}
-          add_row: Empfänger
-          validate:
-          - required
-          - array
-          - size:1
+
   letter:
     display: Anschreiben
     sections:
     - fields:
       - handle: letter
         field:
-          type: application_private_grid
+          type: application_private_group
           display: Anschreiben
+          border: false
           fields:
           - handle: subject
             field:
-              type: textarea
+              type: text
               display: Betreff
           - handle: salutation
             field:
@@ -174,24 +280,94 @@ tabs:
             field:
               type: text
               display: Grußformel
-          mode: stacked
-          max_rows: 1
-          min_rows: 1
-          default:
-          - {}
-          add_row: Anschreiben
-          validate:
-          - required
-          - array
-          - size:1
+              instructions: Nur „Mit freundlichen Grüßen“ eintragen. Der Name steht im Unterschriftsfeld.
+
+  email:
+    display: Begleitmail
+    sections:
+    - fields:
+      - handle: email
+        field:
+          type: application_private_group
+          display: Begleitmail
+          border: false
+          fields:
+          - handle: mode
+            field:
+              type: select
+              display: Textart
+              default: short
+              options:
+                short: Kurze Begleitmail
+                teaser: Teaser aus dem Anschreiben
+                manual: Vollständig manuell
+              validate:
+              - in:short,teaser,manual
+          - handle: intro
+            field:
+              type: textarea
+              display: Bewerbungsspezifischer Einstieg
+              instructions: Leer lassen für einen kurzen, aus Stelle und Organisation erzeugten Satz. Im Teaser-Modus steht dieser Absatz vor dem ersten Absatz des Anschreibens.
+              if:
+                mode: 'not manual'
+          - handle: mention_application_pdf
+            field:
+              type: toggle
+              display: Auf die Bewerbungs-PDF verweisen
+              instructions: Nur aktivieren, wenn du die vollständige PDF aus dem bestehenden PDF-Export manuell als Anlage hinzufügst. Vorher im PDF-Bereich prüfen. Es wird kein PDF-Link in die Mail kopiert.
+              default: false
+              always_save: true
+              if:
+                mode: 'not manual'
+          - handle: manual_body
+            field:
+              type: textarea
+              display: E-Mail-Text
+              instructions: Dieser Text ersetzt im manuellen Modus alle erzeugten Absätze.
+              if:
+                mode: equals manual
+          - handle: salutation
+            field:
+              type: text
+              display: Anrede
+              instructions: 'Leer: Anrede aus dem Anschreiben übernehmen.'
+          - handle: closing
+            field:
+              type: text
+              display: Grußformel
+              instructions: 'Leer: Grußformel aus dem Anschreiben übernehmen.'
+          - handle: sender_name
+            field:
+              type: text
+              display: Absendername
+              instructions: 'Leer: getippten Namen aus den Signaturangaben übernehmen. Es wird keine Grafiksignatur eingefügt.'
+      - handle: email_preview
+        field:
+          type: html
+          display: Vorschau und Kopieren
+          html: |
+            <section class="app-cp-card app-cp-email" data-application-email>
+              <p>Empfänger und Betreff stammen aus der Bewerbung. Vorschau und Kopieren verwenden gespeicherte Daten. Die Mail wird nicht versendet und enthält keinen Empfängerlink.</p>
+              <p>Die PDF bleibt im vorhandenen Export. Prüfe sie dort und füge sie beim Versand selbst an.</p>
+              <div class="app-cp-button-row"><button type="button" class="app-cp-button" data-email-pdf>PDF prüfen</button><button type="button" class="app-cp-button app-cp-button-primary" data-email-refresh>Vorschau aktualisieren</button></div>
+              <dl class="app-cp-email-meta"><div><dt>An</dt><dd data-email-recipient>–</dd></div><div><dt>Betreff</dt><dd data-email-subject>–</dd></div></dl>
+              <div class="app-cp-email-preview" data-email-html-preview aria-label="HTML-Vorschau der Begleitmail"></div>
+              <label class="app-cp-field"><span>Reiner Text</span><textarea class="app-cp-control" rows="8" readonly data-email-text></textarea></label>
+              <label class="app-cp-field"><span>HTML-Quelle</span><textarea class="app-cp-control" rows="6" readonly data-email-html></textarea></label>
+              <div class="app-cp-button-row"><button type="button" class="app-cp-button" data-email-copy-text>Text kopieren</button><button type="button" class="app-cp-button" data-email-copy-html>HTML kopieren</button></div>
+              <p class="app-cp-status" role="status" aria-live="polite" data-email-status></p>
+            </section>
+          sanitize: false
+
   cv:
     display: Lebenslauf
     sections:
     - fields:
       - handle: cv
         field:
-          type: application_private_grid
+          type: application_private_group
           display: Lebenslauf
+          border: false
           fields:
           - handle: profile
             field:
@@ -202,15 +378,40 @@ tabs:
               max_items: 1
               instructions: 'Leer: Standard-CV. Das referenzierte Profil wird nie
                 verändert.'
+          - handle: profile_summary
+            field:
+              type: html
+              display: Ausgewähltes Profil
+              html: '<div data-application-profile-summary aria-live="polite">Profil wird geprüft …</div>'
+              sanitize: false
+              if:
+                profile: not empty
+          - handle: advanced_cv_overrides
+            field:
+              type: toggle
+              display: Erweiterte CV-Einstellungen anzeigen
+              instructions: Zeigt gespeicherte Einleitungs- und Akzent-Overrides für dieses Profil.
+              default: false
+              always_save: true
+              if:
+                profile: not empty
           - handle: introduction
             field:
               type: textarea
-              display: Einleitung überschreiben
+              display: Bewerbungsspezifische Einleitung
               instructions: 'Leer: Einleitung des Profils übernehmen.'
+              always_save: true
+              if_any:
+                profile: empty
+                advanced_cv_overrides: true
           - handle: accent_color
             field:
               type: color
-              display: Akzentfarbe
+              display: Bewerbungsspezifische Akzentfarbe
+              always_save: true
+              if_any:
+                profile: empty
+                advanced_cv_overrides: true
               validate:
               - nullable
               - regex:/^#[0-9a-fA-F]{6}$/
@@ -367,24 +568,16 @@ tabs:
                 Profil duplizieren.
               if:
                 milestones_source: equals override
-          mode: stacked
-          max_rows: 1
-          min_rows: 1
-          default:
-          - {}
-          add_row: Lebenslauf
-          validate:
-          - required
-          - array
-          - size:1
+
   documents:
     display: Anlagen
     sections:
     - fields:
       - handle: documents
         field:
-          type: application_private_grid
+          type: application_private_group
           display: Anlagen
+          border: false
           fields:
           - handle: mode
             field:
@@ -392,7 +585,7 @@ tabs:
               display: Anlagenquelle
               options:
                 inherit: Globale Vorgaben
-                override: Eigene Auswahl, auch leer
+                override: Eigene Auswahl
               default: inherit
               validate:
               - in:inherit,override
@@ -400,6 +593,9 @@ tabs:
             field:
               type: grid
               display: Dokumente in Versand-Reihenfolge
+              always_save: true
+              if:
+                mode: override
               fields:
               - handle: label
                 field:
@@ -433,60 +629,81 @@ tabs:
                   allow_uploads: true
               add_row: Dokument hinzufügen
               reorderable: true
-          mode: stacked
-          max_rows: 1
-          min_rows: 1
-          default:
-          - {}
-          add_row: Anlagen
-          validate:
-          - required
-          - array
-          - size:1
+
   signature:
-    display: Unterschrift
+    display: Signatur
     sections:
     - fields:
       - handle: signature
         field:
-          type: application_private_grid
-          display: Unterschrift
+          type: application_private_group
+          display: Signatur für diese Bewerbung
+          border: false
           fields:
           - handle: mode
             field:
               type: select
-              display: Unterschrift
+              display: Darstellung
+              instructions: 'Name in Momo Signature setzt den Namen in Schreibschrift. Handschriftliche Grafik nutzt die private Vorlage aus Bewerbungsvorgaben. Beide belegen denselben Platz in Anschreiben und CV; keine Variante ist eine QES.'
               options:
                 none: Keine
-                typed: Getippter Name
+                typed: 'Name in Momo Signature'
+                handwritten: Handschriftliche Grafik
               default: none
               validate:
-              - in:none,typed
+              - in:none,typed,handwritten
           - handle: name
             field:
               type: text
               display: Getippter Name
               validate:
-              - required_if:signature.0.mode,typed
+              - required_if:signature.mode,typed
               - max:200
-          mode: stacked
-          max_rows: 1
-          min_rows: 1
-          default:
-          - {}
-          add_row: Unterschrift
-          validate:
-          - required
-          - array
-          - size:1
+              always_save: true
+          - handle: width_mm
+            field:
+              type: integer
+              display: Breite im PDF (mm)
+              instructions: 'Die Grafik bleibt eine kopierbare visuelle Unterschrift und ist keine QES.'
+              default: 46
+              min: 30
+              max: 75
+              if:
+                mode: not none
+              always_save: true
+          - handle: baseline_mm
+            field:
+              type: integer
+              display: Grundlinien-Versatz (mm)
+              instructions: Positiv hebt die Grafik leicht an.
+              default: 0
+              min: -3
+              max: 3
+              if:
+                mode: not none
+              always_save: true
+          - handle: alignment
+            field:
+              type: select
+              display: Ausrichtung
+              options:
+                left: Links
+                center: Zentriert
+                right: Rechts
+              default: left
+              if:
+                mode: not none
+              always_save: true
+
   tracking:
     display: Verlauf
     sections:
     - fields:
       - handle: tracking
         field:
-          type: application_private_grid
+          type: application_private_group
           display: Verlauf
+          border: false
           fields:
           - handle: application_date
             field:
@@ -553,13 +770,3 @@ tabs:
               format: Y-m-d
               mode: single
               time_enabled: false
-          mode: stacked
-          max_rows: 1
-          min_rows: 1
-          default:
-          - {}
-          add_row: Verlauf
-          validate:
-          - required
-          - array
-          - size:1

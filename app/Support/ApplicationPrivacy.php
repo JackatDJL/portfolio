@@ -145,7 +145,7 @@ final class ApplicationPrivacy
                 return;
             }
             $entry->published(false);
-            $entry->data($entry->data()->except(['workflow', 'electronic_signatures'])->all());
+            $entry->data($entry->data()->except(['workflow', 'email_preview', 'electronic_signatures'])->all());
             // Slugs are opaque even when the CP auto-generates one from the title.
             $entry->slug($entry->id() ?: (string) Str::uuid());
             foreach (ApplicationData::GROUPS as $handle) {
@@ -161,11 +161,31 @@ final class ApplicationPrivacy
             $entry->set('tracking', ApplicationData::encrypt([$tracking]));
             $recipient = ApplicationData::group($entry, 'recipient');
             if (! empty($recipient['period_start']) && ! empty($recipient['period_end']) && $recipient['period_end'] < $recipient['period_start']) {
-                throw ValidationException::withMessages(['recipient.0.period_end' => 'Das Ende muss nach dem Beginn liegen.']);
+                throw ValidationException::withMessages(['recipient.period_end' => 'Das Ende muss nach dem Beginn liegen.']);
             }
             $signature = ApplicationData::group($entry, 'signature');
-            if (($signature['mode'] ?? 'none') === 'typed' && trim($signature['name'] ?? '') === '') {
-                throw ValidationException::withMessages(['signature.0.name' => 'Bitte einen Namen für die getippte Unterschrift angeben.']);
+            $signatureMode = $signature['mode'] ?? 'none';
+            if (! in_array($signatureMode, ['none', 'typed', 'handwritten'], true)) {
+                throw ValidationException::withMessages(['signature.mode' => 'Bitte eine gültige Signaturart auswählen.']);
+            }
+            if ($signatureMode === 'typed' && trim($signature['name'] ?? '') === '') {
+                throw ValidationException::withMessages(['signature.name' => 'Bitte einen Namen für die getippte Unterschrift angeben.']);
+            }
+            if ($signatureMode === 'handwritten') {
+                try {
+                    $signatureAvailable = app(PrivateHandwrittenSignature::class)->available();
+                } catch (\Throwable) {
+                    $signatureAvailable = false;
+                }
+                if (! $signatureAvailable) {
+                    throw ValidationException::withMessages(['signature.mode' => 'Speichern Sie zuerst eine private Handschrift unter Globals → Bewerbungsvorgaben → Handschrift.']);
+                }
+                if (! is_numeric($signature['width_mm'] ?? 46) || $signature['width_mm'] < 30 || $signature['width_mm'] > 75) {
+                    throw ValidationException::withMessages(['signature.width_mm' => 'Die Signaturbreite muss zwischen 30 und 75 mm liegen.']);
+                }
+                if (! is_numeric($signature['baseline_mm'] ?? 0) || $signature['baseline_mm'] < -3 || $signature['baseline_mm'] > 3) {
+                    throw ValidationException::withMessages(['signature.baseline_mm' => 'Der Grundlinien-Versatz muss zwischen -3 und 3 mm liegen.']);
+                }
             }
             $unknown = array_diff(array_keys($entry->data()->all()), [...ApplicationData::GROUPS, 'title', 'application_status', 'blueprint', 'updated_by', 'updated_at']);
             if ($unknown) {

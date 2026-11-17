@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Signatures\ApplicationSignatureWorkflow;
 use App\Signatures\SignatureWorkflowException;
 use App\Support\ApplicationCapabilities;
+use App\Support\ApplicationData;
 use App\Support\ApplicationPdfException;
 use App\Support\ApplicationPdfExporter;
 use Illuminate\Http\Request;
@@ -61,7 +62,8 @@ final class ApplicationPdfController extends Controller
             return response($exception->getMessage(), 503);
         }
         $response = response()->file($path, ['Content-Type' => 'application/pdf']);
-        $response->setContentDisposition($download ? 'attachment' : 'inline', 'bewerbung.pdf');
+        // Both Preview and Export open inline in viewer; Export uses cached/signed PDF
+        $response->setContentDisposition('inline', 'bewerbung.pdf');
         if ($preview) {
             $response->deleteFileAfterSend(true);
         }
@@ -69,22 +71,67 @@ final class ApplicationPdfController extends Controller
         return $response;
     }
 
-    public function issue(string $id)
+    public function grants(string $id)
     {
         abort_unless(User::current()?->isSuper(), 403);
         $this->application($id);
-        $token = ApplicationCapabilities::issue($id);
 
-        return response()->json(['url' => url('/applications/'.$id).'#application='.$token]);
+        return response()->json(['grants' => ApplicationCapabilities::grants($id)])
+            ->header('Cache-Control', 'private, no-store');
     }
 
-    public function revoke(string $id)
+    private function applicationProfileSlug($application): string
+    {
+        $cv = ApplicationData::group($application, 'cv');
+        $profileEntry = ($cv['profile'][0] ?? null) ? Entry::find($cv['profile'][0]) : null;
+        return $profileEntry?->slug() ?? $application->slug();
+    }
+
+    public function issueGrant(Request $request, string $id)
     {
         abort_unless(User::current()?->isSuper(), 403);
         $this->application($id);
-        ApplicationCapabilities::revoke($id);
+        $input = Validator::make($request->all(), [
+            'label' => ['required', 'string', 'min:1', 'max:100'],
+            'expires_at' => ['nullable', 'date', 'after:now'],
+        ])->validate();
+        $issued = ApplicationCapabilities::issue($id, $input['label'], $input['expires_at'] ?? null);
+        $application = $this->application($id);
 
-        return response()->json(['revoked' => true]);
+        return response()->json([
+            'url' => url('/cv/'.$this->applicationProfileSlug($application)).'#application='.$issued['token'],
+            'grant' => Arr::except($issued, ['token']),
+        ])->header('Cache-Control', 'private, no-store');
+    }
+
+    public function issueLegacyGrant(string $id)
+    {
+        abort_unless(User::current()?->isSuper(), 403);
+        $application = $this->application($id);
+        $issued = ApplicationCapabilities::issue($id, 'Empfängerlink (Legacy)');
+
+        return response()->json(['url' => url('/cv/'.$this->applicationProfileSlug($application)).'#application='.$issued['token']])
+            ->header('Cache-Control', 'private, no-store');
+    }
+
+    public function revokeGrant(string $id, string $grantId)
+    {
+        abort_unless(User::current()?->isSuper(), 403);
+        $this->application($id);
+        abort_unless(\Illuminate\Support\Str::isUuid($grantId), 404);
+        $revoked = ApplicationCapabilities::revoke($id, $grantId);
+
+        return response()->json(['revoked' => $revoked])
+            ->header('Cache-Control', 'private, no-store');
+    }
+
+    public function revokeAllGrants(string $id)
+    {
+        abort_unless(User::current()?->isSuper(), 403);
+        $this->application($id);
+
+        return response()->json(['revoked' => ApplicationCapabilities::revokeAll($id)])
+            ->header('Cache-Control', 'private, no-store');
     }
 
     public function landing(Request $request, string $id)
@@ -98,16 +145,35 @@ final class ApplicationPdfController extends Controller
     {
         $origin = $request->header('Origin');
         abort_if(($origin && $origin !== $request->getSchemeAndHttpHost()) || $request->header('Sec-Fetch-Site') === 'cross-site', 403);
-        $validator = Validator::make($request->only(['id', 'token']), ['id' => ['required', 'uuid'], 'token' => ['required', 'string', 'regex:/^[A-Za-z0-9]{64}$/']]);
+        
+        // Support both id and slug parameters
+        $input = $request->only(['id', 'slug', 'token']);
+        
+        if (isset($input['slug'])) {
+            $application = Entry::query()->where('collection', 'applications')->where('slug', $input['slug'])->first();
+            abort_unless($application, 404);
+            $input['id'] = $application->id();
+        }
+        
+        $validator = Validator::make($input, [
+            'id' => ['required', 'uuid'],
+            'token' => ['required', 'string', 'regex:/^[A-Za-z0-9]{64}$/']
+        ]);
         if ($validator->fails()) {
             return response()->json(['message' => 'Ungültige Zugriffsdaten.'], 422);
         }
         $input = $validator->validated();
         $this->application($input['id']);
         $hash = hash('sha256', $input['token']);
-        abort_unless(ApplicationCapabilities::allowsHash($input['id'], $hash), 404);
+        $grantId = ApplicationCapabilities::grantIdForHash($input['id'], $hash);
+        abort_unless($grantId, 404);
         $request->session()->regenerate();
-        $request->session()->put('application_grants.'.hash('sha256', $input['id']), $hash);
+        // A recipient session is scoped to one application at a time. Other grants
+        // and normal CP/login session values are not affected.
+        $request->session()->forget('application_grants');
+        $request->session()->put('application_grants.'.hash('sha256', $input['id']), $grantId);
+        ApplicationCapabilities::recordAccess($input['id'], $hash);
+        abort_unless(ApplicationCapabilities::sessionAllows($request, $input['id']), 404);
 
         return response()->json(['authorized' => true]);
     }

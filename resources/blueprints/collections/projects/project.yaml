@@ -158,6 +158,13 @@ tabs:
               type: assets
               display: Titelbild
           -
+            handle: hero_transition
+            field:
+              type: toggle
+              default: false
+              display: 'Hero-Übergang'
+              instructions: 'Zeigt den animierten Projektkopf und das Masonry-Layout, wenn ein Titelbild vorhanden ist.'
+          -
             handle: gallery
             field:
               container: assets

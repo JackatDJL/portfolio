@@ -228,3 +228,19 @@
 
 @import "./cv.css";
 @import "./gallery.css";
+
+@import "./project-hero-transition.css";
+
+@layer components {
+    .site-header__wordmark:not([data-contrast-marker="false"]) {
+        --link-marker: #93e8ba;
+        color: #06100c;
+        background-size: 100% 100%;
+    }
+    .site-header__wordmark:hover, .site-header__wordmark:focus-visible {
+        --link-marker: #93e8ba;
+        color: #06100c;
+    }
+}
+
+@import "./name-glass.css";

@@ -22,11 +22,12 @@ $v = function ($value) use ($u) {
 \setmainfont{Fira Sans}[Path=resources/fonts/,Extension=.ttf,UprightFont=FiraSans-Regular,BoldFont=FiraSans-Bold]
 % Fira Sans has no NE sans-serif arrow glyph (U+1F855), so the outbound-link icon is pulled from the bundled Noto Sans Symbols 2 Regular subset.
 \newfontfamily\cvarrowfont{Noto Sans Symbols 2}[Path=resources/fonts/,Extension=.ttf,UprightFont=NotoSansSymbols2-Regular]
+\newfontfamily\signaturefont{MomoSignature-Regular.ttf}[Path=resources/fonts/]
 \definecolor{accent}{HTML}{@php echo strtoupper(ltrim($cv['accent'], '#')); @endphp}
 \definecolor{linkaccent}{HTML}{@php echo $linkAccent; @endphp}
 \definecolor{cvtext}{HTML}{111A16}\definecolor{muted}{HTML}{52605A}\definecolor{rule}{HTML}{CCD8D2}\definecolor{paper}{HTML}{FFFFFF}
 \pagecolor{white}\color{cvtext}
-\hypersetup{colorlinks=true,urlcolor=linkaccent,linkcolor=linkaccent,pdfauthor={ {{ $e($cv['name']) }} },pdftitle={ {{ $e($cv['name']) }} · Lebenslauf @if($cv['profile']) · {{ $e($cv['profile']['title']) }}@endif }}
+\hypersetup{colorlinks=true,urlcolor=linkaccent,linkcolor=linkaccent,pdfauthor={ {{ $e($cv['name']) }} },pdftitle={ {{ $e($cv['name']) }} · Lebenslauf @if(!empty($cv['profile']['title'])) · {{ $e($cv['profile']['title']) }}@endif }}
 \setlength{\parindent}{0pt}\setlength{\parskip}{0pt}\setlength{\columnsep}{7mm}\emergencystretch=1em
 @php echo '\newcommand{\cvoutlinkicon}{\textcolor{linkaccent}{{\cvarrowfont \char"1F855\relax}}}'; @endphp
 \newcommand{\cvlink}[2]{\href{#1}{\textcolor{linkaccent}{#2}}}
@@ -39,7 +40,7 @@ $v = function ($value) use ($u) {
     \hbox to \textwidth{%
       \parbox[b]{.22\textwidth}{\fontsize{6}{7}\selectfont\color{muted}{{ $e($cv['name']) }} · Lebenslauf}%
       \hfil
-      \parbox[b]{.68\textwidth}{\raggedleft\fontsize{7.1}{8.5}\selectfont\color{muted}\textbf{Interaktive Version:} \cvurl{ {{ $u($cv['interactive_url']) }} }{ {{ $v($cv['interactive_url']) }} }\hspace{.7em}{\fontsize{6.5}{7.5}\selectfont\color{muted}\thepage}}%
+      \parbox[b]{.68\textwidth}{\raggedleft\fontsize{7.1}{8.5}\selectfont\color{muted}@if(!empty($cv['interactive_url']))\textbf{Interaktive Version:} \cvurl{ {{ $u($cv['interactive_url']) }} }{ {{ $v($cv['interactive_url']) }} }\hspace{.7em}@endif{\fontsize{6.5}{7.5}\selectfont\color{muted}\thepage}}%
     }%
   }%
   \let\@evenfoot\@oddfoot
@@ -56,10 +57,10 @@ $v = function ($value) use ($u) {
   \fill[paper] (0,0)--(0,18)..controls(35,21)and(64,25)..(95,17)..controls(124,10)and(142,7)..(157,0)--cycle;
   \fill[accent!48] (126,0)--(\W,0)--(\W,20)..controls(169,15)and(151,11)..(141,6)--cycle;
   \draw[cvtext,line width=.6pt] (0,0) rectangle (\W,\H);
-  @if($cv['profile'])\node[anchor=west,inner sep=0pt,text=cvtext] at (11,37) {\fontsize{7.5}{8}\selectfont\bfseries {{ $e($cv['profile']['title']) }}};@endif
+  @if(!empty($cv['profile']['title']))\node[anchor=west,inner sep=0pt,text=cvtext] at (11,37) {\fontsize{7.5}{8}\selectfont\bfseries {{ $e($cv['profile']['title']) }}};@endif
   \node[anchor=west,inner sep=0pt] at (11,19) {\fontsize{32}{32}\selectfont\bfseries {{ $e($cv['name']) }}};
   \node[anchor=west,inner sep=0pt] at (11,8) {\fontsize{7}{8}\selectfont\bfseries {{ $e($cv['location']) }}};
-  \node[anchor=west,inner sep=0pt] at (73,8) {\fontsize{7.6}{9}\selectfont\cvurl{ {{ $u($cv['interactive_url']) }} }{ {{ $v($cv['interactive_url']) }} }};
+  @if(!empty($cv['interactive_url']))\node[anchor=west,inner sep=0pt] at (73,8) {\fontsize{7.6}{9}\selectfont\cvurl{ {{ $u($cv['interactive_url']) }} }{ {{ $v($cv['interactive_url']) }} }};@endif
   @if($cv['photo'])\begin{scope}\clip (151,23) circle (15mm);\node[inner sep=0pt] at (151,23){\includegraphics[height=34mm]{ {{ $e($cv['photo']) }} }};\end{scope}\draw[cvtext,line width=.6pt] (151,23) circle (15mm);@endif
 \end{tikzpicture}
 \vspace{4mm}
@@ -70,8 +71,8 @@ $v = function ($value) use ($u) {
 @if($cv['contact']['phone'])\sidevalue{ {{ $e($cv['contact']['phone']) }} }@elseif(empty($cv['private_export']))\sidevalue{Geschützte Angabe}@endif
 @if($cv['contact']['address'])\sidevalue{ {{ $e($cv['contact']['address']) }} }@elseif(empty($cv['private_export']))\sidevalue{Geschützte Angabe}@endif
 \sidevalue{ {{ $e($cv['location']) }} }
-\sidebarhead{Interaktiver Lebenslauf}
-\sidevalue{\begingroup\fontsize{8.6}{11}\selectfont\bfseries\cvurl{ {{ $u($cv['interactive_url']) }} }{ {{ $v($cv['interactive_url']) }} }\endgroup}
+@if(!empty($cv['interactive_url']))\sidebarhead{Interaktiver Lebenslauf}
+\sidevalue{\begingroup\fontsize{8.6}{11}\selectfont\bfseries\cvurl{ {{ $u($cv['interactive_url']) }} }{ {{ $v($cv['interactive_url']) }} }\endgroup}@endif
 @if($cv['about'])\vspace{2mm}{\color{rule}\rule{\linewidth}{.4pt}}\par\sidebarhead{Über mich}\sidevalue{ {{ $e($cv['about']) }} }@endif
 @foreach($cv['knowledge'] as $group)\vspace{1.2mm}\sidebarhead{ {{ $e(mb_strtoupper($group['category'] ?? '')) }} }@foreach(($group['items'] ?? []) as $item)\sidevalue{\textbf{ {{ $e($item['label'] ?? '') }} }@if(!empty($item['context']))\\{\scriptsize {{ $e($item['context']) }} }@endif}@endforeach @endforeach
 @if($cv['soft_skills'])\sidebarhead{Soft Skills}
@@ -92,6 +93,24 @@ $v = function ($value) use ($u) {
 @endif
 @if($cv['publications'])\sectiontitle{Veröffentlichungen}
 @foreach($cv['publications'] as $item)\entry{ {{ $e($item['title']) }} }{ {{ $e($item['period']) }} }{ {{ $e($item['type']) }} }{ {{ $u($item['url']) }} }{}@endforeach
+@endif
+@if(!empty($cv['signature_image']) || !empty($cv['signature_text']))
+\Needspace{28mm}
+\par\vspace{2mm}\noindent\begin{minipage}{\linewidth}
+@if(($cv['signature_alignment'] ?? 'left') === 'center')\centering @elseif(($cv['signature_alignment'] ?? 'left') === 'right')\raggedleft @else\raggedright @endif
+\begingroup\fontsize{7.5}{9}\selectfont\color{muted}
+@if($cv['signed_place']){{ $e($cv['signed_place']) }}, @endif{{ $e($cv['signed_date']) }}\par
+\endgroup
+\vspace{1mm}
+@if(!empty($cv['signature_text']))
+\raisebox{ {{ (int) $cv['signature_baseline_mm'] }}mm }{\resizebox{ {{ (int) $cv['signature_width_mm'] }}mm }{!}{\signaturefont\fontsize{22}{26}\selectfont {{ $e($cv['signature_text']) }}}}\par
+\vspace{2mm}
+@else
+\raisebox{ {{ (int) $cv['signature_baseline_mm'] }}mm }{\includegraphics[width={{ (int) $cv['signature_width_mm'] }}mm,height=16mm,keepaspectratio]{ {{ $e($cv['signature_image']) }} }}\par
+@endif
+@if(empty($cv['signature_text']))\vspace{-1mm}@endif
+{{ $e($cv['signed_by']) }}
+\end{minipage}
 @endif
 \end{paracol}
 \end{document}

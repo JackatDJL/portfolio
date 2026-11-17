@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Fieldtypes\ApplicationPrivateGrid;
+use App\Fieldtypes\ApplicationPrivateGroup;
 use App\Fieldtypes\ApplicationTextComponent;
 use App\Fieldtypes\ProtectedText;
 use App\Signatures\ApplicationCompositeSource;
@@ -15,6 +16,7 @@ use App\Signatures\UnavailableSignatureProvider;
 use App\Support\ApplicationPdfExporter;
 use App\Support\ApplicationPdfPostProcessor;
 use App\Support\ApplicationPrivacy;
+use App\Support\ProjectVariantFileCacher;
 use App\Support\SearchPath;
 use App\Support\UnmodifiedApplicationPdf;
 use App\Tags\CvTitle;
@@ -26,9 +28,12 @@ use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
 use Statamic\Facades\CP\Nav;
+use Statamic\Facades\StaticCache;
 use Statamic\Statamic;
+use Statamic\StaticCaching\Cachers\Writer;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -54,12 +59,21 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        StaticCache::extend('file', function ($app, $config) {
+            return new ProjectVariantFileCacher(new Writer($config['permissions'] ?? []), StaticCache::cacheStore(), $config);
+        });
+
+        if ($hotFile = env('HOMEPAGE_PREVIEW_HOT_FILE')) {
+            Vite::useHotFile($hotFile);
+        }
+
         if (app()->environment('production') && parse_url((string) config('app.url'), PHP_URL_SCHEME) === 'https') {
             URL::forceScheme('https');
         }
 
         ProtectedText::register();
         ApplicationPrivateGrid::register();
+        ApplicationPrivateGroup::register();
         ApplicationTextComponent::register();
         ApplicationPrivacy::boot();
         RateLimiter::for('application-pdf', fn (Request $request) => Limit::perMinute(6)->by($request->user()?->getAuthIdentifier() ?: $request->ip()));
@@ -87,8 +101,12 @@ class AppServiceProvider extends ServiceProvider
 
             return true;
         }, ':attribute darf nur gültige öffentliche HTTPS-URLs enthalten.');
-        Statamic::externalScript(asset('/cp-cv-profile-access.js'));
-        Statamic::externalScript(asset('/cp-applications.js'));
+        Statamic::externalScript(asset('/cp-cv-profile-access.js').'?v='.hash_file('sha256', public_path('cp-cv-profile-access.js')));
+        Statamic::externalStyle(asset('/cp-cv-profile-access.css').'?v='.hash_file('sha256', public_path('cp-cv-profile-access.css')));
+        Statamic::externalScript(asset('/cp-content-sync.js').'?v='.hash_file('sha256', public_path('cp-content-sync.js')));
+        Statamic::externalScript(asset('/cp-applications.js').'?v='.hash_file('sha256', public_path('cp-applications.js')));
+        Statamic::externalScript(asset('/cp-handwritten-signature.js').'?v='.hash_file('sha256', public_path('cp-handwritten-signature.js')));
+        Statamic::externalStyle(asset('/cp-applications.css').'?v='.hash_file('sha256', public_path('cp-applications.css')));
 
         Statamic::pushCpRoutes(function () {
             Route::namespace('App\\Http\\Controllers')->group(function () {
@@ -101,6 +119,10 @@ class AppServiceProvider extends ServiceProvider
                 ->section('Tools')
                 ->route('search-agent-optimization.index')
                 ->icon('search');
+            $nav->create('Content Sync')
+                ->section('Tools')
+                ->route('content-sync.index')
+                ->icon('refresh');
         });
     }
 }

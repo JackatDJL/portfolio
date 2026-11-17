@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Support\ApplicationData;
+use App\Support\ApplicationEmailComposer;
 use App\Support\CvPdfRenderer;
+use Illuminate\Http\Request;
 use Statamic\Facades\Entry;
 use Statamic\Facades\User;
 
@@ -38,5 +40,76 @@ final class ApplicationController extends Controller
             'Cache-Control' => 'private, no-store', 'X-Robots-Tag' => 'noindex, nofollow, noarchive',
             'Referrer-Policy' => 'no-referrer', 'X-Content-Type-Options' => 'nosniff',
         ])->deleteFileAfterSend(true);
+    }
+
+    public function summary(string $id)
+    {
+        $entry = $this->application($id);
+        $recipient = ApplicationData::group($entry, 'recipient');
+        $tracking = ApplicationData::group($entry, 'tracking');
+        $latest = collect($tracking['correspondence'] ?? [])
+            ->filter(fn ($item) => is_array($item) && ! empty($item['date']))
+            ->sortByDesc('date')
+            ->first();
+
+        return response()->json([
+            'reference' => (string) $entry->value('title', ''),
+            'status' => (string) $entry->value('application_status', 'draft'),
+            'organisation' => (string) ($recipient['organisation'] ?? ''),
+            'position' => (string) ($recipient['position'] ?? ''),
+            'recipient_name' => (string) ($recipient['recipient'] ?? ''),
+            'year' => $recipient['year'] ?? null,
+            'location' => (string) ($recipient['location'] ?? ''),
+            'period_start' => (string) ($recipient['period_start'] ?? ''),
+            'period_end' => (string) ($recipient['period_end'] ?? ''),
+            'application_date' => ApplicationData::date($entry),
+            'has_date_override' => ! empty($tracking['date_override']),
+            'notes' => (string) ($tracking['notes'] ?? ''),
+            'latest_correspondence' => $latest ? [
+                'date' => (string) $latest['date'],
+                'direction' => (string) ($latest['direction'] ?? ''),
+                'summary' => (string) ($latest['summary'] ?? ''),
+            ] : null,
+            'follow_up_date' => ($tracking['follow_up_status'] ?? null) === 'planned'
+                ? ($tracking['follow_up_date'] ?? null)
+                : null,
+            'follow_up_status' => (string) ($tracking['follow_up_status'] ?? ''),
+        ])->header('Cache-Control', 'private, no-store');
+    }
+
+    public function email(string $id, ApplicationEmailComposer $composer)
+    {
+        return response()->json($composer->compose($this->application($id)))
+            ->header('Cache-Control', 'private, no-store')
+            ->header('X-Robots-Tag', 'noindex, nofollow, noarchive')
+            ->header('Referrer-Policy', 'no-referrer');
+    }
+
+    public function cvProfile(Request $request, string $id)
+    {
+        $application = $this->application($id);
+        $settings = ApplicationData::group($application, 'cv');
+        $profileId = $request->has('profile') ? $request->query('profile') : ($settings['profile'] ?? null);
+        if (is_array($profileId)) {
+            $profileId = reset($profileId);
+        }
+        if ($profileId !== null && (! is_string($profileId) || strlen($profileId) > 255)) {
+            abort(422);
+        }
+
+        $profile = $profileId ? Entry::find($profileId) : null;
+        abort_if($profileId && (! $profile || $profile->collectionHandle() !== 'cv_profiles'), 404);
+
+        return response()->json([
+            'selected' => $profile !== null,
+            'title' => $profile ? (string) $profile->value('title', '') : null,
+            'slug' => $profile ? (string) $profile->slug() : null,
+            'edit_url' => $profile?->editUrl(),
+            'public_url' => ($profile && $profile->published()) ? $profile->url() : null,
+            'public' => (bool) ($profile && $profile->published() && $profile->url()),
+            'cv_link_path' => $profile ? ($profile->published() ? '/cv/'.$profile->slug() : null) : '/cv',
+            'cv_link_label' => 'Bewerbungs Lebenslauf für '.$application->id(),
+            'cv_pdf_url' => route('statamic.cp.applications.cv', ['id' => $application->id()]),
+        ])->header('Cache-Control', 'private, no-store');
     }
 }

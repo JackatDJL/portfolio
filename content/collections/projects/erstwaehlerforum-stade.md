@@ -5,6 +5,7 @@ title: 'Erstwählerforum Stade'
 summary: 'Ich stieß das schulübergreifende Erstwählerforum an, leitete ein Team, entwarf das Branding und moderierte eine der Podiumsdiskussionen. Für 2027 planen wir die nächste Ausgabe zur Landtagswahl.'
 project_status: active
 featured: false
+hero_transition: true
 topics:
   - political-education
   - civic-technology

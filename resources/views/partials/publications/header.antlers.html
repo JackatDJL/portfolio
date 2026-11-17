@@ -32,6 +32,9 @@
             {{ elseif publication_url }}
                 {{ partial:components/button variant="secondary" :href="publication_url" label="Veröffentlichungsseite ↗" attributes="target=_blank rel=noreferrer" }}
             {{ /if }}
+            {{ if {cv_navigation:has_context} }}
+                <a class="btn btn-secondary" href="{{ cv_navigation }}">← Lebenslauf</a>
+            {{ /if }}
         </div>
     {{ /if }}
 </header>

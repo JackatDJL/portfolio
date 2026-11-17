@@ -44,6 +44,21 @@ export const initCvPrivateData = ({ watch = true } = {}) => {
                 retryOnHashChange();
                 return;
             }
+            if (data.signature_mode === 'typed') {
+                const section = document.querySelector('[data-cv-private-signature]');
+                if (section instanceof HTMLElement) {
+                    const text = section.querySelector('[data-cv-private-signature-text]');
+                    const pattern = section.querySelector('[data-cv-security-pattern]');
+                    const meta = section.querySelector('[data-cv-private-signature-meta]');
+                    if (text instanceof HTMLElement) {
+                        if (typeof data.signature_name === 'string' && data.signature_name.trim()) text.textContent = data.signature_name;
+                        text.hidden = false;
+                    }
+                    if (pattern instanceof HTMLElement) pattern.hidden = true;
+                    if (meta instanceof HTMLElement) meta.hidden = false;
+                    section.hidden = false;
+                }
+            }
             setValue('email', data.private_email, data.private_email ? `mailto:${data.private_email}` : null);
             setValue('phone', data.phone, data.phone ? `tel:${data.phone.replace(/[^+0-9]/g, '')}` : null);
             setValue('address', composeAddress(data));
@@ -57,4 +72,52 @@ export const initCvPrivateData = ({ watch = true } = {}) => {
             document.dispatchEvent(new CustomEvent('cv:private-settled'));
             retryOnHashChange();
         });
+
+    const signaturePanel = document.querySelector('[data-cv-private-signature]');
+    if (!(signaturePanel instanceof HTMLElement) || signaturePanel.dataset.enabled !== 'true') return;
+
+    exchange.then(ok => ok ? fetch(signaturePanel.dataset.endpoint || '/cv/private-signature', {
+        method: 'POST',
+        credentials: 'same-origin',
+        referrerPolicy: 'no-referrer',
+        headers: { 'Content-Type': 'application/json', Accept: 'image/png' },
+        body: JSON.stringify({ path: location.pathname }),
+    }) : null)
+        .then(response => response?.ok ? response.blob() : null)
+        .then(blob => {
+            if (!(blob instanceof Blob) || blob.type !== 'image/png') return;
+            const image = signaturePanel.querySelector('[data-cv-private-signature-image]');
+            const pattern = signaturePanel.querySelector('[data-cv-security-pattern]');
+            const meta = signaturePanel.querySelector('[data-cv-private-signature-meta]');
+            if (!(image instanceof HTMLImageElement)) return;
+            if (image.dataset.objectUrl) URL.revokeObjectURL(image.dataset.objectUrl);
+            const objectUrl = URL.createObjectURL(blob);
+            image.dataset.objectUrl = objectUrl;
+            image.hidden = true;
+            if (pattern instanceof HTMLElement) pattern.hidden = false;
+            if (meta instanceof HTMLElement) meta.hidden = true;
+            image.addEventListener('load', () => {
+                if (image.dataset.objectUrl !== objectUrl || image.naturalWidth === 0) return;
+                image.hidden = false;
+                if (pattern instanceof HTMLElement) pattern.hidden = true;
+                if (meta instanceof HTMLElement) meta.hidden = false;
+                signaturePanel.hidden = false;
+            }, { once: true });
+            image.addEventListener('error', () => {
+                if (image.dataset.objectUrl !== objectUrl) return;
+                URL.revokeObjectURL(objectUrl);
+                delete image.dataset.objectUrl;
+                image.removeAttribute('src');
+                image.hidden = true;
+                if (meta instanceof HTMLElement) meta.hidden = true;
+                if (pattern instanceof HTMLElement) {
+                    pattern.hidden = false;
+                    signaturePanel.hidden = false;
+                } else {
+                    signaturePanel.hidden = true;
+                }
+            }, { once: true });
+            image.src = objectUrl;
+        })
+        .catch(() => {});
 };

@@ -12,6 +12,47 @@ tabs:
               type: text
               instructions: 'Beschreibt den sichtbaren Bildinhalt für Screenreader. Wird nicht als Bildunterschrift angezeigt.'
           -
+            handle: ai_involvement
+            field:
+              display: 'KI-Beteiligung'
+              type: select
+              instructions: 'Nur tatsächliche KI-Erstellung oder -Veränderung dieser Datei eintragen. Gewöhnliche Bearbeitung allein ist kein Grund, eine KI-Veränderung zu behaupten. Bei fehlender Auswahl bleiben ältere Metadaten erkennbar; „Keine“ ausdrücklich wählen, wenn ein vorhandener KI-Hinweis nicht gelten soll.'
+              options:
+                - { key: none, value: Keine }
+                - { key: fully_generated, value: 'Vollständig KI-generiert' }
+                - { key: partially_modified, value: 'Teilweise mit KI verändert' }
+                - { key: basic_disclosure, value: 'KI-Kennzeichnung (Basis)' }
+          -
+            handle: eu_ai_disclosure
+            field:
+              display: 'EU-KI-Hinweis für Screenreader'
+              type: text
+              instructions: 'Optionaler, verständlicher Name für Screenreader. Sichtbar bleibt ausschließlich das offizielle EU-SVG.'
+              validate:
+                - nullable
+          -
+            handle: ai_icon_appearance
+            field:
+              display: 'Darstellung des KI-Symbols'
+              type: select
+              default: black
+              instructions: 'Wählt eine unveränderte offizielle SVG-Variante.'
+              options:
+                - { key: black, value: Schwarz }
+                - { key: white, value: Weiß }
+                - { key: black-50, value: 'Schwarz, 50 % Deckkraft' }
+                - { key: white-50, value: 'Weiß, 50 % Deckkraft' }
+          -
+            handle: credit_appearance
+            field:
+              display: 'Darstellung des Bildnachweises'
+              type: select
+              default: dark
+              instructions: 'Wählt den Kontrast des Nachweisfelds. Urheber-, Quellen- und Lizenztext bleiben unverändert. Ohne Auswahl bleibt die bisherige dunkle Fläche erhalten.'
+              options:
+                - { key: dark, value: 'Heller Text auf dunkler Fläche' }
+                - { key: light, value: 'Dunkler Text auf heller Fläche' }
+          -
             handle: caption
             field:
               display: Bildunterschrift

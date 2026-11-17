@@ -1,4 +1,7 @@
-<article class="home-post"><a class="related-reference" href="{{ url }}" data-related-reference>
+<article class="home-post">
+    {{ if cover }}{{ partial:media/image :asset="cover" mode="decorative" figure_class="home-post__cover" image_class="home-post__cover-image" width="960" sizes="(min-width: 48rem) 40rem, 82vw" :link_href="url" :link_label="title" }}{{ /if }}
+    <a class="related-reference home-post__content" href="{{ url }}" data-related-reference>
     <time datetime="{{ date format='Y-m-d' }}">{{ date format="d.m.Y" }}</time><h3><span class="semantic-link">{{ title }}</span>{{ partial:components/open-file size="heading" }}</h3>{{ if summary }}<p>{{ summary }}</p>{{ /if }}
     {{ if topics }}<ul class="home-post__topics" aria-label="Themen">{{ topics }}<li>{{ partial:components/chip :label="title" }}</li>{{ /topics }}</ul>{{ /if }}
-</a></article>
+    </a>
+</article>
