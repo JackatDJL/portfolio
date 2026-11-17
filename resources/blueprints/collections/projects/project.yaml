@@ -161,9 +161,9 @@ tabs:
             handle: hero_transition
             field:
               type: toggle
-              default: false
+              default: true
               display: 'Hero-Übergang'
-              instructions: 'Zeigt den animierten Projektkopf und das Masonry-Layout, wenn ein Titelbild vorhanden ist.'
+              instructions: 'Zeigt standardmäßig den animierten Projektkopf und das Masonry-Layout, wenn ein Titelbild vorhanden ist. Für einzelne Projekte deaktivieren.'
           -
             handle: gallery
             field:
