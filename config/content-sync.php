@@ -12,4 +12,6 @@ return [
     'author_name' => env('CONTENT_SYNC_GIT_AUTHOR_NAME', 'Portfolio Content Sync'),
     'author_email' => env('CONTENT_SYNC_GIT_AUTHOR_EMAIL', 'portfolio-content-sync@users.noreply.github.com'),
     'stache_pending_path' => storage_path('app/content-sync-stache-pending'),
+    'control_log_path' => storage_path('logs/content-sync-control.log'),
+    'control_state_path' => storage_path('framework/content-sync-control.json'),
 ];
