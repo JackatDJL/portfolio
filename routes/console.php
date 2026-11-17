@@ -11,7 +11,7 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Artisan::command('portfolio:content-sync {--dry-run : Report pending repository state without committing, fetching, or merging}', function (PortfolioContentSync $sync, \App\Support\ContentSyncControl $control): int {
-    $control->begin();
+    $runPid = $control->begin();
     try {
         $result = $sync->run((bool) $this->option('dry-run'));
     } catch (ContentSyncFailure $failure) {
@@ -22,13 +22,13 @@ Artisan::command('portfolio:content-sync {--dry-run : Report pending repository 
             Log::error('Portfolio content synchronization failed.', ['reason' => $failure->getMessage()]);
         }
         $this->error($failure->getMessage());
-        $control->finish('Lauf fehlgeschlagen: '.$failure->getMessage());
+        $control->finish('Lauf fehlgeschlagen: '.$failure->getMessage(), $runPid);
 
         return self::FAILURE;
     } catch (\Throwable $failure) {
         Log::error('Portfolio content synchronization failed unexpectedly.', ['exception' => $failure::class]);
         $this->error('Content synchronization failed unexpectedly. Check the application log for the exception type.');
-        $control->finish('Lauf fehlgeschlagen. Siehe Laravel-Anwendungslog.');
+        $control->finish('Lauf fehlgeschlagen. Siehe Laravel-Anwendungslog.', $runPid);
 
         return self::FAILURE;
     }
@@ -53,7 +53,7 @@ Artisan::command('portfolio:content-sync {--dry-run : Report pending repository 
         'dry-run' => 'Dry-run abgeschlossen.',
         'noop' => 'Abgeschlossen: keine Änderungen.',
         default => 'Lauf erfolgreich abgeschlossen.',
-    });
+    }, $runPid);
 
     return self::SUCCESS;
 })->purpose('Safely reconcile Statamic editorial content with Git');

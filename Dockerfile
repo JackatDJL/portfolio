@@ -32,6 +32,7 @@ RUN apt-get update \
         supervisor \
         python3-venv \
         sqlite3 \
+        util-linux \
         texlive-fonts-recommended \
         texlive-latex-extra \
         texlive-lang-german \

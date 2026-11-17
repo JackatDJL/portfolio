@@ -115,3 +115,38 @@ test('CV profile manager prevents duplicate create requests while a grant is pen
     await expect(page.locator('[data-cv-grant-url-wrap]')).toBeVisible();
     expect(postCount).toBe(1);
 });
+
+test('named CV grant fields stack their labels and align controls at the bottom', async ({ page }) => {
+    const accessStyles = read('../../public/cp-cv-profile-access.css');
+    await page.setViewportSize({ width: 975, height: 780 });
+    await page.goto('/tests/browser/fixtures/article-toc.html');
+    await page.setContent(`
+        <section data-cv-named-grants>
+            <h3>Bewerbungslinks</h3>
+            <p>Ein neuer Link wird nur einmal angezeigt.</p>
+            <div class="flex flex-wrap items-end gap-2">
+                <label>Bezeichnung<input data-cv-grant-label></label>
+                <label>Art<select data-cv-grant-kind><option>Dauerhaft</option></select></label>
+                <button data-cv-grant-create>Link erstellen</button>
+            </div>
+        </section>`);
+    await page.addStyleTag({ content: accessStyles + '.flex{display:flex}.flex-wrap{flex-wrap:wrap}.items-end{align-items:flex-end}.gap-2{gap:.5rem}' });
+
+    const geometry = await page.evaluate(() => {
+        const label = document.querySelector('[data-cv-grant-label]');
+        const select = document.querySelector('[data-cv-grant-kind]');
+        const button = document.querySelector('[data-cv-grant-create]');
+        const labelRect = document.querySelector('[data-cv-named-grants] label').getBoundingClientRect();
+        return {
+            labelTop: labelRect.top,
+            inputTop: label.getBoundingClientRect().top,
+            selectTop: select.getBoundingClientRect().top,
+            buttonBottom: button.getBoundingClientRect().bottom,
+            fieldBottom: label.getBoundingClientRect().bottom,
+        };
+    });
+
+    expect(geometry.inputTop).toBeGreaterThan(geometry.labelTop);
+    expect(geometry.selectTop).toBeGreaterThan(geometry.labelTop);
+    expect(Math.abs(geometry.buttonBottom - geometry.fieldBottom)).toBeLessThan(2);
+});
