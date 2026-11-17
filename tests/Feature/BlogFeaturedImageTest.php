@@ -73,15 +73,15 @@ class BlogFeaturedImageTest extends TestCase
 
         try {
             $response = $this->get('/blog')->assertOk();
-            $response->assertSee('class="media-figure journal-cover"', false)
+            $response->assertSee('class="media-figure journal-card__cover"', false)
                 ->assertSee('class="media-frame__image-link"', false)
-                ->assertSee('class="media-overlays"', false);
+                ->assertSee('class="media-overlays journal-card__overlays"', false);
 
             $document = new \DOMDocument();
             @$document->loadHTML($response->getContent());
             $xpath = new \DOMXPath($document);
 
-            $this->assertSame(0, $xpath->query('//figure[contains(concat(" ", normalize-space(@class), " "), " journal-cover ")]//a//a')->length);
+            $this->assertSame(0, $xpath->query('//figure[contains(concat(" ", normalize-space(@class), " "), " journal-card__cover ")]//a//a')->length);
         } finally {
             $entry->delete();
         }

@@ -107,7 +107,7 @@ class AssetAttributionTest extends TestCase
             ],
         ]);
 
-        $this->assertStringContainsString('/assets/ai-labels/partially-modified/white-50.svg', $html);
+        $this->assertStringContainsString('/media/ai-disclosures/partially-modified/white-50.svg', $html);
         $this->assertStringContainsString('aria-label="Hintergrund teilweise mit KI erg&auml;nzt"', $html);
         $this->assertStringNotContainsString('Hintergrund teilweise mit KI erg&auml;nzt</span>', $html);
         $this->assertStringContainsString('media-overlay__credit--light', $html);
@@ -156,10 +156,10 @@ class AssetAttributionTest extends TestCase
         $asset->set('ai_involvement', 'none');
         $explicitlyNone = (string) Antlers::parse($partial, ['asset' => $asset]);
 
-        $this->assertStringContainsString('/assets/ai-labels/basic/black.svg', $legacy);
+        $this->assertStringContainsString('/media/ai-disclosures/basic/black.svg', $legacy);
         $this->assertStringContainsString('aria-label="Gespeicherter EU-KI-Hinweis"', $legacy);
         $this->assertStringNotContainsString('Gespeicherter EU-KI-Hinweis</span>', $legacy);
-        $this->assertStringNotContainsString('/assets/ai-labels/', $explicitlyNone);
+        $this->assertStringNotContainsString('/media/ai-disclosures/', $explicitlyNone);
     }
 
     public function test_absent_and_none_ai_metadata_do_not_render_an_icon(): void
@@ -168,7 +168,7 @@ class AssetAttributionTest extends TestCase
         foreach ([[], ['ai_involvement' => 'none', 'ai_disclosure' => '']] as $metadata) {
             $html = (string) Antlers::parse($partial, ['asset' => $metadata]);
             $this->assertStringNotContainsString('media-overlay__ai', $html);
-            $this->assertStringNotContainsString('/assets/ai-labels/', $html);
+            $this->assertStringNotContainsString('/media/ai-disclosures/', $html);
         }
     }
 
@@ -178,7 +178,7 @@ class AssetAttributionTest extends TestCase
             'asset' => ['ai_involvement' => '../../injected', 'ai_disclosure' => 'ignored'],
         ]);
 
-        $this->assertStringNotContainsString('/assets/ai-labels/', $html);
+        $this->assertStringNotContainsString('/media/ai-disclosures/', $html);
         $this->assertStringNotContainsString('ignored', $html);
     }
 
@@ -192,7 +192,7 @@ class AssetAttributionTest extends TestCase
             ],
         ]);
 
-        $this->assertStringContainsString('/assets/ai-labels/partially-modified/black.svg', $html);
+        $this->assertStringContainsString('/media/ai-disclosures/partially-modified/black.svg', $html);
         $this->assertStringContainsString('aria-label="Teilweise mit KI ver&auml;ndert"', $html);
         $this->assertStringNotContainsString('Teilweise mit KI ver&auml;ndert</span>', $html);
     }

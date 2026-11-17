@@ -5,6 +5,8 @@ gsap.registerPlugin(ScrollTrigger);
 const hero = document.querySelector('[data-editorial-hero]');
 const frame = hero.querySelector('.editorial-hero-transition__frame');
 const copy = hero.querySelector('.editorial-hero-transition__copy');
+const siteHeader = document.querySelector('.site-header');
+const maxHeroHeight = () => Math.max(1, window.innerHeight - (siteHeader?.getBoundingClientRect().height ?? 80));
 const media = gsap.matchMedia();
 let active = true;
 
@@ -16,7 +18,7 @@ media.add({ desktop: '(min-width: 48rem)', mobile: '(max-width: 47.99rem)', moti
         scrub: .65, invalidateOnRefresh: true,
     } });
     timeline.to(hero, { paddingInline: conditions.desktop ? '6vw' : '4vw', ease: 'sine.inOut' }, 0)
-        .fromTo(frame, { minHeight: () => Math.max(copy.scrollHeight, window.innerHeight * (conditions.desktop ? 1 : .92) - 80) }, { minHeight: () => Math.max(copy.scrollHeight, window.innerHeight * compact), ease: 'sine.inOut' }, 0)
+        .fromTo(frame, { minHeight: maxHeroHeight }, { minHeight: () => Math.min(maxHeroHeight(), Math.max(copy.scrollHeight, window.innerHeight * compact)), ease: 'sine.inOut' }, 0)
         .to(copy, { scale: conditions.desktop ? .94 : .97, ease: 'sine.inOut' }, 0)
         .to(frame, { borderBottomLeftRadius: conditions.desktop ? '2.5rem' : '1.5rem', borderBottomRightRadius: conditions.desktop ? '2.5rem' : '1.5rem', ease: 'sine.inOut' }, 0);
 });
