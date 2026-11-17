@@ -14,7 +14,7 @@ class AiDisclosureIconController extends Controller
     {
         abort_unless(in_array($kind, self::KINDS, true) && in_array($appearance, self::APPEARANCES, true), 404);
 
-        $path = public_path("assets/ai-labels/{$kind}/{$appearance}.svg");
+        $path = resource_path("ai-labels/{$kind}/{$appearance}.svg");
         abort_unless(is_file($path), 404);
 
         return response(file_get_contents($path), 200, [
