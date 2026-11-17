@@ -1,0 +1,14 @@
+{{# Gemeinsames Editorial-Intro; ausgewählte Covers füllen den Hero. #}}
+<header class="editorial-hero-transition" data-editorial-hero>
+    <div class="editorial-hero-transition__frame">
+        {{ if cover }}{{ partial:media/image :asset="cover" mode="content" figure_class="editorial-hero-transition__figure" width="1920" sizes="100vw" loading="eager" fetchpriority="high" hide_caption="true" }}{{ /if }}
+        <div class="editorial-hero-transition__copy">
+            <span class="chip editorial-hero-transition__status">Blog</span>
+            <h1>{{ title }}</h1>
+            {{ if summary }}<p>{{ summary }}</p>{{ /if }}
+        </div>
+    </div>
+    {{ if cover:caption }}
+        <div class="detail-container editorial-hero-transition__caption">{{ partial:media/attribution :asset="cover" hide_credit="true" standalone="true" }}</div>
+    {{ /if }}
+</header>

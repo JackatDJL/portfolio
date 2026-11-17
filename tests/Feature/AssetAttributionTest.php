@@ -20,8 +20,8 @@ class AssetAttributionTest extends TestCase
         ])->render();
         $this->assertSame(1, substr_count($html, 'Synthetic hero caption'));
         $this->assertSame(1, substr_count($html, 'Synthetic photographer'));
-        $this->assertStringContainsString('project-hero-transition__caption', $html);
-        $this->assertGreaterThan(strpos($html, 'project-hero-transition__copy'), strpos($html, 'Synthetic hero caption'));
+        $this->assertStringContainsString('editorial-hero-transition__caption', $html);
+        $this->assertGreaterThan(strpos($html, 'editorial-hero-transition__copy'), strpos($html, 'Synthetic hero caption'));
     }
 
     public function test_third_party_credit_and_caption_render_without_duplication(): void

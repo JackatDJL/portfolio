@@ -10,6 +10,9 @@
         text-decoration: none;
         transition: none;
     }
+    .site-header__identity-slot .site-header__wordmark.name-glass-enabled:not(.name-island) {
+        transition: background-size 260ms var(--ease-emphasized), color 180ms var(--ease-standard), font-weight 160ms var(--ease-standard);
+    }
     .site-header__identity-slot .site-header__wordmark.name-glass-enabled[data-contrast-marker="true"] {
         --link-marker: #93e8ba;
         color: #06100c;

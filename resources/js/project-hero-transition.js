@@ -2,9 +2,9 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 gsap.registerPlugin(ScrollTrigger);
-const hero = document.querySelector('[data-project-hero]');
-const frame = hero.querySelector('.project-hero-transition__frame');
-const copy = hero.querySelector('.project-hero-transition__copy');
+const hero = document.querySelector('[data-editorial-hero]');
+const frame = hero.querySelector('.editorial-hero-transition__frame');
+const copy = hero.querySelector('.editorial-hero-transition__copy');
 const media = gsap.matchMedia();
 let active = true;
 
