@@ -1,6 +1,11 @@
-data: {}
+data:
+  alt: 'Begrüßungsrede am Erstwählerforum 2026'
+  ai_icon_appearance: black
+  credit_appearance: dark
+  rights: cc
+  cc: Erstwählerforum
 size: 481367
-last_modified: 1789303751
+last_modified: 1791489359
 width: 1536
 height: 2048
 mime_type: image/jpeg

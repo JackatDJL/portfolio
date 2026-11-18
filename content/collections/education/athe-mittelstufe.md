@@ -1,16 +1,16 @@
 ---
-id: 70f603ff-a8e6-4c8b-a901-1304d7ff7113
+id: 6ab1bad6-3a1e-4c3b-93a5-6ecbe2eeb378
 blueprint: education
 title: 'Gymnasium Athenaeum Stade'
-programme: Einführungsphase
-summary: 'Aktuell Schüler in der Einführungsphase. Schulprojekte, Robotik und politische Bildung sind eng mit dieser Zeit verbunden.'
+programme: 'Sekundarstufe I'
+summary: 'Ruhige Phase in der Mittelstufe, in der ich mein Interesse an Technik, Musik und Politik erst entwickelt habe. In der Einführungsphase geht es jetzt ans Eingemachte.'
 topics:
   - education
   - robotics
   - political-education
-started_at: '2018-08-01'
+started_at: '2018-08-01 00:00'
 updated_by: 7098a585-4701-4963-95aa-52c0d85d3e7d
-updated_at: 1789304228
+updated_at: 1794501816
 seo_title: 'Gymnasium Athenaeum Stade | Jack Ruder'
 seo_description: 'Einführungsphase am Gymnasium Athenaeum Stade, verbunden mit Robotik, politischer Bildung und eigenen Webprojekten.'
 related_projects:
@@ -19,13 +19,15 @@ related_projects:
   - 00979e47-6007-439e-b10c-f1b47cc99863
 cover: cv/education/gymnasium-athenaeum-stade/exterior_of_the_athenaeum_stade.jpg
 noindex: false
+duplicated_from: 70f603ff-a8e6-4c8b-a901-1304d7ff7113
+ended_at: '2026-06-30 22:00'
 content:
   -
     type: paragraph
     content:
       -
         type: text
-        text: 'Am Athenaeum Stade bin ich seit 2018 Schüler. Einen großen Teil meiner Projekte habe ich im Umfeld der Schule begonnen oder umgesetzt, darunter Robotik, die Projektwoche Nachhaltige Webentwicklung und das Erstwählerforum Stade.'
+        text: 'In meiner Zeit am Athenaeum Stade entwickelte sich mein Interesse an Informatik und Robotik zu einem wichtigen Bestandteil meines Alltags. Ich begann, mir das Programmieren eigenständig beizubringen, nahm mit der Robotik-AG an RoboCup-Wettbewerben teil und engagierte mich zunehmend in der Schülervertretung. Besonders prägend waren die Wettbewerbe, die gemeinsame Projektarbeit und die Möglichkeit, eigene Ideen tatsächlich umzusetzen.'
   -
     type: heading
     attrs:

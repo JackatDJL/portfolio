@@ -1,8 +1,10 @@
 data:
   alt: 'Porträt vor einer Ziegelwand'
   rights: jack
+  ai_icon_appearance: black
+  credit_appearance: dark
 size: 1041891
-last_modified: 1789240033
+last_modified: 1791489359
 width: 3024
 height: 4032
 mime_type: image/jpeg
