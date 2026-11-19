@@ -302,6 +302,57 @@ test('file mode conflicts are resolved per text file', async ({ page }) => {
     }]);
 });
 
+test('resolution stays disabled while its request is pending', async ({ page }) => {
+    let resolved = false;
+    let resolveCalls = 0;
+    let releaseRequest;
+    const pendingRequest = new Promise(resolve => { releaseRequest = resolve; });
+    await page.route('**/cp/content-sync/status', route => route.fulfill({ json: {
+        running: false,
+        started_at: null,
+        next_run_at: new Date(Date.now() + 120_000).toISOString(),
+        logs: '',
+        conflicts: resolved
+            ? { busy: false, merge_in_progress: false, files: [] }
+            : { busy: false, merge_in_progress: true, files: [{ path: 'content/collections/entry.md', sections: 1, binary: false }] },
+    } }));
+    await page.route('**/cp/content-sync/conflicts', route => route.fulfill({ json: {
+        available: true,
+        fingerprint: 'e'.repeat(64),
+        files: [{ path: 'content/collections/entry.md', binary: false, sections: [
+            { id: 0, base: null, ours: 'local', theirs: 'incoming', protected: false },
+        ] }],
+    } }));
+    await page.route('**/cp/content-sync/conflicts/resolve', async route => {
+        resolveCalls++;
+        await pendingRequest;
+        resolved = true;
+        await route.fulfill({ status: 202, json: { resolved: true, started: false } });
+    });
+
+    await page.goto('/tests/browser/fixtures/article-toc.html');
+    await page.setContent('<meta name=\"csrf-token\" content=\"fixture-csrf\"><main id=\"cp-content\"></main>');
+    await page.addScriptTag({ content: script });
+    await page.evaluate(markup => { document.querySelector('#cp-content').innerHTML = markup; }, markup());
+
+    const root = page.locator('[data-content-sync]');
+    await root.locator('[data-sync-conflicts-open]').click();
+    const select = root.locator('[data-sync-conflict-list] select');
+    await select.selectOption('theirs');
+    const resolveButton = root.locator('[data-sync-resolve]');
+    await resolveButton.click();
+    await expect.poll(() => resolveCalls).toBe(1);
+    await expect(resolveButton).toBeDisabled();
+
+    await select.selectOption('ours');
+    await expect(resolveButton).toBeDisabled();
+    await resolveButton.evaluate(button => button.dispatchEvent(new MouseEvent('click', { bubbles: true })));
+    expect(resolveCalls).toBe(1);
+
+    releaseRequest();
+    await expect(root.locator('[data-sync-start]')).toBeEnabled();
+});
+
 test('mode-only conflicts offer a mode choice and preserve a resolved sync-start failure', async ({ page }) => {
     let resolved = false;
     let submitted;

@@ -32,6 +32,7 @@
         let conflictBusy = false;
         let conflictUnavailable = false;
         let recoveryRequired = false;
+        let resolutionPending = false;
         let hasConflicts = false;
         let syncNotice = '';
         const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
@@ -43,7 +44,7 @@
                     ? Boolean(file.modeChoice)
                     : file.sections.length > 0 && file.sections.every(section => Boolean(section.choice))
                         && (!file.mode_conflict || Boolean(file.modeChoice)));
-            resolveButton.disabled = !ready || conflictLoading || conflictBusy || conflictUnavailable || recoveryRequired;
+            resolveButton.disabled = !ready || conflictLoading || conflictBusy || conflictUnavailable || recoveryRequired || resolutionPending;
         };
 
         const setConflictMessage = (message = '') => {
@@ -281,8 +282,9 @@
         }, { signal: controller.signal });
 
         resolveButton.addEventListener('click', async () => {
-            if (!conflictFingerprint) return;
-            resolveButton.disabled = true;
+            if (!conflictFingerprint || resolutionPending) return;
+            resolutionPending = true;
+            updateResolveButton();
             setConflictMessage('Kandidat wird geprüft und erst nach erfolgreicher Validierung fortgesetzt …');
             const resolutions = conflictFiles.map(file => file.binary
                 ? { path: file.path, choice: file.choice }
@@ -317,6 +319,8 @@
                 await refresh();
             } catch (error) {
                 if (error.name !== 'AbortError') setConflictMessage(error.message || 'Auflösung fehlgeschlagen. Lade die Konflikte neu.');
+            } finally {
+                resolutionPending = false;
                 updateResolveButton();
             }
         }, { signal: controller.signal });

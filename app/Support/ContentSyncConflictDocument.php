@@ -143,7 +143,7 @@ final class ContentSyncConflictDocument
                     $parts[] = $theirs;
                 } elseif ($choice === 'manual' && ! $section['protected'] && is_string($resolution['text'] ?? null)) {
                     $manual = $resolution['text'];
-                    if (strlen($manual) > self::MAX_TEXT_BYTES || self::containsConflictMarker($manual)) {
+                    if (strlen($manual) > self::MAX_TEXT_BYTES || self::containsConflictMarker($manual, $markerSize)) {
                         throw new ContentSyncFailure('A manual section is too large or still contains Git conflict markers. The candidate was left untouched.');
                     }
                     $parts[] = $manual;
@@ -179,7 +179,7 @@ final class ContentSyncConflictDocument
         if (strlen($resolved) > self::MAX_TEXT_BYTES) {
             throw new ContentSyncFailure('The resolved file is too large. The candidate was left untouched.');
         }
-        if (self::containsConflictMarker($resolved)) {
+        if (self::containsConflictMarker($resolved, $markerSize)) {
             throw new ContentSyncFailure('Resolved content still contains Git conflict markers. The candidate was left untouched.');
         }
 
@@ -193,9 +193,18 @@ final class ContentSyncConflictDocument
 
     public static function containsConflictMarker(string $contents, int $markerSize = self::DEFAULT_CONFLICT_MARKER_SIZE): bool
     {
-        $minimumSize = min(self::DEFAULT_CONFLICT_MARKER_SIZE, self::validatedMarkerSize($markerSize));
+        $minimumSize = self::validatedMarkerSize($markerSize);
 
-        return preg_match('/^(?:<{'.$minimumSize.',}|\|{'.$minimumSize.',}|={'.$minimumSize.',}|>{'.$minimumSize.',})(?:\s|$)/m', $contents) === 1;
+        // Opening and closing markers are unambiguous. A separator alone is
+        // also a valid Markdown heading underline, so it is not a conflict marker.
+        return preg_match('/^(?:<{'.$minimumSize.',}|>{'.$minimumSize.',})(?:\s|$)/m', $contents) === 1;
+    }
+
+    public static function containsSeparatorLine(string $contents, int $markerSize = self::DEFAULT_CONFLICT_MARKER_SIZE): bool
+    {
+        $minimumSize = self::validatedMarkerSize($markerSize);
+
+        return preg_match('/^={'.$minimumSize.',}\s*$/m', $contents) === 1;
     }
 
     private static function isSectionMarker(string $line, string $character, int $markerSize, bool $hasLabel): bool

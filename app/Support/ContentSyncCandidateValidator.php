@@ -41,6 +41,7 @@ class ContentSyncCandidateValidator
 
             $this->copyTree($sourcePath.'/content', $directory.'/content', $sourcePath);
             $this->copyTree($sourcePath.'/public/assets', $directory.'/public/assets', $sourcePath);
+            $this->copyTree($sourcePath.'/public/documents', $directory.'/public/documents', $sourcePath);
 
             $externalDiskRoots = [];
             foreach (config('filesystems.disks', []) as $handle => $disk) {
@@ -60,6 +61,7 @@ class ContentSyncCandidateValidator
                     'CONTENT_SYNC_VALIDATION_ROOT' => $directory,
                     'CONTENT_SYNC_VALIDATION_RESULT_PATH' => $directory.'/validation-result.json',
                     'CONTENT_SYNC_VALIDATION_PATHS' => json_encode($targetPaths, JSON_THROW_ON_ERROR),
+                    'CONTENT_SYNC_VALIDATION_MARKER_SIZES' => json_encode($this->conflictMarkerSizes($candidatePath, $targetPaths), JSON_THROW_ON_ERROR),
                     'CONTENT_SYNC_VALIDATION_DISK_ROOTS' => json_encode($externalDiskRoots, JSON_THROW_ON_ERROR),
                 ],
                 null,
@@ -128,8 +130,9 @@ class ContentSyncCandidateValidator
             }
             $metadata = substr($record, 0, $separator);
             $path = substr($record, $separator + 1);
-            if ($path !== 'content' && $path !== 'public' && $path !== 'public/assets'
-                && ! str_starts_with($path, 'content/') && ! str_starts_with($path, 'public/assets/')) {
+            if ($path !== 'content' && $path !== 'public' && $path !== 'public/assets' && $path !== 'public/documents'
+                && ! str_starts_with($path, 'content/') && ! str_starts_with($path, 'public/assets/')
+                && ! str_starts_with($path, 'public/documents/')) {
                 continue;
             }
             if (preg_match('/^(100644|100755|120000) blob ([a-f0-9]{40}|[a-f0-9]{64})$/', $metadata, $matches) !== 1) {
@@ -168,6 +171,41 @@ class ContentSyncCandidateValidator
 
             $this->writeBlob($candidatePath, $blobHash, $target);
         }
+    }
+
+    /** @param list<string> $paths
+     * @return array<string, int>
+     */
+    private function conflictMarkerSizes(string $candidatePath, array $paths): array
+    {
+        $sizes = [];
+        foreach (array_unique($paths) as $path) {
+            if (! is_string($path) || str_starts_with($path, '/') || str_contains($path, "\0")
+                || in_array('', explode('/', $path), true) || in_array('.', explode('/', $path), true)
+                || in_array('..', explode('/', $path), true)) {
+                throw new ContentSyncFailure('A staged candidate path could not be checked for conflict markers. The candidate was left untouched.');
+            }
+
+            $process = new Process(['git', 'check-attr', '--cached', '-z', 'conflict-marker-size', '--', $path], $candidatePath, null, null, 30);
+            $process->run();
+            $parts = explode("\0", $process->getOutput());
+            if (! $process->isSuccessful() || ($parts[0] ?? null) !== $path || ($parts[1] ?? null) !== 'conflict-marker-size') {
+                throw new ContentSyncFailure('The candidate conflict marker settings could not be read safely. It was left untouched.');
+            }
+
+            $value = $parts[2] ?? null;
+            if (in_array($value, ['unspecified', 'unset'], true)) {
+                $sizes[$path] = 7;
+
+                continue;
+            }
+            if (! is_string($value) || preg_match('/^[0-9]{1,3}$/', $value) !== 1 || (int) $value < 1 || (int) $value > 256) {
+                throw new ContentSyncFailure('The candidate conflict marker settings are unsupported. It was left untouched.');
+            }
+            $sizes[$path] = (int) $value;
+        }
+
+        return $sizes;
     }
 
     private function readBlob(string $candidatePath, string $blobHash): string

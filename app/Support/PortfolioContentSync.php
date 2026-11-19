@@ -233,6 +233,7 @@ final class PortfolioContentSync
 
             $originals = [];
             $indexBackup = null;
+            $stagedIndexHash = null;
             $preserveBackups = false;
             $mergeCompleted = false;
             $mergeAttempted = false;
@@ -248,6 +249,20 @@ final class PortfolioContentSync
                 }
                 $pathspecs = array_map(fn (string $path): string => $this->literalPathspec($path), $paths);
                 $this->git(['add', '--', ...$pathspecs], $this->candidatePath);
+                foreach ($resolved as $path => $resolution) {
+                    if ($resolution['contents'] === null) {
+                        continue;
+                    }
+                    $chmod = $resolution['mode'] === '100755' ? '+x' : '-x';
+                    $this->git(['update-index', '--chmod='.$chmod, '--', $path], $this->candidatePath);
+                    if ($this->candidateIndexMode($path) !== $resolution['mode']) {
+                        throw new ContentSyncFailure('The selected candidate file mode could not be staged safely. No live content changed.');
+                    }
+                }
+                $stagedIndexHash = is_array($indexBackup) ? hash_file('sha256', $indexBackup['index_path']) : false;
+                if (! is_string($stagedIndexHash)) {
+                    throw new ContentSyncFailure('The staged candidate index could not be preserved. No live content changed.');
+                }
                 if ($this->unmergedPaths($this->candidatePath) !== []) {
                     throw new ContentSyncFailure('Git still reports unresolved candidate files after validation. No live content changed.');
                 }
@@ -255,6 +270,10 @@ final class PortfolioContentSync
                 $stagedPaths = $this->changedPathsBetweenTreeAndHead($expectedHead, $validatedTree, $this->candidatePath);
                 $editorialStagedPaths = [];
                 foreach ($stagedPaths as $stagedPath) {
+                    if (str_starts_with($stagedPath, 'resources/blueprints/')
+                        || str_starts_with($stagedPath, 'resources/fieldsets/')) {
+                        throw new ContentSyncFailure('The candidate includes blueprint or fieldset changes. Update the application definitions before resolving content conflicts.');
+                    }
                     if (! $this->isEditorialPath($stagedPath)) {
                         continue;
                     }
@@ -338,10 +357,13 @@ final class PortfolioContentSync
                         if (isset($validatedTree)) {
                             $indexMatches = hash_equals($validatedTree, $this->candidateIndexTree($this->candidatePath));
                         } else {
-                            $backupIndexHash = hash_file('sha256', $indexBackup['backup']);
                             $currentIndexHash = hash_file('sha256', $indexBackup['index_path']);
-                            $indexMatches = is_string($backupIndexHash) && is_string($currentIndexHash)
-                                && hash_equals($backupIndexHash, $currentIndexHash);
+                            $expectedIndexHash = $stagedIndexHash;
+                            if (! is_string($expectedIndexHash)) {
+                                $expectedIndexHash = hash_file('sha256', $indexBackup['backup']);
+                            }
+                            $indexMatches = is_string($expectedIndexHash) && is_string($currentIndexHash)
+                                && hash_equals($expectedIndexHash, $currentIndexHash);
                         }
                         if (! $headMatches || ! $mergeHeadsMatch || ! $indexMatches) {
                             $outcomeUncertain = true;
@@ -366,6 +388,11 @@ final class PortfolioContentSync
                 }
                 foreach ($originals as $path => $backup) {
                     try {
+                        if (! $this->candidateFileMatchesResolution($path, $resolved[$path])) {
+                            $rollbackFailed = true;
+
+                            continue;
+                        }
                         $this->restoreCandidateFile($path, $backup);
                     } catch (\Throwable) {
                         $rollbackFailed = true;
@@ -529,6 +556,13 @@ final class PortfolioContentSync
                 || str_contains($contents, "\0") || $binaryAttribute;
             $modeOnlyConflict = $modeConflict && ! $binary && $stages[2]['blob'] === $stages[3]['blob'];
             $markerSize = ! $binary && ! $modeOnlyConflict ? $this->conflictMarkerSize($path) : 7;
+            if (! $binary && ! $modeOnlyConflict
+                && ($this->stageContainsAmbiguousSeparator($stages[2], $markerSize)
+                    || $this->stageContainsAmbiguousSeparator($stages[1] ?? null, $markerSize))) {
+                // The CP cannot know which equal-width line Git used as its
+                // separator. Offer whole-side choices instead of truncated sections.
+                $binary = true;
+            }
             $document = $binary
                 ? ['binary' => true, 'sections' => []]
                 : ($modeOnlyConflict ? ['binary' => false, 'sections' => []] : ContentSyncConflictDocument::inspect($contents, $markerSize));
@@ -575,6 +609,23 @@ final class PortfolioContentSync
         $size = $this->gitResult(['cat-file', '-s', $stage['blob']], $this->candidatePath);
 
         return $size->getExitCode() === 0 && ctype_digit(trim($size->getOutput())) && (int) trim($size->getOutput()) <= $maxBytes;
+    }
+
+    /** @param array{mode: string, blob: string}|null $stage */
+    private function stageContainsAmbiguousSeparator(?array $stage, int $markerSize): bool
+    {
+        if ($stage === null) {
+            return false;
+        }
+        if (! $this->stageBlobAvailable($stage, 262_144)) {
+            return true;
+        }
+        $blob = $this->gitResult(['cat-file', 'blob', $stage['blob']], $this->candidatePath);
+        if ($blob->getExitCode() !== 0 || str_contains($blob->getOutput(), "\0") || ! mb_check_encoding($blob->getOutput(), 'UTF-8')) {
+            return true;
+        }
+
+        return ContentSyncConflictDocument::containsSeparatorLine($blob->getOutput(), $markerSize);
     }
 
     private function hasBinaryDiffAttribute(string $path): bool
@@ -695,7 +746,7 @@ final class PortfolioContentSync
             throw new ContentSyncFailure('Could not preserve the candidate Git index. It was left untouched.');
         }
 
-        $directory = storage_path('app/private/content-sync-conflicts');
+        $directory = (string) config('content-sync.recovery_path', storage_path('app/private/content-sync-conflicts'));
         if (! is_dir($directory) && ! mkdir($directory, 0700, true) && ! is_dir($directory)) {
             throw new ContentSyncFailure('Could not prepare a private candidate recovery file. The candidate was left untouched.');
         }
@@ -730,7 +781,7 @@ final class PortfolioContentSync
             return ['existed' => false, 'backup' => null, 'mode' => 0644];
         }
 
-        $directory = storage_path('app/private/content-sync-conflicts');
+        $directory = (string) config('content-sync.recovery_path', storage_path('app/private/content-sync-conflicts'));
         if (! is_dir($directory) && ! mkdir($directory, 0700, true) && ! is_dir($directory)) {
             throw new ContentSyncFailure('Could not prepare a private candidate recovery file. The candidate was left untouched.');
         }
@@ -1059,12 +1110,53 @@ final class PortfolioContentSync
         return $tree;
     }
 
+    private function candidateIndexMode(string $path): ?string
+    {
+        $result = $this->gitResult(['ls-files', '-s', '-z', '--', $this->literalPathspec($path)], $this->candidatePath);
+        if ($result->getExitCode() !== 0) {
+            throw new ContentSyncFailure('The selected candidate file mode could not be verified safely.');
+        }
+        $records = array_values(array_filter(explode("\0", $result->getOutput()), static fn (string $record): bool => $record !== ''));
+        if ($records === []) {
+            return null;
+        }
+        if (count($records) !== 1 || preg_match('/^([0-7]{6}) [a-f0-9]{40,64} 0\t(.+)$/s', $records[0], $matches) !== 1 || $matches[2] !== $path) {
+            throw new ContentSyncFailure('The selected candidate file mode could not be verified safely.');
+        }
+
+        return $matches[1];
+    }
+
+    /** @param array{contents: string|null, mode: string|null} $resolution */
+    private function candidateFileMatchesResolution(string $path, array $resolution): bool
+    {
+        $fullPath = $this->candidateFilePath($path);
+        if ($resolution['contents'] === null) {
+            return ! file_exists($fullPath) && ! is_link($fullPath);
+        }
+        if (is_link($fullPath) || ! is_file($fullPath) || ! is_string($resolution['mode'])) {
+            return false;
+        }
+        $size = filesize($fullPath);
+        if (! is_int($size) || $size !== strlen($resolution['contents'])) {
+            return false;
+        }
+        $actual = file_get_contents($fullPath);
+        if (! is_string($actual) || ! hash_equals(hash('sha256', $resolution['contents']), hash('sha256', $actual))) {
+            return false;
+        }
+        $executable = (fileperms($fullPath) & 0111) !== 0;
+
+        return $executable === ($resolution['mode'] === '100755');
+    }
+
     /** @param list<string> $expectedParents */
     private function candidateCommitMatches(string $expectedTree, array $expectedParents): bool
     {
         if (preg_match('/^(?:[a-f0-9]{40}|[a-f0-9]{64})$/', $expectedTree) !== 1
             || $this->candidateMergeHeads($this->candidatePath) !== []
             || $this->unmergedPaths($this->candidatePath) !== []
+            || $this->workingTreeStatus($this->candidatePath) !== []
             || $this->candidateIndexTree($this->candidatePath) !== $expectedTree) {
             return false;
         }

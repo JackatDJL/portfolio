@@ -54,6 +54,8 @@ if ($validationRoot !== null) {
 
     $decodedPaths = json_decode((string) getenv('CONTENT_SYNC_VALIDATION_PATHS'), true);
     $validationPaths = is_array($decodedPaths) ? array_values(array_filter($decodedPaths, 'is_string')) : [];
+    $decodedMarkerSizes = json_decode((string) getenv('CONTENT_SYNC_VALIDATION_MARKER_SIZES'), true);
+    $validationMarkerSizes = is_array($decodedMarkerSizes) ? $decodedMarkerSizes : [];
 
     config()->set('statamic.stache.watcher', false);
     config()->set('statamic.stache.cache_store', 'array');
@@ -199,9 +201,15 @@ if ($validationRoot !== null) {
 
             continue;
         }
+        $markerSize = $validationMarkerSizes[$relativePath] ?? 7;
+        if (! is_int($markerSize) || $markerSize < 1 || $markerSize > 256) {
+            $report['candidate_file_errors'][$relativePath] = ['The staged candidate conflict marker settings could not be checked'];
+
+            continue;
+        }
         if (! str_contains($contents, "\0")
             && mb_check_encoding($contents, 'UTF-8')
-            && ContentSyncConflictDocument::containsConflictMarker($contents)) {
+            && ContentSyncConflictDocument::containsConflictMarker($contents, $markerSize)) {
             $report['candidate_file_errors'][$relativePath] = ['The staged candidate contains unresolved Git conflict markers'];
         }
     }

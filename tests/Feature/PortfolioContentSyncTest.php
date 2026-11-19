@@ -67,6 +67,7 @@ class PortfolioContentSyncTest extends TestCase
         config()->set('content-sync.remote', 'origin');
         config()->set('content-sync.lock_path', $this->lock);
         config()->set('content-sync.candidate_path', $this->candidate);
+        config()->set('content-sync.recovery_path', $this->fixtureRoot.'/recovery');
         config()->set('content-sync.ssh_key', null);
         config()->set('content-sync.known_hosts', null);
         config()->set('content-sync.author_name', 'Test Production Sync');
@@ -810,7 +811,7 @@ class PortfolioContentSyncTest extends TestCase
         chmod($hooks.'/pre-commit', 0755);
         $this->git($this->candidate, ['config', 'core.hooksPath', $hooks]);
 
-        $recoveryDirectory = storage_path('app/private/content-sync-conflicts');
+        $recoveryDirectory = (string) config('content-sync.recovery_path');
         $existingBackups = glob($recoveryDirectory.'/*') ?: [];
         $validator = \Mockery::mock(ContentSyncCandidateValidator::class);
         $validator->shouldReceive('validate')->once()->with($this->candidate, ['content/collections/entry.md'], \Mockery::type('string'))
@@ -870,15 +871,125 @@ class PortfolioContentSyncTest extends TestCase
         $validator->shouldReceive('validate')->once()->andReturnUsing(fn (string $candidate): string => $this->git($candidate, ['write-tree']));
         app()->instance(ContentSyncCandidateValidator::class, $validator);
 
-        app(PortfolioContentSync::class)->resolveConflicts(app(PortfolioContentSync::class)->conflictDetails()['fingerprint'], [
-            $conflictPath => ['sections' => [['id' => 0, 'choice' => 'ours']]],
-        ]);
+        try {
+            app(PortfolioContentSync::class)->resolveConflicts(app(PortfolioContentSync::class)->conflictDetails()['fingerprint'], [
+                $conflictPath => ['sections' => [['id' => 0, 'choice' => 'ours']]],
+            ]);
+            $this->fail('A dirty candidate must not be reported as ready for the writer.');
+        } catch (ContentSyncFailure $failure) {
+            $this->assertTrue($failure->recoveryRequired);
+        }
 
         $this->assertSame("local content\n", file_get_contents($this->candidate.'/'.$conflictPath));
         $this->assertSame("unrelated candidate edit\n", file_get_contents($this->candidate.'/'.$unrelatedPath));
+        $this->assertFileExists($this->lock.'.recovery-required');
         $tracked = new Process(['git', '-C', $this->candidate, 'ls-files', '--error-unmatch', '--', ':(literal)'.$unrelatedPath]);
         $tracked->run();
         $this->assertNotSame(0, $tracked->getExitCode());
+    }
+
+    public function test_a_markdown_heading_underline_in_the_ours_stage_uses_whole_file_resolution(): void
+    {
+        $details = $this->createTextConflict(
+            'content/collections/entry.md',
+            "Overview\n=======\nLocal body\n",
+            "Overview\nIncoming body\n",
+        );
+
+        $this->assertTrue($details['files'][0]['binary']);
+        $this->assertSame([], $details['files'][0]['sections']);
+        $this->assertTrue($details['files'][0]['ours_available']);
+        $this->assertTrue($details['files'][0]['theirs_available']);
+    }
+
+    public function test_candidate_blueprint_changes_are_rejected_before_conflict_validation(): void
+    {
+        $details = $this->createTextConflict(
+            'content/collections/entry.md',
+            "Local version\n",
+            "Incoming version\n",
+            ['resources/blueprints/collections/pages.yaml' => "title: Candidate blueprint\n"],
+        );
+        $validator = \Mockery::mock(ContentSyncCandidateValidator::class);
+        $validator->shouldNotReceive('validate');
+        app()->instance(ContentSyncCandidateValidator::class, $validator);
+
+        try {
+            app(PortfolioContentSync::class)->resolveConflicts($details['fingerprint'], [
+                'content/collections/entry.md' => ['sections' => [['id' => 0, 'choice' => 'ours']]],
+            ]);
+            $this->fail('The running application blueprint must not validate a different candidate blueprint.');
+        } catch (ContentSyncFailure $failure) {
+            $this->assertStringContainsString('blueprint', strtolower($failure->getMessage()));
+        }
+
+        $this->assertStringContainsString('<<<<<<<', file_get_contents($this->candidate.'/content/collections/entry.md'));
+        $this->assertFileDoesNotExist($this->lock.'.recovery-required');
+        $this->assertNotSame('', $this->git($this->candidate, ['rev-parse', '--verify', 'MERGE_HEAD']));
+    }
+
+    public function test_failed_tree_creation_rolls_back_the_resolver_owned_index(): void
+    {
+        $path = 'content/collections/entry.md';
+        $details = $this->createTextConflict($path, "Local version\n", "Incoming version\n");
+        $gitPath = trim((new Process(['which', 'git']))->mustRun()->getOutput());
+        $shimDirectory = $this->fixtureRoot.'/git-shim';
+        mkdir($shimDirectory, 0770, true);
+        $flag = $this->fixtureRoot.'/write-tree-failed';
+        $shim = "#!/bin/sh\nif [ \"\$2\" = ".escapeshellarg($this->candidate).' ] && [ "$3" = write-tree ] && [ ! -e '.escapeshellarg($flag).' ]; then : > '.escapeshellarg($flag)."; exit 1; fi\nexec ".escapeshellarg($gitPath)." \"\$@\"\n";
+        file_put_contents($shimDirectory.'/git', $shim);
+        chmod($shimDirectory.'/git', 0755);
+        $originalPath = $_SERVER['PATH'] ?? (getenv('PATH') ?: '');
+        $_SERVER['PATH'] = $shimDirectory.PATH_SEPARATOR.$originalPath;
+        putenv('PATH='.$_SERVER['PATH']);
+        $validator = \Mockery::mock(ContentSyncCandidateValidator::class);
+        $validator->shouldNotReceive('validate');
+        app()->instance(ContentSyncCandidateValidator::class, $validator);
+
+        try {
+            app(PortfolioContentSync::class)->resolveConflicts($details['fingerprint'], [
+                $path => ['sections' => [['id' => 0, 'choice' => 'ours']]],
+            ]);
+            $this->fail('The injected first write-tree failure must stop resolution.');
+        } catch (ContentSyncFailure $failure) {
+            $this->assertStringContainsString('write-tree', $failure->getMessage());
+        } finally {
+            putenv('PATH='.$originalPath);
+            $_SERVER['PATH'] = $originalPath;
+        }
+
+        $this->assertFileExists($flag);
+        $this->assertFileDoesNotExist($this->lock.'.recovery-required');
+        $this->assertStringContainsString('<<<<<<<', file_get_contents($this->candidate.'/'.$path));
+        $this->assertStringContainsString($path, $this->git($this->candidate, ['diff', '--name-only', '--diff-filter=U']));
+    }
+
+    public function test_validation_failure_preserves_an_operator_edit_to_the_resolved_candidate(): void
+    {
+        $path = 'content/collections/entry.md';
+        $details = $this->createTextConflict($path, "Local version\n", "Incoming version\n");
+        $operatorEdit = "Operator edit during validation\n";
+        $validator = \Mockery::mock(ContentSyncCandidateValidator::class);
+        $validator->shouldReceive('validate')->once()->andReturnUsing(function () use ($path, $operatorEdit): string {
+            file_put_contents($this->candidate.'/'.$path, $operatorEdit);
+            throw new ContentSyncFailure('Validation failed.');
+        });
+        app()->instance(ContentSyncCandidateValidator::class, $validator);
+
+        try {
+            app(PortfolioContentSync::class)->resolveConflicts($details['fingerprint'], [
+                $path => ['sections' => [['id' => 0, 'choice' => 'ours']]],
+            ]);
+            $this->fail('An edit made during validation must be preserved for manual recovery.');
+        } catch (ContentSyncFailure $failure) {
+            $this->assertTrue($failure->recoveryRequired);
+            $this->assertStringContainsString('rollback could not be completed', strtolower($failure->getMessage()));
+        }
+
+        $this->assertSame($operatorEdit, file_get_contents($this->candidate.'/'.$path));
+        $this->assertFileExists($this->lock.'.recovery-required');
+        $this->assertTrue(app(PortfolioContentSync::class)->conflictSummary()['recovery_required']);
+        $this->assertNotEmpty(glob((string) config('content-sync.recovery_path').'/*') ?: []);
     }
 
     public function test_binary_resolution_preserves_zero_byte_blobs_and_selected_file_modes(): void
@@ -1002,6 +1113,7 @@ class PortfolioContentSyncTest extends TestCase
         $this->assertTrue($file['mode_conflict']);
         $this->assertTrue($file['mode_only_conflict']);
         $this->assertSame([], $file['sections']);
+        $this->git($this->candidate, ['config', 'core.fileMode', 'false']);
 
         $validator = \Mockery::mock(ContentSyncCandidateValidator::class);
         $validator->shouldReceive('validate')->once()->with($this->candidate, [$path], \Mockery::type('string'))
@@ -1037,6 +1149,7 @@ class PortfolioContentSyncTest extends TestCase
         $resolvedPath = $this->candidate.'/'.$path;
         $this->assertSame("identical content\n", file_get_contents($resolvedPath));
         $this->assertSame(0755, fileperms($resolvedPath) & 0777);
+        $this->assertStringStartsWith('100755 blob ', $this->git($this->candidate, ['ls-tree', 'HEAD', '--', 'content/collections/mode-only.md']));
         $this->assertSame('', $this->git($this->candidate, ['status', '--porcelain']));
     }
 
@@ -1228,6 +1341,47 @@ class PortfolioContentSyncTest extends TestCase
         } finally {
             $locker->wait();
         }
+    }
+
+    /** @param array<string, string> $incomingFiles
+     * @return array<string, mixed>
+     */
+    private function createTextConflict(string $path, string $local, string $incoming, array $incomingFiles = []): array
+    {
+        $localPath = $this->production.'/'.$path;
+        if (! is_dir(dirname($localPath))) {
+            mkdir(dirname($localPath), 0770, true);
+        }
+        file_put_contents($localPath, $local);
+        $this->git($this->production, ['add', '--all']);
+        $this->git($this->production, ['commit', '-m', 'content: local conflict fixture']);
+        $this->git($this->production, ['push', 'origin', 'content-sync']);
+
+        $this->git($this->seed, ['switch', 'main']);
+        $incomingPath = $this->seed.'/'.$path;
+        if (! is_dir(dirname($incomingPath))) {
+            mkdir(dirname($incomingPath), 0770, true);
+        }
+        file_put_contents($incomingPath, $incoming);
+        foreach ($incomingFiles as $extraPath => $contents) {
+            $fullPath = $this->seed.'/'.$extraPath;
+            if (! is_dir(dirname($fullPath))) {
+                mkdir(dirname($fullPath), 0770, true);
+            }
+            file_put_contents($fullPath, $contents);
+        }
+        $this->git($this->seed, ['add', '--all']);
+        $this->git($this->seed, ['commit', '-m', 'content: incoming conflict fixture']);
+        $this->git($this->seed, ['push', 'origin', 'main']);
+
+        try {
+            app(PortfolioContentSync::class)->run();
+            $this->fail('The fixture must create a content conflict.');
+        } catch (ContentSyncFailure $failure) {
+            $this->assertContains($path, $failure->conflictingPaths);
+        }
+
+        return app(PortfolioContentSync::class)->conflictDetails();
     }
 
     private function git(string $cwd, array $arguments, bool $bare = false): string

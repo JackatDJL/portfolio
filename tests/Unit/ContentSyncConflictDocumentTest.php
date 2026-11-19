@@ -36,6 +36,31 @@ class ContentSyncConflictDocumentTest extends TestCase
 
         $this->assertSame("before\nincoming title\nafter\n", $resolved);
         $this->assertTrue(ContentSyncConflictDocument::containsConflictMarker("<<<<<<<< unresolved\n"));
+        $this->assertFalse(ContentSyncConflictDocument::containsConflictMarker("<<<<<<< below configured width\n", 8));
+    }
+
+    public function test_separator_widths_are_checked_without_rejecting_markdown_heading_underlines(): void
+    {
+        $content = "<<<<<<< HEAD\nlocal\n=======\nincoming\n>>>>>>> main\nOverview\n=======\nDescription\n";
+        $document = ContentSyncConflictDocument::inspect($content);
+        $resolved = ContentSyncConflictDocument::compose($content, $document['sections'], [
+            ['id' => 0, 'choice' => 'theirs'],
+        ]);
+
+        $this->assertSame("incoming\nOverview\n=======\nDescription\n", $resolved);
+        $this->assertFalse(ContentSyncConflictDocument::containsConflictMarker("Overview\n=======\nDescription\n"));
+        $this->assertTrue(ContentSyncConflictDocument::containsSeparatorLine("Overview\n=======\n", 7));
+    }
+
+    public function test_manual_replacements_use_the_configured_marker_width(): void
+    {
+        $content = "<<< HEAD\nlocal\n===\nincoming\n>>> main\n";
+        $document = ContentSyncConflictDocument::inspect($content, 3);
+
+        $this->expectException(ContentSyncFailure::class);
+        ContentSyncConflictDocument::compose($content, $document['sections'], [
+            ['id' => 0, 'choice' => 'manual', 'text' => "<<< unresolved\n"],
+        ], 3);
     }
 
     public function test_private_cv_values_are_redacted_and_cannot_be_manually_submitted(): void

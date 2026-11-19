@@ -45,6 +45,35 @@ class ContentSyncCandidateValidatorTest extends TestCase
         $this->assertSame("alt: [unterminated\n", file_get_contents($path));
     }
 
+    public function test_pinned_public_documents_are_scanned_for_unresolved_markers(): void
+    {
+        mkdir($this->candidate.'/public/documents', 0770, true);
+        $path = 'public/documents/notes.txt';
+        file_put_contents($this->candidate.'/'.$path, "<<<<<<< unresolved\nprivate note\n");
+
+        try {
+            $this->validateCandidate([$path]);
+            $this->fail('Staged public documents must be scanned for conflict markers.');
+        } catch (ContentSyncFailure $failure) {
+            $this->assertStringContainsString('Candidate validation failed', $failure->getMessage());
+        }
+    }
+
+    public function test_staged_marker_scan_uses_the_configured_marker_width(): void
+    {
+        mkdir($this->candidate.'/public/documents', 0770, true);
+        $path = 'public/documents/review-fixture.txt';
+        file_put_contents($this->candidate.'/.gitattributes', "{$path} conflict-marker-size=3\n");
+        file_put_contents($this->candidate.'/'.$path, "<<< unresolved\n");
+
+        try {
+            $this->validateCandidate([$path]);
+            $this->fail('The staged marker scan must use the path-specific marker width.');
+        } catch (ContentSyncFailure $failure) {
+            $this->assertStringContainsString('Candidate validation failed', $failure->getMessage());
+        }
+    }
+
     public function test_validation_uses_an_isolated_copy_and_leaves_the_candidate_unchanged(): void
     {
         $path = $this->candidate.'/public/assets/photos/.meta/missing.jpg.yaml';
