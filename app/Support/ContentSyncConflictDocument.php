@@ -6,9 +6,12 @@ final class ContentSyncConflictDocument
 {
     private const MAX_TEXT_BYTES = 262_144;
 
+    private const DEFAULT_CONFLICT_MARKER_SIZE = 7;
+
     /** @return array{binary: bool, sections: list<array{id: int, base: string|null, ours: string, theirs: string, protected: bool}>} */
-    public static function inspect(string $contents): array
+    public static function inspect(string $contents, int $markerSize = self::DEFAULT_CONFLICT_MARKER_SIZE): array
     {
+        $markerSize = self::validatedMarkerSize($markerSize);
         if (strlen($contents) > self::MAX_TEXT_BYTES || ! mb_check_encoding($contents, 'UTF-8')) {
             return ['binary' => true, 'sections' => []];
         }
@@ -23,7 +26,7 @@ final class ContentSyncConflictDocument
 
         foreach ($lines as $line) {
             $marker = rtrim($line, "\r\n");
-            if (! $inside && preg_match('/^<{7}(?:\s|$)/', $marker)) {
+            if (! $inside && self::isSectionMarker($marker, '<', $markerSize, hasLabel: true)) {
                 $inside = true;
                 $ours = '';
                 $base = null;
@@ -33,20 +36,20 @@ final class ContentSyncConflictDocument
                 continue;
             }
 
-            if ($inside && preg_match('/^\|{7}(?:\s|$)/', $marker) && $state === 'ours') {
+            if ($inside && self::isSectionMarker($marker, '|', $markerSize, hasLabel: true) && $state === 'ours') {
                 $state = 'base';
 
                 continue;
             }
 
-            if ($inside && preg_match('/^={7}\s*$/', $marker) && in_array($state, ['ours', 'base'], true)) {
+            if ($inside && self::isSectionMarker($marker, '=', $markerSize, hasLabel: false) && in_array($state, ['ours', 'base'], true)) {
                 $state = 'theirs';
                 $base ??= null;
 
                 continue;
             }
 
-            if ($inside && preg_match('/^>{7}(?:\s|$)/', $marker) && $state === 'theirs') {
+            if ($inside && self::isSectionMarker($marker, '>', $markerSize, hasLabel: true) && $state === 'theirs') {
                 $id = count($sections);
                 $private = self::containsProtectedCvField($ours.$base.$theirs);
                 $sections[] = [
@@ -78,8 +81,9 @@ final class ContentSyncConflictDocument
     }
 
     /** @param list<array{id: int, base: string|null, ours: string, theirs: string, protected: bool}> $sections */
-    public static function compose(string $contents, array $sections, array $resolutions): string
+    public static function compose(string $contents, array $sections, array $resolutions, int $markerSize = self::DEFAULT_CONFLICT_MARKER_SIZE): string
     {
+        $markerSize = self::validatedMarkerSize($markerSize);
         if (count($sections) !== count($resolutions)) {
             throw new ContentSyncFailure('Choose a resolution for every conflict section. The candidate was left untouched.');
         }
@@ -96,7 +100,7 @@ final class ContentSyncConflictDocument
 
         foreach ($lines as $line) {
             $marker = rtrim($line, "\r\n");
-            if (! $inside && preg_match('/^<{7}(?:\s|$)/', $marker)) {
+            if (! $inside && self::isSectionMarker($marker, '<', $markerSize, hasLabel: true)) {
                 if ($plain !== '') {
                     $parts[] = $plain;
                     $plain = '';
@@ -110,19 +114,19 @@ final class ContentSyncConflictDocument
                 continue;
             }
 
-            if ($inside && preg_match('/^\|{7}(?:\s|$)/', $marker) && $state === 'ours') {
+            if ($inside && self::isSectionMarker($marker, '|', $markerSize, hasLabel: true) && $state === 'ours') {
                 $state = 'base';
 
                 continue;
             }
 
-            if ($inside && preg_match('/^={7}\s*$/', $marker) && in_array($state, ['ours', 'base'], true)) {
+            if ($inside && self::isSectionMarker($marker, '=', $markerSize, hasLabel: false) && in_array($state, ['ours', 'base'], true)) {
                 $state = 'theirs';
 
                 continue;
             }
 
-            if ($inside && preg_match('/^>{7}(?:\s|$)/', $marker) && $state === 'theirs') {
+            if ($inside && self::isSectionMarker($marker, '>', $markerSize, hasLabel: true) && $state === 'theirs') {
                 $section = $sections[$sectionId] ?? null;
                 if (! is_array($section)) {
                     throw new ContentSyncFailure('The candidate conflict changed while it was being resolved. Reload the conflict details.');
@@ -187,9 +191,27 @@ final class ContentSyncConflictDocument
         return $protected ? '[Geschützte CV-Werte werden nicht angezeigt.]' : $contents;
     }
 
-    public static function containsConflictMarker(string $contents): bool
+    public static function containsConflictMarker(string $contents, int $markerSize = self::DEFAULT_CONFLICT_MARKER_SIZE): bool
     {
-        return preg_match('/^(?:<{7}|\|{7}|={7}|>{7})(?:\s|$)/m', $contents) === 1;
+        $minimumSize = min(self::DEFAULT_CONFLICT_MARKER_SIZE, self::validatedMarkerSize($markerSize));
+
+        return preg_match('/^(?:<{'.$minimumSize.',}|\|{'.$minimumSize.',}|={'.$minimumSize.',}|>{'.$minimumSize.',})(?:\s|$)/m', $contents) === 1;
+    }
+
+    private static function isSectionMarker(string $line, string $character, int $markerSize, bool $hasLabel): bool
+    {
+        $pattern = '/^'.str_repeat(preg_quote($character, '/'), $markerSize).($hasLabel ? '(?:\s|$)' : '\s*$').'/';
+
+        return preg_match($pattern, $line) === 1;
+    }
+
+    private static function validatedMarkerSize(int $markerSize): int
+    {
+        if ($markerSize < 1 || $markerSize > 256) {
+            throw new ContentSyncFailure('The candidate conflict marker size is unsupported. It was left untouched.');
+        }
+
+        return $markerSize;
     }
 
     private static function containsProtectedCvField(string $contents): bool

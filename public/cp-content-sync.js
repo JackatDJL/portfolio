@@ -30,15 +30,20 @@
         let conflictExpanded = false;
         let conflictLoading = false;
         let conflictBusy = false;
+        let conflictUnavailable = false;
+        let recoveryRequired = false;
         let hasConflicts = false;
+        let syncNotice = '';
         const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
 
         const updateResolveButton = () => {
             const ready = conflictFiles.length > 0 && conflictFiles.every(file => file.binary
                 ? Boolean(file.choice)
-                : file.sections.length > 0 && file.sections.every(section => Boolean(section.choice))
-                    && (!file.mode_conflict || Boolean(file.modeChoice)));
-            resolveButton.disabled = !ready || conflictLoading || conflictBusy;
+                : file.mode_only_conflict
+                    ? Boolean(file.modeChoice)
+                    : file.sections.length > 0 && file.sections.every(section => Boolean(section.choice))
+                        && (!file.mode_conflict || Boolean(file.modeChoice)));
+            resolveButton.disabled = !ready || conflictLoading || conflictBusy || conflictUnavailable || recoveryRequired;
         };
 
         const setConflictMessage = (message = '') => {
@@ -108,6 +113,9 @@
                         }, { signal: controller.signal });
                         label.append(select);
                         card.append(label);
+                    }
+                    if (file.mode_only_conflict) {
+                        card.append(element('p', 'mt-2 text-sm text-gray-500', 'Der Dateiinhalt ist auf beiden Seiten gleich. Wähle nur das gewünschte Dateirecht.'));
                     }
                     file.sections.forEach(section => {
                         const panel = element('fieldset', 'app-content-sync-section');
@@ -195,7 +203,12 @@
             const wasNearBottom = logs.scrollHeight - logs.scrollTop - logs.clientHeight <= 16;
             const previousScrollTop = logs.scrollTop;
             conflictBusy = Boolean(data.conflicts?.busy);
-            if (!conflictBusy) {
+            conflictUnavailable = Boolean(data.conflicts?.unavailable);
+            if (!conflictBusy && !conflictUnavailable) {
+                recoveryRequired = Boolean(data.conflicts?.recovery_required);
+            }
+            if (data.running) syncNotice = '';
+            if (!conflictBusy && !conflictUnavailable) {
                 conflictMeta = data.conflicts?.files || [];
                 hasConflicts = conflictMeta.length > 0;
                 if (!hasConflicts) {
@@ -204,21 +217,25 @@
                     conflictsList.replaceChildren();
                 }
             }
-            conflictsOpen.hidden = !hasConflicts;
-            conflictsPanel.hidden = !hasConflicts || !conflictExpanded;
+            conflictsOpen.hidden = !hasConflicts || conflictUnavailable || recoveryRequired;
+            conflictsPanel.hidden = !hasConflicts || !conflictExpanded || conflictUnavailable || recoveryRequired;
             conflictsOpen.textContent = conflictExpanded ? 'Konflikte ausblenden' : 'Konflikte prüfen';
 
             status.textContent = conflictBusy
                 ? 'Sync-Lock belegt. Konfliktdaten und Entwürfe bleiben erhalten.'
+                : recoveryRequired
+                    ? 'Kandidat muss nach unvollständigem Rollback manuell geprüft werden. Sync-Start ist gesperrt.'
+                    : conflictUnavailable
+                    ? 'Kandidatenstatus nicht verfügbar. Der Kandidat braucht eine manuelle Prüfung.'
                 : data.running
                 ? `Lauf aktiv seit ${data.started_at ? new Date(data.started_at).toLocaleString('de-DE') : 'soeben'}`
                 : hasConflicts
                     ? `${conflictMeta.length} Konfliktdatei(en) warten auf Prüfung.`
-                    : 'Kein Lauf aktiv';
+                    : syncNotice || 'Kein Lauf aktiv';
             logs.textContent = data.logs || 'Noch keine Läufe protokolliert.';
             logs.scrollTop = wasNearBottom ? logs.scrollHeight : previousScrollTop;
             nextRun = new Date(data.next_run_at);
-            button.disabled = data.running || conflictBusy || hasConflicts;
+            button.disabled = data.running || conflictBusy || conflictUnavailable || recoveryRequired || hasConflicts;
             updateResolveButton();
 
             if (conflictExpanded && hasConflicts && conflictFiles.length === 0 && !conflictLoading) loadConflicts();
@@ -281,14 +298,22 @@
                     body: JSON.stringify({ fingerprint: conflictFingerprint, resolutions }),
                     signal: controller.signal,
                 });
-                if (!response.ok) throw new Error('Auflösung oder Kandidatenprüfung fehlgeschlagen. Der Live-Content wurde nicht geändert.');
-                const data = await response.json();
+                const data = await response.json().catch(() => ({}));
+                if (!response.ok) {
+                    if (data.recovery_required) {
+                        recoveryRequired = true;
+                        syncNotice = data.message || 'Der Kandidat muss manuell geprüft werden; Sync-Start ist gesperrt.';
+                        await refresh();
+                    }
+                    throw new Error(data.message || 'Auflösung oder Kandidatenprüfung fehlgeschlagen. Der Live-Content wurde nicht geändert.');
+                }
+                syncNotice = data.started ? '' : (data.message || 'Konflikt aufgelöst. Starte die reguläre Synchronisierung mit dem Button oben.');
                 conflictExpanded = false;
                 conflictFiles = [];
                 conflictFingerprint = null;
-                setConflictMessage(data.started
+                setConflictMessage(data.message || (data.started
                     ? 'Kandidat validiert. Die reguläre Synchronisierung läuft.'
-                    : 'Kandidat validiert. Starte die reguläre Synchronisierung mit dem Button oben.');
+                    : 'Konflikt aufgelöst. Starte die reguläre Synchronisierung mit dem Button oben.'));
                 await refresh();
             } catch (error) {
                 if (error.name !== 'AbortError') setConflictMessage(error.message || 'Auflösung fehlgeschlagen. Lade die Konflikte neu.');
@@ -298,6 +323,7 @@
 
         button.addEventListener('click', async () => {
             button.disabled = true;
+            syncNotice = '';
             try {
                 const response = await fetch(root.dataset.startUrl, {
                     method: 'POST', headers: { Accept: 'application/json', 'X-CSRF-TOKEN': csrf }, signal: controller.signal,

@@ -24,6 +24,20 @@ class ContentSyncConflictDocumentTest extends TestCase
         $this->assertFalse(ContentSyncConflictDocument::containsConflictMarker($resolved));
     }
 
+    public function test_it_uses_a_configured_wider_conflict_marker_size(): void
+    {
+        $content = "before\n<<<<<<<< HEAD\nlocal title\n========\nincoming title\n>>>>>>>> main\nafter\n";
+        $document = ContentSyncConflictDocument::inspect($content, 8);
+
+        $this->assertCount(1, $document['sections']);
+        $resolved = ContentSyncConflictDocument::compose($content, $document['sections'], [
+            ['id' => 0, 'choice' => 'theirs'],
+        ], 8);
+
+        $this->assertSame("before\nincoming title\nafter\n", $resolved);
+        $this->assertTrue(ContentSyncConflictDocument::containsConflictMarker("<<<<<<<< unresolved\n"));
+    }
+
     public function test_private_cv_values_are_redacted_and_cannot_be_manually_submitted(): void
     {
         $secret = 'PRIVATE-CV-EMAIL-SENTINEL@example.invalid';

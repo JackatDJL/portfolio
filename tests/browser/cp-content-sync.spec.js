@@ -301,3 +301,126 @@ test('file mode conflicts are resolved per text file', async ({ page }) => {
         mode_choice: 'theirs',
     }]);
 });
+
+test('mode-only conflicts offer a mode choice and preserve a resolved sync-start failure', async ({ page }) => {
+    let resolved = false;
+    let submitted;
+    await page.route('**/cp/content-sync/status', route => route.fulfill({ json: {
+        running: false,
+        started_at: null,
+        next_run_at: new Date(Date.now() + 120_000).toISOString(),
+        logs: '',
+        conflicts: resolved
+            ? { busy: false, merge_in_progress: false, files: [] }
+            : { busy: false, merge_in_progress: true, files: [{ path: 'content/collections/mode-only.md', sections: 0, binary: false }] },
+    } }));
+    await page.route('**/cp/content-sync/conflicts', route => route.fulfill({ json: {
+        available: true,
+        fingerprint: 'd'.repeat(64),
+        files: [{ path: 'content/collections/mode-only.md', binary: false, mode_conflict: true, mode_only_conflict: true, ours_executable: false, theirs_executable: true, sections: [] }],
+    } }));
+    await page.route('**/cp/content-sync/conflicts/resolve', async route => {
+        submitted = route.request().postDataJSON();
+        resolved = true;
+        await route.fulfill({ status: 202, json: {
+            resolved: true,
+            started: false,
+            start_failed: true,
+            message: 'Konflikt aufgelöst. Die Synchronisierung konnte nicht gestartet werden; bitte manuell erneut starten.',
+        } });
+    });
+
+    await page.goto('/tests/browser/fixtures/article-toc.html');
+    await page.setContent('<meta name="csrf-token" content="fixture-csrf"><main id="cp-content"></main>');
+    await page.addScriptTag({ content: script });
+    await page.evaluate(markup => { document.querySelector('#cp-content').innerHTML = markup; }, markup());
+
+    const root = page.locator('[data-content-sync]');
+    await root.locator('[data-sync-conflicts-open]').click();
+    await expect(root.locator('[data-sync-conflict-list]')).toContainText('Der Dateiinhalt ist auf beiden Seiten gleich');
+    await expect(root.locator('[data-sync-conflict-list] select')).toHaveCount(1);
+    await expect(root.locator('[data-sync-conflict-list] textarea')).toHaveCount(0);
+    await root.locator('[data-sync-conflict-list] select').selectOption('theirs');
+    await expect(root.locator('[data-sync-resolve]')).toBeEnabled();
+    await root.locator('[data-sync-resolve]').click();
+
+    await expect.poll(() => submitted).toBeTruthy();
+    expect(submitted.resolutions).toEqual([{
+        path: 'content/collections/mode-only.md',
+        sections: [],
+        mode_choice: 'theirs',
+    }]);
+    await expect(root.locator('[data-sync-state]')).toContainText('Konflikt aufgelöst. Die Synchronisierung konnte nicht gestartet werden');
+    await expect(root.locator('[data-sync-start]')).toBeEnabled();
+});
+
+test('an incomplete candidate rollback requires manual inspection and disables sync', async ({ page }) => {
+    await page.route('**/cp/content-sync/status', route => route.fulfill({ json: {
+        running: false,
+        started_at: null,
+        next_run_at: new Date(Date.now() + 120_000).toISOString(),
+        logs: '',
+        conflicts: { busy: false, merge_in_progress: true, recovery_required: true, files: [] },
+    } }));
+
+    await page.goto('/tests/browser/fixtures/article-toc.html');
+    await page.setContent('<meta name="csrf-token" content="fixture-csrf"><main id="cp-content"></main>');
+    await page.addScriptTag({ content: script });
+    await page.evaluate(markup => { document.querySelector('#cp-content').innerHTML = markup; }, markup());
+
+    const root = page.locator('[data-content-sync]');
+    await expect(root.locator('[data-sync-state]')).toContainText('manuell geprüft werden');
+    await expect(root.locator('[data-sync-start]')).toBeDisabled();
+    await expect(root.locator('[data-sync-conflicts-open]')).toBeHidden();
+});
+
+test('a later healthy candidate status clears the recovery-required state', async ({ page }) => {
+    let statusCalls = 0;
+    await page.route('**/cp/content-sync/status', route => {
+        statusCalls++;
+        return route.fulfill({ json: {
+            running: false,
+            started_at: null,
+            next_run_at: new Date(Date.now() + 120_000).toISOString(),
+            logs: '',
+            conflicts: {
+                busy: false,
+                merge_in_progress: statusCalls === 1,
+                recovery_required: statusCalls === 1,
+                files: [],
+            },
+        } });
+    });
+
+    await page.goto('/tests/browser/fixtures/article-toc.html');
+    await page.setContent('<meta name="csrf-token" content="fixture-csrf"><main id="cp-content"></main>');
+    await page.addScriptTag({ content: script });
+    await page.evaluate(markup => { document.querySelector('#cp-content').innerHTML = markup; }, markup());
+
+    const root = page.locator('[data-content-sync]');
+    await expect(root.locator('[data-sync-state]')).toContainText('manuell geprüft werden');
+    await expect(root.locator('[data-sync-start]')).toBeDisabled();
+    await expect(root.locator('[data-sync-start]')).toBeEnabled({ timeout: 5000 });
+    await expect(root.locator('[data-sync-state]')).toContainText('Kein Lauf aktiv');
+});
+
+test('an unavailable candidate is not shown as a busy lock', async ({ page }) => {
+    await page.route('**/cp/content-sync/status', route => route.fulfill({ json: {
+        running: false,
+        started_at: null,
+        next_run_at: new Date(Date.now() + 120_000).toISOString(),
+        logs: '',
+        conflicts: { busy: false, merge_in_progress: false, unavailable: true, files: [] },
+    } }));
+
+    await page.goto('/tests/browser/fixtures/article-toc.html');
+    await page.setContent('<meta name="csrf-token" content="fixture-csrf"><main id="cp-content"></main>');
+    await page.addScriptTag({ content: script });
+    await page.evaluate(markup => { document.querySelector('#cp-content').innerHTML = markup; }, markup());
+
+    const root = page.locator('[data-content-sync]');
+    await expect(root.locator('[data-sync-state]')).toContainText('Kandidatenstatus nicht verfügbar');
+    await expect(root.locator('[data-sync-state]')).not.toContainText('Sync-Lock belegt');
+    await expect(root.locator('[data-sync-start]')).toBeDisabled();
+    await expect(root.locator('[data-sync-conflicts-open]')).toBeHidden();
+});

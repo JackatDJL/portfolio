@@ -25,8 +25,14 @@ final class ContentSyncControlController
         $status = $control->status();
         try {
             $status['conflicts'] = $sync->conflictSummary();
-        } catch (ContentSyncFailure) {
-            $status['conflicts'] = ['busy' => true, 'merge_in_progress' => false, 'files' => []];
+        } catch (ContentSyncFailure $failure) {
+            $status['conflicts'] = [
+                'busy' => false,
+                'merge_in_progress' => false,
+                'unavailable' => true,
+                'recovery_required' => $failure->recoveryRequired,
+                'files' => [],
+            ];
         }
 
         return response()->json($status)->header('Cache-Control', 'no-store');
@@ -58,6 +64,7 @@ final class ContentSyncControlController
             'resolutions' => ['required', 'array', 'min:1'],
             'resolutions.*.path' => ['required', 'string', 'max:1024'],
             'resolutions.*.choice' => ['nullable', 'in:ours,theirs'],
+            'resolutions.*.mode_choice' => ['nullable', 'in:ours,theirs'],
             'resolutions.*.sections' => ['sometimes', 'array'],
             'resolutions.*.sections.*.id' => ['required', 'integer', 'min:0'],
             'resolutions.*.sections.*.choice' => ['required', 'in:ours,theirs,manual'],
@@ -75,27 +82,69 @@ final class ContentSyncControlController
         }
 
         $pid = $control->begin();
-        $control->log('Kandidatenkonflikt wird abschnittsweise validiert.');
         try {
+            $control->log('Kandidatenkonflikt wird abschnittsweise validiert.');
             $result = $sync->resolveConflicts($input['fingerprint'], $resolutions);
-            if ($result['status'] === 'busy') {
-                $control->finish('Konfliktauflösung übersprungen: Ein anderer Sync-Lauf hält bereits den Lock.', $pid);
-
-                return response()->json(['resolved' => false, 'started' => false], 409)
-                    ->header('Cache-Control', 'no-store');
+        } catch (\Throwable $failure) {
+            try {
+                $control->finish('Konfliktauflösung fehlgeschlagen. Kandidat und Live-Content bleiben getrennt.', $pid);
+            } catch (\Throwable) {
+                // Keep the original resolution failure as the response cause.
             }
 
-            $control->finish('Konflikt validiert; die reguläre Synchronisierung wird gestartet.', $pid);
-            $started = $control->start();
+            if ($failure instanceof ContentSyncFailure && $failure->recoveryRequired) {
+                return response()->json([
+                    'resolved' => false,
+                    'started' => false,
+                    'recovery_required' => true,
+                    'message' => 'Der Kandidaten-Rollback ist unvollständig. Der Kandidat muss manuell geprüft werden; ein Sync-Start bleibt gesperrt.',
+                ], 409)->header('Cache-Control', 'no-store');
+            }
 
-            return response()->json(['resolved' => true, 'started' => $started], 202)
-                ->header('Cache-Control', 'no-store');
-        } catch (ContentSyncFailure $failure) {
-            $control->finish('Konfliktauflösung fehlgeschlagen. Kandidat und Live-Content bleiben getrennt.', $pid);
-            throw $failure;
-        } catch (\Throwable $failure) {
-            $control->finish('Konfliktauflösung fehlgeschlagen. Kandidat und Live-Content bleiben getrennt.', $pid);
             throw $failure;
         }
+
+        if ($result['status'] === 'busy') {
+            $control->finish('Konfliktauflösung übersprungen: Ein anderer Sync-Lauf hält bereits den Lock.', $pid);
+
+            return response()->json(['resolved' => false, 'started' => false], 409)
+                ->header('Cache-Control', 'no-store');
+        }
+
+        try {
+            $control->finish('Konflikt validiert; die reguläre Synchronisierung wird gestartet.', $pid);
+        } catch (\Throwable) {
+            return response()->json([
+                'resolved' => true,
+                'started' => false,
+                'start_failed' => true,
+                'message' => 'Konflikt aufgelöst. Der reguläre Sync-Start konnte nicht vorbereitet werden; bitte manuell erneut starten.',
+            ], 202)->header('Cache-Control', 'no-store');
+        }
+
+        try {
+            $started = $control->start();
+        } catch (\Throwable) {
+            try {
+                $control->log('Konflikt aufgelöst; der reguläre Sync-Start ist fehlgeschlagen. Bitte manuell erneut starten.');
+            } catch (\Throwable) {
+                // The response still distinguishes a completed resolution from a failed launch.
+            }
+
+            return response()->json([
+                'resolved' => true,
+                'started' => false,
+                'start_failed' => true,
+                'message' => 'Konflikt aufgelöst. Die Synchronisierung konnte nicht gestartet werden; bitte manuell erneut starten.',
+            ], 202)->header('Cache-Control', 'no-store');
+        }
+
+        return response()->json([
+            'resolved' => true,
+            'started' => $started,
+            'message' => $started
+                ? 'Kandidat validiert. Die reguläre Synchronisierung läuft.'
+                : 'Konflikt aufgelöst. Starte die reguläre Synchronisierung mit dem Button oben.',
+        ], 202)->header('Cache-Control', 'no-store');
     }
 }

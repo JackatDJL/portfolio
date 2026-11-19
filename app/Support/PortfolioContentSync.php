@@ -36,6 +36,10 @@ final class PortfolioContentSync
         }
 
         try {
+            if ($this->recoveryRequired()) {
+                throw new ContentSyncFailure('The isolated content candidate requires manual recovery. No content was changed.', recoveryRequired: true);
+            }
+
             return $this->synchronize($dryRun);
         } finally {
             flock($this->lockHandle, LOCK_UN);
@@ -44,7 +48,7 @@ final class PortfolioContentSync
         }
     }
 
-    /** @return array{busy: bool, merge_in_progress: bool, files: list<array{path: string, sections: int, binary: bool}>} */
+    /** @return array{busy: bool, merge_in_progress: bool, recovery_required: bool, files: list<array{path: string, sections: int, binary: bool}>} */
     public function conflictSummary(): array
     {
         $this->initialize(localGitOnly: true);
@@ -52,15 +56,20 @@ final class PortfolioContentSync
         if (! flock($lock, LOCK_SH | LOCK_NB)) {
             fclose($lock);
 
-            return ['busy' => true, 'merge_in_progress' => false, 'files' => []];
+            return ['busy' => true, 'merge_in_progress' => false, 'recovery_required' => false, 'files' => []];
         }
 
         try {
+            if ($this->recoveryRequired()) {
+                return ['busy' => false, 'merge_in_progress' => true, 'recovery_required' => true, 'files' => []];
+            }
+
             $state = $this->inspectCandidate(includeSections: false);
 
             return [
                 'busy' => false,
                 'merge_in_progress' => $state['merge_in_progress'],
+                'recovery_required' => $state['recovery_required'],
                 'files' => array_map(static fn (array $file): array => [
                     'path' => $file['path'],
                     'sections' => count($file['document']['sections']),
@@ -73,7 +82,7 @@ final class PortfolioContentSync
         }
     }
 
-    /** @return array{available: bool, fingerprint: string|null, files: list<array<string, mixed>>} */
+    /** @return array{available: bool, recovery_required: bool, fingerprint: string|null, files: list<array<string, mixed>>} */
     public function conflictDetails(): array
     {
         $this->initialize(localGitOnly: true);
@@ -81,14 +90,19 @@ final class PortfolioContentSync
         if (! flock($lock, LOCK_SH | LOCK_NB)) {
             fclose($lock);
 
-            return ['available' => false, 'fingerprint' => null, 'files' => []];
+            return ['available' => false, 'recovery_required' => false, 'fingerprint' => null, 'files' => []];
         }
 
         try {
+            if ($this->recoveryRequired()) {
+                return ['available' => false, 'recovery_required' => true, 'fingerprint' => null, 'files' => []];
+            }
+
             $state = $this->inspectCandidate(includeSections: true);
 
             return [
                 'available' => $state['merge_in_progress'] && $state['files'] !== [],
+                'recovery_required' => $state['recovery_required'],
                 'fingerprint' => $state['fingerprint'],
                 'files' => array_map(function (array $file): array {
                     $document = $file['document'];
@@ -110,6 +124,7 @@ final class PortfolioContentSync
                         'ours_deletes' => $file['ours_deletes'],
                         'theirs_deletes' => $file['theirs_deletes'],
                         'mode_conflict' => $file['mode_conflict'],
+                        'mode_only_conflict' => $file['mode_only_conflict'],
                         'ours_executable' => $file['ours_mode'] === '100755',
                         'theirs_executable' => $file['theirs_mode'] === '100755',
                         'sections' => $sections,
@@ -134,6 +149,10 @@ final class PortfolioContentSync
         }
 
         try {
+            if ($this->recoveryRequired()) {
+                throw new ContentSyncFailure('The isolated content candidate requires manual recovery. No content was changed.', recoveryRequired: true);
+            }
+
             $state = $this->inspectCandidate(includeSections: true);
             if (! $state['merge_in_progress'] || $state['files'] === [] || ! is_string($state['fingerprint'])
                 || ! hash_equals($state['fingerprint'], $fingerprint)) {
@@ -186,8 +205,26 @@ final class PortfolioContentSync
                         throw new ContentSyncFailure('Choose the file mode for this conflicting text file. The candidate was left untouched.');
                     }
                     $modeStage = $modeChoice === 'theirs' ? 3 : 2;
+                    if ($file['mode_only_conflict']) {
+                        $stageInfo = $file['stages'][$modeStage] ?? null;
+                        if (! is_array($stageInfo)) {
+                            throw new ContentSyncFailure('The selected file mode is unavailable. The candidate was left untouched.');
+                        }
+                        $blob = $this->gitResult(['cat-file', 'blob', $stageInfo['blob']], $this->candidatePath);
+                        if ($blob->getExitCode() !== 0) {
+                            throw new ContentSyncFailure('The selected file mode is unavailable. The candidate was left untouched.');
+                        }
+                        $contents = $blob->getOutput();
+                    } else {
+                        $contents = ContentSyncConflictDocument::compose(
+                            $file['contents'],
+                            $file['document']['sections'],
+                            $sections,
+                            $file['marker_size'],
+                        );
+                    }
                     $resolved[$path] = [
-                        'contents' => ContentSyncConflictDocument::compose($file['contents'], $file['document']['sections'], $sections),
+                        'contents' => $contents,
                         'mode' => $file['stages'][$modeStage]['mode'],
                     ];
                 }
@@ -197,42 +234,153 @@ final class PortfolioContentSync
             $originals = [];
             $indexBackup = null;
             $preserveBackups = false;
+            $mergeCompleted = false;
+            $mergeAttempted = false;
+            $outcomeUncertain = false;
+            $expectedHead = $state['head'];
+            $expectedMergeHeads = $state['merge_heads'];
+            $this->writeRecoveryMarker();
             try {
+                $indexBackup = $this->backupCandidateIndex();
                 foreach ($resolved as $path => $resolution) {
                     $originals[$path] = $this->backupCandidateFile($path);
                     $this->writeCandidateFile($path, $resolution['contents'], $resolution['mode']);
                 }
-                app(ContentSyncCandidateValidator::class)->validate($this->candidatePath, $paths);
-                $indexBackup = $this->backupCandidateIndex();
                 $pathspecs = array_map(fn (string $path): string => $this->literalPathspec($path), $paths);
                 $this->git(['add', '--', ...$pathspecs], $this->candidatePath);
                 if ($this->unmergedPaths($this->candidatePath) !== []) {
                     throw new ContentSyncFailure('Git still reports unresolved candidate files after validation. No live content changed.');
                 }
-
-                $continued = $this->gitResult([
-                    '-c', 'user.name='.(string) config('content-sync.author_name'),
-                    '-c', 'user.email='.(string) config('content-sync.author_email'),
-                    '-c', 'core.editor=true',
-                    'merge', '--continue',
-                ], $this->candidatePath);
-                if ($continued->getExitCode() !== 0) {
-                    $mergeHead = $this->gitResult(['rev-parse', '--quiet', '--verify', 'MERGE_HEAD'], $this->candidatePath);
-                    if ($mergeHead->getExitCode() === 0 || $this->unmergedPaths($this->candidatePath) !== []) {
-                        throw new ContentSyncFailure('Git could not continue the validated candidate merge. Its conflict state was restored and it remains isolated from live content.');
+                $validatedTree = $this->candidateIndexTree($this->candidatePath);
+                $stagedPaths = $this->changedPathsBetweenTreeAndHead($expectedHead, $validatedTree, $this->candidatePath);
+                $editorialStagedPaths = [];
+                foreach ($stagedPaths as $stagedPath) {
+                    if (! $this->isEditorialPath($stagedPath)) {
+                        continue;
                     }
+                    if (! $this->isSafeConflictPath($stagedPath)) {
+                        throw new ContentSyncFailure('The staged candidate contains an unsafe editorial path. No live content changed.');
+                    }
+                    $editorialStagedPaths[] = $stagedPath;
+                }
+                $validationPaths = array_values(array_unique([...$paths, ...$editorialStagedPaths]));
+                $validatorTree = app(ContentSyncCandidateValidator::class)->validate($this->candidatePath, $validationPaths, $validatedTree);
+                if (! is_string($validatorTree) || ! hash_equals($validatedTree, $validatorTree)) {
+                    throw new ContentSyncFailure('The candidate validator did not confirm the pinned staged tree. The unresolved candidate was restored and no live content changed.');
+                }
+
+                if ($this->revParse('HEAD', $this->candidatePath) !== $expectedHead
+                    || $this->candidateMergeHeads($this->candidatePath) !== $expectedMergeHeads
+                    || $this->candidateIndexTree($this->candidatePath) !== $validatedTree) {
+                    $outcomeUncertain = true;
+                    throw new ContentSyncFailure('The isolated candidate changed after validation. Manual inspection is required before retrying.', recoveryRequired: true);
+                }
+
+                $mergeAttempted = true;
+                $mergeFailure = null;
+                try {
+                    $this->gitResult([
+                        '-c', 'user.name='.(string) config('content-sync.author_name'),
+                        '-c', 'user.email='.(string) config('content-sync.author_email'),
+                        '-c', 'core.editor=true',
+                        'merge', '--continue',
+                    ], $this->candidatePath);
+                } catch (\Throwable $failure) {
+                    $mergeFailure = $failure;
+                }
+                if ($this->candidateCommitMatches($validatedTree, [$expectedHead, ...$expectedMergeHeads])) {
+                    $mergeCompleted = true;
+                    $this->clearRecoveryMarker();
+                } else {
+                    if ($mergeFailure instanceof \Throwable) {
+                        throw $mergeFailure;
+                    }
+                    throw new ContentSyncFailure('Git could not confirm the exact validated candidate tree and parents.');
                 }
             } catch (\Throwable $failure) {
-                try {
-                    if (is_array($indexBackup)) {
+                if ($mergeCompleted) {
+                    $preserveBackups = true;
+                    throw new ContentSyncFailure('The candidate merge completed, but its recovery state could not be cleared. Manual inspection is required before retrying.', recoveryRequired: true);
+                }
+
+                if ($mergeAttempted) {
+                    try {
+                        $confirmedTree = $this->candidateCommitMatches($validatedTree ?? '', [$expectedHead, ...$expectedMergeHeads]);
+                    } catch (\Throwable) {
+                        $confirmedTree = false;
+                    }
+                    if ($confirmedTree) {
+                        try {
+                            $mergeCompleted = true;
+                            $this->clearRecoveryMarker();
+                        } catch (\Throwable) {
+                            $preserveBackups = true;
+                            throw new ContentSyncFailure('The candidate merge completed, but its recovery state could not be cleared. Manual inspection is required before retrying.', recoveryRequired: true);
+                        }
+
+                        return ['status' => 'resolved'];
+                    }
+
+                    try {
+                        if ($this->revParse('HEAD', $this->candidatePath) !== $expectedHead
+                            || $this->candidateMergeHeads($this->candidatePath) !== $expectedMergeHeads) {
+                            $outcomeUncertain = true;
+                        }
+                    } catch (\Throwable) {
+                        $outcomeUncertain = true;
+                    }
+                }
+
+                if (! $mergeAttempted && is_array($indexBackup)) {
+                    try {
+                        $headMatches = $this->revParse('HEAD', $this->candidatePath) === $expectedHead;
+                        $mergeHeadsMatch = $this->candidateMergeHeads($this->candidatePath) === $expectedMergeHeads;
+                        if (isset($validatedTree)) {
+                            $indexMatches = hash_equals($validatedTree, $this->candidateIndexTree($this->candidatePath));
+                        } else {
+                            $backupIndexHash = hash_file('sha256', $indexBackup['backup']);
+                            $currentIndexHash = hash_file('sha256', $indexBackup['index_path']);
+                            $indexMatches = is_string($backupIndexHash) && is_string($currentIndexHash)
+                                && hash_equals($backupIndexHash, $currentIndexHash);
+                        }
+                        if (! $headMatches || ! $mergeHeadsMatch || ! $indexMatches) {
+                            $outcomeUncertain = true;
+                        }
+                    } catch (\Throwable) {
+                        $outcomeUncertain = true;
+                    }
+                }
+
+                if ($outcomeUncertain || ($failure instanceof ContentSyncFailure && $failure->recoveryRequired)) {
+                    $preserveBackups = true;
+                    throw new ContentSyncFailure('The candidate merge outcome is uncertain. Its private recovery files and inspection marker were retained; manual inspection is required before retrying.', recoveryRequired: true);
+                }
+
+                $rollbackFailed = false;
+                if (is_array($indexBackup)) {
+                    try {
                         $this->restoreCandidateIndex($indexBackup);
+                    } catch (\Throwable) {
+                        $rollbackFailed = true;
                     }
-                    foreach ($originals as $path => $backup) {
+                }
+                foreach ($originals as $path => $backup) {
+                    try {
                         $this->restoreCandidateFile($path, $backup);
+                    } catch (\Throwable) {
+                        $rollbackFailed = true;
                     }
+                }
+                if ($rollbackFailed) {
+                    $preserveBackups = true;
+                    throw new ContentSyncFailure('The candidate rollback could not be completed. Any private recovery backups were retained; inspect the isolated candidate before retrying. Live content was not changed.', recoveryRequired: true);
+                }
+
+                try {
+                    $this->clearRecoveryMarker();
                 } catch (\Throwable) {
                     $preserveBackups = true;
-                    throw new ContentSyncFailure('The candidate rollback could not be completed. Private recovery backups were retained; live content was not changed.');
+                    throw new ContentSyncFailure('The candidate was restored, but its recovery state could not be cleared. Manual inspection is required before retrying.', recoveryRequired: true);
                 }
 
                 if ($failure instanceof ContentSyncFailure) {
@@ -287,11 +435,48 @@ final class PortfolioContentSync
         return $lock;
     }
 
-    /** @return array{merge_in_progress: bool, fingerprint: string|null, files: list<array{path: string, contents: string|null, document: array, ours_available: bool, theirs_available: bool}>} */
+    private function recoveryRequired(): bool
+    {
+        $path = (string) config('content-sync.lock_path').'.recovery-required';
+
+        return is_file($path) || is_link($path);
+    }
+
+    private function writeRecoveryMarker(): void
+    {
+        $path = (string) config('content-sync.lock_path').'.recovery-required';
+        if (is_file($path) && ! is_link($path)) {
+            return;
+        }
+        if (file_exists($path) || is_link($path)) {
+            throw new ContentSyncFailure('The candidate recovery state could not be recorded safely. Manual inspection is required.', recoveryRequired: true);
+        }
+
+        $temporary = $path.'.'.bin2hex(random_bytes(6)).'.tmp';
+        if (@file_put_contents($temporary, "manual inspection required\n", LOCK_EX) === false
+            || ! @chmod($temporary, 0600)
+            || ! @rename($temporary, $path)) {
+            @unlink($temporary);
+            throw new ContentSyncFailure('The candidate recovery state could not be recorded. Manual inspection is required.', recoveryRequired: true);
+        }
+    }
+
+    private function clearRecoveryMarker(): void
+    {
+        $path = (string) config('content-sync.lock_path').'.recovery-required';
+        if (! file_exists($path) && ! is_link($path)) {
+            return;
+        }
+        if (is_link($path) || ! is_file($path) || ! @unlink($path) || file_exists($path) || is_link($path)) {
+            throw new ContentSyncFailure('The candidate recovery state could not be cleared safely.', recoveryRequired: true);
+        }
+    }
+
+    /** @return array{merge_in_progress: bool, recovery_required: bool, head: string|null, merge_heads: list<string>, fingerprint: string|null, files: list<array{path: string, contents: string|null, document: array{binary: bool, sections: list<array{id: int, base: string|null, ours: string, theirs: string, protected: bool}>}, stages: array<int, array{mode: string, blob: string}>, ours_available: bool, theirs_available: bool, ours_deletes: bool, theirs_deletes: bool, mode_conflict: bool, mode_only_conflict: bool, marker_size: int, ours_mode: string|null, theirs_mode: string|null}>} */
     private function inspectCandidate(bool $includeSections): array
     {
         if (! is_dir($this->candidatePath)) {
-            return ['merge_in_progress' => false, 'fingerprint' => null, 'files' => []];
+            return ['merge_in_progress' => false, 'recovery_required' => false, 'head' => null, 'merge_heads' => [], 'fingerprint' => null, 'files' => []];
         }
 
         $candidateRoot = realpath($this->candidatePath);
@@ -307,13 +492,19 @@ final class PortfolioContentSync
 
         $mergeHead = $this->gitResult(['rev-parse', '--quiet', '--verify', 'MERGE_HEAD'], $this->candidatePath);
         if ($mergeHead->getExitCode() !== 0) {
-            return ['merge_in_progress' => false, 'fingerprint' => null, 'files' => []];
+            $dirtyCandidate = $this->workingTreeStatus($this->candidatePath) !== [];
+
+            return ['merge_in_progress' => false, 'recovery_required' => $dirtyCandidate, 'head' => null, 'merge_heads' => [], 'fingerprint' => null, 'files' => []];
         }
 
         $head = $this->revParse('HEAD', $this->candidatePath);
+        $mergeHeads = $this->candidateMergeHeads($this->candidatePath);
         $paths = $this->unmergedPaths($this->candidatePath);
+        if ($paths === []) {
+            return ['merge_in_progress' => true, 'recovery_required' => true, 'head' => $head, 'merge_heads' => $mergeHeads, 'fingerprint' => null, 'files' => []];
+        }
         $files = [];
-        $fingerprintParts = [$head, trim($mergeHead->getOutput())];
+        $fingerprintParts = [$head, ...$mergeHeads];
         foreach ($paths as $path) {
             if (! $this->isSafeConflictPath($path)) {
                 throw new ContentSyncFailure('The candidate contains a conflict outside the supported editorial paths. It was left untouched.');
@@ -332,11 +523,15 @@ final class PortfolioContentSync
             $stages = $this->unmergedStages($path);
             $oursExists = isset($stages[2]);
             $theirsExists = isset($stages[3]);
+            $modeConflict = $oursExists && $theirsExists && $stages[2]['mode'] !== $stages[3]['mode'];
+            $binaryAttribute = $this->hasBinaryDiffAttribute($path);
             $binary = $contents === null || ! $oursExists || ! $theirsExists
-                || str_contains($contents, "\0") || $this->hasBinaryDiffAttribute($path);
+                || str_contains($contents, "\0") || $binaryAttribute;
+            $modeOnlyConflict = $modeConflict && ! $binary && $stages[2]['blob'] === $stages[3]['blob'];
+            $markerSize = ! $binary && ! $modeOnlyConflict ? $this->conflictMarkerSize($path) : 7;
             $document = $binary
                 ? ['binary' => true, 'sections' => []]
-                : ContentSyncConflictDocument::inspect($contents);
+                : ($modeOnlyConflict ? ['binary' => false, 'sections' => []] : ContentSyncConflictDocument::inspect($contents, $markerSize));
             if ($this->isPrivateCvGlobalPath($path)) {
                 foreach ($document['sections'] as &$section) {
                     $section['protected'] = true;
@@ -354,14 +549,16 @@ final class PortfolioContentSync
                 'theirs_available' => $theirsAvailable,
                 'ours_deletes' => ! $oursExists,
                 'theirs_deletes' => ! $theirsExists,
-                'mode_conflict' => $oursExists && $theirsExists && $stages[2]['mode'] !== $stages[3]['mode'],
+                'mode_conflict' => $modeConflict,
+                'mode_only_conflict' => $modeOnlyConflict,
+                'marker_size' => $markerSize,
                 'ours_mode' => $stages[2]['mode'] ?? null,
                 'theirs_mode' => $stages[3]['mode'] ?? null,
             ];
 
             if ($includeSections) {
                 $stageStatus = $this->gitResult(['ls-files', '-u', '-z', '--', $this->literalPathspec($path)], $this->candidatePath)->getOutput();
-                $fingerprintParts[] = $path."\0".hash('sha256', (string) $contents)."\0".hash('sha256', $stageStatus);
+                $fingerprintParts[] = $path."\0".hash('sha256', (string) $contents)."\0".hash('sha256', $stageStatus)."\0".$markerSize;
             }
         }
 
@@ -369,7 +566,7 @@ final class PortfolioContentSync
             ? hash_hmac('sha256', implode("\0", $fingerprintParts), (string) config('app.key'))
             : null;
 
-        return ['merge_in_progress' => true, 'fingerprint' => $fingerprint, 'files' => $files];
+        return ['merge_in_progress' => true, 'recovery_required' => false, 'head' => $head, 'merge_heads' => $mergeHeads, 'fingerprint' => $fingerprint, 'files' => $files];
     }
 
     /** @param array{mode: string, blob: string} $stage */
@@ -382,10 +579,32 @@ final class PortfolioContentSync
 
     private function hasBinaryDiffAttribute(string $path): bool
     {
-        $result = $this->gitResult(['check-attr', '-z', 'diff', '--', $this->literalPathspec($path)], $this->candidatePath);
+        $result = $this->gitResult(['check-attr', '-z', 'diff', '--', $path], $this->candidatePath);
         $parts = explode("\0", $result->getOutput());
 
         return in_array($parts[2] ?? '', ['binary', 'unset'], true);
+    }
+
+    private function conflictMarkerSize(string $path): int
+    {
+        $result = $this->gitResult(['check-attr', '-z', 'conflict-marker-size', '--', $path], $this->candidatePath);
+        if ($result->getExitCode() !== 0) {
+            throw new ContentSyncFailure('The candidate conflict marker settings could not be read safely. It was left untouched.');
+        }
+        $parts = explode("\0", $result->getOutput());
+        $value = $parts[2] ?? null;
+        if (in_array($value, ['unspecified', 'unset'], true)) {
+            return 7;
+        }
+        if (! is_string($value) || preg_match('/^[0-9]{1,3}$/', $value) !== 1) {
+            throw new ContentSyncFailure('The candidate conflict marker settings are unsupported. It was left untouched.');
+        }
+        $size = (int) $value;
+        if ($size < 1 || $size > 256) {
+            throw new ContentSyncFailure('The candidate conflict marker settings are unsupported. It was left untouched.');
+        }
+
+        return $size;
     }
 
     /** @return array<int, array{mode: string, blob: string}> */
@@ -533,8 +752,11 @@ final class PortfolioContentSync
     {
         $fullPath = $this->candidateFilePath($path);
         if (! $backup['existed']) {
-            if (is_file($fullPath) && ! is_link($fullPath)) {
-                @unlink($fullPath);
+            if (file_exists($fullPath) || is_link($fullPath)) {
+                if (! is_file($fullPath) || is_link($fullPath) || ! @unlink($fullPath)
+                    || file_exists($fullPath) || is_link($fullPath)) {
+                    throw new ContentSyncFailure('The unresolved candidate could not be removed. Live content remains unchanged.');
+                }
             }
 
             return;
@@ -796,6 +1018,68 @@ final class PortfolioContentSync
         $result = $this->gitResult(['diff', '--name-only', '--diff-filter=U', '-z'], $cwd);
 
         return array_values(array_filter(explode("\0", $result->getOutput()), static fn (string $path): bool => $path !== ''));
+    }
+
+    /** @return list<string> */
+    private function changedPathsBetweenTreeAndHead(string $head, string $tree, string $cwd): array
+    {
+        $result = $this->gitResult(['diff', '--no-renames', '--name-only', '-z', $head, $tree], $cwd);
+        if ($result->getExitCode() !== 0) {
+            throw new ContentSyncFailure('The pinned candidate tree paths could not be identified. The candidate was left untouched.');
+        }
+
+        return array_values(array_filter(explode("\0", $result->getOutput()), static fn (string $path): bool => $path !== ''));
+    }
+
+    /** @return list<string> */
+    private function candidateMergeHeads(string $cwd): array
+    {
+        $result = $this->gitResult(['rev-parse', '--quiet', '--verify', 'MERGE_HEAD'], $cwd);
+        if ($result->getExitCode() !== 0) {
+            return [];
+        }
+
+        $heads = array_values(array_filter(preg_split('/\R/', trim($result->getOutput())) ?: [], static fn (string $head): bool => $head !== ''));
+        foreach ($heads as $head) {
+            if (preg_match('/^(?:[a-f0-9]{40}|[a-f0-9]{64})$/', $head) !== 1) {
+                throw new ContentSyncFailure('The isolated candidate merge state could not be verified. Manual inspection is required.');
+            }
+        }
+
+        return $heads;
+    }
+
+    private function candidateIndexTree(string $cwd): string
+    {
+        $tree = trim($this->git(['write-tree'], $cwd)->getOutput());
+        if (preg_match('/^(?:[a-f0-9]{40}|[a-f0-9]{64})$/', $tree) !== 1) {
+            throw new ContentSyncFailure('The staged candidate tree could not be verified. Manual inspection is required.');
+        }
+
+        return $tree;
+    }
+
+    /** @param list<string> $expectedParents */
+    private function candidateCommitMatches(string $expectedTree, array $expectedParents): bool
+    {
+        if (preg_match('/^(?:[a-f0-9]{40}|[a-f0-9]{64})$/', $expectedTree) !== 1
+            || $this->candidateMergeHeads($this->candidatePath) !== []
+            || $this->unmergedPaths($this->candidatePath) !== []
+            || $this->candidateIndexTree($this->candidatePath) !== $expectedTree) {
+            return false;
+        }
+
+        $result = $this->gitResult(['show', '-s', '--format=%T%n%P', 'HEAD'], $this->candidatePath);
+        if ($result->getExitCode() !== 0) {
+            return false;
+        }
+        $lines = preg_split('/\R/', trim($result->getOutput()), 2) ?: [];
+        if (count($lines) !== 2 || ! hash_equals($expectedTree, $lines[0])) {
+            return false;
+        }
+        $parents = $lines[1] === '' ? [] : (preg_split('/\s+/', $lines[1]) ?: []);
+
+        return $parents === $expectedParents;
     }
 
     private function literalPathspec(string $path): string
