@@ -25,27 +25,8 @@ final class PortfolioContentSync
 
     public function run(bool $dryRun = false): array
     {
-        $configuredRepository = (string) config('content-sync.repository');
-        $this->repository = realpath($configuredRepository) ?: '';
-        if ($this->repository === '' || ! is_dir($this->repository)) {
-            throw new ContentSyncFailure('The configured persistent content Git working tree is unavailable.');
-        }
-
-        $configuredCandidate = (string) config('content-sync.candidate_path');
-        $this->candidatePath = $configuredCandidate;
-        $this->candidateBranchPrefix = (string) config('content-sync.candidate_branch_prefix');
-        $this->gitEnvironment = $this->makeGitEnvironment();
-
-        $lockPath = (string) config('content-sync.lock_path');
-        $lockDirectory = dirname($lockPath);
-        if (! is_dir($lockDirectory) && ! mkdir($lockDirectory, 0770, true) && ! is_dir($lockDirectory)) {
-            throw new ContentSyncFailure('Could not create the content synchronization lock directory.');
-        }
-
-        $this->lockHandle = @fopen($lockPath, 'c');
-        if (! is_resource($this->lockHandle)) {
-            throw new ContentSyncFailure('Could not open the content synchronization lock.');
-        }
+        $this->initialize();
+        $this->lockHandle = $this->openSyncLock();
 
         if (! flock($this->lockHandle, LOCK_EX | LOCK_NB)) {
             fclose($this->lockHandle);
@@ -60,6 +41,509 @@ final class PortfolioContentSync
             flock($this->lockHandle, LOCK_UN);
             fclose($this->lockHandle);
             $this->lockHandle = null;
+        }
+    }
+
+    /** @return array{busy: bool, merge_in_progress: bool, files: list<array{path: string, sections: int, binary: bool}>} */
+    public function conflictSummary(): array
+    {
+        $this->initialize(localGitOnly: true);
+        $lock = $this->openSyncLock();
+        if (! flock($lock, LOCK_SH | LOCK_NB)) {
+            fclose($lock);
+
+            return ['busy' => true, 'merge_in_progress' => false, 'files' => []];
+        }
+
+        try {
+            $state = $this->inspectCandidate(includeSections: false);
+
+            return [
+                'busy' => false,
+                'merge_in_progress' => $state['merge_in_progress'],
+                'files' => array_map(static fn (array $file): array => [
+                    'path' => $file['path'],
+                    'sections' => count($file['document']['sections']),
+                    'binary' => $file['document']['binary'],
+                ], $state['files']),
+            ];
+        } finally {
+            flock($lock, LOCK_UN);
+            fclose($lock);
+        }
+    }
+
+    /** @return array{available: bool, fingerprint: string|null, files: list<array<string, mixed>>} */
+    public function conflictDetails(): array
+    {
+        $this->initialize(localGitOnly: true);
+        $lock = $this->openSyncLock();
+        if (! flock($lock, LOCK_SH | LOCK_NB)) {
+            fclose($lock);
+
+            return ['available' => false, 'fingerprint' => null, 'files' => []];
+        }
+
+        try {
+            $state = $this->inspectCandidate(includeSections: true);
+
+            return [
+                'available' => $state['merge_in_progress'] && $state['files'] !== [],
+                'fingerprint' => $state['fingerprint'],
+                'files' => array_map(function (array $file): array {
+                    $document = $file['document'];
+                    $sections = array_map(static function (array $section): array {
+                        return [
+                            'id' => $section['id'],
+                            'base' => $section['base'] === null ? null : ContentSyncConflictDocument::displaySection($section['base'], $section['protected']),
+                            'ours' => ContentSyncConflictDocument::displaySection($section['ours'], $section['protected']),
+                            'theirs' => ContentSyncConflictDocument::displaySection($section['theirs'], $section['protected']),
+                            'protected' => $section['protected'],
+                        ];
+                    }, $document['sections']);
+
+                    return [
+                        'path' => $file['path'],
+                        'binary' => $document['binary'],
+                        'ours_available' => $file['ours_available'],
+                        'theirs_available' => $file['theirs_available'],
+                        'ours_deletes' => $file['ours_deletes'],
+                        'theirs_deletes' => $file['theirs_deletes'],
+                        'mode_conflict' => $file['mode_conflict'],
+                        'ours_executable' => $file['ours_mode'] === '100755',
+                        'theirs_executable' => $file['theirs_mode'] === '100755',
+                        'sections' => $sections,
+                    ];
+                }, $state['files']),
+            ];
+        } finally {
+            flock($lock, LOCK_UN);
+            fclose($lock);
+        }
+    }
+
+    /** @param array<string, array<string, mixed>> $resolutions */
+    public function resolveConflicts(string $fingerprint, array $resolutions): array
+    {
+        $this->initialize(localGitOnly: true);
+        $lock = $this->openSyncLock();
+        if (! flock($lock, LOCK_EX | LOCK_NB)) {
+            fclose($lock);
+
+            return ['status' => 'busy'];
+        }
+
+        try {
+            $state = $this->inspectCandidate(includeSections: true);
+            if (! $state['merge_in_progress'] || $state['files'] === [] || ! is_string($state['fingerprint'])
+                || ! hash_equals($state['fingerprint'], $fingerprint)) {
+                throw new ContentSyncFailure('The candidate conflict changed or is no longer available. Reload the conflict details.');
+            }
+
+            $paths = array_column($state['files'], 'path');
+            if (array_diff($paths, array_keys($resolutions)) !== [] || array_diff(array_keys($resolutions), $paths) !== []) {
+                throw new ContentSyncFailure('The submitted files do not match the candidate conflict. Reload the conflict details.');
+            }
+
+            $resolved = [];
+            foreach ($state['files'] as $file) {
+                $path = $file['path'];
+                $resolution = $resolutions[$path] ?? null;
+                if (! is_array($resolution)) {
+                    throw new ContentSyncFailure('Choose a resolution for each conflicting file. The candidate was left untouched.');
+                }
+
+                if ($file['document']['binary']) {
+                    $choice = $resolution['choice'] ?? null;
+                    if (! in_array($choice, ['ours', 'theirs'], true)) {
+                        throw new ContentSyncFailure('Choose one version for each binary conflict file. The candidate was left untouched.');
+                    }
+                    $stage = $choice === 'ours' ? 2 : 3;
+                    if (! $file[$choice.'_available'] && $file[$choice.'_deletes']) {
+                        $resolved[$path] = ['contents' => null, 'mode' => null];
+
+                        continue;
+                    }
+                    if (! $file[$choice.'_available']) {
+                        throw new ContentSyncFailure('The selected version is too large or uses an unsupported file type. The candidate was left untouched.');
+                    }
+                    $stageInfo = $file['stages'][$stage] ?? null;
+                    if (! is_array($stageInfo)) {
+                        throw new ContentSyncFailure('The selected version is unavailable for a binary conflict file. The candidate was left untouched.');
+                    }
+                    $blob = $this->gitResult(['cat-file', 'blob', $stageInfo['blob']], $this->candidatePath);
+                    if ($blob->getExitCode() !== 0) {
+                        throw new ContentSyncFailure('The selected version is unavailable for a binary conflict file. The candidate was left untouched.');
+                    }
+                    $resolved[$path] = ['contents' => $blob->getOutput(), 'mode' => $stageInfo['mode']];
+                } else {
+                    $sections = $resolution['sections'] ?? null;
+                    if (! is_array($sections) || ! array_is_list($sections)) {
+                        throw new ContentSyncFailure('Choose a resolution for every conflict section. The candidate was left untouched.');
+                    }
+                    $modeChoice = $resolution['mode_choice'] ?? null;
+                    if ($file['mode_conflict'] && ! in_array($modeChoice, ['ours', 'theirs'], true)) {
+                        throw new ContentSyncFailure('Choose the file mode for this conflicting text file. The candidate was left untouched.');
+                    }
+                    $modeStage = $modeChoice === 'theirs' ? 3 : 2;
+                    $resolved[$path] = [
+                        'contents' => ContentSyncConflictDocument::compose($file['contents'], $file['document']['sections'], $sections),
+                        'mode' => $file['stages'][$modeStage]['mode'],
+                    ];
+                }
+
+            }
+
+            $originals = [];
+            $indexBackup = null;
+            $preserveBackups = false;
+            try {
+                foreach ($resolved as $path => $resolution) {
+                    $originals[$path] = $this->backupCandidateFile($path);
+                    $this->writeCandidateFile($path, $resolution['contents'], $resolution['mode']);
+                }
+                app(ContentSyncCandidateValidator::class)->validate($this->candidatePath, $paths);
+                $indexBackup = $this->backupCandidateIndex();
+                $pathspecs = array_map(fn (string $path): string => $this->literalPathspec($path), $paths);
+                $this->git(['add', '--', ...$pathspecs], $this->candidatePath);
+                if ($this->unmergedPaths($this->candidatePath) !== []) {
+                    throw new ContentSyncFailure('Git still reports unresolved candidate files after validation. No live content changed.');
+                }
+
+                $continued = $this->gitResult([
+                    '-c', 'user.name='.(string) config('content-sync.author_name'),
+                    '-c', 'user.email='.(string) config('content-sync.author_email'),
+                    '-c', 'core.editor=true',
+                    'merge', '--continue',
+                ], $this->candidatePath);
+                if ($continued->getExitCode() !== 0) {
+                    $mergeHead = $this->gitResult(['rev-parse', '--quiet', '--verify', 'MERGE_HEAD'], $this->candidatePath);
+                    if ($mergeHead->getExitCode() === 0 || $this->unmergedPaths($this->candidatePath) !== []) {
+                        throw new ContentSyncFailure('Git could not continue the validated candidate merge. Its conflict state was restored and it remains isolated from live content.');
+                    }
+                }
+            } catch (\Throwable $failure) {
+                try {
+                    if (is_array($indexBackup)) {
+                        $this->restoreCandidateIndex($indexBackup);
+                    }
+                    foreach ($originals as $path => $backup) {
+                        $this->restoreCandidateFile($path, $backup);
+                    }
+                } catch (\Throwable) {
+                    $preserveBackups = true;
+                    throw new ContentSyncFailure('The candidate rollback could not be completed. Private recovery backups were retained; live content was not changed.');
+                }
+
+                if ($failure instanceof ContentSyncFailure) {
+                    throw $failure;
+                }
+                throw new ContentSyncFailure('Candidate validation failed. The unresolved candidate was restored and no live content changed.');
+            } finally {
+                if (is_array($indexBackup) && is_string($indexBackup['backup']) && ! $preserveBackups) {
+                    @unlink($indexBackup['backup']);
+                }
+                foreach ($originals as $backup) {
+                    if (is_string($backup['backup']) && ! $preserveBackups) {
+                        @unlink($backup['backup']);
+                    }
+                }
+            }
+
+            return ['status' => 'resolved'];
+        } finally {
+            flock($lock, LOCK_UN);
+            fclose($lock);
+        }
+    }
+
+    private function initialize(bool $localGitOnly = false): void
+    {
+        $configuredRepository = (string) config('content-sync.repository');
+        $this->repository = realpath($configuredRepository) ?: '';
+        if ($this->repository === '' || ! is_dir($this->repository)) {
+            throw new ContentSyncFailure('The configured persistent content Git working tree is unavailable.');
+        }
+
+        $this->candidatePath = rtrim((string) config('content-sync.candidate_path'), DIRECTORY_SEPARATOR);
+        $this->candidateBranchPrefix = (string) config('content-sync.candidate_branch_prefix');
+        $this->gitEnvironment = $localGitOnly ? ['GIT_TERMINAL_PROMPT' => '0'] : $this->makeGitEnvironment();
+    }
+
+    /** @return resource */
+    private function openSyncLock()
+    {
+        $lockPath = (string) config('content-sync.lock_path');
+        $lockDirectory = dirname($lockPath);
+        if (! is_dir($lockDirectory) && ! mkdir($lockDirectory, 0770, true) && ! is_dir($lockDirectory)) {
+            throw new ContentSyncFailure('Could not create the content synchronization lock directory.');
+        }
+
+        $lock = @fopen($lockPath, 'c');
+        if (! is_resource($lock)) {
+            throw new ContentSyncFailure('Could not open the content synchronization lock.');
+        }
+
+        return $lock;
+    }
+
+    /** @return array{merge_in_progress: bool, fingerprint: string|null, files: list<array{path: string, contents: string|null, document: array, ours_available: bool, theirs_available: bool}>} */
+    private function inspectCandidate(bool $includeSections): array
+    {
+        if (! is_dir($this->candidatePath)) {
+            return ['merge_in_progress' => false, 'fingerprint' => null, 'files' => []];
+        }
+
+        $candidateRoot = realpath($this->candidatePath);
+        $top = $this->gitResult(['rev-parse', '--show-toplevel'], $this->candidatePath);
+        if ($candidateRoot === false || $top->getExitCode() !== 0 || realpath(trim($top->getOutput())) !== $candidateRoot) {
+            throw new ContentSyncFailure('The persistent content candidate is not a valid Git worktree. It was left untouched.');
+        }
+
+        $branch = trim($this->git(['branch', '--show-current'], $this->candidatePath)->getOutput());
+        if (! str_starts_with($branch, $this->candidateBranchPrefix)) {
+            throw new ContentSyncFailure('The persistent content candidate branch is not recognized. It was left untouched.');
+        }
+
+        $mergeHead = $this->gitResult(['rev-parse', '--quiet', '--verify', 'MERGE_HEAD'], $this->candidatePath);
+        if ($mergeHead->getExitCode() !== 0) {
+            return ['merge_in_progress' => false, 'fingerprint' => null, 'files' => []];
+        }
+
+        $head = $this->revParse('HEAD', $this->candidatePath);
+        $paths = $this->unmergedPaths($this->candidatePath);
+        $files = [];
+        $fingerprintParts = [$head, trim($mergeHead->getOutput())];
+        foreach ($paths as $path) {
+            if (! $this->isSafeConflictPath($path)) {
+                throw new ContentSyncFailure('The candidate contains a conflict outside the supported editorial paths. It was left untouched.');
+            }
+
+            $fullPath = $this->candidateFilePath($path);
+            $contents = null;
+            if (is_file($fullPath) && ! is_link($fullPath)) {
+                $size = filesize($fullPath);
+                if (is_int($size) && $size <= 262_144) {
+                    $read = file_get_contents($fullPath);
+                    $contents = is_string($read) ? $read : null;
+                }
+            }
+
+            $stages = $this->unmergedStages($path);
+            $oursExists = isset($stages[2]);
+            $theirsExists = isset($stages[3]);
+            $binary = $contents === null || ! $oursExists || ! $theirsExists
+                || str_contains($contents, "\0") || $this->hasBinaryDiffAttribute($path);
+            $document = $binary
+                ? ['binary' => true, 'sections' => []]
+                : ContentSyncConflictDocument::inspect($contents);
+            if ($this->isPrivateCvGlobalPath($path)) {
+                foreach ($document['sections'] as &$section) {
+                    $section['protected'] = true;
+                }
+                unset($section);
+            }
+            $oursAvailable = $oursExists && in_array($stages[2]['mode'], ['100644', '100755'], true) && $this->stageBlobAvailable($stages[2], 52_428_800);
+            $theirsAvailable = $theirsExists && in_array($stages[3]['mode'], ['100644', '100755'], true) && $this->stageBlobAvailable($stages[3], 52_428_800);
+            $files[] = [
+                'path' => $path,
+                'contents' => $contents,
+                'document' => $document,
+                'stages' => $stages,
+                'ours_available' => $oursAvailable,
+                'theirs_available' => $theirsAvailable,
+                'ours_deletes' => ! $oursExists,
+                'theirs_deletes' => ! $theirsExists,
+                'mode_conflict' => $oursExists && $theirsExists && $stages[2]['mode'] !== $stages[3]['mode'],
+                'ours_mode' => $stages[2]['mode'] ?? null,
+                'theirs_mode' => $stages[3]['mode'] ?? null,
+            ];
+
+            if ($includeSections) {
+                $stageStatus = $this->gitResult(['ls-files', '-u', '-z', '--', $this->literalPathspec($path)], $this->candidatePath)->getOutput();
+                $fingerprintParts[] = $path."\0".hash('sha256', (string) $contents)."\0".hash('sha256', $stageStatus);
+            }
+        }
+
+        $fingerprint = $includeSections
+            ? hash_hmac('sha256', implode("\0", $fingerprintParts), (string) config('app.key'))
+            : null;
+
+        return ['merge_in_progress' => true, 'fingerprint' => $fingerprint, 'files' => $files];
+    }
+
+    /** @param array{mode: string, blob: string} $stage */
+    private function stageBlobAvailable(array $stage, int $maxBytes): bool
+    {
+        $size = $this->gitResult(['cat-file', '-s', $stage['blob']], $this->candidatePath);
+
+        return $size->getExitCode() === 0 && ctype_digit(trim($size->getOutput())) && (int) trim($size->getOutput()) <= $maxBytes;
+    }
+
+    private function hasBinaryDiffAttribute(string $path): bool
+    {
+        $result = $this->gitResult(['check-attr', '-z', 'diff', '--', $this->literalPathspec($path)], $this->candidatePath);
+        $parts = explode("\0", $result->getOutput());
+
+        return in_array($parts[2] ?? '', ['binary', 'unset'], true);
+    }
+
+    /** @return array<int, array{mode: string, blob: string}> */
+    private function unmergedStages(string $path): array
+    {
+        $output = $this->gitResult(['ls-files', '-u', '-z', '--', $this->literalPathspec($path)], $this->candidatePath)->getOutput();
+        $stages = [];
+        foreach (explode("\0", $output) as $entry) {
+            if (preg_match('/^([0-7]{6}) ([a-f0-9]{40,64}) ([123])\t/', $entry, $matches) === 1) {
+                $stages[(int) $matches[3]] = ['mode' => $matches[1], 'blob' => $matches[2]];
+            }
+        }
+
+        return $stages;
+    }
+
+    private function isSafeConflictPath(string $path): bool
+    {
+        if ($path === '' || str_starts_with($path, '/') || str_contains($path, '\\')
+            || preg_match('/[\x00-\x1F\x7F]/', $path) === 1 || ! $this->isEditorialPath($path)) {
+            return false;
+        }
+
+        foreach (explode('/', $path) as $segment) {
+            if ($segment === '' || $segment === '.' || $segment === '..') {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private function isPrivateCvGlobalPath(string $path): bool
+    {
+        return preg_match('#^content/globals/(?:[^/]+/)?cv\.yaml$#', $path) === 1;
+    }
+
+    private function candidateFilePath(string $path): string
+    {
+        if (! $this->isSafeConflictPath($path)) {
+            throw new ContentSyncFailure('The candidate conflict path is not supported. It was left untouched.');
+        }
+
+        $root = realpath($this->candidatePath);
+        $parent = realpath(dirname($this->candidatePath.'/'.$path));
+        if (! is_string($root) || ! is_string($parent) || ! str_starts_with($parent, $root.DIRECTORY_SEPARATOR)) {
+            throw new ContentSyncFailure('The candidate conflict path resolves outside its worktree. It was left untouched.');
+        }
+
+        $fullPath = $parent.DIRECTORY_SEPARATOR.basename($path);
+        if (is_link($fullPath)) {
+            throw new ContentSyncFailure('The candidate conflict path is a symbolic link. It was left untouched.');
+        }
+
+        return $fullPath;
+    }
+
+    private function writeCandidateFile(string $path, ?string $contents, ?string $gitMode): void
+    {
+        $fullPath = $this->candidateFilePath($path);
+        if ($contents === null) {
+            if ((is_file($fullPath) || is_link($fullPath)) && ! unlink($fullPath)) {
+                throw new ContentSyncFailure('The resolved candidate file could not be removed. It was left isolated from live content.');
+            }
+
+            return;
+        }
+        $mode = is_string($gitMode)
+            ? (octdec($gitMode) & 0777)
+            : (is_file($fullPath) ? ((fileperms($fullPath) ?: 0644) & 0777) : 0644);
+
+        $temporary = dirname($fullPath).'/.content-sync-resolution-'.bin2hex(random_bytes(8)).'.tmp';
+        if (file_put_contents($temporary, $contents, LOCK_EX) === false || ! chmod($temporary, $mode) || ! rename($temporary, $fullPath)) {
+            @unlink($temporary);
+            throw new ContentSyncFailure('The resolved candidate file could not be written. It was left isolated from live content.');
+        }
+    }
+
+    /** @return array{backup: string, index_path: string, mode: int} */
+    private function backupCandidateIndex(): array
+    {
+        $indexPath = trim($this->git(['rev-parse', '--git-path', 'index'], $this->candidatePath)->getOutput());
+        if (! str_starts_with($indexPath, DIRECTORY_SEPARATOR)) {
+            $indexPath = $this->candidatePath.DIRECTORY_SEPARATOR.$indexPath;
+        }
+        $indexPath = realpath($indexPath) ?: '';
+        if ($indexPath === '' || ! is_file($indexPath)) {
+            throw new ContentSyncFailure('Could not preserve the candidate Git index. It was left untouched.');
+        }
+
+        $directory = storage_path('app/private/content-sync-conflicts');
+        if (! is_dir($directory) && ! mkdir($directory, 0700, true) && ! is_dir($directory)) {
+            throw new ContentSyncFailure('Could not prepare a private candidate recovery file. The candidate was left untouched.');
+        }
+        if (is_link($directory)) {
+            throw new ContentSyncFailure('The private candidate recovery directory is not safe. The candidate was left untouched.');
+        }
+        @chmod($directory, 0700);
+        $backup = $directory.'/index-'.bin2hex(random_bytes(16));
+        if (! copy($indexPath, $backup)) {
+            throw new ContentSyncFailure('Could not preserve the candidate Git index. It was left untouched.');
+        }
+        @chmod($backup, 0600);
+
+        return ['backup' => $backup, 'index_path' => $indexPath, 'mode' => (fileperms($indexPath) ?: 0644) & 0777];
+    }
+
+    /** @param array{backup: string, index_path: string, mode: int} $backup */
+    private function restoreCandidateIndex(array $backup): void
+    {
+        $temporary = $backup['index_path'].'.restore-'.bin2hex(random_bytes(8));
+        if (! copy($backup['backup'], $temporary) || ! chmod($temporary, $backup['mode']) || ! rename($temporary, $backup['index_path'])) {
+            @unlink($temporary);
+            throw new ContentSyncFailure('The unresolved candidate index could not be restored.');
+        }
+    }
+
+    /** @return array{existed: bool, backup: string|null, mode: int} */
+    private function backupCandidateFile(string $path): array
+    {
+        $fullPath = $this->candidateFilePath($path);
+        if (! is_file($fullPath)) {
+            return ['existed' => false, 'backup' => null, 'mode' => 0644];
+        }
+
+        $directory = storage_path('app/private/content-sync-conflicts');
+        if (! is_dir($directory) && ! mkdir($directory, 0700, true) && ! is_dir($directory)) {
+            throw new ContentSyncFailure('Could not prepare a private candidate recovery file. The candidate was left untouched.');
+        }
+        if (is_link($directory)) {
+            throw new ContentSyncFailure('The private candidate recovery directory is not safe. The candidate was left untouched.');
+        }
+        @chmod($directory, 0700);
+        $backup = $directory.'/'.bin2hex(random_bytes(16));
+        if (! copy($fullPath, $backup)) {
+            throw new ContentSyncFailure('Could not preserve the unresolved candidate. It was left untouched.');
+        }
+        @chmod($backup, 0600);
+
+        return ['existed' => true, 'backup' => $backup, 'mode' => (fileperms($fullPath) ?: 0644) & 0777];
+    }
+
+    /** @param array{existed: bool, backup: string|null, mode: int} $backup */
+    private function restoreCandidateFile(string $path, array $backup): void
+    {
+        $fullPath = $this->candidateFilePath($path);
+        if (! $backup['existed']) {
+            if (is_file($fullPath) && ! is_link($fullPath)) {
+                @unlink($fullPath);
+            }
+
+            return;
+        }
+
+        $temporary = dirname($fullPath).'/.content-sync-restore-'.bin2hex(random_bytes(8)).'.tmp';
+        if (! is_string($backup['backup']) || ! copy($backup['backup'], $temporary) || ! chmod($temporary, $backup['mode']) || ! rename($temporary, $fullPath)) {
+            @unlink($temporary);
+            throw new ContentSyncFailure('The unresolved candidate could not be restored. Live content remains unchanged.');
         }
     }
 
@@ -309,9 +793,14 @@ final class PortfolioContentSync
     /** @return list<string> */
     private function unmergedPaths(string $cwd): array
     {
-        $result = $this->gitResult(['diff', '--name-only', '--diff-filter=U'], $cwd);
+        $result = $this->gitResult(['diff', '--name-only', '--diff-filter=U', '-z'], $cwd);
 
-        return array_values(array_filter(preg_split('/\R/', trim($result->getOutput())) ?: []));
+        return array_values(array_filter(explode("\0", $result->getOutput()), static fn (string $path): bool => $path !== ''));
+    }
+
+    private function literalPathspec(string $path): string
+    {
+        return ':(literal)'.$path;
     }
 
     private function stopForRootMergeState(string $cwd): void

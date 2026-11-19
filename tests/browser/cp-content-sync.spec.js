@@ -5,11 +5,18 @@ import { fileURLToPath } from 'node:url';
 const script = readFileSync(fileURLToPath(new URL('../../public/cp-content-sync.js', import.meta.url)), 'utf8');
 
 const markup = () => `
-    <section data-content-sync data-status-url="/cp/content-sync/status" data-start-url="/cp/content-sync">
+    <section data-content-sync data-status-url="/cp/content-sync/status" data-start-url="/cp/content-sync" data-conflicts-url="/cp/content-sync/conflicts" data-resolve-url="/cp/content-sync/conflicts/resolve">
         <p data-sync-state>Wird geladen</p>
         <span data-sync-countdown>–</span>
         <button data-sync-start>Jetzt synchronisieren</button>
         <pre data-sync-logs style="height: 100px; overflow: auto"></pre>
+        <button data-sync-conflicts-open hidden>Konflikte prüfen</button>
+        <section data-sync-conflicts hidden>
+            <p data-sync-conflict-message hidden></p>
+            <div data-sync-conflict-list></div>
+            <button data-sync-conflicts-reload>Neu laden</button>
+            <button data-sync-resolve disabled>Validieren und fortsetzen</button>
+        </section>
     </section>`;
 
 test('content sync controls bind after CP mounting and poll recent logs', async ({ page }) => {
@@ -42,7 +49,7 @@ test('content sync controls bind after CP mounting and poll recent logs', async 
     await expect.poll(() => statusCalls).toBeGreaterThan(0);
     await expect(root.locator('[data-sync-start]')).toBeDisabled();
     running = false;
-    await expect(root.locator('[data-sync-start]')).toBeEnabled({ timeout: 3000 });
+    await expect(root.locator('[data-sync-start]')).toBeEnabled({ timeout: 6000 });
     await root.locator('[data-sync-start]').click();
     await expect.poll(() => startCalls).toBe(1);
 });
@@ -136,4 +143,161 @@ test('status polling serializes slow requests and refreshes after a manual start
     } finally {
         releaseFirstResponse();
     }
+});
+
+test('conflicts are resolved per section and protected CV values stay out of status and requests', async ({ page }) => {
+    const privateValue = 'PRIVATE-CV-EMAIL-SENTINEL@example.invalid';
+    let submitted;
+    await page.route('**/cp/content-sync/status', route => route.fulfill({ json: {
+        running: false,
+        started_at: null,
+        next_run_at: new Date(Date.now() + 120_000).toISOString(),
+        logs: 'Kandidatenkonflikt erkannt.',
+        conflicts: { busy: false, merge_in_progress: true, files: [
+            { path: 'content/collections/entry.md', sections: 2, binary: false },
+            { path: 'content/globals/cv.yaml', sections: 1, binary: false },
+            { path: 'public/documents/obsolete.pdf', sections: 0, binary: true },
+        ] },
+    } }));
+    await page.route('**/cp/content-sync/conflicts', route => route.fulfill({ json: {
+        available: true,
+        fingerprint: 'a'.repeat(64),
+        files: [
+            { path: 'content/collections/entry.md', binary: false, sections: [
+                { id: 0, base: 'title: Original', ours: 'title: Local', theirs: 'title: Incoming', protected: false },
+                { id: 1, base: null, ours: 'body: Local body', theirs: 'body: Incoming body', protected: false },
+            ] },
+            { path: 'content/globals/cv.yaml', binary: false, sections: [
+                { id: 0, base: null, ours: '[Geschützte CV-Werte werden nicht angezeigt.]', theirs: '[Geschützte CV-Werte werden nicht angezeigt.]', protected: true },
+            ] },
+            { path: 'public/documents/obsolete.pdf', binary: true, ours_available: true, theirs_available: false, ours_deletes: false, theirs_deletes: true, sections: [] },
+        ],
+    } }));
+    await page.route('**/cp/content-sync/conflicts/resolve', async route => {
+        submitted = route.request().postDataJSON();
+        await route.fulfill({ status: 202, json: { resolved: true, started: false } });
+    });
+
+    await page.goto('/tests/browser/fixtures/article-toc.html');
+    await page.setContent('<meta name="csrf-token" content="fixture-csrf"><main id="cp-content"></main>');
+    await page.addScriptTag({ content: script });
+    await page.evaluate(markup => { document.querySelector('#cp-content').innerHTML = markup; }, markup());
+
+    const root = page.locator('[data-content-sync]');
+    await expect(root.locator('[data-sync-state]')).toContainText('3 Konfliktdatei');
+    await expect(root.locator('[data-sync-start]')).toBeDisabled();
+    await expect(root.locator('[data-sync-logs]')).not.toContainText(privateValue);
+    await root.locator('[data-sync-conflicts-open]').click();
+    await expect(root.locator('[data-sync-conflict-list]')).toContainText('Geschützte CV-Werte bleiben verborgen');
+    await expect(root.locator('[data-sync-conflict-list]')).not.toContainText(privateValue);
+
+    const decisions = root.locator('[data-sync-conflict-list] select');
+    await decisions.nth(0).selectOption('theirs');
+    await decisions.nth(1).selectOption('manual');
+    const manual = root.locator('[data-sync-conflict-list] textarea').nth(1);
+    await manual.fill('body: merged manually');
+    await decisions.nth(2).selectOption('ours');
+    await decisions.nth(3).selectOption('theirs');
+    await root.locator('[data-sync-resolve]').click();
+
+    await expect.poll(() => submitted).toBeTruthy();
+    expect(submitted.resolutions).toEqual([
+        { path: 'content/collections/entry.md', sections: [
+            { id: 0, choice: 'theirs' },
+            { id: 1, choice: 'manual', text: 'body: merged manually' },
+        ] },
+        { path: 'content/globals/cv.yaml', sections: [{ id: 0, choice: 'ours' }] },
+        { path: 'public/documents/obsolete.pdf', choice: 'theirs' },
+    ]);
+    expect(JSON.stringify(submitted)).not.toContain(privateValue);
+});
+
+test('a busy lock keeps the resolver draft until explicit reload', async ({ page }) => {
+    let statusCalls = 0;
+    let detailCalls = 0;
+    await page.route('**/cp/content-sync/status', route => {
+        statusCalls++;
+        return route.fulfill({ json: {
+            running: false,
+            started_at: null,
+            next_run_at: new Date(Date.now() + 120_000).toISOString(),
+            logs: 'Sync-Lock-Test.',
+            conflicts: statusCalls === 1
+                ? { busy: false, merge_in_progress: true, files: [{ path: 'content/collections/entry.md', sections: 1, binary: false }] }
+                : { busy: true, merge_in_progress: false, files: [] },
+        } });
+    });
+    await page.route('**/cp/content-sync/conflicts', route => {
+        detailCalls++;
+        return route.fulfill({ json: {
+            available: true,
+            fingerprint: 'b'.repeat(64),
+            files: [{ path: 'content/collections/entry.md', binary: false, sections: [
+                { id: 0, base: null, ours: 'body: Local', theirs: 'body: Incoming', protected: false },
+            ] }],
+        } });
+    });
+
+    await page.goto('/tests/browser/fixtures/article-toc.html');
+    await page.setContent('<meta name="csrf-token" content="fixture-csrf"><main id="cp-content"></main>');
+    await page.addScriptTag({ content: script });
+    await page.evaluate(markup => { document.querySelector('#cp-content').innerHTML = markup; }, markup());
+
+    const root = page.locator('[data-content-sync]');
+    await root.locator('[data-sync-conflicts-open]').click();
+    await expect(root.locator('[data-sync-conflict-list] select')).toHaveCount(1);
+    await root.locator('[data-sync-conflict-list] select').selectOption('manual');
+    const manual = root.locator('[data-sync-conflict-list] textarea');
+    await manual.fill('body: draft to preserve');
+
+    await expect(root.locator('[data-sync-state]')).toContainText('Sync-Lock belegt', { timeout: 6000 });
+    await expect(manual).toHaveValue('body: draft to preserve');
+    await expect(root.locator('[data-sync-conflict-list] select')).toHaveValue('manual');
+    await expect(root.locator('[data-sync-resolve]')).toBeDisabled();
+
+    await root.locator('[data-sync-conflicts-reload]').click();
+    await expect.poll(() => detailCalls).toBe(2);
+    await expect(root.locator('[data-sync-conflict-list] textarea')).toHaveValue('body: Local');
+});
+
+test('file mode conflicts are resolved per text file', async ({ page }) => {
+    let submitted;
+    await page.route('**/cp/content-sync/status', route => route.fulfill({ json: {
+        running: false,
+        started_at: null,
+        next_run_at: new Date(Date.now() + 120_000).toISOString(),
+        logs: '',
+        conflicts: { busy: false, merge_in_progress: true, files: [{ path: 'content/collections/entry.md', sections: 1, binary: false }] },
+    } }));
+    await page.route('**/cp/content-sync/conflicts', route => route.fulfill({ json: {
+        available: true,
+        fingerprint: 'c'.repeat(64),
+        files: [{ path: 'content/collections/entry.md', binary: false, mode_conflict: true, ours_executable: false, theirs_executable: true, sections: [
+            { id: 0, base: null, ours: 'body: Local', theirs: 'body: Incoming', protected: false },
+        ] }],
+    } }));
+    await page.route('**/cp/content-sync/conflicts/resolve', async route => {
+        submitted = route.request().postDataJSON();
+        await route.fulfill({ status: 202, json: { resolved: true, started: false } });
+    });
+
+    await page.goto('/tests/browser/fixtures/article-toc.html');
+    await page.setContent('<meta name="csrf-token" content="fixture-csrf"><main id="cp-content"></main>');
+    await page.addScriptTag({ content: script });
+    await page.evaluate(markup => { document.querySelector('#cp-content').innerHTML = markup; }, markup());
+
+    const root = page.locator('[data-content-sync]');
+    await root.locator('[data-sync-conflicts-open]').click();
+    const decisions = root.locator('[data-sync-conflict-list] select');
+    await expect(decisions).toHaveCount(2);
+    await decisions.nth(0).selectOption('theirs');
+    await decisions.nth(1).selectOption('ours');
+    await root.locator('[data-sync-resolve]').click();
+
+    await expect.poll(() => submitted).toBeTruthy();
+    expect(submitted.resolutions).toEqual([{
+        path: 'content/collections/entry.md',
+        sections: [{ id: 0, choice: 'ours' }],
+        mode_choice: 'theirs',
+    }]);
 });

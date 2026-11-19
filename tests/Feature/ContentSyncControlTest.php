@@ -149,6 +149,7 @@ class ContentSyncControlTest extends TestCase
     {
         $this->actingAs(User::make()->id('content-sync-cp-test')->email('content-sync@example.invalid')->makeSuper());
         $this->get('/cp/content-sync')->assertOk()->assertSee('Nächster regulärer Lauf');
+        $this->get('/cp/content-sync/status')->assertOk()->assertJsonPath('conflicts.files', []);
 
         $rolesPath = resource_path('users/roles.yaml');
         $originalRoles = file_get_contents($rolesPath);
@@ -158,6 +159,7 @@ class ContentSyncControlTest extends TestCase
         $limited->save();
         try {
             $this->actingAs($limited)->get('/cp/content-sync')->assertForbidden();
+            $this->actingAs($limited)->get('/cp/content-sync/conflicts')->assertForbidden();
         } finally {
             $limited->delete();
             Role::delete($role);
