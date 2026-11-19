@@ -1,0 +1,17 @@
+.contact-page { max-width: 76rem; padding-block: clamp(3rem, 8vw, 8rem); }
+.contact-page__intro { display: grid; grid-template-columns: 1.25fr 1fr; gap: 3rem; align-items: end; }
+.contact-page__intro h1 { font-size: clamp(3.2rem, 7vw, 6.5rem); line-height: 1; letter-spacing: -.05em; }
+.contact-page__intro p { max-width: 38ch; font-size: 1.15rem; line-height: 1.65; }
+.contact-page__body { display: grid; grid-template-columns: 1fr 3fr; gap: 2rem; max-width: 60rem; margin: 4rem auto 0; }
+.contact-page__line { width: 100%; max-height: 14rem; fill: none; stroke: var(--site-focus); stroke-width: 2; }
+.contact-form { display: grid; gap: .7rem; }
+.contact-form label { margin-top: 1rem; font-weight: 650; }
+.contact-form input, .contact-form textarea, .contact-form select { width: 100%; border: 1px solid var(--site-border-strong); border-radius: .35rem; background: var(--site-background); color: var(--site-text); padding: .85rem 1rem; font: inherit; }
+.contact-form textarea { resize: vertical; }
+.contact-form .btn { justify-self: start; margin-top: 1rem; }
+.contact-form__privacy { color: var(--site-text-muted); font-size: .875rem; line-height: 1.6; }
+.contact-trap { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.contact-notice, .contact-errors { border-left: 3px solid var(--site-focus); padding: 1rem 1.25rem; background: var(--site-surface); margin-bottom: 1.5rem; }
+.contact-errors h2 { font-size: 1.3rem; }
+.contact-errors ul { list-style: disc; padding-left: 1.25rem; margin-block: .75rem; }
+@media (max-width: 47.99rem) { .contact-page__intro { grid-template-columns: 1fr; gap: 1.5rem; } .contact-page__body { display: block; margin-top: 2rem; } .contact-page__line { height: 4rem; width: 6rem; } }

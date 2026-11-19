@@ -18,6 +18,9 @@ use Statamic\View\View;
 //    'title' => 'Example'
 // ]);
 
+Route::get('/kontakt', [\App\Http\Controllers\ContactController::class, 'show'])->name('contact.show');
+Route::post('/kontakt', [\App\Http\Controllers\ContactController::class, 'send'])->middleware('throttle:5,1')->name('contact.send');
+
 Route::get('/sitemap.xml', [SearchDocumentsController::class, 'sitemap'])->name('sitemap');
 Route::get('/llms.txt', [SearchDocumentsController::class, 'llms'])->name('llms');
 Route::get('/llms-full.txt', [SearchDocumentsController::class, 'llmsFull'])->name('llms.full');
