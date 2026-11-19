@@ -928,6 +928,40 @@ class PortfolioContentSyncTest extends TestCase
         $this->assertNotSame('', $this->git($this->candidate, ['rev-parse', '--verify', 'MERGE_HEAD']));
     }
 
+    public function test_candidate_blueprint_changes_can_be_resolved_when_they_match_the_running_application(): void
+    {
+        $blueprintPath = 'resources/blueprints/collections/pages/pages.yaml';
+        $blueprintContents = file_get_contents(base_path($blueprintPath));
+        $this->assertIsString($blueprintContents);
+        $details = $this->createTextConflict(
+            'content/collections/entry.md',
+            "Local version\n",
+            "Incoming version\n",
+            [$blueprintPath => $blueprintContents],
+        );
+
+        $validator = \Mockery::mock(ContentSyncCandidateValidator::class);
+        $validator->shouldReceive('validate')
+            ->once()
+            ->withArgs(function (string $candidate, array $paths, string $tree): bool {
+                $this->assertSame(['content/collections/entry.md'], $paths);
+
+                return $tree === $this->git($candidate, ['write-tree']);
+            })
+            ->andReturnUsing(fn (string $candidate, array $paths, string $tree): string => $tree);
+        app()->instance(ContentSyncCandidateValidator::class, $validator);
+
+        $result = app(PortfolioContentSync::class)->resolveConflicts($details['fingerprint'], [
+            'content/collections/entry.md' => ['sections' => [['id' => 0, 'choice' => 'ours']]],
+        ]);
+
+        $this->assertSame('resolved', $result['status']);
+        $this->assertSame($blueprintContents, file_get_contents($this->candidate.'/'.$blueprintPath));
+        $mergeHead = new Process(['git', '-C', $this->candidate, 'rev-parse', '--quiet', '--verify', 'MERGE_HEAD']);
+        $mergeHead->run();
+        $this->assertNotSame(0, $mergeHead->getExitCode());
+    }
+
     public function test_failed_tree_creation_rolls_back_the_resolver_owned_index(): void
     {
         $path = 'content/collections/entry.md';

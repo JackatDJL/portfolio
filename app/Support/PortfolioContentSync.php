@@ -268,12 +268,12 @@ final class PortfolioContentSync
                 }
                 $validatedTree = $this->candidateIndexTree($this->candidatePath);
                 $stagedPaths = $this->changedPathsBetweenTreeAndHead($expectedHead, $validatedTree, $this->candidatePath);
+                $definitionPaths = array_values(array_filter($stagedPaths, fn (string $path): bool => $this->isApplicationDefinitionPath($path)));
+                if ($definitionPaths !== [] && ! $this->candidateDefinitionsMatchApplication($validatedTree, $definitionPaths)) {
+                    throw new ContentSyncFailure('The candidate includes blueprint or fieldset changes that do not match the running application. Deploy matching definitions before resolving content conflicts.');
+                }
                 $editorialStagedPaths = [];
                 foreach ($stagedPaths as $stagedPath) {
-                    if (str_starts_with($stagedPath, 'resources/blueprints/')
-                        || str_starts_with($stagedPath, 'resources/fieldsets/')) {
-                        throw new ContentSyncFailure('The candidate includes blueprint or fieldset changes. Update the application definitions before resolving content conflicts.');
-                    }
                     if (! $this->isEditorialPath($stagedPath)) {
                         continue;
                     }
@@ -1080,6 +1080,77 @@ final class PortfolioContentSync
         }
 
         return array_values(array_filter(explode("\0", $result->getOutput()), static fn (string $path): bool => $path !== ''));
+    }
+
+    /** @param list<string> $paths */
+    private function candidateDefinitionsMatchApplication(string $tree, array $paths): bool
+    {
+        $applicationRoot = realpath(base_path());
+        if (! is_string($applicationRoot) || ! is_dir($applicationRoot)) {
+            return false;
+        }
+
+        foreach ($paths as $path) {
+            if (! $this->isApplicationDefinitionPath($path)) {
+                return false;
+            }
+
+            $parts = explode('/', $path);
+            if (in_array('', $parts, true) || in_array('.', $parts, true) || in_array('..', $parts, true)) {
+                return false;
+            }
+
+            $applicationPath = $applicationRoot;
+            foreach ($parts as $index => $part) {
+                $applicationPath .= DIRECTORY_SEPARATOR.$part;
+                if (is_link($applicationPath)
+                    || ($index < count($parts) - 1 && file_exists($applicationPath) && ! is_dir($applicationPath))) {
+                    return false;
+                }
+            }
+
+            $treeEntry = $this->gitResult(
+                ['ls-tree', '-z', '--full-tree', $tree, '--', $this->literalPathspec($path)],
+                $this->candidatePath,
+            );
+            if ($treeEntry->getExitCode() !== 0) {
+                return false;
+            }
+
+            $records = array_values(array_filter(explode("\0", $treeEntry->getOutput()), static fn (string $record): bool => $record !== ''));
+            if ($records === []) {
+                if (file_exists($applicationPath) || is_link($applicationPath)) {
+                    return false;
+                }
+
+                continue;
+            }
+            if (count($records) !== 1) {
+                return false;
+            }
+
+            $separator = strpos($records[0], "\t");
+            if ($separator === false || substr($records[0], $separator + 1) !== $path
+                || preg_match('/^(?:100644|100755) blob ([a-f0-9]{40,64})$/', substr($records[0], 0, $separator), $matches) !== 1
+                || is_link($applicationPath) || ! is_file($applicationPath)) {
+                return false;
+            }
+
+            $candidateBlob = $this->gitResult(['cat-file', 'blob', $matches[1]], $this->candidatePath);
+            $applicationContents = @file_get_contents($applicationPath);
+            if ($candidateBlob->getExitCode() !== 0 || ! is_string($applicationContents)
+                || ! hash_equals(hash('sha256', $candidateBlob->getOutput()), hash('sha256', $applicationContents))) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private function isApplicationDefinitionPath(string $path): bool
+    {
+        return str_starts_with($path, 'resources/blueprints/')
+            || str_starts_with($path, 'resources/fieldsets/');
     }
 
     /** @return list<string> */
