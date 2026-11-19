@@ -10,6 +10,7 @@ final class ContentSyncFailure extends RuntimeException
     public function __construct(
         string $message,
         public readonly array $conflictingPaths = [],
+        public readonly bool $recoveryRequired = false,
     ) {
         parent::__construct($message);
     }

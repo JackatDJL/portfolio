@@ -1,0 +1,169 @@
+.app-content-sync [hidden] {
+    display: none !important;
+}
+
+.app-content-sync-status,
+.app-content-sync-section,
+.app-content-sync-file {
+    background: rgb(127 127 127 / 4%);
+}
+
+.app-content-sync-status {
+    border-color: rgb(127 127 127 / 25%);
+}
+
+.app-content-sync-primary {
+    margin: 0;
+    border-color: #298fe6;
+    background: #298fe6;
+    color: #fff;
+}
+
+.app-content-sync-primary:hover:not(:disabled) {
+    background: #257fcc;
+}
+
+.app-content-sync .btn:not(.app-content-sync-primary) {
+    margin: 0;
+    min-height: 2.5rem;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid rgb(127 127 127 / 36%);
+    border-radius: 0.375rem;
+    background: rgb(127 127 127 / 7%);
+    color: inherit;
+    font: inherit;
+    font-size: 0.875rem;
+    font-weight: 550;
+    cursor: pointer;
+}
+
+.app-content-sync .btn:not(.app-content-sync-primary):hover:not(:disabled) {
+    background: rgb(127 127 127 / 14%);
+}
+
+.app-content-sync-primary:focus-visible,
+.app-content-sync button:focus-visible,
+.app-content-sync select:focus-visible,
+.app-content-sync textarea:focus-visible {
+    outline: 2px solid #43a9ff;
+    outline-offset: 2px;
+}
+
+.app-content-sync button:disabled {
+    cursor: not-allowed;
+    opacity: 0.58;
+}
+
+.app-content-sync-section-heading {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem 1rem;
+    margin-bottom: 1rem;
+}
+
+.app-content-sync-file,
+.app-content-sync-section {
+    min-width: 0;
+    padding: 1rem;
+    border: 1px solid rgb(127 127 127 / 24%);
+    border-radius: 0.625rem;
+}
+
+.app-content-sync-section {
+    margin-top: 0.875rem;
+    padding: 0.875rem;
+}
+
+.app-content-sync-file-path,
+.app-content-sync-side-title {
+    overflow-wrap: anywhere;
+    font-weight: 600;
+}
+
+.app-content-sync-versions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+    gap: 0.625rem;
+    margin-top: 0.75rem;
+}
+
+.app-content-sync-version {
+    min-width: 0;
+}
+
+.app-content-sync-version pre,
+.app-content-sync-log {
+    overflow-wrap: anywhere;
+    tab-size: 2;
+}
+
+.app-content-sync-log {
+    max-height: 60vh;
+    background: var(--theme-color-gray-950, #141a1f);
+    color: var(--theme-color-gray-200, #f5f8fc);
+}
+
+.app-content-sync-version pre {
+    max-height: 18rem;
+    overflow: auto;
+    margin-top: 0.375rem;
+    padding: 0.75rem;
+    border-radius: 0.375rem;
+    background: rgb(127 127 127 / 9%);
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    white-space: pre-wrap;
+}
+
+.app-content-sync-choice {
+    display: grid;
+    gap: 0.375rem;
+    margin-top: 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 550;
+}
+
+.app-content-sync-choice select,
+.app-content-sync-manual {
+    width: 100%;
+    min-height: 2.5rem;
+    padding: 0.5rem 0.625rem;
+    border: 1px solid rgb(127 127 127 / 40%);
+    border-radius: 0.375rem;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+}
+
+.app-content-sync-manual {
+    min-height: 9rem;
+    margin-top: 0.625rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    resize: vertical;
+}
+
+.app-content-sync-message {
+    margin-bottom: 1rem;
+    padding: 0.75rem 1rem;
+    border-left: 3px solid #43a9ff;
+    border-radius: 0.375rem;
+    background: rgb(67 169 255 / 8%);
+}
+
+.dark .app-content-sync-status,
+.dark .app-content-sync-section,
+.dark .app-content-sync-file {
+    background: rgb(255 255 255 / 3%);
+}
+
+@media (max-width: 575px) {
+    .app-content-sync-log {
+        max-height: 45vh;
+        padding: 0.75rem;
+        font-size: 0.75rem;
+    }
+}

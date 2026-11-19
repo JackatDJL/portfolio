@@ -32,7 +32,7 @@ return [
 
         'application_documents' => [
             'driver' => 'local',
-            'root' => storage_path('app/private/application-documents'),
+            'root' => env('APPLICATION_DOCUMENTS_ROOT', storage_path('app/private/application-documents')),
             'visibility' => 'private',
             'serve' => false,
             'throw' => true,
@@ -41,7 +41,7 @@ return [
 
         'local' => [
             'driver' => 'local',
-            'root' => storage_path('app/private'),
+            'root' => env('LOCAL_DISK_ROOT', storage_path('app/private')),
             'serve' => true,
             'throw' => false,
             'report' => false,
@@ -72,7 +72,7 @@ return [
 
         'assets' => [
             'driver' => 'local',
-            'root' => public_path('assets'),
+            'root' => env('ASSETS_DISK_ROOT', public_path('assets')),
             'url' => '/assets',
             'visibility' => 'public',
             'throw' => false,

@@ -17,6 +17,8 @@ Route::post('/search-agent-optimization', [SearchAgentOptimizationController::cl
 Route::get('/content-sync', [ContentSyncControlController::class, 'index'])->name('content-sync.index');
 Route::get('/content-sync/status', [ContentSyncControlController::class, 'status'])->name('content-sync.status');
 Route::post('/content-sync', [ContentSyncControlController::class, 'start'])->name('content-sync.start');
+Route::get('/content-sync/conflicts', [ContentSyncControlController::class, 'conflicts'])->name('content-sync.conflicts');
+Route::post('/content-sync/conflicts/resolve', [ContentSyncControlController::class, 'resolve'])->name('content-sync.conflicts.resolve');
 
 Route::post('/applications/{id}/reset-date', [ApplicationController::class, 'resetDate'])->name('applications.reset-date');
 Route::get('/applications/handwritten-signature/{source?}', [ApplicationHandwrittenSignatureController::class, 'show'])->where('source', 'example')->name('applications.handwritten-signature.show');

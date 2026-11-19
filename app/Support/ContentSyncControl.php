@@ -87,7 +87,16 @@ final class ContentSyncControl
                 'process_identity' => $this->processIdentity($pid),
             ];
         });
-        $this->append('Lauf gestartet.');
+        try {
+            $this->append('Lauf gestartet.');
+        } catch (\Throwable $failure) {
+            $this->mutateState(function (array &$state) use ($pid): void {
+                unset($state['runs'][(string) $pid]);
+                $this->pruneStaleRuns($state);
+            });
+
+            throw $failure;
+        }
 
         return $pid;
     }
@@ -95,11 +104,19 @@ final class ContentSyncControl
     public function finish(string $message, ?int $pid = null): void
     {
         $pid ??= getmypid();
-        $this->append($message);
+        $logFailure = null;
+        try {
+            $this->append($message);
+        } catch (\Throwable $failure) {
+            $logFailure = $failure;
+        }
         $this->mutateState(function (array &$state) use ($pid): void {
             unset($state['runs'][(string) $pid]);
             $this->pruneStaleRuns($state);
         });
+        if ($logFailure instanceof \Throwable) {
+            throw $logFailure;
+        }
     }
 
     public function log(string $message): void
@@ -344,7 +361,9 @@ final class ContentSyncControl
         }
         flock($coordinationLock, LOCK_SH);
         try {
-            file_put_contents($path, '['.now()->toIso8601String().'] '.$line.PHP_EOL, FILE_APPEND | LOCK_EX);
+            if (@file_put_contents($path, '['.now()->toIso8601String().'] '.$line.PHP_EOL, FILE_APPEND | LOCK_EX) === false) {
+                throw new \RuntimeException('Could not append to the content sync log.');
+            }
         } finally {
             flock($coordinationLock, LOCK_UN);
             fclose($coordinationLock);
