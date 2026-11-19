@@ -69,6 +69,41 @@ class ContentSyncControlTest extends TestCase
         $control->finish('Lauf erfolgreich abgeschlossen.', $activePid);
     }
 
+    public function test_finish_clears_run_state_even_when_log_append_fails(): void
+    {
+        $control = app(ContentSyncControl::class);
+        $control->begin();
+        $logPath = (string) config('content-sync.control_log_path');
+        unlink($logPath);
+        mkdir($logPath, 0770, true);
+
+        try {
+            $control->finish('Auflösung abgeschlossen.');
+            $this->fail('A log append to a directory must fail.');
+        } catch (\RuntimeException $failure) {
+            $this->assertStringContainsString('append to the content sync log', $failure->getMessage());
+        }
+
+        $this->assertFalse($control->status()['running']);
+        rmdir($logPath);
+    }
+
+    public function test_begin_removes_run_state_when_its_first_log_append_fails(): void
+    {
+        $logPath = (string) config('content-sync.control_log_path');
+        mkdir($logPath, 0770, true);
+
+        try {
+            app(ContentSyncControl::class)->begin();
+            $this->fail('A log append to a directory must fail.');
+        } catch (\RuntimeException $failure) {
+            $this->assertStringContainsString('append to the content sync log', $failure->getMessage());
+        }
+
+        $this->assertFalse(app(ContentSyncControl::class)->status()['running']);
+        rmdir($logPath);
+    }
+
     public function test_it_prunes_state_when_a_pid_is_reused_by_an_unrelated_process(): void
     {
         $control = app(ContentSyncControl::class);
@@ -149,6 +184,7 @@ class ContentSyncControlTest extends TestCase
     {
         $this->actingAs(User::make()->id('content-sync-cp-test')->email('content-sync@example.invalid')->makeSuper());
         $this->get('/cp/content-sync')->assertOk()->assertSee('Nächster regulärer Lauf');
+        $this->get('/cp/content-sync/status')->assertOk()->assertJsonPath('conflicts.files', []);
 
         $rolesPath = resource_path('users/roles.yaml');
         $originalRoles = file_get_contents($rolesPath);
@@ -158,6 +194,7 @@ class ContentSyncControlTest extends TestCase
         $limited->save();
         try {
             $this->actingAs($limited)->get('/cp/content-sync')->assertForbidden();
+            $this->actingAs($limited)->get('/cp/content-sync/conflicts')->assertForbidden();
         } finally {
             $limited->delete();
             Role::delete($role);

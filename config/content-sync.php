@@ -6,6 +6,7 @@ return [
     'remote' => env('CONTENT_SYNC_REMOTE', 'origin'),
     'lock_path' => env('CONTENT_SYNC_LOCK_PATH', storage_path('framework/locks/content-sync.lock')),
     'candidate_path' => env('CONTENT_SYNC_CANDIDATE_PATH', storage_path('app/content-sync-candidate')),
+    'recovery_path' => env('CONTENT_SYNC_RECOVERY_PATH', storage_path('app/private/content-sync-conflicts')),
     'candidate_branch_prefix' => 'portfolio-content-sync-candidate-',
     'ssh_key' => env('CONTENT_SYNC_SSH_KEY'),
     'known_hosts' => env('CONTENT_SYNC_KNOWN_HOSTS'),
