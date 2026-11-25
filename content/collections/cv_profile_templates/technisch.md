@@ -1,55 +1,102 @@
 ---
 id: cd302a12-3865-4123-a4b6-dfa11abb8969
 blueprint: cv_profile_template
-title: 'Technisch'
+title: Technisch
 about:
   -
     type: paragraph
     content:
       -
         type: text
-        text: 'Ich entwickle Software und technische Werkzeuge, vor allem für Webentwicklung und Open Source. In Projekten arbeite ich an Benutzeroberflächen, Backend-Systemen und Tooling. Robotik am Athenaeum und Developer-Tools wie prtop ergänzen meine Webentwicklung.'
+        text: 'Ich entwickle Software und technische Werkzeuge, vor allem für Webentwicklung und Open Source. In Projekten arbeite ich an Benutzeroberflächen, Backend-Systemen und Tooling. Robotik am Athenaeum und Developer-Tools wie prex ergänzen meine Webentwicklung.'
 knowledge:
   -
+    id: jemUWQK5
     category: Frontend
     items:
-      - label: TypeScript
-      - label: React
-      - label: TanStack Start
-      - label: Next.js
+      -
+        id: cCMJRdhH
+        label: TypeScript
+      -
+        id: mafh59uL
+        label: React
+      -
+        id: s09ZkNIc
+        label: 'TanStack Start'
+      -
+        id: XydHIpWP
+        label: Next.js
   -
+    id: L7Bcp5ZL
     category: 'Backend und Systeme'
     items:
-      - label: Laravel
-      - label: Statamic
-      - label: Rust
-      - label: Tokio
-      - label: Node.js
-      - label: PostgreSQL
-      - label: Linux
+      -
+        id: HfMKfbDS
+        label: Laravel
+      -
+        id: jgGR9kBL
+        label: Statamic
+      -
+        id: CJGwJeS2
+        label: Rust
+      -
+        id: EbTaZWZs
+        label: Tokio
+      -
+        id: ZyApLfjr
+        label: Node.js
+      -
+        id: pWrJ52bo
+        label: PostgreSQL
+      -
+        id: kC7Jz9W4
+        label: Linux
   -
+    id: bVaziYB8
     category: Tooling
     items:
-      - label: Git
-      - label: GitHub
-      - label: Codeberg
-      - label: GitLab
-      - label: Docker
-      - label: LaTeX
-      - label: LuaLaTeX
+      -
+        id: BIjwjN6y
+        label: Git
+      -
+        id: aHWkLxpD
+        label: GitHub
+      -
+        id: 0dLFO2w1
+        label: Codeberg
+      -
+        id: 9UTYvb54
+        label: GitLab
+      -
+        id: 1N3pIUs9
+        label: Docker
+      -
+        id: lceFLGEX
+        label: LaTeX
+      -
+        id: 3nhLWvGC
+        label: LuaLaTeX
   -
+    id: 2r1iB25X
     category: Robotik
     items:
-      - label: Arduino
-      - label: 'Eingebettete Systeme'
-      - label: 'Computer Vision im RoboCup-Kontext'
+      -
+        id: NxWQeLLP
+        label: Arduino
+      -
+        id: cDLbfHBg
+        label: 'Eingebettete Systeme'
+      -
+        id: W3Wqw2CN
+        label: 'Computer Vision im RoboCup-Kontext'
 projects:
-  - 4739fabf-5726-4d17-ad72-5a5f574e33cd
-  - 592ac462-1e09-4f35-be25-8308b982fb2b
-  - 840804f5-d413-4824-a847-769393170ed4
+  - 7242f0d4-c5c8-405c-a548-bac27066c533
   - 8e9f1f56-1feb-46a8-9ae5-a79ec9444c81
-  - 925533d0-e494-4366-857f-18431878a91d
   - 00979e47-6007-439e-b10c-f1b47cc99863
+  - 925533d0-e494-4366-857f-18431878a91d
+  - 4739fabf-5726-4d17-ad72-5a5f574e33cd
+  - 840804f5-d413-4824-a847-769393170ed4
+  - 592ac462-1e09-4f35-be25-8308b982fb2b
 publications:
   - 0fdf9b1f-0190-433a-9185-b49a4fbb6646
 milestones:
@@ -63,5 +110,6 @@ milestones:
   - d6b27bae-23b9-42c6-9b80-87040ef9ffe3
   - 7bcfd2bd-b279-4ace-8486-08d79b677fc5
 interactive_timeline: true
-published: true
+updated_by: 7098a585-4701-4963-95aa-52c0d85d3e7d
+updated_at: 1795637810
 ---
