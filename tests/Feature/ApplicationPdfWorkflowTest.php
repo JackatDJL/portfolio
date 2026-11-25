@@ -8,7 +8,6 @@ use App\Support\ApplicationPdfException;
 use App\Support\ApplicationPdfExporter;
 use App\Support\ApplicationPdfPostProcessor;
 use App\Support\CvCapabilities;
-use App\Support\PdfCompilerControl;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
@@ -17,6 +16,7 @@ use Illuminate\Session\TokenMismatchException;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Statamic\Facades\Entry;
@@ -701,9 +701,7 @@ class ApplicationPdfWorkflowTest extends TestCase
         $global = GlobalSet::find('cv')->inDefaultSite();
         $original = $global->get('private_email');
         $global->set('private_email', 'INVALID-PRIVATE-CIPHERTEXT');
-        $control = \Mockery::mock(PdfCompilerControl::class)->makePartial();
-        $control->shouldReceive('record')->once()->andThrow(new \RuntimeException('log backend unavailable'));
-        $this->app->instance(PdfCompilerControl::class, $control);
+        Log::shouldReceive('channel')->once()->with('stderr')->andThrow(new \RuntimeException('log backend unavailable'));
 
         try {
             app(ApplicationPdfExporter::class)->render($this->fixture->entry);
@@ -749,17 +747,14 @@ SH;
         file_put_contents($binary, $script);
         chmod($binary, 0700);
         config(['cv.lualatex' => $binary]);
-        $control = \Mockery::mock(PdfCompilerControl::class)->makePartial();
-        $control->shouldReceive('record')->once()->with('application_export_failed', \Mockery::on(
-            fn (array $context): bool => ($context['diagnostic'] ?? null) === 'undefined_control_sequence'
-                && ($context['source_line'] ?? null) === 42
-                && ($context['pass'] ?? null) === 1
-                && ($context['operation'] ?? null) === 'application_export'
-                && ($context['stage'] ?? null) === 'Lebenslauf'
-                && ! str_contains(json_encode($context), 'PRIVATE_LATEX_SENTINEL')
-                && ! str_contains(json_encode($context), 'privateSecret')
-        ));
-        $this->app->instance(PdfCompilerControl::class, $control);
+        $records = [];
+        $channel = \Mockery::mock();
+        $channel->shouldReceive('error')->twice()->withArgs(function (string $message, array $context) use (&$records): bool {
+            $records[] = ['message' => $message, 'context' => $context];
+
+            return true;
+        });
+        Log::shouldReceive('channel')->twice()->with('stderr')->andReturn($channel);
 
         try {
             app(ApplicationPdfExporter::class)->render($this->fixture->entry, cached: false);
@@ -769,6 +764,16 @@ SH;
             $this->assertStringNotContainsString('PRIVATE_LATEX_SENTINEL', $exception->getMessage());
             $this->assertStringNotContainsString('privateSecret', $exception->getMessage());
         }
+
+        $exportLog = collect($records)->first(fn (array $record): bool => str_contains($record['message'], 'Bewerbungs-PDF fehlgeschlagen.'));
+        $this->assertNotNull($exportLog);
+        $this->assertSame('undefined_control_sequence', $exportLog['context']['diagnostic'] ?? null);
+        $this->assertSame(42, $exportLog['context']['source_line'] ?? null);
+        $this->assertSame(1, $exportLog['context']['pass'] ?? null);
+        $this->assertSame('application_export', $exportLog['context']['operation'] ?? null);
+        $this->assertSame('Lebenslauf', $exportLog['context']['stage'] ?? null);
+        $this->assertStringNotContainsString('PRIVATE_LATEX_SENTINEL', json_encode($exportLog['context']));
+        $this->assertStringNotContainsString('privateSecret', json_encode($exportLog['context']));
 
         $this->assertSame([], glob($this->fixture->root.'/work/*'));
         $this->assertSame([], glob($this->fixture->root.'/compiler/cv-latex/*'));
