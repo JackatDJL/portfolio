@@ -2,6 +2,7 @@
 id: 7242f0d4-c5c8-405c-a548-bac27066c533
 blueprint: project
 title: 'Previewmanager Extended (prex) CLI'
+summary: 'Frameworks sind darauf ausgelegt, nur einen Dev-Server laufen zu lassen. Mit mehreren Projekten gleichzeitig bin ich ständig in dasselbe Problem geraten. Am Ende hatte ich ein handgeschriebenes shell-skript in jedes Projekt kopiert, um Ports zu delegieren. Nun habe ich die Idee in ein CLI umgeschrieben.'
 project_status: active
 featured: false
 started_at: '2026-11-21 23:00'
@@ -19,7 +20,7 @@ related_projects:
   - 592ac462-1e09-4f35-be25-8308b982fb2b
 noindex: false
 updated_by: 7098a585-4701-4963-95aa-52c0d85d3e7d
-updated_at: 1795637566
+updated_at: 1795638168
 cover: projects/prex/screenshot-2026-11-25-at-21-04-29-prex--previews-extended.png
 content:
   -
