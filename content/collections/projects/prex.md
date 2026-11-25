@@ -7,7 +7,6 @@ summary: 'Für mein Portfolio, Rosenfold und DJL Studio baute ich jeweils eigene
 project_status: maintained
 featured: true
 started_at: '2026-11-21 23:00'
-cover: projects/prex/screenshot-2026-11-25-at-20-37-28-prex--previews-extended.png
 hero_transition: true
 noindex: false
 updated_by: 7098a585-4701-4963-95aa-52c0d85d3e7d
