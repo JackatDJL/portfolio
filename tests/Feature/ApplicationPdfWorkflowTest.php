@@ -8,6 +8,7 @@ use App\Support\ApplicationPdfException;
 use App\Support\ApplicationPdfExporter;
 use App\Support\ApplicationPdfPostProcessor;
 use App\Support\CvCapabilities;
+use App\Support\PdfCompilerControl;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
@@ -16,7 +17,6 @@ use Illuminate\Session\TokenMismatchException;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Statamic\Facades\Entry;
@@ -701,7 +701,9 @@ class ApplicationPdfWorkflowTest extends TestCase
         $global = GlobalSet::find('cv')->inDefaultSite();
         $original = $global->get('private_email');
         $global->set('private_email', 'INVALID-PRIVATE-CIPHERTEXT');
-        Log::shouldReceive('error')->once()->andThrow(new \RuntimeException('log backend unavailable'));
+        $control = \Mockery::mock(PdfCompilerControl::class)->makePartial();
+        $control->shouldReceive('record')->once()->andThrow(new \RuntimeException('log backend unavailable'));
+        $this->app->instance(PdfCompilerControl::class, $control);
 
         try {
             app(ApplicationPdfExporter::class)->render($this->fixture->entry);
@@ -747,13 +749,17 @@ SH;
         file_put_contents($binary, $script);
         chmod($binary, 0700);
         config(['cv.lualatex' => $binary]);
-        Log::shouldReceive('error')->once()->with('Private application PDF generation failed.', \Mockery::on(
-            fn (array $context): bool => ($context['compiler_diagnostic_code'] ?? null) === 'undefined_control_sequence'
-                && ($context['compiler_source_line'] ?? null) === 42
-                && ($context['compiler_pass'] ?? null) === 1
+        $control = \Mockery::mock(PdfCompilerControl::class)->makePartial();
+        $control->shouldReceive('record')->once()->with('application_export_failed', \Mockery::on(
+            fn (array $context): bool => ($context['diagnostic'] ?? null) === 'undefined_control_sequence'
+                && ($context['source_line'] ?? null) === 42
+                && ($context['pass'] ?? null) === 1
+                && ($context['operation'] ?? null) === 'application_export'
+                && ($context['stage'] ?? null) === 'Lebenslauf'
                 && ! str_contains(json_encode($context), 'PRIVATE_LATEX_SENTINEL')
                 && ! str_contains(json_encode($context), 'privateSecret')
         ));
+        $this->app->instance(PdfCompilerControl::class, $control);
 
         try {
             app(ApplicationPdfExporter::class)->render($this->fixture->entry, cached: false);
