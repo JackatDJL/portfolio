@@ -90,12 +90,13 @@ knowledge:
         id: W3Wqw2CN
         label: 'Computer Vision im RoboCup-Kontext'
 projects:
-  - 4739fabf-5726-4d17-ad72-5a5f574e33cd
-  - 592ac462-1e09-4f35-be25-8308b982fb2b
-  - 840804f5-d413-4824-a847-769393170ed4
+  - 7242f0d4-c5c8-405c-a548-bac27066c533
   - 8e9f1f56-1feb-46a8-9ae5-a79ec9444c81
-  - 925533d0-e494-4366-857f-18431878a91d
   - 00979e47-6007-439e-b10c-f1b47cc99863
+  - 925533d0-e494-4366-857f-18431878a91d
+  - 4739fabf-5726-4d17-ad72-5a5f574e33cd
+  - 840804f5-d413-4824-a847-769393170ed4
+  - 592ac462-1e09-4f35-be25-8308b982fb2b
 publications:
   - 0fdf9b1f-0190-433a-9185-b49a4fbb6646
 milestones:
@@ -110,5 +111,5 @@ milestones:
   - 7bcfd2bd-b279-4ace-8486-08d79b677fc5
 interactive_timeline: true
 updated_by: 7098a585-4701-4963-95aa-52c0d85d3e7d
-updated_at: 1795635946
+updated_at: 1795637810
 ---
