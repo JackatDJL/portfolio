@@ -110,6 +110,10 @@ tabs:
                 <div class="app-cp-button-row">
                   <button type="button" class="app-cp-button app-cp-button-primary" data-application-export>Vollständige Bewerbung herunterladen</button>
                 </div>
+                <div class="app-cp-button-row">
+                  <button type="button" class="app-cp-button" data-application-recompile>PDF mit gespeicherten Daten neu kompilieren</button>
+                </div>
+                <p class="app-cp-muted">Nutzt den zuletzt gespeicherten Stand und baut den PDF-Cache neu auf. Ungespeicherte Formularänderungen werden nicht übernommen.</p>
               </section>
 
               <section class="app-cp-card" aria-labelledby="application-access-title">

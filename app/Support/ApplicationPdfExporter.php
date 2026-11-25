@@ -3,7 +3,6 @@
 namespace App\Support;
 
 use App\Signatures\ApplicationCompositeSource;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Statamic\Contracts\Entries\Entry;
 use Statamic\Facades\Asset;
@@ -21,7 +20,14 @@ final class ApplicationPdfExporter implements ApplicationCompositeSource
     ) {}
 
     /** Caller must authorize the application before invoking this private-only renderer. */
-    public function render(Entry $entry, bool $cached = true): string
+    public function render(Entry $entry, bool $cached = true, bool $forceRecompile = false): string
+    {
+        return app(PdfCompilerControl::class)->withCacheReadLock(
+            fn (): string => $this->renderLocked($entry, $cached, $forceRecompile),
+        );
+    }
+
+    private function renderLocked(Entry $entry, bool $cached, bool $forceRecompile): string
     {
         $deadline = microtime(true) + (int) config('applications.timeout');
         $stage = 'Datenprüfung';
@@ -63,7 +69,7 @@ final class ApplicationPdfExporter implements ApplicationCompositeSource
                     }
                     usleep(100000);
                 }
-                if ($this->valid($canonical) && is_file($canonical.'.sha256') && hash_equals(trim(file_get_contents($canonical.'.sha256')), hash_file('sha256', $canonical))) {
+                if (! $forceRecompile && $this->valid($canonical) && is_file($canonical.'.sha256') && hash_equals(trim(file_get_contents($canonical.'.sha256')), hash_file('sha256', $canonical))) {
                     touch($canonical);
 
                     return $canonical;
@@ -75,7 +81,7 @@ final class ApplicationPdfExporter implements ApplicationCompositeSource
                     'field' => 'recipient.address',
                     'message' => 'Die Empfängeranschrift ist zu hoch für den vorgesehenen Bereich. Bitte kürzen oder die Anschrift auf weniger Zeilen verteilen.',
                 ],
-            ]);
+            ], operation: 'application_letter');
             $stage = 'Lebenslauf';
             $compiled[] = $this->renderer->renderViewModel($cv, deadline: $deadline);
             $parts = [
@@ -124,20 +130,23 @@ final class ApplicationPdfExporter implements ApplicationCompositeSource
         } catch (ValidationException $exception) {
             throw $exception;
         } catch (Throwable $exception) {
-            $diagnosticId = bin2hex(random_bytes(6));
+            $diagnosticId = $exception instanceof LatexCompilationFailure
+                ? $exception->reference
+                : bin2hex(random_bytes(6));
             $compilerDiagnostics = $exception instanceof LatexCompilationFailure
                 ? [
-                    'compiler_diagnostic_code' => $exception->diagnosticCode,
-                    'compiler_source_line' => $exception->sourceLine,
-                    'compiler_pass' => $exception->pass,
+                    'diagnostic' => $exception->diagnosticCode,
+                    'source_line' => $exception->sourceLine,
+                    'pass' => $exception->pass,
+                    'exit_code' => $exception->exitCode,
                 ]
                 : [];
             try {
-                Log::error('Private application PDF generation failed.', [
+                app(PdfCompilerControl::class)->record('application_export_failed', [
                     'reference' => $diagnosticId,
                     'stage' => $stage,
-                    'exception' => $exception::class,
-                    'source' => basename($exception->getFile()).':'.$exception->getLine(),
+                    'operation' => 'application_export',
+                    'failure_class' => $exception::class,
                     ...$compilerDiagnostics,
                 ]);
             } catch (Throwable) {

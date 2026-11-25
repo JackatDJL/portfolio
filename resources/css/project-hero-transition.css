@@ -14,7 +14,6 @@
     .editorial-hero-transition__status { color: #06100c; background: #93e8ba; border-color: transparent; }
     .editorial-hero-transition__caption { display: flex; justify-content: flex-end; width: 100%; padding: .75rem 1.25rem 0; text-align: right; }
     .editorial-hero-transition__caption .asset-attribution { width: min(100%, 72rem); margin: 0; }
-    .editorial-hero-transition__after { padding-top: 1.5rem; }
     .project-masonry { columns: 2; column-gap: 1.5rem; margin-block: 3rem; }
     .project-masonry .media-gallery__item { width: 100%; margin: 0 0 1.75rem; break-inside: avoid; }
     .project-masonry .media-gallery__item > .media-frame > img { display: block; width: 100%; height: auto; aspect-ratio: var(--image-ratio); object-fit: contain; border: 0; border-radius: .75rem; }

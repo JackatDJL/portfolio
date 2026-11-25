@@ -701,7 +701,7 @@ class ApplicationPdfWorkflowTest extends TestCase
         $global = GlobalSet::find('cv')->inDefaultSite();
         $original = $global->get('private_email');
         $global->set('private_email', 'INVALID-PRIVATE-CIPHERTEXT');
-        Log::shouldReceive('error')->once()->andThrow(new \RuntimeException('log backend unavailable'));
+        Log::shouldReceive('channel')->once()->with('stderr')->andThrow(new \RuntimeException('log backend unavailable'));
 
         try {
             app(ApplicationPdfExporter::class)->render($this->fixture->entry);
@@ -747,13 +747,14 @@ SH;
         file_put_contents($binary, $script);
         chmod($binary, 0700);
         config(['cv.lualatex' => $binary]);
-        Log::shouldReceive('error')->once()->with('Private application PDF generation failed.', \Mockery::on(
-            fn (array $context): bool => ($context['compiler_diagnostic_code'] ?? null) === 'undefined_control_sequence'
-                && ($context['compiler_source_line'] ?? null) === 42
-                && ($context['compiler_pass'] ?? null) === 1
-                && ! str_contains(json_encode($context), 'PRIVATE_LATEX_SENTINEL')
-                && ! str_contains(json_encode($context), 'privateSecret')
-        ));
+        $records = [];
+        $channel = \Mockery::mock();
+        $channel->shouldReceive('error')->twice()->withArgs(function (string $message, array $context) use (&$records): bool {
+            $records[] = ['message' => $message, 'context' => $context];
+
+            return true;
+        });
+        Log::shouldReceive('channel')->twice()->with('stderr')->andReturn($channel);
 
         try {
             app(ApplicationPdfExporter::class)->render($this->fixture->entry, cached: false);
@@ -763,6 +764,16 @@ SH;
             $this->assertStringNotContainsString('PRIVATE_LATEX_SENTINEL', $exception->getMessage());
             $this->assertStringNotContainsString('privateSecret', $exception->getMessage());
         }
+
+        $exportLog = collect($records)->first(fn (array $record): bool => str_contains($record['message'], 'Bewerbungs-PDF fehlgeschlagen.'));
+        $this->assertNotNull($exportLog);
+        $this->assertSame('undefined_control_sequence', $exportLog['context']['diagnostic'] ?? null);
+        $this->assertSame(42, $exportLog['context']['source_line'] ?? null);
+        $this->assertSame(1, $exportLog['context']['pass'] ?? null);
+        $this->assertSame('application_export', $exportLog['context']['operation'] ?? null);
+        $this->assertSame('Lebenslauf', $exportLog['context']['stage'] ?? null);
+        $this->assertStringNotContainsString('PRIVATE_LATEX_SENTINEL', json_encode($exportLog['context']));
+        $this->assertStringNotContainsString('privateSecret', json_encode($exportLog['context']));
 
         $this->assertSame([], glob($this->fixture->root.'/work/*'));
         $this->assertSame([], glob($this->fixture->root.'/compiler/cv-latex/*'));

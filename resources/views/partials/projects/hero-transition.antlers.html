@@ -13,11 +13,3 @@
         <div class="editorial-hero-transition__caption">{{ partial:media/attribution :asset="cover" hide_credit="true" standalone="true" }}</div>
     {{ /if }}
 </header>
-{{ if repository_url || website_url }}
-<div class="detail-container editorial-hero-transition__after">
-    <div class="flex flex-wrap gap-3 items-center">
-        {{ if repository_url }}{{ partial:components/button variant="secondary" :href="repository_url" label="Repository ↗" attributes="target=_blank rel=noreferrer" }}{{ /if }}
-        {{ if website_url }}{{ partial:components/button variant="secondary" :href="website_url" label="Webseite ↗" attributes="target=_blank rel=noreferrer" }}{{ /if }}
-    </div>
-</div>
-{{ /if }}
