@@ -196,7 +196,7 @@
     }
 
     @media (min-width: 64rem) {
-        .project-detail__reading {
+        .project-detail__reading:has(.project-detail__actions) {
             grid-template-columns: 9.5rem minmax(0, 1fr);
             gap: clamp(1.25rem, 3vw, 2.5rem);
         }

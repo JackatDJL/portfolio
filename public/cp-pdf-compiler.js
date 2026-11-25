@@ -23,6 +23,7 @@
         const clear = root.querySelector('[data-pdf-clear]');
         let refreshTimer;
         let pending = false;
+        let refreshing = false;
         const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
 
         const showMessage = value => {
@@ -31,6 +32,8 @@
         };
 
         const refresh = async () => {
+            if (refreshing) return;
+            refreshing = true;
             try {
                 const response = await fetch(root.dataset.statusUrl, { headers: { Accept: 'application/json' }, cache: 'no-store', signal: controller.signal });
                 if (!response.ok) throw new Error('PDF-Status konnte nicht geladen werden.');
@@ -51,6 +54,8 @@
             } catch (error) {
                 if (error.name === 'AbortError') return;
                 status.textContent = error.message;
+            } finally {
+                refreshing = false;
             }
         };
 
@@ -87,7 +92,7 @@
         ), { signal: controller.signal });
         root.querySelector('[data-pdf-refresh]').addEventListener('click', refresh, { signal: controller.signal });
         refresh();
-        refreshTimer = window.setInterval(() => { if (root.isConnected && !pending) refresh(); }, 5000);
+        refreshTimer = window.setInterval(() => { if (root.isConnected) refresh(); }, 5000);
         instances.set(root, {
             dispose() {
                 window.clearInterval(refreshTimer);

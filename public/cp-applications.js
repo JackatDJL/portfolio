@@ -307,7 +307,7 @@
     new MutationObserver(refreshProfileSummary).observe(document.documentElement, { attributes: true, attributeFilter: ['value'], childList: true, subtree: true });
 
     document.addEventListener('click', async event => {
-        const button = event.target.closest('[data-reset-application-date], [data-application-cv], [data-application-preview], [data-application-export], [data-application-grant-create], [data-application-grant-revoke], [data-application-grant-revoke-all], [data-application-copy-link], [data-application-cv-grant-create], [data-application-cv-grant-copy], [data-application-cv-grant-revoke], [data-email-pdf], [data-email-refresh], [data-email-copy-text], [data-email-copy-html]');
+        const button = event.target.closest('[data-reset-application-date], [data-application-cv], [data-application-preview], [data-application-export], [data-application-grant-create], [data-application-grant-revoke], [data-application-grant-revoke-all], [data-application-copy-link], [data-application-cv-grant-create], [data-application-cv-grant-copy], [data-application-cv-grant-revoke], [data-email-pdf], [data-email-refresh], [data-email-copy-text], [data-email-copy-html], [data-application-recompile]');
         if (!button) return;
         const base = appBase();
         if (button.matches('[data-email-pdf]')) {
