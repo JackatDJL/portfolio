@@ -7,9 +7,19 @@
     {{ _intro = 'projects/hero' }}
     {{ if _transition }}{{ _intro = false }}{{ /if }}
     {{ partial:detail/layout :intro="_intro" aside="projects/rail" }}
-        {{ if {cv_navigation:has_context} }}<nav class="cv-chapter-nav mb-6" aria-label="Lebenslauf"><a class="btn btn-ghost" href="{{ cv_navigation }}">← Lebenslauf</a></nav>{{ /if }}
-        {{ partial:components/table-of-contents variant="mobile" }}
-        {{ partial:bard/prose :content="content" }}
+        <div class="project-detail__reading">
+            {{ if repository_url || website_url || {cv_navigation:has_context} }}
+                <nav class="project-detail__actions" aria-label="Projektaktionen">
+                    {{ if repository_url }}{{ partial:components/button variant="secondary" :href="repository_url" label="Repository ↗" attributes="target=_blank rel=noreferrer" }}{{ /if }}
+                    {{ if website_url }}{{ partial:components/button variant="secondary" :href="website_url" label="Webseite ↗" attributes="target=_blank rel=noreferrer" }}{{ /if }}
+                    {{ if {cv_navigation:has_context} }}<a class="btn btn-ghost" href="{{ cv_navigation }}">← Lebenslauf</a>{{ /if }}
+                </nav>
+            {{ /if }}
+            <div class="project-detail__prose">
+                {{ partial:components/table-of-contents variant="mobile" }}
+                {{ partial:bard/prose :content="content" }}
+            </div>
+        </div>
 
         {{ if _transition }}
             {{ partial:projects/gallery-masonry }}

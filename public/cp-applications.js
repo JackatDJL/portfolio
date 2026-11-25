@@ -402,6 +402,21 @@
             if (status) status.textContent = 'Es werden gespeicherte Daten verwendet. Vorherige Änderungen zuerst speichern.';
             return;
         }
+        if (button.hasAttribute('data-application-recompile')) {
+            button.disabled = true;
+            if (status) status.textContent = 'Die PDF wird mit den gespeicherten Daten neu kompiliert …';
+            try {
+                const response = await fetch(base + '/recompile.pdf', { method: 'POST', headers: { Accept: 'application/json', 'X-CSRF-TOKEN': csrf() } });
+                const data = await response.json().catch(() => ({}));
+                if (!response.ok) throw new Error(data.message || 'PDF konnte nicht neu kompiliert werden.');
+                if (status) status.textContent = data.message || 'PDF wurde neu kompiliert.';
+            } catch (error) {
+                if (status) status.textContent = error.message;
+            } finally {
+                if (button.isConnected) button.disabled = false;
+            }
+            return;
+        }
         if (button.hasAttribute('data-application-cv')) {
             window.open(base + '/cv.pdf', '_blank', 'noopener,noreferrer');
             return;

@@ -6,6 +6,7 @@ use App\Http\Controllers\ApplicationPdfController;
 use App\Http\Controllers\ApplicationSignatureController;
 use App\Http\Controllers\SearchAgentOptimizationController;
 use App\Http\Controllers\ContentSyncControlController;
+use App\Http\Controllers\PdfCompilerControlController;
 use App\Http\Middleware\ApplicationAccess;
 use Illuminate\Support\Facades\Route;
 
@@ -20,7 +21,13 @@ Route::post('/content-sync', [ContentSyncControlController::class, 'start'])->na
 Route::get('/content-sync/conflicts', [ContentSyncControlController::class, 'conflicts'])->name('content-sync.conflicts');
 Route::post('/content-sync/conflicts/resolve', [ContentSyncControlController::class, 'resolve'])->name('content-sync.conflicts.resolve');
 
+Route::get('/pdf-compiler', [PdfCompilerControlController::class, 'index'])->name('pdf-compiler.index');
+Route::get('/pdf-compiler/status', [PdfCompilerControlController::class, 'status'])->name('pdf-compiler.status');
+Route::post('/pdf-compiler/recompile', [PdfCompilerControlController::class, 'recompilePublic'])->middleware('throttle:application-pdf')->name('pdf-compiler.recompile');
+Route::post('/pdf-compiler/clear-cache', [PdfCompilerControlController::class, 'clearCache'])->name('pdf-compiler.clear-cache');
+
 Route::post('/applications/{id}/reset-date', [ApplicationController::class, 'resetDate'])->name('applications.reset-date');
+Route::post('/applications/{id}/recompile.pdf', [ApplicationPdfController::class, 'recompile'])->middleware('throttle:application-pdf')->name('applications.recompile');
 Route::get('/applications/handwritten-signature/{source?}', [ApplicationHandwrittenSignatureController::class, 'show'])->where('source', 'example')->name('applications.handwritten-signature.show');
 Route::post('/applications/handwritten-signature/{source?}', [ApplicationHandwrittenSignatureController::class, 'store'])->middleware('throttle:application-pdf')->where('source', 'example')->name('applications.handwritten-signature.store');
 Route::delete('/applications/handwritten-signature/{source?}', [ApplicationHandwrittenSignatureController::class, 'destroy'])->where('source', 'example')->name('applications.handwritten-signature.destroy');

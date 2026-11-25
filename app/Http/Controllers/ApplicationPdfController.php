@@ -8,6 +8,8 @@ use App\Support\ApplicationCapabilities;
 use App\Support\ApplicationData;
 use App\Support\ApplicationPdfException;
 use App\Support\ApplicationPdfExporter;
+use App\Support\LatexCompilationFailure;
+use App\Support\PdfCompilerControl;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Validator;
@@ -30,6 +32,55 @@ final class ApplicationPdfController extends Controller
         abort_unless(User::current()?->isSuper(), 403);
 
         return $this->pdf($exporter, $this->application($id), $request->routeIs('statamic.cp.applications.preview'), $request->routeIs('statamic.cp.applications.export'));
+    }
+
+    public function recompile(Request $request, string $id, ApplicationPdfExporter $exporter, PdfCompilerControl $control)
+    {
+        abort_unless(User::current()?->isSuper(), 403);
+        $application = $this->application($id);
+        $control->record('application_recompile_started', ['operation' => 'application_export']);
+
+        try {
+            $exporter->render($application, cached: true, forceRecompile: true);
+        } catch (ApplicationPdfException $failure) {
+            $control->record('application_recompile_failed', [
+                'reference' => $failure->reference,
+                'operation' => 'application_export',
+                'stage' => $failure->stage,
+            ]);
+
+            return response()->json(['message' => $failure->getMessage()], 503)
+                ->header('Cache-Control', 'no-store');
+        } catch (\Throwable $failure) {
+            $reference = $failure instanceof LatexCompilationFailure
+                ? $failure->reference
+                : bin2hex(random_bytes(6));
+            $context = [
+                'reference' => $reference,
+                'operation' => 'application_export',
+                'stage' => 'export',
+                'failure_class' => $failure::class,
+            ];
+            if ($failure instanceof LatexCompilationFailure) {
+                $context += [
+                    'diagnostic' => $failure->diagnosticCode,
+                    'source_line' => $failure->sourceLine,
+                    'pass' => $failure->pass,
+                    'exit_code' => $failure->exitCode,
+                ];
+            }
+            $control->record('application_recompile_failed', $context);
+
+            return response()->json([
+                'message' => 'Bewerbungs-PDF konnte nicht neu kompiliert werden. Siehe PDF-Compiler-Logs.',
+                'reference' => $reference,
+            ], 503)->header('Cache-Control', 'no-store');
+        }
+
+        $control->record('application_recompile_finished', ['operation' => 'application_export']);
+
+        return response()->json(['message' => 'Bewerbungs-PDF wurde aus den gespeicherten Daten neu kompiliert.'], 200)
+            ->header('Cache-Control', 'no-store');
     }
 
     public function recipient(Request $request, string $id, ApplicationPdfExporter $exporter)
