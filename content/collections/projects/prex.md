@@ -20,7 +20,7 @@ related_projects:
   - 592ac462-1e09-4f35-be25-8308b982fb2b
 noindex: false
 updated_by: 7098a585-4701-4963-95aa-52c0d85d3e7d
-updated_at: 1795638168
+updated_at: 1795638811
 cover: projects/prex/screenshot-2026-11-25-at-21-04-29-prex--previews-extended.png
 content:
   -
