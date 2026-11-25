@@ -3,6 +3,12 @@ import { createRoot } from 'react-dom/client';
 import LiquidGlass from 'liquid-glass-react';
 
 export function mountNameGlass(element) {
+    // Chromium renders this library's SVG displacement filter with colored edge artifacts.
+    // Keep its native backdrop blur and tint, but skip that filter for Chromium engines.
+    if (/(?:Chrome|Chromium|Edg|OPR)\//i.test(navigator.userAgent)) {
+        element.classList.add('name-glass-native-backdrop');
+    }
+
     const root = createRoot(element);
     return {
         render(visible, width, height) {
