@@ -105,6 +105,8 @@ class AppServiceProvider extends ServiceProvider
         Statamic::externalStyle(asset('/cp-cv-profile-access.css').'?v='.hash_file('sha256', public_path('cp-cv-profile-access.css')));
         Statamic::externalScript(asset('/cp-content-sync.js').'?v='.hash_file('sha256', public_path('cp-content-sync.js')));
         Statamic::externalStyle(asset('/cp-content-sync.css').'?v='.hash_file('sha256', public_path('cp-content-sync.css')));
+        Statamic::externalScript(asset('/cp-pdf-compiler.js').'?v='.hash_file('sha256', public_path('cp-pdf-compiler.js')));
+        Statamic::externalStyle(asset('/cp-pdf-compiler.css').'?v='.hash_file('sha256', public_path('cp-pdf-compiler.css')));
         Statamic::externalScript(asset('/cp-applications.js').'?v='.hash_file('sha256', public_path('cp-applications.js')));
         Statamic::externalScript(asset('/cp-handwritten-signature.js').'?v='.hash_file('sha256', public_path('cp-handwritten-signature.js')));
         Statamic::externalStyle(asset('/cp-applications.css').'?v='.hash_file('sha256', public_path('cp-applications.css')));
@@ -124,6 +126,10 @@ class AppServiceProvider extends ServiceProvider
                 ->section('Tools')
                 ->route('content-sync.index')
                 ->icon('refresh');
+            $nav->create('PDF Compiler')
+                ->section('Tools')
+                ->route('pdf-compiler.index')
+                ->icon('file');
         });
     }
 }

@@ -307,7 +307,7 @@
     new MutationObserver(refreshProfileSummary).observe(document.documentElement, { attributes: true, attributeFilter: ['value'], childList: true, subtree: true });
 
     document.addEventListener('click', async event => {
-        const button = event.target.closest('[data-reset-application-date], [data-application-cv], [data-application-preview], [data-application-export], [data-application-grant-create], [data-application-grant-revoke], [data-application-grant-revoke-all], [data-application-copy-link], [data-application-cv-grant-create], [data-application-cv-grant-copy], [data-application-cv-grant-revoke], [data-email-pdf], [data-email-refresh], [data-email-copy-text], [data-email-copy-html]');
+        const button = event.target.closest('[data-reset-application-date], [data-application-cv], [data-application-preview], [data-application-export], [data-application-grant-create], [data-application-grant-revoke], [data-application-grant-revoke-all], [data-application-copy-link], [data-application-cv-grant-create], [data-application-cv-grant-copy], [data-application-cv-grant-revoke], [data-email-pdf], [data-email-refresh], [data-email-copy-text], [data-email-copy-html], [data-application-recompile]');
         if (!button) return;
         const base = appBase();
         if (button.matches('[data-email-pdf]')) {
@@ -400,6 +400,21 @@
         if (button.hasAttribute('data-application-preview') || button.hasAttribute('data-application-export')) {
             window.open(base + (button.hasAttribute('data-application-preview') ? '/preview.pdf' : '/export.pdf'), '_blank', 'noopener,noreferrer');
             if (status) status.textContent = 'Es werden gespeicherte Daten verwendet. Vorherige Änderungen zuerst speichern.';
+            return;
+        }
+        if (button.hasAttribute('data-application-recompile')) {
+            button.disabled = true;
+            if (status) status.textContent = 'Die PDF wird mit den gespeicherten Daten neu kompiliert …';
+            try {
+                const response = await fetch(base + '/recompile.pdf', { method: 'POST', headers: { Accept: 'application/json', 'X-CSRF-TOKEN': csrf() } });
+                const data = await response.json().catch(() => ({}));
+                if (!response.ok) throw new Error(data.message || 'PDF konnte nicht neu kompiliert werden.');
+                if (status) status.textContent = data.message || 'PDF wurde neu kompiliert.';
+            } catch (error) {
+                if (status) status.textContent = error.message;
+            } finally {
+                if (button.isConnected) button.disabled = false;
+            }
             return;
         }
         if (button.hasAttribute('data-application-cv')) {

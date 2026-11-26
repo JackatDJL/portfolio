@@ -9,7 +9,9 @@ use RecursiveIteratorIterator;
 use RuntimeException;
 use Statamic\Contracts\Entries\Entry;
 use Statamic\Facades\GlobalSet;
+use Symfony\Component\Process\Exception\ProcessTimedOutException;
 use Symfony\Component\Process\Process;
+use Throwable;
 
 class CvPdfRenderer
 {
@@ -36,7 +38,7 @@ class CvPdfRenderer
     {
         $settings = GlobalSet::find('cv')?->inDefaultSite();
         if (! $settings || ! filter_var($settings->value('private_cv_signature_enabled', false), FILTER_VALIDATE_BOOLEAN)) {
-            return $this->compile(view('latex.cv', compact('cv'))->render());
+            return $this->compile(view('latex.cv', compact('cv'))->render(), operation: 'private_cv');
         }
 
         $root = rtrim((string) config('applications.work_path'), DIRECTORY_SEPARATOR);
@@ -56,7 +58,7 @@ class CvPdfRenderer
             $typed = $settings->value('private_cv_signature_mode', 'handwritten') === 'typed';
             $source = $typed ? null : app(PrivateHandwrittenSignature::class)->materialize($work.'/signature.png');
             if (! $typed && ! $source) {
-                return $this->compile(view('latex.cv', compact('cv'))->render());
+                return $this->compile(view('latex.cv', compact('cv'))->render(), operation: 'private_cv');
             }
 
             $date = trim((string) ($cv['print']['date'] ?? ''));
@@ -72,7 +74,7 @@ class CvPdfRenderer
             $cv['signed_place'] = trim((string) ($cv['print']['place'] ?? '')) ?: trim((string) ($cv['location'] ?? ''));
             $cv['signed_date'] = $date !== '' ? $date : Carbon::now()->locale('de')->translatedFormat('j. F Y');
 
-            return $this->compile(view('latex.cv', compact('cv'))->render());
+            return $this->compile(view('latex.cv', compact('cv'))->render(), operation: 'private_cv');
         } finally {
             foreach (glob($work.'/*') ?: [] as $file) {
                 @unlink($file);
@@ -95,7 +97,7 @@ class CvPdfRenderer
                 : null;
             $cv = $this->viewModel->forApplication($application, $signature);
 
-            return $this->compile(view('latex.cv', compact('cv'))->render());
+            return $this->compile(view('latex.cv', compact('cv'))->render(), operation: 'application_cv');
         } finally {
             foreach (glob($work.'/*') ?: [] as $file) {
                 @unlink($file);
@@ -106,7 +108,14 @@ class CvPdfRenderer
 
     public function renderViewModel(array $cv, ?float $deadline = null): string
     {
-        return $this->compile(view('latex.cv', compact('cv'))->render(), deadline: $deadline);
+        return $this->compile(view('latex.cv', compact('cv'))->render(), deadline: $deadline, operation: 'application_cv');
+    }
+
+    public function recompilePublic(?string $profileSlug = null): void
+    {
+        $cv = $this->viewModel->make($profileSlug);
+        $tex = view('latex.cv', compact('cv'))->render();
+        $this->cachedPublicPdf($cv, $tex, forceRecompile: true);
     }
 
     public function fingerprint(array $cv): string
@@ -114,9 +123,16 @@ class CvPdfRenderer
         return $this->publicCacheKey($cv, view('latex.cv', compact('cv'))->render());
     }
 
-    private function cachedPublicPdf(array $cv, string $tex): string
+    private function cachedPublicPdf(array $cv, string $tex, bool $forceRecompile = false): string
     {
-        $directory = storage_path('app/private/cv-cache/public');
+        return app(PdfCompilerControl::class)->withCacheReadLock(
+            fn (): string => $this->cachedPublicPdfLocked($cv, $tex, $forceRecompile),
+        );
+    }
+
+    private function cachedPublicPdfLocked(array $cv, string $tex, bool $forceRecompile): string
+    {
+        $directory = (string) config('pdf-compiler.public_cv_cache_path');
         $this->ensurePrivateDirectory($directory);
         $key = $this->publicCacheKey($cv, $tex);
         $cached = $directory.'/'.$key.'.pdf';
@@ -134,17 +150,17 @@ class CvPdfRenderer
                 throw new RuntimeException('Could not acquire the public CV PDF cache lock.');
             }
 
-            if ($this->isPdf($cached)) {
+            if (! $forceRecompile && $this->isPdf($cached)) {
                 $this->removeExpiredPublicPdfs($directory, $cached);
 
                 return $cached;
             }
 
-            if (is_file($cached)) {
+            if (! $this->isPdf($cached) && is_file($cached)) {
                 @unlink($cached);
             }
 
-            $compiled = $this->compile($tex);
+            $compiled = $this->compile($tex, operation: 'public_cv');
             $temporary = $directory.'/'.$key.'.'.bin2hex(random_bytes(8)).'.tmp';
 
             try {
@@ -171,12 +187,14 @@ class CvPdfRenderer
     }
 
     /** Shared LuaLaTeX pipeline for CVs and application letters. Never log source/output. */
-    public function compile(string $tex, int $passes = 1, ?float $deadline = null, array $validationMarkers = []): string
+    public function compile(string $tex, int $passes = 1, ?float $deadline = null, array $validationMarkers = [], string $operation = 'pdf'): string
     {
         $root = config('cv.private_pdf_root', storage_path('app/private')).'/cv-latex/'.bin2hex(random_bytes(12));
-        $this->ensurePrivateDirectory($root);
+        $reference = bin2hex(random_bytes(6));
+        $currentPass = 1;
 
         try {
+            $this->ensurePrivateDirectory($root);
             $texFile = $root.'/cv.tex';
             if (file_put_contents($texFile, $tex, LOCK_EX) === false) {
                 throw new RuntimeException('Could not write the private CV source file.');
@@ -194,12 +212,19 @@ class CvPdfRenderer
                 $environment,
             );
             for ($pass = 0; $pass < $passes; $pass++) {
+                $currentPass = $pass + 1;
                 $remaining = $deadline === null ? (float) config('cv.pdf_timeout', 60) : $deadline - microtime(true);
                 if ($remaining <= 0) {
-                    throw new RuntimeException('PDF generation timed out.');
+                    throw LatexCompilationFailure::processFailure('compiler_timeout', $currentPass, reference: $reference);
                 }
                 $process->setTimeout(min((float) config('cv.pdf_timeout', 60), $remaining));
-                $process->run();
+                try {
+                    $process->run();
+                } catch (ProcessTimedOutException) {
+                    throw LatexCompilationFailure::processFailure('compiler_timeout', $currentPass, $process->getExitCode(), $reference);
+                } catch (Throwable) {
+                    throw LatexCompilationFailure::processFailure('compiler_process_error', $currentPass, $process->getExitCode(), $reference);
+                }
                 if (! $process->isSuccessful()) {
                     $log = @file_get_contents($root.'/cv.log') ?: '';
                     foreach ($validationMarkers as $marker => $error) {
@@ -207,7 +232,7 @@ class CvPdfRenderer
                             throw ValidationException::withMessages([$error['field'] => $error['message']]);
                         }
                     }
-                    throw LatexCompilationFailure::fromCompilerLog($log, $pass + 1);
+                    throw LatexCompilationFailure::fromCompilerLog($log, $currentPass, $process->getExitCode(), $reference);
                 }
             }
 
@@ -225,6 +250,28 @@ class CvPdfRenderer
             }
 
             return $final;
+        } catch (ValidationException $exception) {
+            throw $exception;
+        } catch (LatexCompilationFailure $failure) {
+            app(PdfCompilerControl::class)->record('compiler_failed', [
+                'reference' => $failure->reference,
+                'operation' => $operation,
+                'stage' => 'Compiler',
+                'diagnostic' => $failure->diagnosticCode,
+                'source_line' => $failure->sourceLine,
+                'pass' => $failure->pass,
+                'exit_code' => $failure->exitCode,
+            ]);
+            throw $failure;
+        } catch (Throwable $failure) {
+            app(PdfCompilerControl::class)->record('compiler_runtime_failed', [
+                'reference' => $reference,
+                'operation' => $operation,
+                'stage' => 'Compiler',
+                'failure_class' => $failure::class,
+                'pass' => $currentPass,
+            ]);
+            throw $failure;
         } finally {
             $this->removeTree($root);
         }
