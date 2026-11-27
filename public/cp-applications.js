@@ -213,7 +213,7 @@
             panel.querySelector('[data-email-html-preview]').replaceChildren(frame);
             if (status) {
                 const pdfNotice = data.pdf_notice ? 'PDF-Überleitung aktiv; die exportierte PDF manuell anhängen.' : 'PDF-Überleitung aus.';
-                const attachments = data.attachments.length ? 'Anlagen: ' + data.attachments.join(', ') : 'Keine ausgewählte private PDF-Anlage wird in der Mail erwähnt.';
+                const attachments = data.attachments.length ? 'Ausgewählte Anlagen: ' + data.attachments.join(', ') : 'Keine gültigen privaten PDF-Anlagen ausgewählt.';
                 status.textContent = pdfNotice + ' ' + attachments;
             }
         } catch (error) {
