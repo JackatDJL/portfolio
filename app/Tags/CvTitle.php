@@ -3,6 +3,7 @@ namespace App\Tags;
 
 use Statamic\Tags\Tags;
 use Statamic\Facades\Entry;
+use Statamic\Fields\Value;
 
 class CvTitle extends Tags
 {
@@ -11,11 +12,15 @@ class CvTitle extends Tags
     {
         $request = request();
         if (!$request->is('cv', 'cv/*')) {
-            if ($request->path() === '/' && ! $this->context->get('seo_title')) {
-                return (string) ($this->context->get('site:name') ?: 'Jack Ruder');
+            $plain = static fn ($value) => $value instanceof Value ? $value->value() : $value;
+            $seoTitle = $plain($this->context->get('seo_title'));
+            $pageTitle = $plain($this->context->get('title'));
+            $siteName = $plain($this->context->get('site:name'));
+            if ($request->path() === '/' && ! $seoTitle) {
+                return (string) ($siteName ?: 'Jack Ruder');
             }
 
-            return (string) ($this->context->get('seo_title') ?: $this->context->get('title') ?: $this->context->get('site:name') ?: 'Jack Ruder');
+            return (string) ($seoTitle ?: $pageTitle ?: $siteName ?: 'Jack Ruder');
         }
         $name = (string) ($this->context->get('site:name') ?? 'Lebenslauf');
         $title = $name.' · Lebenslauf';
