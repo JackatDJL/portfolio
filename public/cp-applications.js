@@ -21,6 +21,7 @@
         const notesWrap = document.querySelector('[data-application-notes-wrap]');
         const notes = document.querySelector('[data-application-notes]');
         const grants = document.querySelector('[data-application-grants]');
+        const recipientEvents = document.querySelector('[data-application-recipient-events]');
         if (!summary || !base || base !== appBase()) return;
         const request = ++overviewRequest;
         const isCurrent = () => request === overviewRequest
@@ -135,6 +136,36 @@
             }
         } catch (error) {
             if (isCurrent() && grants === document.querySelector('[data-application-grants]')) grants.textContent = error.message;
+        }
+
+        if (!isCurrent() || !recipientEvents) return;
+        try {
+            const response = await fetch(base + '/recipient-events', { headers: { Accept: 'application/json' }, cache: 'no-store' });
+            if (!response.ok) throw new Error('Empfänger-Verlauf konnte nicht geladen werden.');
+            const data = await response.json();
+            if (!isCurrent() || recipientEvents !== document.querySelector('[data-application-recipient-events]')) return;
+            recipientEvents.replaceChildren();
+            if (!data.events.length) {
+                const empty = document.createElement('p');
+                empty.className = 'app-cp-muted';
+                empty.textContent = 'Noch keine Empfängeraktivität.';
+                recipientEvents.append(empty);
+                return;
+            }
+            for (const activity of data.events) {
+                const item = document.createElement('p');
+                item.className = 'app-cp-recipient-event';
+                const eventLabel = {
+                    link_opened: 'Link geöffnet',
+                    page_view: 'Seite angesehen',
+                    pdf_requested: 'PDF angefordert',
+                }[activity.event] || 'Aktivität';
+                item.textContent = [activity.grant_label, eventLabel, activity.path, showDate(activity.occurred_at)]
+                    .filter(Boolean).join(' · ');
+                recipientEvents.append(item);
+            }
+        } catch (error) {
+            if (isCurrent() && recipientEvents === document.querySelector('[data-application-recipient-events]')) recipientEvents.textContent = error.message;
         }
     }
 
@@ -307,9 +338,13 @@
     new MutationObserver(refreshProfileSummary).observe(document.documentElement, { attributes: true, attributeFilter: ['value'], childList: true, subtree: true });
 
     document.addEventListener('click', async event => {
-        const button = event.target.closest('[data-reset-application-date], [data-application-cv], [data-application-preview], [data-application-export], [data-application-grant-create], [data-application-grant-revoke], [data-application-grant-revoke-all], [data-application-copy-link], [data-application-cv-grant-create], [data-application-cv-grant-copy], [data-application-cv-grant-revoke], [data-email-pdf], [data-email-refresh], [data-email-copy-text], [data-email-copy-html], [data-application-recompile]');
+        const button = event.target.closest('[data-reset-application-date], [data-application-cv], [data-application-preview], [data-application-export], [data-application-grant-create], [data-application-grant-revoke], [data-application-grant-revoke-all], [data-application-copy-link], [data-application-cv-grant-create], [data-application-cv-grant-copy], [data-application-cv-grant-revoke], [data-email-pdf], [data-email-refresh], [data-email-copy-text], [data-email-copy-html], [data-application-recompile], [data-application-events-refresh]');
         if (!button) return;
         const base = appBase();
+        if (button.matches('[data-application-events-refresh]')) {
+            if (base) await loadOverview(base);
+            return;
+        }
         if (button.matches('[data-email-pdf]')) {
             const status = button.closest('[data-application-email]')?.querySelector('[data-email-status]');
             if (!base) { if (status) status.textContent = 'Bitte zuerst speichern.'; return; }

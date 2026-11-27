@@ -28,19 +28,16 @@ test('animates twenty independent decorative layers and respects reduced motion'
 });
 
 for (const detail of ['/cv/edu/example', '/cv/exp/example', '/projekte/example']) {
-    test(`private PDF detail link exchanges only the exact profile scope at ${detail}`, async ({ page }) => {
-        const token = 'X'.repeat(64);
-        let exchanged;
+    test(`detail links keep CV capability fragments off ${detail}`, async ({ page }) => {
+        let exchangeCount = 0;
         await page.route('**/cv/token-exchange', route => {
-            exchanged = route.request().postDataJSON();
-            expect(route.request().headers()['x-csrf-token']).toBe('fixture-csrf-token');
+            exchangeCount++;
             return route.fulfill({ json: { authorized: true } });
         });
         await page.route(`**${detail}?*`, route => route.fulfill({ contentType: 'text/html', body: `<meta name="csrf-token" content="fixture-csrf-token"><script>${exchangeScript}</script><a href="/cv/jobmesse-26">Lebenslauf</a>` }));
-        await page.goto(`${detail}?cv_return=%2Fcv%2Fjobmesse-26#cv=${token}`);
-        await expect.poll(() => exchanged).toEqual({ path: '/cv/jobmesse-26', token });
+        await page.goto(`${detail}?cv_return=%2Fcv%2Fjobmesse-26`);
+        expect(exchangeCount).toBe(0);
         expect(new URL(page.url()).hash).toBe('');
-        expect(new URL(page.url()).search).not.toContain(token);
         await expect(page.locator('a')).toHaveAttribute('href', '/cv/jobmesse-26');
     });
 }

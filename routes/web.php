@@ -164,6 +164,7 @@ Route::prefix('applications')->middleware(ApplicationAccess::class)->group(funct
     Route::get('{id}/cv/pdf', [CvPageController::class, 'applicationPdf'])->whereUuid('id')->middleware('throttle:application-pdf')->name('applications.cv.pdf');
     Route::get('{id}/cv', [CvPageController::class, 'application'])->whereUuid('id')->name('applications.cv');
     Route::post('token-exchange', [ApplicationPdfController::class, 'exchange'])->middleware('throttle:application-exchange')->name('applications.exchange');
+    Route::post('analytics/page-view', [ApplicationPdfController::class, 'trackPageView'])->middleware('throttle:120,1')->name('applications.analytics.page-view');
     Route::get('{id}/pdf', [ApplicationPdfController::class, 'recipient'])->whereUuid('id')->middleware('throttle:application-pdf')->name('applications.pdf');
     Route::get('{id}', [ApplicationPdfController::class, 'landing'])->whereUuid('id')->name('applications.access');
 });

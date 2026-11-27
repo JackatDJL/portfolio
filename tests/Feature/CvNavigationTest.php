@@ -65,11 +65,13 @@ class CvNavigationTest extends TestCase
         $this->postJson('/cv/token-exchange', ['path' => '/cv/jobmesse-26', 'token' => $grant['token']])->assertOk();
         $cv = app(CvViewModel::class)->make('jobmesse-26', true, $grant['token']);
         $experienceUrl = $cv['experience'][0]['url'];
-        $this->assertStringContainsString('cv_return=%2Fcv%2Fjobmesse-26#cv='.$grant['token'], $experienceUrl);
+        $this->assertStringContainsString('cv_return=%2Fcv%2Fjobmesse-26', $experienceUrl);
+        $this->assertStringNotContainsString('#cv=', $experienceUrl);
         $experiencePath = parse_url($experienceUrl, PHP_URL_PATH).'?'.parse_url($experienceUrl, PHP_URL_QUERY);
         $this->get($experiencePath)->assertOk()->assertSee('href="/cv/jobmesse-26"', false);
         $url = $cv['education'][0]['url'];
-        $this->assertStringContainsString('cv_return=%2Fcv%2Fjobmesse-26#cv='.$grant['token'], $url);
+        $this->assertStringContainsString('cv_return=%2Fcv%2Fjobmesse-26', $url);
+        $this->assertStringNotContainsString('#cv=', $url);
         $path = parse_url($url, PHP_URL_PATH).'?'.parse_url($url, PHP_URL_QUERY);
         $this->get($path)->assertOk()->assertSee('href="/cv/jobmesse-26"', false);
         $this->get('/cv/jobmesse-26')->assertOk()->assertSee('cv_return=%2Fcv%2Fjobmesse-26', false);
@@ -149,7 +151,8 @@ class CvNavigationTest extends TestCase
             $this->assertMatchesRegularExpression('/^[A-Za-z0-9]{64}$/', $token);
             $this->assertTrue(CvCapabilities::allows($token, $path));
             $this->assertStringContainsString($path.'#cv='.$token, $model['interactive_url']);
-            $this->assertStringContainsString(http_build_query(['cv_return' => $path], '', '&', PHP_QUERY_RFC3986).'#cv='.$token, $model['education'][0]['url']);
+            $this->assertStringContainsString(http_build_query(['cv_return' => $path], '', '&', PHP_QUERY_RFC3986), $model['education'][0]['url']);
+            $this->assertStringNotContainsString('#cv=', $model['education'][0]['url']);
             $permanent = app(CvViewModel::class)->forApplication($fixture->entry, permanentLink: true);
             $again = app(CvViewModel::class)->forApplication($fixture->entry, permanentLink: true);
             $this->assertSame($permanent['interactive_url'], $again['interactive_url']);

@@ -19,6 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'cv/private-data',
             'cv/private-signature',
             'cv/token-exchange',
+            'applications/analytics/page-view',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

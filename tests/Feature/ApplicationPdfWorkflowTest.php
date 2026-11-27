@@ -492,7 +492,6 @@ class ApplicationPdfWorkflowTest extends TestCase
             ->setTimezone(config('app.timezone'))
             ->toDateTimeString();
         $apiExpiry = Carbon::parse($normalizedExpiry, config('app.timezone'))->toIso8601String();
-        $application = $this->fixture->entry;
         $first = $this->postJson('/cp/applications/'.$id.'/recipient-grants', [
             'label' => 'TUHH Personalabteilung',
             'expires_at' => $expiresAt,
@@ -504,10 +503,7 @@ class ApplicationPdfWorkflowTest extends TestCase
         $this->assertMatchesRegularExpression('/(?:Z|[+-]\d{2}:\d{2})$/', $first->json('grant.expires_at'));
         $this->assertSame($normalizedExpiry, DB::table('application_recipient_grants')->where('id', $firstId)->value('expires_at'));
         $this->assertMatchesRegularExpression('/^[A-Za-z0-9]{64}$/', $firstToken);
-        $cvSettings = ApplicationData::group($application, 'cv');
-        $profileId = is_array($cvSettings['profile'] ?? null) ? reset($cvSettings['profile']) : ($cvSettings['profile'] ?? null);
-        $profile = $profileId ? Entry::find($profileId) : null;
-        $this->assertStringContainsString('/cv/'.($profile?->slug() ?? $application->slug()).'#application=', $first->json('url'));
+        $this->assertStringContainsString('/applications/'.$id.'#application=', $first->json('url'));
         $encryptedLabel = DB::table('application_recipient_grants')->where('id', $firstId)->value('label');
         $this->assertStringNotContainsString('TUHH Personalabteilung', $encryptedLabel);
         $this->assertSame('TUHH Personalabteilung', Crypt::decryptString($encryptedLabel));
@@ -529,6 +525,9 @@ class ApplicationPdfWorkflowTest extends TestCase
         $this->app['auth']->logout();
         $this->postJson('/applications/token-exchange', ['id' => $id, 'token' => $firstToken])->assertOk();
         $this->assertSame($firstId, session('application_grants.'.hash('sha256', $id)));
+        $this->postJson('/applications/analytics/page-view', ['path' => '/projekte/demo'])
+            ->assertOk()
+            ->assertJson(['tracked' => true]);
         $this->get('/cv')->assertDontSee($firstToken);
         $this->assertNotNull(DB::table('application_recipient_grants')->where('id', $firstId)->value('last_accessed_at'));
         $lastExchange = now()->subDay()->toDateTimeString();
@@ -548,6 +547,70 @@ class ApplicationPdfWorkflowTest extends TestCase
         $this->app['auth']->logout();
         $this->get('/applications/'.$id.'/pdf')->assertNotFound();
         $this->assertNotNull(DB::table('application_recipient_grants')->where('id', $secondId)->value('revoked_at'));
+    }
+
+    public function test_recipient_event_history_retains_only_the_latest_100_events_per_grant(): void
+    {
+        $id = $this->save();
+        $grant = ApplicationCapabilities::issue($id, 'Verlaufstest');
+
+        for ($index = 0; $index < 105; $index++) {
+            ApplicationCapabilities::recordEvent($id, $grant['id'], 'page_view', '/page/'.$index);
+        }
+
+        $events = DB::table('application_recipient_events')
+            ->where('grant_id', $grant['id'])
+            ->orderBy('id')
+            ->get();
+
+        $this->assertCount(100, $events);
+        $this->assertSame('/page/5', $events->first()->path);
+        $this->assertSame('/page/104', $events->last()->path);
+    }
+
+    public function test_page_view_tracking_resolves_legacy_token_hash_sessions(): void
+    {
+        $id = $this->save();
+        $grant = ApplicationCapabilities::issue($id, 'Ältere Sitzung');
+        $this->withSession([
+            'application_grants' => [hash('sha256', $id) => hash('sha256', $grant['token'])],
+        ])->postJson('/applications/analytics/page-view', ['path' => '/cv/edu/demo'])
+            ->assertOk()
+            ->assertJson(['tracked' => true]);
+
+        $this->assertDatabaseHas('application_recipient_events', [
+            'application_id' => $id,
+            'grant_id' => $grant['id'],
+            'event' => 'page_view',
+            'path' => '/cv/edu/demo',
+        ]);
+    }
+
+    public function test_page_views_are_tracked_only_for_an_active_application_grant(): void
+    {
+        $id = $this->save();
+        $grant = ApplicationCapabilities::issue($id, 'Seitenanalyse');
+        $this->postJson('/applications/token-exchange', ['id' => $id, 'token' => $grant['token']])->assertOk();
+
+        $this->postJson('/applications/analytics/page-view', ['path' => '/projekte/demo'])
+            ->assertOk()
+            ->assertJson(['tracked' => true]);
+        $this->assertDatabaseHas('application_recipient_events', [
+            'application_id' => $id,
+            'grant_id' => $grant['id'],
+            'event' => 'page_view',
+            'path' => '/projekte/demo',
+        ]);
+
+        ApplicationCapabilities::revoke($id, $grant['id']);
+        $this->postJson('/applications/analytics/page-view', ['path' => '/projekte/after-revoke'])
+            ->assertOk()
+            ->assertJson(['tracked' => false]);
+        $this->assertDatabaseMissing('application_recipient_events', [
+            'application_id' => $id,
+            'grant_id' => $grant['id'],
+            'path' => '/projekte/after-revoke',
+        ]);
     }
 
     public function test_unreadable_grant_labels_do_not_block_listing_or_issuing_new_links(): void
