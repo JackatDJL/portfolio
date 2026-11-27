@@ -125,18 +125,18 @@ final class ApplicationCapabilities
             'created_at' => now(),
         ]);
 
-        // Keep only the latest 100 events for each recipient link. Deleting
-        // against a limited subquery avoids dialect-specific OFFSET-only SQL.
-        $retainedIds = DB::table('application_recipient_events')
+        // This table is capped at 100 rows per grant after each successful
+        // write, so fetching the IDs before pruning stays small and portable
+        // across SQLite, MySQL, and MariaDB.
+        $staleIds = DB::table('application_recipient_events')
             ->where('grant_id', $grantId)
             ->orderByDesc('id')
-            ->limit(100)
-            ->select('id');
-
-        DB::table('application_recipient_events')
-            ->where('grant_id', $grantId)
-            ->whereNotIn('id', $retainedIds)
-            ->delete();
+            ->pluck('id')
+            ->slice(100)
+            ->values();
+        if ($staleIds->isNotEmpty()) {
+            DB::table('application_recipient_events')->whereIn('id', $staleIds)->delete();
+        }
     }
 
     public static function recordSessionEvent(Request $request, string $applicationId, string $event, ?string $path = null): bool
@@ -247,35 +247,38 @@ final class ApplicationCapabilities
 
     public static function hasAuthorizedApplication(Request $request): bool
     {
-        foreach ($request->session()->get('application_grants', []) as $hash => $grantId) {
-            if (is_string($grantId) && preg_match('/^[a-f0-9]{64}$/D', $hash)) {
-                // Legacy hash-based session
-                $applicationId = substr($hash, 0, 36);
-                if (Str::isUuid($applicationId)) {
-                    return true;
-                }
-            } elseif (Str::isUuid($hash)) {
-                // New application ID based session
-                return true;
-            }
-        }
-        return false;
+        return self::authorizedApplicationId($request) !== null;
     }
 
     public static function authorizedApplicationId(Request $request): ?string
     {
-        foreach ($request->session()->get('application_grants', []) as $hash => $grantId) {
-            if (is_string($grantId) && preg_match('/^[a-f0-9]{64}$/D', $hash)) {
-                // Legacy hash-based session - the hash is sha256 of the application ID
-                $applicationId = substr($hash, 0, 36);
-                if (Str::isUuid($applicationId)) {
-                    return $applicationId;
-                }
-            } elseif (Str::isUuid($hash)) {
-                // New application ID based session
-                return $hash;
+        foreach ($request->session()->get('application_grants', []) as $sessionKey => $sessionGrant) {
+            if (! is_string($sessionKey) || ! is_string($sessionGrant)) {
+                continue;
+            }
+
+            $query = DB::table('application_recipient_grants')->whereNull('revoked_at');
+            if (Str::isUuid($sessionGrant)) {
+                $query->where('id', $sessionGrant);
+            } elseif (preg_match('/^[a-f0-9]{64}$/D', $sessionGrant)) {
+                // Older sessions stored the token hash instead of a grant UUID.
+                $query->where('token_hash', $sessionGrant);
+            } else {
+                continue;
+            }
+
+            $record = $query->first(['application_id']);
+            if (! $record || ! hash_equals(hash('sha256', $record->application_id), $sessionKey)) {
+                continue;
+            }
+
+            // Recheck the binding, expiry and revocation through the same gate
+            // used by protected application and CV requests.
+            if (self::sessionGrantId($request, $record->application_id) !== null) {
+                return $record->application_id;
             }
         }
+
         return null;
     }
 }

@@ -525,6 +525,9 @@ class ApplicationPdfWorkflowTest extends TestCase
         $this->app['auth']->logout();
         $this->postJson('/applications/token-exchange', ['id' => $id, 'token' => $firstToken])->assertOk();
         $this->assertSame($firstId, session('application_grants.'.hash('sha256', $id)));
+        $this->postJson('/applications/analytics/page-view', ['path' => '/projekte/demo'])
+            ->assertOk()
+            ->assertJson(['tracked' => true]);
         $this->get('/cv')->assertDontSee($firstToken);
         $this->assertNotNull(DB::table('application_recipient_grants')->where('id', $firstId)->value('last_accessed_at'));
         $lastExchange = now()->subDay()->toDateTimeString();
@@ -563,6 +566,51 @@ class ApplicationPdfWorkflowTest extends TestCase
         $this->assertCount(100, $events);
         $this->assertSame('/page/5', $events->first()->path);
         $this->assertSame('/page/104', $events->last()->path);
+    }
+
+    public function test_page_view_tracking_resolves_legacy_token_hash_sessions(): void
+    {
+        $id = $this->save();
+        $grant = ApplicationCapabilities::issue($id, 'Ältere Sitzung');
+        $this->withSession([
+            'application_grants' => [hash('sha256', $id) => hash('sha256', $grant['token'])],
+        ])->postJson('/applications/analytics/page-view', ['path' => '/cv/edu/demo'])
+            ->assertOk()
+            ->assertJson(['tracked' => true]);
+
+        $this->assertDatabaseHas('application_recipient_events', [
+            'application_id' => $id,
+            'grant_id' => $grant['id'],
+            'event' => 'page_view',
+            'path' => '/cv/edu/demo',
+        ]);
+    }
+
+    public function test_page_views_are_tracked_only_for_an_active_application_grant(): void
+    {
+        $id = $this->save();
+        $grant = ApplicationCapabilities::issue($id, 'Seitenanalyse');
+        $this->postJson('/applications/token-exchange', ['id' => $id, 'token' => $grant['token']])->assertOk();
+
+        $this->postJson('/applications/analytics/page-view', ['path' => '/projekte/demo'])
+            ->assertOk()
+            ->assertJson(['tracked' => true]);
+        $this->assertDatabaseHas('application_recipient_events', [
+            'application_id' => $id,
+            'grant_id' => $grant['id'],
+            'event' => 'page_view',
+            'path' => '/projekte/demo',
+        ]);
+
+        ApplicationCapabilities::revoke($id, $grant['id']);
+        $this->postJson('/applications/analytics/page-view', ['path' => '/projekte/after-revoke'])
+            ->assertOk()
+            ->assertJson(['tracked' => false]);
+        $this->assertDatabaseMissing('application_recipient_events', [
+            'application_id' => $id,
+            'grant_id' => $grant['id'],
+            'path' => '/projekte/after-revoke',
+        ]);
     }
 
     public function test_unreadable_grant_labels_do_not_block_listing_or_issuing_new_links(): void
