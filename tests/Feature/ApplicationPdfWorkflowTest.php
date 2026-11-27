@@ -546,6 +546,25 @@ class ApplicationPdfWorkflowTest extends TestCase
         $this->assertNotNull(DB::table('application_recipient_grants')->where('id', $secondId)->value('revoked_at'));
     }
 
+    public function test_recipient_event_history_retains_only_the_latest_100_events_per_grant(): void
+    {
+        $id = $this->save();
+        $grant = ApplicationCapabilities::issue($id, 'Verlaufstest');
+
+        for ($index = 0; $index < 105; $index++) {
+            ApplicationCapabilities::recordEvent($id, $grant['id'], 'page_view', '/page/'.$index);
+        }
+
+        $events = DB::table('application_recipient_events')
+            ->where('grant_id', $grant['id'])
+            ->orderBy('id')
+            ->get();
+
+        $this->assertCount(100, $events);
+        $this->assertSame('/page/5', $events->first()->path);
+        $this->assertSame('/page/104', $events->last()->path);
+    }
+
     public function test_unreadable_grant_labels_do_not_block_listing_or_issuing_new_links(): void
     {
         $id = $this->save();

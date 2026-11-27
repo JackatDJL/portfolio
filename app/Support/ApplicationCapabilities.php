@@ -125,15 +125,18 @@ final class ApplicationCapabilities
             'created_at' => now(),
         ]);
 
-        // Keep only the latest 100 events for each recipient link.
-        $staleIds = DB::table('application_recipient_events')
+        // Keep only the latest 100 events for each recipient link. Deleting
+        // against a limited subquery avoids dialect-specific OFFSET-only SQL.
+        $retainedIds = DB::table('application_recipient_events')
             ->where('grant_id', $grantId)
             ->orderByDesc('id')
-            ->skip(100)
-            ->pluck('id');
-        if ($staleIds->isNotEmpty()) {
-            DB::table('application_recipient_events')->whereIn('id', $staleIds)->delete();
-        }
+            ->limit(100)
+            ->select('id');
+
+        DB::table('application_recipient_events')
+            ->where('grant_id', $grantId)
+            ->whereNotIn('id', $retainedIds)
+            ->delete();
     }
 
     public static function recordSessionEvent(Request $request, string $applicationId, string $event, ?string $path = null): bool
