@@ -52,7 +52,7 @@ final class CvViewModel
         ];
         foreach (['experience', 'education', 'projects', 'publications'] as $section) {
             foreach ($model[$section] as &$item) {
-                $item['url'] = CvNavigation::detailUrl($item['url'], '/cv'.(! empty($profile['slug']) ? '/'.$profile['slug'] : ''), $authorized ? $capabilityToken : null);
+                $item['url'] = CvNavigation::detailUrl($item['url'], '/cv'.(! empty($profile['slug']) ? '/'.$profile['slug'] : ''));
             }
             unset($item);
         }
@@ -96,7 +96,7 @@ final class CvViewModel
             foreach ($cv[$section] as &$item) {
                 $item['url'] = preg_replace('/\?cv_return=.*$/', '', $item['url']);
                 if ($publicCvPath !== null) {
-                    $item['url'] = CvNavigation::detailUrl($item['url'], $returnPath, $token);
+                    $item['url'] = CvNavigation::detailUrl($item['url'], $returnPath);
                 }
             }
             unset($item);

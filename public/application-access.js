@@ -22,6 +22,7 @@
             response = await exchange(freshToken);
         }
         if (!response.ok) throw new Error('exchange failed');
+        try { localStorage.setItem('application-recipient-analytics', '1'); } catch { /* Analytics remain optional when browser storage is disabled. */ }
         const link = document.querySelector('[data-application-pdf]');
         link.hidden = false;
         status.textContent = 'Zugriff freigegeben.';

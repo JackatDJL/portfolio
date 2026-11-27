@@ -3,6 +3,8 @@ initWordmarkContrast();
 if (document.querySelector('[data-editorial-hero]')) import('./project-hero-transition.js');
 if (document.querySelector('[data-signature-pattern]')) import('./cv-signature-pattern.js');
 import { initCvExplore } from './cv-explore.js';
+import { initApplicationRecipientAnalytics } from './application-recipient-analytics.js';
+initApplicationRecipientAnalytics();
 
 if (document.querySelector('[data-project-stream]')) import('./collection-preview.js');
 if (document.querySelector('[data-homepage]')) import('./homepage.js');

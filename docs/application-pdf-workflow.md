@@ -33,9 +33,11 @@ Remote-file actions still require the external file. Existing cryptographic sign
 
 ## Recipient access
 
-`/applications/{UUID}` is a generic access page without sender, recipient or application details. There is no collection index. The page removes `#application=TOKEN` before posting it to `/applications/token-exchange`. The exchange uses normal Laravel CSRF protections, checks origin and is rate-limited. Query-string tokens are rejected. The clean `/applications/{UUID}/pdf` route requires the scoped session.
+`/applications/{UUID}` is a generic access page without sender, recipient or application details. Generated recipient links use this route, remove `#application=TOKEN` before posting it to `/applications/token-exchange`, then open the current PDF at `/applications/{UUID}/pdf`. The exchange checks origin and is rate-limited. Query-string tokens are rejected. Earlier one-segment `/cv/{slug}#application=…` links are accepted as a compatibility path and redirected to the PDF route.
 
 The application recipient database stores only SHA-256 hashes of random 64-character secrets; grant labels are encrypted. Each recipient grant has its own UUID and creation, expiry, last-access and revocation timestamps. New grants never replace existing ones. The CV manager separately stores hashed CV capability tokens and encrypted labels, displays metadata without bearer secrets, and can revoke an individual labeled grant. Application PDF previews issue a temporary token for the connected published CV profile; repeated previews reuse that grant while it remains valid, then revoke and replace it after expiry. Canonical exports reuse or create a permanent CV grant labeled `Bewerbungs Lebenslauf für {application-id}` and put the token only in PDF link fragments. Named grant lookup and creation are serialized with an atomic cache lock before the token is embedded in a PDF. The viewer removes that fragment before exchanging it for a session-scoped capability. CV grants do not authorize applications; application grants do not authorize CV pages. Authorized application rendering explicitly includes private CV data in the PDF itself. Unpublished profiles receive no CV capability link.
+
+The Control Panel shows up to 100 recent events per recipient link: a successful token exchange, a successful PDF response, and public HTML page paths loaded while that grant remains active in the same browser session. The event table stores no IP address or user-agent. A PDF response confirms a request for the file, not that a downloaded copy was later opened; browsing in a separate browser session cannot be attributed to the link.
 
 Responses have private/no-store, no-referrer and noindex headers, with same-origin framing. Statamic static caching excludes `/applications*`; the Content API remains disabled. Range requests still pass authorization.
 
@@ -51,7 +53,7 @@ Old versions are pruned after 30 days when a new version is generated. Administr
 
 ## Runtime and validation
 
-Docker installs the Python environment and German TeX support. Existing installations need the matching dependencies, `APPLICATION_PDF_PYTHON` set to that Python executable, and `php artisan migrate` for `application_access_tokens` and `application_recipient_grants`. The latter migration preserves existing token hashes and grant state. CP actions never migrate or deploy.
+Docker installs the Python environment and German TeX support. Existing installations need the matching dependencies, `APPLICATION_PDF_PYTHON` set to that Python executable, and `php artisan migrate` for `application_access_tokens`, `application_recipient_grants` and `application_recipient_events`. The grants migration preserves existing token hashes and grant state. CP actions never migrate or deploy.
 
 ```sh
 uv venv /tmp/portfolio-pdf-venv

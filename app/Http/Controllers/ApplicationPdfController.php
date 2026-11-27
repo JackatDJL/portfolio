@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Signatures\ApplicationSignatureWorkflow;
 use App\Signatures\SignatureWorkflowException;
 use App\Support\ApplicationCapabilities;
-use App\Support\ApplicationData;
 use App\Support\ApplicationPdfException;
 use App\Support\ApplicationPdfExporter;
 use App\Support\LatexCompilationFailure;
@@ -92,6 +91,10 @@ final class ApplicationPdfController extends Controller
         // A revocation during a slow compile must stop the pending response too.
         abort_unless(ApplicationCapabilities::sessionAllows($request, $id), 404);
 
+        if ($response->getStatusCode() === 200) {
+            ApplicationCapabilities::recordSessionEvent($request, $id, 'pdf_requested', '/applications/'.$id.'/pdf');
+        }
+
         return $response;
     }
 
@@ -131,13 +134,6 @@ final class ApplicationPdfController extends Controller
             ->header('Cache-Control', 'private, no-store');
     }
 
-    private function applicationProfileSlug($application): string
-    {
-        $cv = ApplicationData::group($application, 'cv');
-        $profileEntry = ($cv['profile'][0] ?? null) ? Entry::find($cv['profile'][0]) : null;
-        return $profileEntry?->slug() ?? $application->slug();
-    }
-
     public function issueGrant(Request $request, string $id)
     {
         abort_unless(User::current()?->isSuper(), 403);
@@ -147,10 +143,9 @@ final class ApplicationPdfController extends Controller
             'expires_at' => ['nullable', 'date', 'after:now'],
         ])->validate();
         $issued = ApplicationCapabilities::issue($id, $input['label'], $input['expires_at'] ?? null);
-        $application = $this->application($id);
 
         return response()->json([
-            'url' => url('/cv/'.$this->applicationProfileSlug($application)).'#application='.$issued['token'],
+            'url' => url('/applications/'.$id).'#application='.$issued['token'],
             'grant' => Arr::except($issued, ['token']),
         ])->header('Cache-Control', 'private, no-store');
     }
@@ -158,10 +153,10 @@ final class ApplicationPdfController extends Controller
     public function issueLegacyGrant(string $id)
     {
         abort_unless(User::current()?->isSuper(), 403);
-        $application = $this->application($id);
+        $this->application($id);
         $issued = ApplicationCapabilities::issue($id, 'Empfängerlink (Legacy)');
 
-        return response()->json(['url' => url('/cv/'.$this->applicationProfileSlug($application)).'#application='.$issued['token']])
+        return response()->json(['url' => url('/applications/'.$id).'#application='.$issued['token']])
             ->header('Cache-Control', 'private, no-store');
     }
 
@@ -192,40 +187,67 @@ final class ApplicationPdfController extends Controller
         return response()->view('applications.access', ['id' => $id, 'authorized' => ApplicationCapabilities::sessionAllows($request, $id)]);
     }
 
+    public function recipientEvents(string $id)
+    {
+        abort_unless(User::current()?->isSuper(), 403);
+        $this->application($id);
+
+        return response()->json(['events' => ApplicationCapabilities::events($id)])
+            ->header('Cache-Control', 'private, no-store');
+    }
+
+    public function trackPageView(Request $request)
+    {
+        $origin = $request->header('Origin');
+        abort_if(($origin && $origin !== $request->getSchemeAndHttpHost()) || $request->header('Sec-Fetch-Site') === 'cross-site', 403);
+
+        $input = Validator::make($request->all(), [
+            'path' => ['required', 'string', 'max:512', 'regex:/^\/(?!\/)[^?#\r\n]*$/uD'],
+        ])->validate();
+        $path = $input['path'];
+        abort_if(preg_match('#^/(?:cp|applications|api|livewire)(?:/|$)#D', $path), 422);
+
+        $applicationId = ApplicationCapabilities::authorizedApplicationId($request);
+        $recorded = $applicationId
+            ? ApplicationCapabilities::recordSessionEvent($request, $applicationId, 'page_view', $path)
+            : false;
+
+        return response()->json(['tracked' => $recorded])->header('Cache-Control', 'private, no-store');
+    }
+
     public function exchange(Request $request)
     {
         $origin = $request->header('Origin');
         abort_if(($origin && $origin !== $request->getSchemeAndHttpHost()) || $request->header('Sec-Fetch-Site') === 'cross-site', 403);
         
-        // Support both id and slug parameters
-        $input = $request->only(['id', 'slug', 'token']);
-        
-        if (isset($input['slug'])) {
-            $application = Entry::query()->where('collection', 'applications')->where('slug', $input['slug'])->first();
-            abort_unless($application, 404);
-            $input['id'] = $application->id();
-        }
-        
+        // id is used by current links; token-only is accepted for old malformed CV URLs.
+        $input = $request->only(['id', 'token']);
         $validator = Validator::make($input, [
-            'id' => ['required', 'uuid'],
+            'id' => ['nullable', 'uuid'],
             'token' => ['required', 'string', 'regex:/^[A-Za-z0-9]{64}$/']
         ]);
         if ($validator->fails()) {
             return response()->json(['message' => 'Ungültige Zugriffsdaten.'], 422);
         }
         $input = $validator->validated();
-        $this->application($input['id']);
         $hash = hash('sha256', $input['token']);
-        $grantId = ApplicationCapabilities::grantIdForHash($input['id'], $hash);
+        $applicationId = $input['id'] ?? ApplicationCapabilities::applicationIdForHash($hash);
+        abort_unless($applicationId, 404);
+        $this->application($applicationId);
+        $grantId = ApplicationCapabilities::grantIdForHash($applicationId, $hash);
         abort_unless($grantId, 404);
         $request->session()->regenerate();
         // A recipient session is scoped to one application at a time. Other grants
         // and normal CP/login session values are not affected.
         $request->session()->forget('application_grants');
-        $request->session()->put('application_grants.'.hash('sha256', $input['id']), $grantId);
-        ApplicationCapabilities::recordAccess($input['id'], $hash);
-        abort_unless(ApplicationCapabilities::sessionAllows($request, $input['id']), 404);
+        $request->session()->put('application_grants.'.hash('sha256', $applicationId), $grantId);
+        ApplicationCapabilities::recordAccess($applicationId, $hash);
+        abort_unless(ApplicationCapabilities::sessionAllows($request, $applicationId), 404);
+        ApplicationCapabilities::recordEvent($applicationId, $grantId, 'link_opened', '/applications/'.$applicationId);
 
-        return response()->json(['authorized' => true]);
+        return response()->json([
+            'authorized' => true,
+            'pdf_path' => '/applications/'.$applicationId.'/pdf',
+        ]);
     }
 }

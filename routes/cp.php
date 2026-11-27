@@ -42,6 +42,7 @@ Route::middleware(ApplicationAccess::class)->group(function () {
     Route::get('/applications/{id}/preview.pdf', [ApplicationPdfController::class, 'cp'])->middleware('throttle:application-pdf')->name('applications.preview');
     Route::get('/applications/{id}/export.pdf', [ApplicationPdfController::class, 'cp'])->middleware('throttle:application-pdf')->name('applications.export');
     Route::get('/applications/{id}/recipient-grants', [ApplicationPdfController::class, 'grants'])->name('applications.recipient-grants');
+    Route::get('/applications/{id}/recipient-events', [ApplicationPdfController::class, 'recipientEvents'])->name('applications.recipient-events');
     Route::post('/applications/{id}/recipient-grants', [ApplicationPdfController::class, 'issueGrant'])->name('applications.recipient-grants.issue');
     Route::delete('/applications/{id}/recipient-grants/{grantId}', [ApplicationPdfController::class, 'revokeGrant'])->name('applications.recipient-grants.revoke');
     Route::delete('/applications/{id}/recipient-grants', [ApplicationPdfController::class, 'revokeAllGrants'])->name('applications.recipient-grants.revoke-all');

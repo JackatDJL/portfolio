@@ -139,6 +139,16 @@ tabs:
                   <button type="button" class="app-cp-button app-cp-button-primary" data-application-grant-create>Empfängerlink erstellen</button>
                 </div>
                 <div class="app-cp-grants" data-application-grants aria-live="polite"></div>
+                <div class="app-cp-recipient-events">
+                  <div class="app-cp-section-heading">
+                    <div>
+                      <h4>Empfänger-Verlauf</h4>
+                      <p>Erfasst werden Linkaufruf, angeforderte PDF und besuchte HTML-Seiten in derselben Browsersitzung. Der Verlauf speichert weder IP-Adresse noch Browserkennung. Ein PDF-Abruf bestätigt nicht, dass eine heruntergeladene Datei später geöffnet wurde.</p>
+                    </div>
+                    <button type="button" class="app-cp-button" data-application-events-refresh>Verlauf aktualisieren</button>
+                  </div>
+                  <div data-application-recipient-events aria-live="polite"><p class="app-cp-muted">Verlauf wird geladen …</p></div>
+                </div>
                 <div class="app-cp-new-link" hidden>
                   <label class="app-cp-field" data-application-new-link-label>
                     <span>Neuer Link. Nur hier einmal sichtbar.</span>
