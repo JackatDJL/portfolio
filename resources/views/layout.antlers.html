@@ -22,27 +22,25 @@
                         body: JSON.stringify({ path, token: match[1] }),
                     }).then(response => response.ok);
                 }
-                
-                if (location.hash.startsWith('#application=')) {
+
+                // Older application links were emitted as /cv/{application-slug}#application=….
+                // Keep that one-segment form working, then send it to the proper PDF route.
+                if (/^\/cv\/[a-z0-9-]+$/.test(location.pathname) && location.hash.startsWith('#application=')) {
                     const match = location.hash.match(/^#application=([A-Za-z0-9]{64})$/);
                     history.replaceState(null, '', location.pathname + location.search);
-                    if (match) {
-                        // Extract slug from path /cv/{slug}
-                        const slug = path.split('/').pop();
-                        return fetch('/applications/token-exchange', {
-                            method: 'POST', credentials: 'same-origin', referrerPolicy: 'no-referrer',
-                            headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-CSRF-TOKEN': csrfToken },
-                            body: JSON.stringify({ slug, token: match[1] }),
-                        }).then(response => {
-                            if (response.ok) {
-                                // Reload to render with authorized application
-                                location.reload();
-                            }
-                            return response.ok;
-                        });
-                    }
+                    if (match) return fetch('/applications/token-exchange', {
+                        method: 'POST', credentials: 'same-origin', referrerPolicy: 'no-referrer',
+                        headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-CSRF-TOKEN': csrfToken },
+                        body: JSON.stringify({ token: match[1] }),
+                    }).then(async response => {
+                        if (!response.ok) return false;
+                        const result = await response.json();
+                        if (!/^\/applications\/[0-9a-f-]{36}\/pdf$/.test(result.pdf_path ?? '')) return false;
+                        try { localStorage.setItem('application-recipient-analytics', '1'); } catch { /* Analytics remain optional when browser storage is disabled. */ }
+                        location.replace(result.pdf_path);
+                        return true;
+                    });
                 }
-                
                 return Promise.resolve(true);
             };
             window.__cvExchange = window.__cvExchangeFragment();

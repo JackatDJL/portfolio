@@ -70,7 +70,7 @@ final class CvNavigation
         return '/cv';
     }
 
-    public static function detailUrl(string $url, string $returnPath, ?string $token = null): string
+    public static function detailUrl(string $url, string $returnPath): string
     {
         $parts = parse_url($url);
         $host = parse_url((string) config('cv.canonical_base_url'), PHP_URL_HOST);
@@ -79,8 +79,6 @@ final class CvNavigation
             || ! preg_match('#^/(?:cv/(?:exp|edu)|projekte|publikationen)/[a-zA-Z0-9_-]+$#D', $parts['path'] ?? '')) {
             return $url;
         }
-        $result = $url.'?'.http_build_query(['cv_return' => $returnPath], '', '&', PHP_QUERY_RFC3986);
-
-        return $result.($token && preg_match('/^[A-Za-z0-9]{64}$/D', $token) ? '#cv='.$token : '');
+        return $url.'?'.http_build_query(['cv_return' => $returnPath], '', '&', PHP_QUERY_RFC3986);
     }
 }
