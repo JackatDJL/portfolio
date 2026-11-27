@@ -189,7 +189,7 @@ class ApplicationManagementTest extends TestCase
         $this->assertStringContainsString('<p style="margin:0 0 16px">Manueller zweiter Absatz.</p>', $manual['html']);
     }
 
-    public function test_email_attachment_description_requires_a_selected_existing_private_pdf(): void
+    public function test_email_attachment_metadata_requires_a_selected_existing_private_pdf(): void
     {
         $entry = $this->createThroughCp();
         $entry->set('email', ApplicationData::encrypt([['mode' => 'short']]));
@@ -214,7 +214,8 @@ class ApplicationManagementTest extends TestCase
             $entry->save();
             $selected = app(ApplicationEmailComposer::class)->compose(Entry::find($entry->id()));
             $this->assertSame(['Ausbildungsnachweis'], $selected['attachments']);
-            $this->assertStringContainsString('Als Anlage erhalten Sie: Ausbildungsnachweis.', $selected['text']);
+            $this->assertStringNotContainsString('Als Anlage erhalten Sie', $selected['text']);
+            $this->assertStringNotContainsString('Ausbildungsnachweis', $selected['text']);
         } finally {
             $asset->deleteQuietly();
         }
